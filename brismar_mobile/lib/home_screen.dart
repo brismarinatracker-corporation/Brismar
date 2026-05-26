@@ -122,25 +122,25 @@ class HomeScreen extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: color, size: 30),
-        ),
+	        leading: Container(
+	          padding: const EdgeInsets.all(10),
+	          decoration: BoxDecoration(
+	            color: color.withAlpha(26),
+	            borderRadius: BorderRadius.circular(10),
+	          ),
+	          child: Icon(icon, color: color, size: 30),
+	        ),
         title: Text(
           title,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         subtitle: Text(subtitle),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-        onTap: () {
-          // Aquí puedes agregar la navegación a cada módulo específico
-          print('Navegando a: $title');
-        },
-      ),
-    );
-  }
+	        trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+	        onTap: () {
+	          // Aquí puedes agregar la navegación a cada módulo específico
+	          debugPrint('Navegando a: $title');
+	        },
+	      ),
+	    );
+	  }
 }

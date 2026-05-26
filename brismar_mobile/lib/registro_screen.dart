@@ -375,7 +375,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
       height: 50,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0077B6), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-        onPressed: () => print("Guardando..."),
+        onPressed: () => debugPrint("Guardando..."),
         child: const Text('REGISTRAR EMBARCACIÓN', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
     );

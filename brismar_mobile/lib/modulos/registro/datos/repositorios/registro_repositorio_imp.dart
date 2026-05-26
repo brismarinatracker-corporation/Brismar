@@ -1,0 +1,55 @@
+import '../../dominio/entidades/registro_entidad.dart';
+import '../../dominio/repositorios/registro_repositorio.dart';
+import '../fuentes_datos/registro_local_datasource.dart';
+import '../fuentes_datos/registro_remoto_datasource.dart';
+import '../modelos/registro_modelo.dart';
+
+/// Implementación concreta del repositorio de registro de pesca.
+/// Coordina la lógica de sincronización e integración de datos locales (SQLite) y remotos (Supabase).
+class RegistroRepositorioImp implements RegistroRepositorio {
+  final RegistroLocalDatasource _localDatasource;
+  final RegistroRemotoDatasource _remotoDatasource;
+
+  /// Constructor de [RegistroRepositorioImp].
+  RegistroRepositorioImp({
+    required RegistroLocalDatasource localDatasource,
+    required RegistroRemotoDatasource remotoDatasource,
+  })  : _localDatasource = localDatasource,
+        _remotoDatasource = remotoDatasource;
+
+  @override
+  Future<void> guardarRegistro(RegistroEntidad registro) async {
+    // 1. Convertir a modelo e insertar localmente de forma incondicional
+    final modelo = RegistroModelo.fromEntidad(registro);
+    await _localDatasource.guardarRegistro(modelo);
+
+    // 2. Intentar subir inmediatamente a Supabase (si falla, se queda guardado localmente)
+    try {
+      await _remotoDatasource.subirRegistros([modelo]);
+      // Si tuvo éxito, marcamos como sincronizado
+      await _localDatasource.marcarComoSincronizados([modelo.id]);
+    } catch (_) {
+      // Ignoramos el error en guardado remoto para permitir flujo offline
+    }
+  }
+
+  @override
+  Future<List<RegistroEntidad>> obtenerHistorial() async {
+    // Retorna la fuente local para que cargue al instante y funcione offline
+    return await _localDatasource.obtenerHistorialLocal();
+  }
+
+  @override
+  Future<void> sincronizarPendientes() async {
+    // 1. Obtener registros locales sin sincronizar
+    final pendientes = await _localDatasource.obtenerPendientesSincronizar();
+    if (pendientes.isEmpty) return;
+
+    // 2. Subir en lote a Supabase
+    await _remotoDatasource.subirRegistros(pendientes);
+
+    // 3. Marcar localmente como sincronizados
+    final ids = pendientes.map((p) => p.id).toList();
+    await _localDatasource.marcarComoSincronizados(ids);
+  }
+}

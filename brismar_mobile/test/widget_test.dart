@@ -1,30 +1,36 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:brismar_mobile/main.dart';
+import 'package:brismar_mobile/modulos/registro/dominio/entidades/registro_entidad.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('RegistroEntidad Tests de Cálculos Financieros', () {
+    test('Cálculo correcto de Ingreso Bruto, Gastos y Utilidad Neta', () {
+      const registro = RegistroEntidad(
+        id: 'test-uuid-12345',
+        nombreEmbarcacion: 'Don Jose',
+        producto: 'POTA',
+        kilos: 1000.0,
+        precioPorKilo: 5.50,
+        fecha: '2026-05-26',
+        hora: '10:00',
+        muelleInicio: 'Muelle A',
+        gastoFacturacion: 100.0,
+        gastoPersonal: 150.0,
+        gastoApoyo: 50.0,
+        gastoAgua: 20.0,
+        gastoClorox: 10.0,
+        gastoFlete: 300.0,
+        gastoHielo: 200.0,
+        gastoOtros: 50.0,
+      );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      // Ingreso bruto: 1000 * 5.50 = 5500
+      expect(registro.ingresoBruto, equals(5500.0));
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      // Total gastos: 100 + 150 + 50 + 20 + 10 + 300 + 200 + 50 = 880
+      expect(registro.totalGastos, equals(880.0));
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+      // Utilidad neta: 5500 - 880 = 4620
+      expect(registro.utilidadNeta, equals(4620.0));
+    });
   });
 }
