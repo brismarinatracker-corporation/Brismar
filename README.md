@@ -1,34 +1,101 @@
-# ⚓ BRISMAR APP - Sistema de Gestión de Bahía
+# ⚓ BRISMAR APP — Sistema de Gestión de Bahía
 
-Sistema de gestión y control de registros de pesca diseñado para **Negocios Brismar S.R.L.** Esta API RESTful permite la administración eficiente de ingresos, gastos operativos y generación de reportes automatizados en la bahía.
+> Sistema de gestión y control de registros de pesca para **Negocios Brismar S.R.L.**
 
-## 🚀 Características Principales
+## 📋 Descripción
 
-* **Gestión de Embarcaciones:** Registro detallado de la pesca del día (kilos, precio, nombre del pesador, etc.).
-* **Control de Gastos:** Seguimiento en tiempo real de los costos operativos (hielo, personal, flete, agua y otros).
-* **Cálculo de Utilidad:** Procesamiento automático de la utilidad neta por jornada.
-* **Autenticación (Login):** Acceso seguro para el personal de bahía y administradores.
-* **Reportes Automatizados:** Generación y descarga de resúmenes diarios en formato PDF.
+Aplicación móvil (Flutter) para la administración eficiente de ingresos, gastos operativos y generación de reportes en la bahía. Conectada a **Supabase** como backend.
 
-> **Nota:** Este sistema está enfocado exclusivamente en el registro de pesca y control de bahía. Los módulos de SARDE, PTH y liquidaciones no forman parte del alcance de este proyecto.
+## 🚀 Características
 
-## 🛠️ Tecnologías Utilizadas
+| Módulo | Estado | Descripción |
+|---|---|---|
+| **Login** | ✅ Funcional | Autenticación con Supabase (modo simulación) |
+| **Registro de Embarcaciones** | ✅ Funcional | Registro de pesca: kilos, precio, gastos, catanas |
+| **Historial** | 🔄 Pendiente | Consulta de registros anteriores |
+| **Sincronización** | 🔄 Pendiente | Sync offline → Supabase |
+| **Reportes PDF** | 🔄 Pendiente | Generación de reportes diarios |
+| **Perfil** | 🔄 Pendiente | Gestión de perfil de usuario |
 
-* **Backend:** Node.js, Express.js
-* **Base de Datos:** MySQL
-* **ORM:** Sequelize
-* **Diseño de Interfaz:** Figma
-* **Otras Librerías:** dotenv, pdfkit (para reportes)
+## 🏗️ Arquitectura
 
-## 📋 Requisitos Previos
+```
+brismar_mobile/lib/
+├── main.dart                          # Entry point + ProviderScope
+├── modulos/
+│   ├── autenticacion/                 # Módulo de Login
+│   │   ├── datos/                     # DataSources + Repositorios
+│   │   ├── dominio/                   # Entidades + Contratos
+│   │   └── presentacion/             # Pantallas + Controladores
+│   └── registro/                      # Módulo de Registro
+│       ├── datos/
+│       ├── dominio/
+│       └── presentacion/
+└── nucleo/                            # Core compartido
+    ├── base_datos/                    # SQLite Helper
+    ├── red/                           # Supabase Client
+    ├── rutas/                         # GoRouter
+    ├── seguridad/                     # SecureStorage
+    └── utilidades/                    # PDF Helper
+```
 
-Antes de ejecutar el proyecto, asegúrate de tener instalado:
-* [Node.js](https://nodejs.org/) (v14 o superior)
-* [MySQL Server](https://dev.mysql.com/downloads/mysql/) y MySQL Workbench
+**Stack:**
+- **Framework:** Flutter (Dart)
+- **State Management:** Riverpod
+- **Routing:** GoRouter
+- **Backend:** Supabase
+- **Local DB:** SQLite
+- **Arquitectura:** Clean Architecture (SOLID)
 
-## ⚙️ Instalación y Configuración
+## 🔀 Estrategia de Ramas
 
-1. **Clonar el repositorio:**
-   ```bash
-   git clone [URL_DEL_REPOSITORIO]
-   cd BRISMAR_APP
+```
+main ─────────────── Siempre estable, solo releases
+  └── develop ─────── Integración de cambios
+       └── developer-jjgs ── Rama personal de JJGS
+```
+
+## 📌 Versionamiento
+
+Usamos **Semantic Versioning** (SemVer):
+
+```
+v X.Y.Z
+  │ │ └── PATCH: Bug fixes
+  │ └──── MINOR: Nuevas features
+  └────── MAJOR: Breaking changes
+```
+
+**Versión actual:** `v1.0.0`
+
+## ⚙️ Setup
+
+```bash
+# 1. Clonar
+git clone https://github.com/SuyonRiccy/BRISMAR_APP.git
+cd BRISMAR_APP/brismar_mobile
+
+# 2. Instalar dependencias
+flutter pub get
+
+# 3. Ejecutar en dispositivo
+flutter run
+```
+
+### Credenciales de Testing (Modo Simulación)
+
+| Usuario | Contraseña |
+|---|---|
+| `usuario` | `1234` |
+
+## 👥 Equipo
+
+| Miembro | Rol | Rama |
+|---|---|---|
+| Jhonatan Sanchez (JJGS) | Developer | `developer-jjgs` |
+| SuyonRiccy | Developer | — |
+| Jesús Huilla | Developer | — |
+
+## 📄 Licencia
+
+Proyecto privado de Negocios Brismar S.R.L.
