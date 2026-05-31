@@ -57,16 +57,16 @@ main ─────────────── Siempre estable, solo release
 
 ## 📌 Versionamiento
 
-Usamos **Semantic Versioning** (SemVer):
+Usamos la siguiente convención para el versionamiento `vX1.X2.X3` (Mayor.Menor.Parche):
 
-```
-v X.Y.Z
-  │ │ └── PATCH: Bug fixes
-  │ └──── MINOR: Nuevas features
-  └────── MAJOR: Breaking changes
+```text
+v X1.X2.X3
+ │  │  └── X3: PATCH (Cambios pequeños, refactorizaciones, corrección de bugs)
+ │  └───── X2: MINOR (Actualizaciones medianas, integración de pequeños flujos de trabajo)
+ └──────── X1: MAJOR (Cambios radicales, nuevas funcionalidades principales)
 ```
 
-**Versión actual:** `v1.0.0`
+**Versión actual:** `v1.0.0` (Release inicial) / `v1.0.1` (Deduplicación y limpieza)
 
 ## ⚙️ Setup
 

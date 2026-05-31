@@ -13,7 +13,10 @@ Este documento contiene las reglas, metodologías y estándares de desarrollo ob
   * `developer-jjgs`: Rama de desarrollo personal para Jhonatan Sanchez.
 * **Reportes y Trazabilidad:** Al realizar cambios, la IA debe documentar el progreso en un archivo markdown de seguimiento (`task.md` y `walkthrough.md`) y reportar claramente el estado para actualizar las Issues de GitHub.
 * **Versionamiento Semántico (SemVer) y Visualización de Versiones:**
-  * Cada release en `main` debe seguir el formato `vX.Y.Z` (Mayor.Menor.Parche).
+  * El versionamiento sigue estrictamente el esquema de tres números `vX1.X2.X3` (Mayor.Menor.Parche):
+    * `X3` (Parche): Cambios pequeños, correcciones de bugs, optimización o refactorización de código.
+    * `X2` (Menor): Actualizaciones medianas, integración de pequeños flujos de trabajo completos o nuevas pantallas funcionales.
+    * `X1` (Mayor): Cambios radicales de arquitectura o funcionalidades mayores totalmente nuevas.
   * **Vínculo con Rama Main:** Cuando existan pantallas de carga (Splash Screens), de inicio de sesión o cualquier sección donde se muestre la versión de la app, esta debe estar **completamente relacionada con la versión de la rama `main`** (obtenida programáticamente de `pubspec.yaml` o configuraciones de compilación). Está prohibido hardcodear versiones de desarrollo locales o temporales en estas vistas.
 
 ---

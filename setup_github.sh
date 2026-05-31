@@ -114,6 +114,30 @@ Configurar reglas de protección para la rama main:
 Settings → Branches → Add rule → main" \
   --label "setup,priority:medium"
 
+gh issue create --repo $REPO \
+  --title "Refactorizar login_pantalla.dart para usar LoginForm (Deduplicación de código)" \
+  --body "## Descripción
+La pantalla \`login_pantalla.dart\` actualmente contiene todo el código del formulario de login de forma inline, duplicando el código ya encapsulado en \`LoginForm\`.
+
+## Tareas
+- [ ] Eliminar los controladores de texto locales de la pantalla.
+- [ ] Remover el Form inline y reemplazarlo por \`LoginForm()\`.
+- [ ] Asegurarse de mantener la escucha de estados del controlador para navegación y alertas.
+- [ ] Verificar que no haya errores estáticos." \
+  --label "refactor,ui,priority:medium"
+
+gh issue create --repo $REPO \
+  --title "Refactorizar registro_pantalla.dart para usar FormularioRegistroTab (Deduplicación de código)" \
+  --body "## Descripción
+La pantalla \`registro_pantalla.dart\` tiene más de 500 líneas y duplica la lógica de cálculo financiero y formularios que ya están listos en \`FormularioRegistroTab\` y \`RegistroFormController\`.
+
+## Tareas
+- [ ] Limpiar controladores de texto y listeners de cálculo local en \`registro_pantalla.dart\`.
+- [ ] Instanciar \`FormularioRegistroTab\` en lugar del formulario inline.
+- [ ] Reducir el archivo a menos de 100 líneas respetando SRP y el manual de IA.
+- [ ] Ejecutar flutter analyze para certificar cero errores." \
+  --label "refactor,ui,priority:medium"
+
 echo ""
 echo "✅  Setup completado! Verifica en: https://github.com/$REPO/issues"
 echo ""
