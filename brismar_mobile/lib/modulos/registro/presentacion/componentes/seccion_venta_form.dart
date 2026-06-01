@@ -27,7 +27,10 @@ class SeccionVentaForm extends StatelessWidget {
           child: const Text(
             '\$ PRECIO Y VENTA',
             style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
           ),
         ),
         Container(
@@ -56,19 +59,21 @@ class SeccionVentaForm extends StatelessWidget {
                   const Text(
                     'TOTAL DE VENTA ESTIMADO',
                     style: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 11),
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
                   ),
                   Text(
                     'S/ ${totalVenta.toStringAsFixed(2)}',
                     style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
+                      color: Colors.grey,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -77,14 +82,23 @@ class SeccionVentaForm extends StatelessWidget {
   }
 
   Widget _buildTextField(
-      String label, String hint, TextEditingController controller,
-      {bool isNumeric = false, bool esObligatorio = false}) {
+    String label,
+    String hint,
+    TextEditingController controller, {
+    bool isNumeric = false,
+    bool esObligatorio = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(
-                color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 4),
         TextFormField(
           controller: controller,
@@ -112,11 +126,13 @@ class SeccionVentaForm extends StatelessWidget {
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
       border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade200)),
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade200),
+      ),
       enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade100)),
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade100),
+      ),
     );
   }
 }

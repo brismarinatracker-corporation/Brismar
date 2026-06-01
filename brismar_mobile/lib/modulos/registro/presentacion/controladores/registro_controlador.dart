@@ -5,15 +5,15 @@ import '../../dominio/repositorios/registro_repositorio.dart';
 import '../../dominio/casos_uso/guardar_registro_caso_uso.dart';
 import '../../dominio/casos_uso/obtener_historial_caso_uso.dart';
 import '../../dominio/casos_uso/sincronizar_pendientes_caso_uso.dart';
-import '../../datos/fuentes_datos/registro_local_datasource.dart';
-import '../../datos/fuentes_datos/registro_remoto_datasource.dart';
+import '../../datos/fuentes_datos/fuente_datos_registro_local.dart';
+import '../../datos/fuentes_datos/fuente_datos_registro_remota.dart';
 import '../../datos/repositorios/registro_repositorio_imp.dart';
 
 /// Proveedor para la instancia de [RegistroRepositorio].
 final proveedorRegistroRepositorio = Provider<RegistroRepositorio>((ref) {
   return RegistroRepositorioImp(
-    localDatasource: RegistroLocalDatasource(),
-    remotoDatasource: RegistroRemotoDatasource(),
+    localDatasource: FuenteDatosRegistroLocal(),
+    remotoDatasource: FuenteDatosRegistroRemota(),
   );
 });
 
@@ -30,8 +30,9 @@ final proveedorObtenerHistorial = Provider<ObtenerHistorialCasoUso>((ref) {
 });
 
 /// Proveedor del caso de uso para sincronizar registros pendientes.
-final proveedorSincronizarPendientes =
-    Provider<SincronizarPendientesCasoUso>((ref) {
+final proveedorSincronizarPendientes = Provider<SincronizarPendientesCasoUso>((
+  ref,
+) {
   final repositorio = ref.read(proveedorRegistroRepositorio);
   return SincronizarPendientesCasoUso(repositorio);
 });
@@ -39,25 +40,28 @@ final proveedorSincronizarPendientes =
 /// Controlador del historial de registros de pesca.
 /// Administra el estado de la lista cargada en pantalla.
 final proveedorHistorialController =
-    StateNotifierProvider<HistorialNotifier, AsyncValue<List<RegistroEntidad>>>((ref) {
-  final obtenerUsecase = ref.read(proveedorObtenerHistorial);
-  final guardarUsecase = ref.read(proveedorGuardarRegistro);
-  return HistorialNotifier(
-    obtenerHistorial: obtenerUsecase,
-    guardarRegistro: guardarUsecase,
-  );
-});
+    StateNotifierProvider<HistorialNotifier, AsyncValue<List<RegistroEntidad>>>(
+      (ref) {
+        final obtenerUsecase = ref.read(proveedorObtenerHistorial);
+        final guardarUsecase = ref.read(proveedorGuardarRegistro);
+        return HistorialNotifier(
+          obtenerHistorial: obtenerUsecase,
+          guardarRegistro: guardarUsecase,
+        );
+      },
+    );
 
-class HistorialNotifier extends StateNotifier<AsyncValue<List<RegistroEntidad>>> {
+class HistorialNotifier
+    extends StateNotifier<AsyncValue<List<RegistroEntidad>>> {
   final ObtenerHistorialCasoUso _obtenerHistorial;
   final GuardarRegistroCasoUso _guardarRegistro;
 
   HistorialNotifier({
     required ObtenerHistorialCasoUso obtenerHistorial,
     required GuardarRegistroCasoUso guardarRegistro,
-  })  : _obtenerHistorial = obtenerHistorial,
-        _guardarRegistro = guardarRegistro,
-        super(const AsyncValue.loading()) {
+  }) : _obtenerHistorial = obtenerHistorial,
+       _guardarRegistro = guardarRegistro,
+       super(const AsyncValue.loading()) {
     cargarHistorial();
   }
 
@@ -86,9 +90,9 @@ class HistorialNotifier extends StateNotifier<AsyncValue<List<RegistroEntidad>>>
 /// Controlador para la sincronización automática offline-first.
 final proveedorSyncController =
     StateNotifierProvider<SyncNotifier, AsyncValue<void>>((ref) {
-  final syncUsecase = ref.read(proveedorSincronizarPendientes);
-  return SyncNotifier(syncUsecase: syncUsecase, ref: ref);
-});
+      final syncUsecase = ref.read(proveedorSincronizarPendientes);
+      return SyncNotifier(syncUsecase: syncUsecase, ref: ref);
+    });
 
 class SyncNotifier extends StateNotifier<AsyncValue<void>> {
   final SincronizarPendientesCasoUso _syncUsecase;
@@ -97,16 +101,18 @@ class SyncNotifier extends StateNotifier<AsyncValue<void>> {
   SyncNotifier({
     required SincronizarPendientesCasoUso syncUsecase,
     required Ref ref,
-  })  : _syncUsecase = syncUsecase,
-        _ref = ref,
-        super(const AsyncValue.data(null)) {
+  }) : _syncUsecase = syncUsecase,
+       _ref = ref,
+       super(const AsyncValue.data(null)) {
     // Escucha cambios de conectividad en segundo plano
     Connectivity().onConnectivityChanged.listen((results) {
       // connectivity_plus v6.0+ devuelve una lista de ConnectivityResult
-      final hasConnection = results.any((result) =>
-          result == ConnectivityResult.wifi ||
-          result == ConnectivityResult.mobile ||
-          result == ConnectivityResult.ethernet);
+      final hasConnection = results.any(
+        (result) =>
+            result == ConnectivityResult.wifi ||
+            result == ConnectivityResult.mobile ||
+            result == ConnectivityResult.ethernet,
+      );
 
       if (hasConnection) {
         ejecutarSincronizacion();

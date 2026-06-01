@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 /// Selector de pestañas para cambiar entre el formulario de registro y la lista de registros.
-class TabSelector extends StatelessWidget {
+class SelectorPestanas extends StatelessWidget {
   final int indiceActivo;
   final int totalRegistros;
   final ValueChanged<int> onTabChanged;
 
-  const TabSelector({
+  const SelectorPestanas({
     super.key,
     required this.indiceActivo,
     required this.totalRegistros,
@@ -32,7 +32,9 @@ class TabSelector extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             color: active ? Colors.lightBlue : Colors.transparent,
-            borderRadius: active ? const BorderRadius.only(topRight: Radius.circular(20)) : null,
+            borderRadius: active
+                ? const BorderRadius.only(topRight: Radius.circular(20))
+                : null,
           ),
           child: Center(
             child: Text(

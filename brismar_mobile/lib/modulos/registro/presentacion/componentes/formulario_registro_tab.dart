@@ -9,7 +9,7 @@ import 'seccion_embarcacion_form.dart';
 import 'seccion_venta_form.dart';
 import 'seccion_gastos_form.dart';
 import 'seccion_totales.dart';
-import 'user_header.dart';
+import 'encabezado_usuario.dart';
 
 /// Pestaña que encapsula el formulario de registro de pescas y sus inputs.
 /// Controla el ciclo de vida de los TextEditingControllers.
@@ -24,7 +24,8 @@ class FormularioRegistroTab extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<FormularioRegistroTab> createState() => _FormularioRegistroTabState();
+  ConsumerState<FormularioRegistroTab> createState() =>
+      _FormularioRegistroTabState();
 }
 
 class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
@@ -83,7 +84,9 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
 
   /// Lee los valores de los inputs y los envía al controlador matemático
   void _notificarCalculo() {
-    ref.read(proveedorRegistroFormController.notifier).calcularTotales(
+    ref
+        .read(proveedorRegistroFormController.notifier)
+        .calcularTotales(
           kilos: double.tryParse(_kilosController.text) ?? 0.0,
           precioVenta: double.tryParse(_precioKiloVentaController.text) ?? 0.0,
           gFacturacion: double.tryParse(_facturacionController.text) ?? 0.0,
@@ -100,16 +103,22 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
   Future<void> _guardarRegistro() async {
     final estadoForm = ref.read(proveedorRegistroFormController);
 
-    if (!_formKey.currentState!.validate() || estadoForm.productoSeleccionado == null) {
+    if (!_formKey.currentState!.validate() ||
+        estadoForm.productoSeleccionado == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Rellene todos los campos obligatorios'), backgroundColor: Colors.orange),
+        const SnackBar(
+          content: Text('Rellene todos los campos obligatorios'),
+          backgroundColor: Colors.orange,
+        ),
       );
       return;
     }
 
     final now = DateTime.now();
-    final fecha = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-    final hora = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    final fecha =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final hora =
+        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
 
     final reg = RegistroEntidad(
       id: const Uuid().v4(),
@@ -132,10 +141,15 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     );
 
     try {
-      await ref.read(proveedorHistorialController.notifier).registrarNuevaEmbarcacion(reg);
+      await ref
+          .read(proveedorHistorialController.notifier)
+          .registrarNuevaEmbarcacion(reg);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registro guardado exitosamente'), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text('Registro guardado exitosamente'),
+            backgroundColor: Colors.green,
+          ),
         );
       }
       _limpiarCampos();
@@ -143,7 +157,10 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al guardar: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Error al guardar: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -176,7 +193,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
         key: _formKey,
         child: Column(
           children: [
-            UserHeader(nombreUsuario: widget.nombreUsuario),
+            EncabezadoUsuario(nombreUsuario: widget.nombreUsuario),
             const SizedBox(height: 15),
             SeccionEmbarcacionForm(
               nombreNaveController: _nombreNaveController,
@@ -185,7 +202,9 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
               muelleController: _muelleController,
               productoSeleccionado: estado.productoSeleccionado,
               onProductoChanged: (val) {
-                ref.read(proveedorRegistroFormController.notifier).seleccionarProducto(val);
+                ref
+                    .read(proveedorRegistroFormController.notifier)
+                    .seleccionarProducto(val);
               },
             ),
             const SizedBox(height: 15),
@@ -218,12 +237,17 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0077B6),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: _guardarRegistro,
-                child: const Text('REGISTRAR EMBARCACIÓN',
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'REGISTRAR EMBARCACIÓN',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 30),

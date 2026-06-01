@@ -39,7 +39,10 @@ class SeccionGastosForm extends StatelessWidget {
           child: const Text(
             '💵 DESGLOSE DE GASTOS DEL MUELLE',
             style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
           ),
         ),
         Container(
@@ -58,14 +61,20 @@ class SeccionGastosForm extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _buildTextField(
-                        "FACTURACIÓN", "0.0", facturacionController,
-                        isNumeric: true),
+                      "FACTURACIÓN",
+                      "0.0",
+                      facturacionController,
+                      isNumeric: true,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildTextField(
-                        "PERSONAL/ESTIBAS", "0.0", personalController,
-                        isNumeric: true),
+                      "PERSONAL/ESTIBAS",
+                      "0.0",
+                      personalController,
+                      isNumeric: true,
+                    ),
                   ),
                 ],
               ),
@@ -74,14 +83,20 @@ class SeccionGastosForm extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _buildTextField(
-                        "APOYO OPERATIVO", "0.0", apoyoController,
-                        isNumeric: true),
+                      "APOYO OPERATIVO",
+                      "0.0",
+                      apoyoController,
+                      isNumeric: true,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildTextField(
-                        "AGUA potable", "0.0", aguaController,
-                        isNumeric: true),
+                      "AGUA potable",
+                      "0.0",
+                      aguaController,
+                      isNumeric: true,
+                    ),
                   ),
                 ],
               ),
@@ -90,14 +105,20 @@ class SeccionGastosForm extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _buildTextField(
-                        "CLOROX / LIMPIEZA", "0.0", cloroxController,
-                        isNumeric: true),
+                      "CLOROX / LIMPIEZA",
+                      "0.0",
+                      cloroxController,
+                      isNumeric: true,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildTextField(
-                        "FLETE / TRANSPORTE", "0.0", fleteController,
-                        isNumeric: true),
+                      "FLETE / TRANSPORTE",
+                      "0.0",
+                      fleteController,
+                      isNumeric: true,
+                    ),
                   ),
                 ],
               ),
@@ -106,13 +127,20 @@ class SeccionGastosForm extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _buildTextField(
-                        "HIELO DE CONSERVACIÓN", "0.0", hieloController,
-                        isNumeric: true),
+                      "HIELO DE CONSERVACIÓN",
+                      "0.0",
+                      hieloController,
+                      isNumeric: true,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: _buildTextField("OTROS GASTOS", "0.0", otrosController,
-                        isNumeric: true),
+                    child: _buildTextField(
+                      "OTROS GASTOS",
+                      "0.0",
+                      otrosController,
+                      isNumeric: true,
+                    ),
                   ),
                 ],
               ),
@@ -124,14 +152,23 @@ class SeccionGastosForm extends StatelessWidget {
   }
 
   Widget _buildTextField(
-      String label, String hint, TextEditingController controller,
-      {bool isNumeric = false, bool esObligatorio = false}) {
+    String label,
+    String hint,
+    TextEditingController controller, {
+    bool isNumeric = false,
+    bool esObligatorio = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(
-                color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 4),
         TextFormField(
           controller: controller,
@@ -159,11 +196,13 @@ class SeccionGastosForm extends StatelessWidget {
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
       border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade200)),
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade200),
+      ),
       enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade100)),
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade100),
+      ),
     );
   }
 }

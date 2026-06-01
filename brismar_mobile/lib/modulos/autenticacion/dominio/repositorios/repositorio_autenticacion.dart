@@ -2,7 +2,7 @@ import '../entidades/usuario.dart';
 
 /// Contrato abstracto para la gestión de la autenticación de usuarios.
 /// Sigue el principio SOLID de Abierto/Cerrado (OCP).
-abstract class AuthRepositorio {
+abstract class RepositorioAutenticacion {
   /// Realiza el inicio de sesión del usuario.
   /// Lanza una excepción con un mensaje claro si ocurre algún error.
   Future<Usuario> iniciarSesion({

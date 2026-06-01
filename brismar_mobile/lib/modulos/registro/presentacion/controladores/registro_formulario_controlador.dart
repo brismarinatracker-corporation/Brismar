@@ -62,7 +62,8 @@ class RegistroFormController extends StateNotifier<RegistroFormState> {
     required double gOtros,
   }) {
     final tVenta = kilos * precioVenta;
-    final tGastos = gFacturacion +
+    final tGastos =
+        gFacturacion +
         gPersonal +
         gApoyo +
         gAgua +
@@ -90,5 +91,5 @@ class RegistroFormController extends StateNotifier<RegistroFormState> {
 /// Proveedor para acceder al estado del formulario desde cualquier componente.
 final proveedorRegistroFormController =
     StateNotifierProvider<RegistroFormController, RegistroFormState>((ref) {
-  return RegistroFormController();
-});
+      return RegistroFormController();
+    });

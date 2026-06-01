@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../dominio/entidades/usuario.dart';
-import '../../dominio/repositorios/auth_repositorio.dart';
-import '../../datos/fuentes_datos/auth_remoto_datasource.dart';
-import '../../datos/repositorios/auth_repositorio_imp.dart';
-import '../../../../nucleo/seguridad/secure_storage_helper.dart';
+import '../../dominio/repositorios/repositorio_autenticacion.dart';
+import '../../datos/fuentes_datos/fuente_datos_autenticacion_remota.dart';
+import '../../datos/repositorios/repositorio_autenticacion_impl.dart';
+import '../../../../nucleo/seguridad/gestor_almacenamiento_seguro.dart';
 
 /// Define los diferentes estados de la autenticación en la interfaz gráfica.
 abstract class EstadoAutenticacion {
@@ -32,29 +32,31 @@ class EstadoAutenticacionError extends EstadoAutenticacion {
   const EstadoAutenticacionError(this.mensaje);
 }
 
-/// Proveedor para la instancia de [AuthRepositorio].
-final proveedorAuthRepositorio = Provider<AuthRepositorio>((ref) {
-  return AuthRepositorioImp(
-    remotoDatasource: AuthRemotoDatasource(),
-    secureStorage: SecureStorageHelper.instance,
+/// Proveedor para la instancia de [RepositorioAutenticacion].
+final proveedorRepositorioAutenticacion = Provider<RepositorioAutenticacion>((
+  ref,
+) {
+  return RepositorioAutenticacionImpl(
+    remotoDatasource: FuenteDatosAutenticacionRemota(),
+    secureStorage: GestorAlmacenamientoSeguro.instance,
   );
 });
 
 /// Proveedor del controlador de estado de autenticación.
-final proveedorAuthController =
-    StateNotifierProvider<AuthNotifier, EstadoAutenticacion>((ref) {
-  final repositorio = ref.read(proveedorAuthRepositorio);
-  return AuthNotifier(repositorio: repositorio);
-});
+final proveedorControladorAutenticacion =
+    StateNotifierProvider<NotificadorAutenticacion, EstadoAutenticacion>((ref) {
+      final repositorio = ref.read(proveedorRepositorioAutenticacion);
+      return NotificadorAutenticacion(repositorio: repositorio);
+    });
 
 /// Controlador encargado de gestionar las acciones de login, logout e inicio.
 /// Sigue el principio de Responsabilidad Única (SRP).
-class AuthNotifier extends StateNotifier<EstadoAutenticacion> {
-  final AuthRepositorio _repositorio;
+class NotificadorAutenticacion extends StateNotifier<EstadoAutenticacion> {
+  final RepositorioAutenticacion _repositorio;
 
-  AuthNotifier({required AuthRepositorio repositorio})
-      : _repositorio = repositorio,
-        super(const EstadoAutenticacionInicial()) {
+  NotificadorAutenticacion({required RepositorioAutenticacion repositorio})
+    : _repositorio = repositorio,
+      super(const EstadoAutenticacionInicial()) {
     verificarSesionActiva();
   }
 

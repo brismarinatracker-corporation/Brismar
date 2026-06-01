@@ -1,16 +1,16 @@
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../modelos/registro_modelo.dart';
-import '../../../../nucleo/red/supabase_client.dart';
+import '../../../../nucleo/red/cliente_supabase.dart';
 
 /// Fuente de datos remota para gestionar registros en Supabase.
 /// Sigue el principio de Responsabilidad Única (SRP).
-class RegistroRemotoDatasource {
+class FuenteDatosRegistroRemota {
   final sb.SupabaseClient _client = sb.Supabase.instance.client;
 
   /// Sube un lote de registros a Supabase mediante una operación de bulk upsert.
   Future<void> subirRegistros(List<RegistroModelo> registros) async {
     // Si no está configurada la URL de Supabase, simulamos éxito para desarrollo local
-    if (SupabaseConfig.url.contains('tu-proyecto-supabase')) {
+    if (ConfiguracionSupabase.url.contains('tu-proyecto-supabase')) {
       await Future.delayed(const Duration(milliseconds: 500));
       return;
     }
@@ -26,7 +26,7 @@ class RegistroRemotoDatasource {
 
   /// Obtiene todos los registros guardados en la nube de Supabase.
   Future<List<RegistroModelo>> obtenerHistorialRemoto() async {
-    if (SupabaseConfig.url.contains('tu-proyecto-supabase')) {
+    if (ConfiguracionSupabase.url.contains('tu-proyecto-supabase')) {
       return [];
     }
 

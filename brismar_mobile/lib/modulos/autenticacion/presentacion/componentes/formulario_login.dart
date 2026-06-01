@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../controladores/auth_controlador.dart';
+import '../controladores/controlador_autenticacion.dart';
 
 /// Formulario encapsulado para iniciar sesión.
 /// Maneja internamente los controladores de texto y sus validaciones.
-class LoginForm extends ConsumerStatefulWidget {
-  const LoginForm({super.key});
+class FormularioLogin extends ConsumerStatefulWidget {
+  const FormularioLogin({super.key});
 
   @override
-  ConsumerState<LoginForm> createState() => _LoginFormState();
+  ConsumerState<FormularioLogin> createState() => _FormularioLoginState();
 }
 
-class _LoginFormState extends ConsumerState<LoginForm> {
+class _FormularioLoginState extends ConsumerState<FormularioLogin> {
   final _formKey = GlobalKey<FormState>();
   final _userController = TextEditingController();
   final _passController = TextEditingController();
@@ -26,7 +26,9 @@ class _LoginFormState extends ConsumerState<LoginForm> {
   /// Dispara la acción de autenticación en el controlador de Riverpod.
   void _intentarLogin() {
     if (_formKey.currentState!.validate()) {
-      ref.read(proveedorAuthController.notifier).iniciarSesion(
+      ref
+          .read(proveedorControladorAutenticacion.notifier)
+          .iniciarSesion(
             _userController.text.trim(),
             _passController.text.trim(),
           );
@@ -35,7 +37,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    final estado = ref.watch(proveedorAuthController);
+    final estado = ref.watch(proveedorControladorAutenticacion);
     final estaCargando = estado is EstadoAutenticacionCargando;
 
     return Form(
@@ -51,7 +53,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
               color: Colors.black.withAlpha(77),
               blurRadius: 15,
               offset: const Offset(0, 5),
-            )
+            ),
           ],
         ),
         child: Column(
@@ -70,8 +72,11 @@ class _LoginFormState extends ConsumerState<LoginForm> {
                 child: Image.asset(
                   'assets/logo.png',
                   fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.directions_boat, size: 40, color: Colors.teal),
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.directions_boat,
+                    size: 40,
+                    color: Colors.teal,
+                  ),
                 ),
               ),
             ),
@@ -87,7 +92,10 @@ class _LoginFormState extends ConsumerState<LoginForm> {
                 hintStyle: const TextStyle(color: Colors.white54),
                 filled: true,
                 fillColor: const Color(0xFF3250A4),
-                prefixIcon: const Icon(Icons.person, color: Colors.lightBlueAccent),
+                prefixIcon: const Icon(
+                  Icons.person,
+                  color: Colors.lightBlueAccent,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,
@@ -114,7 +122,10 @@ class _LoginFormState extends ConsumerState<LoginForm> {
                 hintStyle: const TextStyle(color: Colors.white54),
                 filled: true,
                 fillColor: const Color(0xFF3250A4),
-                prefixIcon: const Icon(Icons.lock, color: Colors.lightBlueAccent),
+                prefixIcon: const Icon(
+                  Icons.lock,
+                  color: Colors.lightBlueAccent,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,

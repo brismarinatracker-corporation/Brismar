@@ -3,11 +3,11 @@ import 'package:path/path.dart';
 
 /// Clase auxiliar para la gestión de la base de datos local SQLite.
 /// Implementa el patrón Singleton.
-class DatabaseHelper {
-  static final DatabaseHelper instance = DatabaseHelper._init();
+class GestorBaseDatos {
+  static final GestorBaseDatos instance = GestorBaseDatos._init();
   static Database? _database;
 
-  DatabaseHelper._init();
+  GestorBaseDatos._init();
 
   /// Obtiene la instancia activa de la base de datos local.
   Future<Database> get database async {
@@ -21,11 +21,7 @@ class DatabaseHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDB,
-    );
+    return await openDatabase(path, version: 1, onCreate: _createDB);
   }
 
   /// Estructura inicial de las tablas en SQLite local.

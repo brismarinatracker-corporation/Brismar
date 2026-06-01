@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'nucleo/red/supabase_client.dart';
+import 'nucleo/red/cliente_supabase.dart';
 import 'nucleo/rutas/enrutador.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Inicializamos Supabase (con simulación interna si es la URL de plantilla)
-  await SupabaseConfig.inicializar();
-  
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  await ConfiguracionSupabase.inicializar();
+
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 /// Widget raíz de BRISMAR APP.

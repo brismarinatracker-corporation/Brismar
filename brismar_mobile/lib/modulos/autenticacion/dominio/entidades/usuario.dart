@@ -19,4 +19,24 @@ class Usuario {
     required this.nombreReal,
     required this.rol,
   });
+
+  /// Crea un [Usuario] a partir de un mapa JSON.
+  factory Usuario.fromJson(Map<String, dynamic> json) {
+    return Usuario(
+      id: json['id'] as String,
+      nombreUsuario: json['nombreUsuario'] as String,
+      nombreReal: json['nombreReal'] as String,
+      rol: json['rol'] as String,
+    );
+  }
+
+  /// Convierte el [Usuario] a un mapa JSON.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'nombreUsuario': nombreUsuario,
+      'nombreReal': nombreReal,
+      'rol': rol,
+    };
+  }
 }

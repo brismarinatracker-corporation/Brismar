@@ -1,21 +1,21 @@
 import '../../dominio/entidades/registro_entidad.dart';
 import '../../dominio/repositorios/registro_repositorio.dart';
-import '../fuentes_datos/registro_local_datasource.dart';
-import '../fuentes_datos/registro_remoto_datasource.dart';
+import '../fuentes_datos/fuente_datos_registro_local.dart';
+import '../fuentes_datos/fuente_datos_registro_remota.dart';
 import '../modelos/registro_modelo.dart';
 
 /// Implementación concreta del repositorio de registro de pesca.
 /// Coordina la lógica de sincronización e integración de datos locales (SQLite) y remotos (Supabase).
 class RegistroRepositorioImp implements RegistroRepositorio {
-  final RegistroLocalDatasource _localDatasource;
-  final RegistroRemotoDatasource _remotoDatasource;
+  final FuenteDatosRegistroLocal _localDatasource;
+  final FuenteDatosRegistroRemota _remotoDatasource;
 
   /// Constructor de [RegistroRepositorioImp].
   RegistroRepositorioImp({
-    required RegistroLocalDatasource localDatasource,
-    required RegistroRemotoDatasource remotoDatasource,
-  })  : _localDatasource = localDatasource,
-        _remotoDatasource = remotoDatasource;
+    required FuenteDatosRegistroLocal localDatasource,
+    required FuenteDatosRegistroRemota remotoDatasource,
+  }) : _localDatasource = localDatasource,
+       _remotoDatasource = remotoDatasource;
 
   @override
   Future<void> guardarRegistro(RegistroEntidad registro) async {

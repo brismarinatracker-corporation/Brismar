@@ -35,7 +35,10 @@ class SeccionEmbarcacionForm extends StatelessWidget {
           child: const Text(
             '⚓ DATOS DE LA EMBARCACIÓN',
             style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
           ),
         ),
         Container(
@@ -77,19 +80,25 @@ class SeccionEmbarcacionForm extends StatelessWidget {
                         const Text(
                           '🐟 PRODUCTO *',
                           style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold),
+                            color: Colors.grey,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         DropdownButtonFormField<String>(
                           initialValue: productoSeleccionado,
                           decoration: _inputDecoration("Seleccionar.."),
                           items: ["POTA", "JUREL", "BONITO", "CABALLA"]
-                              .map((e) => DropdownMenuItem(
+                              .map(
+                                (e) => DropdownMenuItem(
                                   value: e,
-                                  child: Text(e,
-                                      style: const TextStyle(fontSize: 11))))
+                                  child: Text(
+                                    e,
+                                    style: const TextStyle(fontSize: 11),
+                                  ),
+                                ),
+                              )
                               .toList(),
                           onChanged: onProductoChanged,
                           validator: (v) => v == null ? 'Obligatorio' : null,
@@ -128,14 +137,23 @@ class SeccionEmbarcacionForm extends StatelessWidget {
   }
 
   Widget _buildTextField(
-      String label, String hint, TextEditingController controller,
-      {bool isNumeric = false, bool esObligatorio = false}) {
+    String label,
+    String hint,
+    TextEditingController controller, {
+    bool isNumeric = false,
+    bool esObligatorio = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(
-                color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 4),
         TextFormField(
           controller: controller,
@@ -163,11 +181,13 @@ class SeccionEmbarcacionForm extends StatelessWidget {
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
       border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade200)),
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade200),
+      ),
       enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade100)),
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade100),
+      ),
     );
   }
 }

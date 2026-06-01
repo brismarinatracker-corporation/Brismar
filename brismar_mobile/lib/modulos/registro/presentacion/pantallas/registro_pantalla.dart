@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../autenticacion/presentacion/controladores/auth_controlador.dart';
+import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../../dominio/entidades/registro_entidad.dart';
 import '../controladores/registro_controlador.dart';
-import '../componentes/user_header.dart';
-import '../componentes/tab_selector.dart';
+import '../componentes/encabezado_usuario.dart';
+import '../componentes/selector_pestanas.dart';
 import '../componentes/historial_lista.dart';
 import '../componentes/formulario_registro_tab.dart';
-import '../../../../nucleo/utilidades/pdf_helper.dart';
+import '../../../../nucleo/utilidades/gestor_pdf.dart';
 
 /// Pantalla principal para registrar capturas pesqueras y gastos en BRISMAR APP.
 class RegistroPantalla extends ConsumerStatefulWidget {
@@ -23,14 +23,14 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
   int _activeTabIndex = 0;
 
   void _mostrarMensaje(String msg, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: color),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: color));
   }
 
   Future<void> _exportarPDF(RegistroEntidad reg, String nombreUsuario) async {
     try {
-      final file = await PdfHelper.generarReportePesca(reg, nombreUsuario);
+      final file = await GestorPdf.generarReportePesca(reg, nombreUsuario);
       _mostrarMensaje('Reporte PDF guardado en: ${file.path}', Colors.teal);
     } catch (e) {
       _mostrarMensaje('Error al generar PDF: $e', Colors.red);
@@ -40,7 +40,7 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
   @override
   Widget build(BuildContext context) {
     final historialState = ref.watch(proveedorHistorialController);
-    final authState = ref.watch(proveedorAuthController);
+    final authState = ref.watch(proveedorControladorAutenticacion);
     final nombreUsuario = authState is EstadoAutenticacionAutenticado
         ? authState.usuario.nombreReal
         : 'Daniel';
@@ -48,7 +48,10 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
     // Escuchamos la sincronización para alertar de errores remotos
     ref.listen(proveedorSyncController, (previous, next) {
       if (next is AsyncError) {
-        _mostrarMensaje('Error al sincronizar con Supabase: ${next.error}', Colors.orange);
+        _mostrarMensaje(
+          'Error al sincronizar con Supabase: ${next.error}',
+          Colors.orange,
+        );
       }
     });
 
@@ -57,7 +60,7 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
       appBar: _buildAppBar(context),
       body: Column(
         children: [
-          TabSelector(
+          SelectorPestanas(
             indiceActivo: _activeTabIndex,
             totalRegistros: historialState.maybeWhen(
               data: (list) => list.length,
@@ -65,9 +68,7 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
             ),
             onTabChanged: (index) => setState(() => _activeTabIndex = index),
           ),
-          Expanded(
-            child: _buildBodyContent(historialState, nombreUsuario),
-          ),
+          Expanded(child: _buildBodyContent(historialState, nombreUsuario)),
         ],
       ),
     );
@@ -85,38 +86,72 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
             children: [
               Container(
                 padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(5)),
-                child: const Text('BRISMAR', style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold, fontSize: 10)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: const Text(
+                  'BRISMAR',
+                  style: TextStyle(
+                    color: Colors.teal,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                ),
               ),
               const SizedBox(width: 10),
               const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('NEGOCIOS', style: TextStyle(fontSize: 9, color: Colors.white70)),
-                  Text('BRISMAR S.R.L.', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text(
+                    'NEGOCIOS',
+                    style: TextStyle(fontSize: 9, color: Colors.white70),
+                  ),
+                  Text(
+                    'BRISMAR S.R.L.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                 ],
               ),
             ],
           ),
           ElevatedButton(
             onPressed: () {
-              ref.read(proveedorAuthController.notifier).cerrarSesion();
+              ref
+                  .read(proveedorControladorAutenticacion.notifier)
+                  .cerrarSesion();
               context.go('/login');
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7B1F31), shape: const StadiumBorder()),
-            child: const Text('Salir', style: TextStyle(color: Colors.white, fontSize: 11)),
-          )
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF7B1F31),
+              shape: const StadiumBorder(),
+            ),
+            child: const Text(
+              'Salir',
+              style: TextStyle(color: Colors.white, fontSize: 11),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildBodyContent(AsyncValue<List<RegistroEntidad>> state, String nombreUsuario) {
+  Widget _buildBodyContent(
+    AsyncValue<List<RegistroEntidad>> state,
+    String nombreUsuario,
+  ) {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
         color: Color(0xFFF1F4F9),
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(25), topRight: Radius.circular(25)),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(25),
+          topRight: Radius.circular(25),
+        ),
       ),
       child: _activeTabIndex == 0
           ? FormularioRegistroTab(
@@ -127,18 +162,23 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
     );
   }
 
-  Widget _buildListaHistorial(AsyncValue<List<RegistroEntidad>> state, String nombreUsuario) {
+  Widget _buildListaHistorial(
+    AsyncValue<List<RegistroEntidad>> state,
+    String nombreUsuario,
+  ) {
     return state.when(
       data: (list) => RefreshIndicator(
         onRefresh: () async {
-          await ref.read(proveedorSyncController.notifier).ejecutarSincronizacion();
+          await ref
+              .read(proveedorSyncController.notifier)
+              .ejecutarSincronizacion();
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              UserHeader(nombreUsuario: nombreUsuario),
+              EncabezadoUsuario(nombreUsuario: nombreUsuario),
               const SizedBox(height: 15),
               HistorialLista(
                 registros: list,

@@ -6,7 +6,7 @@ import '../../modulos/registro/dominio/entidades/registro_entidad.dart';
 
 /// Clase de utilidad para compilar reportes PDF locales en Dart.
 /// Sigue el principio de Responsabilidad Única (SRP).
-class PdfHelper {
+class GestorPdf {
   /// Genera un archivo PDF con el desglose de pesca y gastos del muelle.
   static Future<File> generarReportePesca(
     RegistroEntidad reg,
@@ -59,8 +59,14 @@ class PdfHelper {
         pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
-            pw.Text('Bahía Responsable: $nombreUsuario', style: const pw.TextStyle(fontSize: 10)),
-            pw.Text('Generado por: BRISMAR APP', style: const pw.TextStyle(fontSize: 8)),
+            pw.Text(
+              'Bahía Responsable: $nombreUsuario',
+              style: const pw.TextStyle(fontSize: 10),
+            ),
+            pw.Text(
+              'Generado por: BRISMAR APP',
+              style: const pw.TextStyle(fontSize: 8),
+            ),
           ],
         ),
       ],
@@ -73,10 +79,17 @@ class PdfHelper {
         children: [
           pw.Text(
             'REPORTE DETALLADO DE OPERACIONES',
-            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, decoration: pw.TextDecoration.underline),
+            style: pw.TextStyle(
+              fontSize: 14,
+              fontWeight: pw.FontWeight.bold,
+              decoration: pw.TextDecoration.underline,
+            ),
           ),
           pw.SizedBox(height: 4),
-          pw.Text('Fecha: ${reg.fecha} - Hora: ${reg.hora}', style: const pw.TextStyle(fontSize: 10)),
+          pw.Text(
+            'Fecha: ${reg.fecha} - Hora: ${reg.hora}',
+            style: const pw.TextStyle(fontSize: 10),
+          ),
         ],
       ),
     );
@@ -86,12 +99,27 @@ class PdfHelper {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text('1. DATOS DE LA EMBARCACIÓN Y MATERIA PRIMA', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+        pw.Text(
+          '1. DATOS DE LA EMBARCACIÓN Y MATERIA PRIMA',
+          style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+        ),
         pw.SizedBox(height: 5),
-        pw.Text('- Nombre de la Nave: ${reg.nombreEmbarcacion.toUpperCase()}', style: const pw.TextStyle(fontSize: 10)),
-        pw.Text('- Especie (Producto): ${reg.producto}', style: const pw.TextStyle(fontSize: 10)),
-        pw.Text('- Placa de Cámara: ${reg.placaCarro ?? 'N/A'}', style: const pw.TextStyle(fontSize: 10)),
-        pw.Text('- Duelle de Inicio: ${reg.muelleInicio}', style: const pw.TextStyle(fontSize: 10)),
+        pw.Text(
+          '- Nombre de la Nave: ${reg.nombreEmbarcacion.toUpperCase()}',
+          style: const pw.TextStyle(fontSize: 10),
+        ),
+        pw.Text(
+          '- Especie (Producto): ${reg.producto}',
+          style: const pw.TextStyle(fontSize: 10),
+        ),
+        pw.Text(
+          '- Placa de Cámara: ${reg.placaCarro ?? 'N/A'}',
+          style: const pw.TextStyle(fontSize: 10),
+        ),
+        pw.Text(
+          '- Duelle de Inicio: ${reg.muelleInicio}',
+          style: const pw.TextStyle(fontSize: 10),
+        ),
       ],
     );
   }
@@ -100,12 +128,21 @@ class PdfHelper {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text('2. DESGLOSE DE GASTOS DEL MUELLE', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+        pw.Text(
+          '2. DESGLOSE DE GASTOS DEL MUELLE',
+          style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+        ),
         pw.SizedBox(height: 5),
         _buildFilaGasto('Gasto de Hielo', reg.gastoHielo),
-        _buildFilaGasto('Gasto de Personal (Cargadores/Pesadores)', reg.gastoPersonal),
+        _buildFilaGasto(
+          'Gasto de Personal (Cargadores/Pesadores)',
+          reg.gastoPersonal,
+        ),
         _buildFilaGasto('Gasto de Flete (Transporte)', reg.gastoFlete),
-        _buildFilaGasto('Gasto de Agua y Clorox', reg.gastoAgua + reg.gastoClorox),
+        _buildFilaGasto(
+          'Gasto de Agua y Clorox',
+          reg.gastoAgua + reg.gastoClorox,
+        ),
         _buildFilaGasto('Gasto de Facturación', reg.gastoFacturacion),
         _buildFilaGasto('Gasto de Apoyo Operativo', reg.gastoApoyo),
         _buildFilaGasto('Otros Gastos', reg.gastoOtros),
@@ -120,7 +157,10 @@ class PdfHelper {
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
           pw.Text('- $concepto:', style: const pw.TextStyle(fontSize: 10)),
-          pw.Text('S/ ${valor.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 10)),
+          pw.Text(
+            'S/ ${valor.toStringAsFixed(2)}',
+            style: const pw.TextStyle(fontSize: 10),
+          ),
         ],
       ),
     );
@@ -134,16 +174,32 @@ class PdfHelper {
       ),
       child: pw.Column(
         children: [
-          _buildFilaResumen('INGRESO BRUTO (Venta: ${reg.kilos} kg x S/ ${reg.precioPorKilo.toStringAsFixed(2)}):', reg.ingresoBruto),
-          _buildFilaResumen('(-) TOTAL GASTOS DE OPERACIÓN:', reg.totalGastos, esGasto: true),
+          _buildFilaResumen(
+            'INGRESO BRUTO (Venta: ${reg.kilos} kg x S/ ${reg.precioPorKilo.toStringAsFixed(2)}):',
+            reg.ingresoBruto,
+          ),
+          _buildFilaResumen(
+            '(-) TOTAL GASTOS DE OPERACIÓN:',
+            reg.totalGastos,
+            esGasto: true,
+          ),
           pw.Divider(),
-          _buildFilaResumen('(=) UTILIDAD NETA (Ganancia Real):', reg.utilidadNeta, esNegrita: true),
+          _buildFilaResumen(
+            '(=) UTILIDAD NETA (Ganancia Real):',
+            reg.utilidadNeta,
+            esNegrita: true,
+          ),
         ],
       ),
     );
   }
 
-  static pw.Widget _buildFilaResumen(String text, double value, {bool esGasto = false, bool esNegrita = false}) {
+  static pw.Widget _buildFilaResumen(
+    String text,
+    double value, {
+    bool esGasto = false,
+    bool esNegrita = false,
+  }) {
     final style = pw.TextStyle(
       fontSize: 10,
       fontWeight: esNegrita ? pw.FontWeight.bold : pw.FontWeight.normal,

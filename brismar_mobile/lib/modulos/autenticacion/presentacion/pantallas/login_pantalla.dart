@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import '../controladores/auth_controlador.dart';
-import '../componentes/login_form.dart';
+import '../../../../nucleo/rutas/enrutador.dart';
+import '../controladores/controlador_autenticacion.dart';
+import '../componentes/formulario_login.dart';
 
 /// Pantalla de inicio de sesión de BRISMAR APP.
 /// Utiliza [ConsumerStatefulWidget] de Riverpod para reaccionar al estado de sesión y
-/// renderiza el formulario modular [LoginForm].
+/// renderiza el formulario modular [FormularioLogin].
 class LoginPantalla extends ConsumerStatefulWidget {
   const LoginPantalla({super.key});
 
@@ -18,7 +18,10 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
   @override
   Widget build(BuildContext context) {
     // Escuchamos los cambios en el estado de autenticación para disparar navegación o alertas
-    ref.listen<EstadoAutenticacion>(proveedorAuthController, (previous, next) {
+    ref.listen<EstadoAutenticacion>(proveedorControladorAutenticacion, (
+      previous,
+      next,
+    ) {
       if (next is EstadoAutenticacionAutenticado) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -26,25 +29,18 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
             backgroundColor: Colors.green,
           ),
         );
-        // Navegación declarativa hacia el registro de bahía
-        context.go('/registro');
+        // Navegación estricta fuertemente tipada
+        const RegistroRoute().go(context);
       } else if (next is EstadoAutenticacionError) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.mensaje),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(next.mensaje), backgroundColor: Colors.red),
         );
       }
     });
 
     return const Scaffold(
       backgroundColor: Color(0xFF0D255F),
-      body: Center(
-        child: SingleChildScrollView(
-          child: LoginForm(),
-        ),
-      ),
+      body: Center(child: SingleChildScrollView(child: FormularioLogin())),
     );
   }
 }

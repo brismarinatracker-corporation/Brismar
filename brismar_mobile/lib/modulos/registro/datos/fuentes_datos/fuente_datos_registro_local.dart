@@ -1,11 +1,11 @@
 import 'package:sqflite/sqflite.dart';
-import '../../../../nucleo/base_datos/database_helper.dart';
+import '../../../../nucleo/base_datos/gestor_base_datos.dart';
 import '../modelos/registro_modelo.dart';
 
 /// Fuente de datos local para la persistencia offline en SQLite.
 /// Sigue el principio de Responsabilidad Única (SRP).
-class RegistroLocalDatasource {
-  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+class FuenteDatosRegistroLocal {
+  final GestorBaseDatos _dbHelper = GestorBaseDatos.instance;
 
   /// Inserta o actualiza un registro en la base de datos local SQLite.
   Future<void> guardarRegistro(RegistroModelo modelo) async {
@@ -17,7 +17,9 @@ class RegistroLocalDatasource {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     } catch (e) {
-      throw Exception('Error al guardar el registro en la base de datos local: $e');
+      throw Exception(
+        'Error al guardar el registro en la base de datos local: $e',
+      );
     }
   }
 

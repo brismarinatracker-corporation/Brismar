@@ -1,9 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../../dominio/entidades/usuario.dart';
-import '../../../../nucleo/red/supabase_client.dart';
+import '../../../../nucleo/red/cliente_supabase.dart';
 
 /// Fuente de datos remota para la autenticación en Supabase.
-class AuthRemotoDatasource {
+class FuenteDatosAutenticacionRemota {
   final sb.SupabaseClient _client = sb.Supabase.instance.client;
 
   /// Inicia sesión usando Supabase. Si la URL es la de plantilla,
@@ -13,7 +13,7 @@ class AuthRemotoDatasource {
     required String password,
   }) async {
     // Si no está configurada la URL real de Supabase, activamos simulación de pruebas
-    if (SupabaseConfig.url.contains('tu-proyecto-supabase')) {
+    if (ConfiguracionSupabase.url.contains('tu-proyecto-supabase')) {
       return _iniciarSesionSimulado(correo, password);
     }
 
@@ -50,7 +50,7 @@ class AuthRemotoDatasource {
 
   /// Cierra la sesión activa en el servidor de Supabase.
   Future<void> cerrarSesion() async {
-    if (SupabaseConfig.url.contains('tu-proyecto-supabase')) return;
+    if (ConfiguracionSupabase.url.contains('tu-proyecto-supabase')) return;
     try {
       await _client.auth.signOut();
     } catch (e) {
@@ -61,7 +61,8 @@ class AuthRemotoDatasource {
   /// Simulación del login para testing/pruebas locales.
   Future<Usuario> _iniciarSesionSimulado(String correo, String password) async {
     await Future.delayed(const Duration(milliseconds: 800)); // Simula latencia
-    if ((correo == 'usuario@brismar.com.pe' || correo == 'usuario') && password == '1234') {
+    if ((correo == 'usuario@brismar.com.pe' || correo == 'usuario') &&
+        password == '1234') {
       return const Usuario(
         id: 'mock-uuid-99999',
         nombreUsuario: 'usuario@brismar.com.pe',
