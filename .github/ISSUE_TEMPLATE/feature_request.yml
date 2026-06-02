@@ -1,0 +1,33 @@
+name: 🚀 Nueva Funcionalidad (Feature)
+description: Propón una nueva idea o módulo para la aplicación.
+title: "[FEATURE] "
+labels: ["enhancement"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ¿Tienes una gran idea para Brismar App? Detállala aquí para que podamos planificar su desarrollo.
+  - type: textarea
+    id: problem
+    attributes:
+      label: ¿Qué problema resuelve tu idea?
+      description: Describe la fricción o problema que has notado.
+      placeholder: Actualmente en la bahía toma mucho tiempo hacer X cosa...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Tu Solución Propuesta
+      description: ¿Cómo te imaginas que debería funcionar?
+      placeholder: Debería existir un botón rojo que automáticamente...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas Consideradas
+      description: ¿Has pensado en alguna otra forma de resolverlo? (Opcional)
+    validations:
+      required: false

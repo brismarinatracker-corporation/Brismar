@@ -1,0 +1,33 @@
+name: Verificar Archivos Prohibidos
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validar archivos innecesarios o sensibles
+        run: |
+          echo "Buscando archivos prohibidos..."
+          # Expresión regular de archivos a prohibir
+          PATRONES="(\.env|node_modules/|local\.properties|/build/|\.obsidian/|\.history/|\.DS_Store|Thumbs\.db)"
+          
+          # Obtener la lista de archivos rastreados en git
+          ARCHIVOS=$(git ls-files | grep -E "$PATRONES" | grep -v "\.env\.example" || true)
+          
+          if [ -n "$ARCHIVOS" ]; then
+            echo "::error::Se detectaron archivos prohibidos o innecesarios en el repositorio:"
+            echo "$ARCHIVOS" | sed 's/^/  - /'
+            echo "Por favor, elimina estos archivos del tracking usando: git rm --cached <archivo>"
+            exit 1
+          fi
+          echo "¡Verificación exitosa! No se encontraron archivos prohibidos."
