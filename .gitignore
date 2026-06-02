@@ -34,6 +34,8 @@ app.*.map.json
 # ── IDE ──────────────────────────────────────
 .idea/
 .vscode/
+.obsidian/
+.history/
 *.iml
 *.ipr
 *.iws
