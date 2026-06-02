@@ -3,11 +3,11 @@ const PDFDocument = require('pdfkit');
 /**
  * Calcula la suma de todos los gastos de muelle a partir de los datos provistos.
  * 
- * @param {object} d - Datos del registro de embarcaciones.
+ * @param {object} d - Datos del registro de embarcaciones (en snake_case).
  * @returns {number} Suma acumulada de gastos.
  */
 function calcularTotal(d) {
-  const llaves = ['gastoHielo', 'gastoPersonal', 'gastoFlete', 'gastoAgua', 'gastoOtros', 'gastoFacturacion', 'gastoApoyo', 'gastoClorox'];
+  const llaves = ['gasto_hielo', 'gasto_personal', 'gasto_flete', 'gasto_agua', 'gasto_otros', 'gasto_facturacion', 'gasto_apoyo', 'gasto_clorox'];
   return llaves.reduce((acc, k) => acc + (parseFloat(d[k]) || 0), 0);
 }
 
@@ -29,16 +29,16 @@ function dibujarCabecera(doc, nombreBahia) {
  * Dibuja el desglose de los gastos en el muelle en el PDF.
  * 
  * @param {object} doc - Documento PDFKit.
- * @param {object} datos - Objeto de datos con los gastos.
+ * @param {object} datos - Objeto de datos con los gastos (en snake_case).
  */
 function dibujarDesgloseGastos(doc, datos) {
   const total = calcularTotal(datos);
   doc.fontSize(12).text('--- DESGLOSE DE GASTOS DEL MUELLE ---');
-  doc.text(`- Hielo: S/ ${(parseFloat(datos.gastoHielo) || 0).toFixed(2)}`);
-  doc.text(`- Personal: S/ ${(parseFloat(datos.gastoPersonal) || 0).toFixed(2)}`);
-  doc.text(`- Flete: S/ ${(parseFloat(datos.gastoFlete) || 0).toFixed(2)}`);
-  doc.text(`- Agua/Clorox: S/ ${(parseFloat(datos.gastoAgua) || 0).toFixed(2)}`);
-  doc.text(`- Otros: S/ ${(parseFloat(datos.gastoOtros) || 0).toFixed(2)}`);
+  doc.text(`- Hielo: S/ ${(parseFloat(datos.gasto_hielo) || 0).toFixed(2)}`);
+  doc.text(`- Personal: S/ ${(parseFloat(datos.gasto_personal) || 0).toFixed(2)}`);
+  doc.text(`- Flete: S/ ${(parseFloat(datos.gasto_flete) || 0).toFixed(2)}`);
+  doc.text(`- Agua/Clorox: S/ ${(parseFloat(datos.gasto_agua) || 0).toFixed(2)}`);
+  doc.text(`- Otros: S/ ${(parseFloat(datos.gasto_otros) || 0).toFixed(2)}`);
   doc.text('-------------------------------------');
   doc.fontSize(13).text(`TOTAL GASTOS: S/ ${total.toFixed(2)}`, { bold: true });
   doc.moveDown(2);
@@ -48,11 +48,11 @@ function dibujarDesgloseGastos(doc, datos) {
  * Dibuja el resumen financiero en el PDF (Ingreso Bruto y Utilidad Neta).
  * 
  * @param {object} doc - Documento PDFKit.
- * @param {object} datos - Objeto de datos con los ingresos y gastos.
+ * @param {object} datos - Objeto de datos con los ingresos y gastos (en snake_case).
  */
 function dibujarResumenFinanciero(doc, datos) {
   const total = calcularTotal(datos);
-  const ingresoBruto = parseFloat(datos.ingresoBruto) || 0;
+  const ingresoBruto = parseFloat(datos.ingreso_bruto) || 0;
   const utilidadNeta = ingresoBruto - total;
   doc.fontSize(12).text(`INGRESO BRUTO (Venta): S/ ${ingresoBruto.toFixed(2)}`);
   doc.fillColor('green').text(`UTILIDAD NETA (Ganancia Real): S/ ${utilidadNeta.toFixed(2)}`);
@@ -62,7 +62,7 @@ function dibujarResumenFinanciero(doc, datos) {
  * Genera el documento PDF y lo transmite como respuesta HTTP.
  * 
  * @param {object} res - Respuesta de Express.
- * @param {object} datos - Objeto con los datos acumulados.
+ * @param {object} datos - Objeto con los datos acumulados (en snake_case).
  * @param {string} nombreBahia - Nombre del Bahía responsable.
  */
 function generarReporte(res, datos, nombreBahia) {

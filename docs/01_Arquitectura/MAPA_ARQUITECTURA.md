@@ -1,6 +1,6 @@
 # 🏗️ Mapa de Arquitectura
 
-> 🔄 **Última actualización automática:** 02 de junio de 2026 a las 01:10
+> 🔄 **Última actualización automática:** 02 de junio de 2026 a las 01:27
 > Vuelve a [[CONTEXTO_PROYECTO]] · Ver [[DASHBOARD]]
 
 ---

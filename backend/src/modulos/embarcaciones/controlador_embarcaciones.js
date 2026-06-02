@@ -31,7 +31,7 @@ async function registrar(req, res) {
  */
 async function historial(req, res) {
   try {
-    const registros = await RegistroEmbarcacion.findAll({ order: [['createdAt', 'DESC']] });
+    const registros = await RegistroEmbarcacion.findAll({ order: [['created_at', 'DESC']] });
     return res.json({ exito: true, data: registros });
   } catch (error) {
     return res.status(500).json({ exito: false, mensaje: "Error al obtener el historial", error: error.message });
@@ -49,11 +49,11 @@ async function estadisticasRango(req, res) {
   const { fechaInicio = '2026-04-28', fechaFin = '2026-05-05' } = req.query;
   try {
     const query = `
-      SELECT SUM(gastoFacturacion) as totalFacturacion, SUM(gastoPersonal) as totalPersonal,
-             SUM(gastoApoyo) as totalApoyo, SUM(gastoAgua) as totalAgua,
-             SUM(gastoClorox) as totalClorox, SUM(gastoFlete) as totalFlete,
-             SUM(gastoHielo) as totalHielo, SUM(gastoOtros) as totalOtros,
-             SUM(kilos * precioPorKilo) as ingresoBruto
+      SELECT SUM(gasto_facturacion) as total_facturacion, SUM(gasto_personal) as total_personal,
+             SUM(gasto_apoyo) as total_apoyo, SUM(gasto_agua) as total_agua,
+             SUM(gasto_clorox) as total_clorox, SUM(gasto_flete) as total_flete,
+             SUM(gasto_hielo) as total_hielo, SUM(gasto_otros) as total_otros,
+             SUM(kilos * precio_por_kilo) as ingreso_bruto
       FROM registro_embarcaciones WHERE fecha BETWEEN ? AND ?
     `;
     const [totales] = await sequelize.query(query, { replacements: [fechaInicio, fechaFin] });
@@ -73,11 +73,11 @@ async function reportePdf(req, res) {
   const { fechaInicio = '2026-04-28', fechaFin = '2026-05-05', nombreBahia = 'Bahía' } = req.query;
   try {
     const query = `
-      SELECT SUM(gastoFacturacion) as gastoFacturacion, SUM(gastoPersonal) as gastoPersonal,
-             SUM(gastoApoyo) as gastoApoyo, SUM(gastoAgua) as gastoAgua,
-             SUM(gastoClorox) as gastoClorox, SUM(gastoFlete) as gastoFlete,
-             SUM(gastoHielo) as gastoHielo, SUM(gastoOtros) as gastoOtros,
-             SUM(kilos * precioPorKilo) as ingresoBruto
+      SELECT SUM(gasto_facturacion) as gasto_facturacion, SUM(gasto_personal) as gasto_personal,
+             SUM(gasto_apoyo) as gasto_apoyo, SUM(gasto_agua) as gasto_agua,
+             SUM(gasto_clorox) as gasto_clorox, SUM(gasto_flete) as gasto_flete,
+             SUM(gasto_hielo) as gasto_hielo, SUM(gasto_otros) as gasto_otros,
+             SUM(kilos * precio_por_kilo) as ingreso_bruto
       FROM registro_embarcaciones WHERE fecha BETWEEN ? AND ?
     `;
     const [resultados] = await sequelize.query(query, { replacements: [fechaInicio, fechaFin] });
