@@ -1,101 +1,13 @@
-# ⚓ BRISMAR APP — Sistema de Gestión de Bahía
+# BRISMAR APP — Gestión Integral Pesquera
 
-> Sistema de gestión y control de registros de pesca para **Negocios Brismar S.R.L.**
+Bienvenido al Monorepo oficial de **NEGOCIOS BRISMAR S.R.L.**
 
-## 📋 Descripción
+Para mantener la máxima limpieza visual, este repositorio está estructurado estrictamente en dos módulos principales. Por favor, ingresa al directorio correspondiente según tu área de trabajo:
 
-Aplicación móvil (Flutter) para la administración eficiente de ingresos, gastos operativos y generación de reportes en la bahía. Conectada a **Supabase** como backend.
+## 📁 Módulos Principales
 
-## 🚀 Características
+* [📱 **brismar_app**](./brismar_app/README.md) — Código fuente de la aplicación móvil (Flutter). Contiene la lógica *Offline-First* usada por los operadores en la bahía.
+* [⚙️ **brismar_web**](./brismar_web/README.md) — Código fuente del backend y servicios web.
 
-| Módulo | Estado | Descripción |
-|---|---|---|
-| **Login** | ✅ Funcional | Autenticación con Supabase (modo simulación) |
-| **Registro de Embarcaciones** | ✅ Funcional | Registro de pesca: kilos, precio, gastos, catanas |
-| **Historial** | 🔄 Pendiente | Consulta de registros anteriores |
-| **Sincronización** | 🔄 Pendiente | Sync offline → Supabase |
-| **Reportes PDF** | 🔄 Pendiente | Generación de reportes diarios |
-| **Perfil** | 🔄 Pendiente | Gestión de perfil de usuario |
-
-## 🏗️ Arquitectura
-
-```
-brismar_mobile/lib/
-├── main.dart                          # Entry point + ProviderScope
-├── modulos/
-│   ├── autenticacion/                 # Módulo de Login
-│   │   ├── datos/                     # DataSources + Repositorios
-│   │   ├── dominio/                   # Entidades + Contratos
-│   │   └── presentacion/             # Pantallas + Controladores
-│   └── registro/                      # Módulo de Registro
-│       ├── datos/
-│       ├── dominio/
-│       └── presentacion/
-└── nucleo/                            # Core compartido
-    ├── base_datos/                    # SQLite Helper
-    ├── red/                           # Supabase Client
-    ├── rutas/                         # GoRouter
-    ├── seguridad/                     # SecureStorage
-    └── utilidades/                    # PDF Helper
-```
-
-**Stack:**
-- **Framework:** Flutter (Dart)
-- **State Management:** Riverpod
-- **Routing:** GoRouter
-- **Backend:** Supabase
-- **Local DB:** SQLite
-- **Arquitectura:** Clean Architecture (SOLID)
-
-## 🔀 Estrategia de Ramas
-
-```
-main ─────────────── Siempre estable, solo releases
-  └── develop ─────── Integración de cambios
-       └── developer-jjgs ── Rama personal de JJGS
-```
-
-## 📌 Versionamiento
-
-Usamos la siguiente convención para el versionamiento `vX1.X2.X3` (Mayor.Menor.Parche):
-
-```text
-v X1.X2.X3
- │  │  └── X3: PATCH (Cambios pequeños, refactorizaciones, corrección de bugs)
- │  └───── X2: MINOR (Actualizaciones medianas, integración de pequeños flujos de trabajo)
- └──────── X1: MAJOR (Cambios radicales, nuevas funcionalidades principales)
-```
-
-**Versión actual:** `v1.0.0` (Release inicial) / `v1.0.1` (Deduplicación y limpieza)
-
-## ⚙️ Setup
-
-```bash
-# 1. Clonar
-git clone https://github.com/SuyonRiccy/BRISMAR_APP.git
-cd BRISMAR_APP/brismar_mobile
-
-# 2. Instalar dependencias
-flutter pub get
-
-# 3. Ejecutar en dispositivo
-flutter run
-```
-
-### Credenciales de Testing (Modo Simulación)
-
-| Usuario | Contraseña |
-|---|---|
-| `usuario` | `1234` |
-
-## 👥 Equipo
-
-| Miembro | Rol | Rama |
-|---|---|---|
-| Jhonatan Sanchez (JJGS) | Developer | `developer-jjgs` |
-| SuyonRiccy | Developer | — |
-| Jesús Huilla | Developer | — |
-
-## 📄 Licencia
-
-Proyecto privado de Negocios Brismar S.R.L.
+> **Nota para Desarrolladores e IAs:**
+> Toda la documentación maestra del proyecto, guías de desarrollo, manifiestos de arquitectura y scripts de soporte han sido agrupados en la carpeta oculta `.docs/` en la raíz de este repositorio para mantener el entorno de trabajo limpio.
