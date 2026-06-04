@@ -12,6 +12,22 @@ Este es el proceso "Core" de Brismar. Cómo se registra una captura desde la apl
 6. Un proceso en segundo plano (Background Worker) detecta el internet y envía todo el bloque de datos a `[[SISTEMA_CENTRAL_SUPABASE]]`.
 7. Si el servidor responde "OK", el registro local se marca como `sync_pending = false` (o se elimina localmente si queremos ahorrar espacio).
 
+```mermaid
+graph TD
+    A[Inicio: Nueva Captura] --> B[Ingresar Kilos, Especie y Fecha/Hora]
+    B --> C[Guardar en SQLite Local]
+    C --> D[Establecer sync_pending = true]
+    D --> E[Navegación de retorno a Bahía]
+    E --> F{¿Se recupera conexión?}
+    F -- No --> E
+    F -- Sí --> G[Background Worker detecta Internet]
+    G --> H[Enviar bloque de datos a Supabase]
+    H --> I{¿Sincronización Exitosa?}
+    I -- Sí --> J[Establecer sync_pending = false]
+    I -- No --> K[Reintentar en próximo intervalo]
+    J --> L[Fin: Datos en la Nube y Sincronizados]
+```
+
 ## Puntos Críticos
 
 La sincronización debe manejar conflictos si dos usuarios editan el mismo viaje. Revisar `[[MAPA_DE_RIESGOS]]` (Concurrencia).

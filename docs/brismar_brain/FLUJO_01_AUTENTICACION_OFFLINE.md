@@ -11,6 +11,24 @@ Este nodo describe cómo la aplicación móvil autentica a un usuario (Pescador 
    - **Si NO HAY internet:** La App busca el hash de la contraseña en SQLite (SQLCipher).
 4. Si el hash local coincide con lo que el usuario escribió, se le da acceso a la aplicación.
 
+```mermaid
+graph TD
+    A[Inicio: Usuario abre App] --> B[Ingresa DNI y Contraseña]
+    B --> C{¿Hay Conexión a Internet?}
+    C -- Sí (Online) --> D[Autenticar con Supabase Auth]
+    D --> E{¿Login Exitoso?}
+    E -- Sí --> F[Guardar datos y hash BCrypt en Secure Storage]
+    F --> G[Dar Acceso / Redirigir a Registro]
+    E -- No --> H[Mostrar Error de Credenciales]
+    C -- No (Offline) --> I[Leer hash BCrypt desde Secure Storage]
+    I --> J{¿Existe hash guardado?}
+    J -- Sí --> K[Comparar contraseña ingresada con hash]
+    K --> L{¿Coincide?}
+    L -- Sí --> G
+    L -- No --> M[Mostrar Error de Contraseña Offline]
+    J -- No --> N[Mostrar Error: Requiere primer acceso Online]
+```
+
 ## Riesgos Asociados
 
 El proceso depende estrictamente de que el dispositivo físico esté seguro. Ver `[[MAPA_DE_RIESGOS]]` para estrategias en caso de pérdida o robo del teléfono en el barco.
