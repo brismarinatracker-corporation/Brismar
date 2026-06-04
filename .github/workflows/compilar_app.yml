@@ -1,0 +1,63 @@
+name: Compilar Brismar App (Flutter)
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build_apk:
+    name: Compilar y Empaquetar APK
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./brismar_app
+
+    steps:
+      # 1. Traer el código fuente
+      - name: Descargar Código (Checkout)
+        uses: actions/checkout@v4
+
+      # 2. Configurar el entorno de Java (Requerido para Android)
+      - name: Configurar Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      # 3. Configurar Flutter
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      # 4. Bajar dependencias
+      - name: Obtener Dependencias
+        run: flutter pub get
+
+      # 5. Compilar el APK de Release
+      - name: Compilar APK (Release)
+        run: flutter build apk --release
+
+      # 6. Subir el APK generado como un "Artefacto" de GitHub
+      - name: Subir APK a GitHub Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: brismar-app-release
+          path: brismar_app/build/app/outputs/flutter-apk/app-release.apk
+
+      # 7. (Opcional) Notificar a Discord
+      # Para activar esto, crea un Webhook en Discord y pon la URL en las variables 'Secrets' de GitHub como 'DISCORD_WEBHOOK_URL'.
+      - name: Notificar a Discord
+        if: success() && env.DISCORD_WEBHOOK != ''
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: '✅ **Brismar App:** ¡Nueva compilación exitosa! Descarga el APK desde la pestaña Actions de GitHub.'
