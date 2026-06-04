@@ -1,0 +1,8 @@
+# Ignorar carpetas autogeneradas masivas para que GitHub no piense que el proyecto es HTML
+graphify-out/** linguist-generated=true
+brismar_mobile/graphify-out/** linguist-generated=true
+build/** linguist-generated=true
+brismar_mobile/build/** linguist-generated=true
+
+# Ignorar la carpeta web de Flutter para estadísticas (contiene HTML pesado)
+brismar_mobile/web/** linguist-vendored=true

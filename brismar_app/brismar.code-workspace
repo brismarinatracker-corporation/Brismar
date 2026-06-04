@@ -1,0 +1,29 @@
+{
+  "folders": [
+    {
+      "path": "brismar_app",
+      "name": "📱 App Móvil (Flutter)"
+    },
+    {
+      "path": "brismar_web",
+      "name": "⚙️ Backend (API)"
+    },
+    {
+      "path": ".",
+      "name": "📂 Raíz y Documentación"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.git": true,
+      "**/.DS_Store": true,
+      "brismar_app/**": false,
+      "brismar_web/**": false
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/build": true,
+      "**/.dart_tool": true
+    }
+  }
+}

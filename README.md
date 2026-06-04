@@ -1,34 +1,15 @@
-# ⚓ BRISMAR APP - Sistema de Gestión de Bahía
+# BRISMAR APP — Gestión Integral Pesquera
 
-Sistema de gestión y control de registros de pesca diseñado para **Negocios Brismar S.R.L.** Esta API RESTful permite la administración eficiente de ingresos, gastos operativos y generación de reportes automatizados en la bahía.
+Bienvenido al Monorepo oficial de **NEGOCIOS BRISMAR S.R.L.**
 
-## 🚀 Características Principales
+Para mantener la máxima limpieza visual, este repositorio está estructurado estrictamente en dos módulos principales. Por favor, ingresa al directorio correspondiente según tu área de trabajo:
 
-* **Gestión de Embarcaciones:** Registro detallado de la pesca del día (kilos, precio, nombre del pesador, etc.).
-* **Control de Gastos:** Seguimiento en tiempo real de los costos operativos (hielo, personal, flete, agua y otros).
-* **Cálculo de Utilidad:** Procesamiento automático de la utilidad neta por jornada.
-* **Autenticación (Login):** Acceso seguro para el personal de bahía y administradores.
-* **Reportes Automatizados:** Generación y descarga de resúmenes diarios en formato PDF.
+## 📁 Módulos Principales
 
-> **Nota:** Este sistema está enfocado exclusivamente en el registro de pesca y control de bahía. Los módulos de SARDE, PTH y liquidaciones no forman parte del alcance de este proyecto.
+* [📱 **brismar_app**](./brismar_app/README.md) — Código fuente de la aplicación móvil (Flutter). Contiene la lógica *Offline-First* usada por los operadores en la bahía.
+* [⚙️ **brismar_web**](./brismar_web/README.md) — Código fuente del backend y servicios web.
 
-## 🛠️ Tecnologías Utilizadas
+> **Nota para Desarrolladores e IAs:**
+> Toda la documentación maestra del proyecto, guías de desarrollo, manifiestos de arquitectura y scripts de soporte han sido agrupados en la carpeta oculta `.docs/` en la raíz de este repositorio para mantener el entorno de trabajo limpio.
 
-* **Backend:** Node.js, Express.js
-* **Base de Datos:** MySQL
-* **ORM:** Sequelize
-* **Diseño de Interfaz:** Figma
-* **Otras Librerías:** dotenv, pdfkit (para reportes)
-
-## 📋 Requisitos Previos
-
-Antes de ejecutar el proyecto, asegúrate de tener instalado:
-* [Node.js](https://nodejs.org/) (v14 o superior)
-* [MySQL Server](https://dev.mysql.com/downloads/mysql/) y MySQL Workbench
-
-## ⚙️ Instalación y Configuración
-
-1. **Clonar el repositorio:**
-   ```bash
-   git clone [URL_DEL_REPOSITORIO]
-   cd BRISMAR_APP
+uwu
