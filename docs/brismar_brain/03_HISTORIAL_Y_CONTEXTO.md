@@ -4,7 +4,7 @@
 
 ## VERSIÓN FUNCIONAL PREVIA: v1.0.x
 
-*(Antes de automatizar el changelog con GitHub Releases)*
+Esta versión corresponde a la etapa previa a la automatización del changelog con GitHub Releases.
 
 ### Decisiones Arquitectónicas (Issue #2)
 
