@@ -15,3 +15,8 @@
 ### Problemas Pendientes (Para resolver en Issues de GitHub)
 1. **Riesgo de Robo Físico (Ex-Issue #3):** Evaluar encriptación de toda la SQLite local (SQLCipher).
 2. **Conflicto de Concurrencia (Ex-Issue #4):** Implementar y definir estrategias para manejar alertas de concurrencia tipo "Last-Write-Wins" cuando múltiples dispositivos sincronicen información con Supabase al recuperar señal de internet.
+
+---
+## 🔗 Enlaces Relacionados (Cerebro Obsidian)
+- Conoce la arquitectura tecnológica actual aquí: [[01_ARQUITECTURA_Y_REGLAS]]
+- Entiende nuestro flujo de trabajo y reglas de commits en: [[02_FLUJO_DE_TRABAJO]]

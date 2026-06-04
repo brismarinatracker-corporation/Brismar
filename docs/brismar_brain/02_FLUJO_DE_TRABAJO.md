@@ -14,3 +14,8 @@
 ## 3. Sincronización y Comunicación entre Agentes
 - Si trabajas sobre un código complejo que afecta a otros (Ej. la base de datos Supabase), deja comentarios descriptivos o actualiza estos archivos en la bóveda de conocimiento (`brismar_brain/`).
 - Documentación externa (PDFs de facturas pesados, diseños, etc.) reside en **Google Drive** corporativo de Brismar. Las IAs deben pedir acceso al enlace de Drive si requieren contexto externo masivo que no cabe en texto plano.
+
+---
+## 🔗 Enlaces Relacionados (Cerebro Obsidian)
+- Para conocer la estructura del código y Supabase, lee: [[01_ARQUITECTURA_Y_REGLAS]]
+- Revisa el registro histórico de las decisiones aquí: [[03_HISTORIAL_Y_CONTEXTO]]

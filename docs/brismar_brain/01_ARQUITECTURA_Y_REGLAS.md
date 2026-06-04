@@ -16,3 +16,8 @@ Este documento contiene las directrices técnicas y arquitectónicas inmutables 
 ## 3. Entorno de Datos (Supabase)
 - **Convivencia (App y Web):** `brismar_app` (App) y `brismar_web` (Web) consumen el mismo proyecto de Supabase. NO hacer migraciones destructivas (borrar columnas o cambiar tipos de datos) que puedan romper la otra plataforma.
 - **Gestión de Secretos:** TODAS las URL y Anon Keys deben leerse desde el entorno. En la máquina local del desarrollador están almacenadas en `CREDENCIALES_MAESTRAS.env` (que nunca se sube a GitHub).
+
+---
+## 🔗 Enlaces Relacionados (Cerebro Obsidian)
+- Conoce cómo se desarrolla y las reglas de GitHub en: [[02_FLUJO_DE_TRABAJO]]
+- Para entender por qué tomamos estas decisiones offline, lee: [[03_HISTORIAL_Y_CONTEXTO]]
