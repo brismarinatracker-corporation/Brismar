@@ -11,3 +11,5 @@ Para mantener la máxima limpieza visual, este repositorio está estructurado es
 
 > **Nota para Desarrolladores e IAs:**
 > Toda la documentación maestra del proyecto, guías de desarrollo, manifiestos de arquitectura y scripts de soporte han sido agrupados en la carpeta oculta `.docs/` en la raíz de este repositorio para mantener el entorno de trabajo limpio.
+
+uwu
