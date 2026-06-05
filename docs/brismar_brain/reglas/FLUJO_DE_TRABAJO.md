@@ -22,5 +22,5 @@
 
 ## 🔗 Enlaces Relacionados (Cerebro Obsidian)
 
-- Conoce la estructura del código y Supabase, lee: [[01_ARQUITECTURA_Y_REGLAS]]
-- Revisa el registro histórico de las decisiones aquí: [[03_HISTORIAL_Y_CONTEXTO]]
+- Conoce la estructura del código y Supabase, lee: [[ARQUITECTURA_Y_REGLAS]]
+- Revisa el registro histórico de las decisiones aquí: [[HISTORIAL_Y_CONTEXTO]]

@@ -24,5 +24,5 @@ Esta versión corresponde a la etapa previa a la automatización del changelog c
 
 ## 🔗 Enlaces Relacionados (Cerebro Obsidian)
 
-- Conoce la arquitectura tecnológica actual aquí: [[01_ARQUITECTURA_Y_REGLAS]]
-- Entiende nuestro flujo de trabajo y reglas de commits en: [[02_FLUJO_DE_TRABAJO]]
+- Conoce la arquitectura tecnológica actual aquí: [[ARQUITECTURA_Y_REGLAS]]
+- Entiende nuestro flujo de trabajo y reglas de commits en: [[FLUJO_DE_TRABAJO]]

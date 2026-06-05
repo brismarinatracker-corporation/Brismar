@@ -24,5 +24,5 @@ Este documento contiene las directrices técnicas y arquitectónicas inmutables 
 
 ## 🔗 Enlaces Relacionados (Cerebro Obsidian)
 
-- Conoce cómo se desarrolla y las reglas de GitHub en: [[02_FLUJO_DE_TRABAJO]]
-- Para entender por qué tomamos estas decisiones offline, lee: [[03_HISTORIAL_Y_CONTEXTO]]
+- Conoce cómo se desarrolla y las reglas de GitHub en: [[FLUJO_DE_TRABAJO]]
+- Para entender por qué tomamos estas decisiones offline, lee: [[HISTORIAL_Y_CONTEXTO]]

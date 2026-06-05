@@ -45,4 +45,4 @@ La sincronización debe manejar conflictos si dos usuarios editan el mismo viaje
 
 ## 🔗 Enlaces Relacionados
 
-- Flujo de revisión por parte del Desarrollador: `[[02_FLUJO_DE_TRABAJO]]`.
+- Flujo de revisión por parte del Desarrollador: [[FLUJO_DE_TRABAJO]].
