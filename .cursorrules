@@ -1,0 +1,21 @@
+# REGLAS MAESTRAS PARA CUALQUIER INTELIGENCIA ARTIFICIAL (AI) 🤖
+*Nota: Este archivo debe ser leído por cualquier agente de IA (Gemini, Cursor, Copilot, Claude) apenas abra el proyecto.*
+
+> [!CAUTION]
+> **PARADA OBLIGATORIA:** NO propongas código ni hagas sugerencias arquitectónicas sin antes leer detalladamente los archivos en la carpeta `docs/brismar_brain/`. Allí reside el cerebro del proyecto y las restricciones técnicas (Clean Architecture, Supabase compartido, SQLite encriptado offline-first).
+
+## 1. PERMISOS Y LÍMITES DE GITHUB
+- **PROHIBIDO TOCAR `main`:** Tienes estrictamente prohibido crear comandos de terminal que hagan `git push origin main` o `git merge main`. La rama `main` es sagrada y su actualización es manual por el humano líder (Jhonatan).
+- **Ramas de Trabajo:** Todo código nuevo va en ramas `feature/...` y se fusiona mediante Pull Request hacia `develop`.
+
+## 2. AUTOMATIZACIÓN DE VERSIONES E ISSUES
+- La fuente de la verdad para las tareas no es tu memoria local, **son los GitHub Issues**. 
+- **Skill Requerido para IAs:** Si tienes herramientas MCP (Model Context Protocol), **DEBES** activar tu servidor MCP de GitHub para leer las tareas.
+
+## 3. ARQUITECTURA DEL MONOREPO (Móvil vs Web)
+- `brismar_app/`: Aplicación Móvil (Flutter/Dart). Usa SQLite local (encriptado) para offline first y Clean Architecture. **TODO EL CÓDIGO ESTÁ EN ESPAÑOL**.
+- `brismar_web/`: Aplicación Web a cargo de Yisus.
+- Ambos usan **Supabase** como backend en la nube. Las migraciones de Supabase deben pensarse para que no rompan el proyecto del otro desarrollador.
+
+## 4. GESTIÓN DE SECRETO
+- **NO pidas contraseñas:** Todas las credenciales están en `CREDENCIALES_MAESTRAS.env` en la raíz (ignorado por git). Jamás las incluyas en el código fuente (Ej: cliente_supabase.dart).

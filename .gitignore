@@ -9,6 +9,7 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+CREDENCIALES_MAESTRAS.env
 
 # ── Flutter / Dart ───────────────────────────
 **/build/

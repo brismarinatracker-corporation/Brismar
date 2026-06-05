@@ -1,13 +1,13 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Clase para inicializar y gestionar la conexión directa con Supabase.
 class ConfiguracionSupabase {
   /// URL de tu proyecto Supabase.
-  static const String url = 'https://tu-proyecto-supabase.supabase.co';
+  static String get url => dotenv.env['SUPABASE_URL'] ?? 'https://tu-proyecto-supabase.supabase.co';
 
   /// Llave pública anónima (anon key) de Supabase.
-  static const String anonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder';
+  static String get anonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder';
 
   /// Inicializa el cliente global de Supabase.
   /// Lanza una excepción detallada en caso de fallar.

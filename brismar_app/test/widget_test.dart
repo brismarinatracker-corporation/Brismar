@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:brismar_mobile/modulos/registro/dominio/entidades/registro_entidad.dart';
+import 'package:brismar_mobile/nucleo/seguridad/servicio_cifrado.dart';
 
 void main() {
   group('RegistroEntidad Tests de Cálculos Financieros', () {
@@ -31,6 +32,20 @@ void main() {
 
       // Utilidad neta: 5500 - 880 = 4620
       expect(registro.utilidadNeta, equals(4620.0));
+    });
+  });
+
+  group('ServicioCifrado AES-256-CBC Tests', () {
+    test('Cifrado y descifrado correcto', () {
+      const textoOriginal = 'Hola Mundo Brismar';
+      const clave = 'clave-secreta-super-larga-32ch';
+      const iv = 'vector-inicial16';
+
+      final cifrado = ServicioCifrado.cifrarAes(textoOriginal, clave, iv);
+      expect(cifrado, isNot(equals(textoOriginal)));
+
+      final descifrado = ServicioCifrado.descifrarAes(cifrado, clave, iv);
+      expect(descifrado, equals(textoOriginal));
     });
   });
 }

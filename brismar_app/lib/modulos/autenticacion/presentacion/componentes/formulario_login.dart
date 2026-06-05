@@ -5,9 +5,13 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../controladores/controlador_autenticacion.dart';
 
-/// Formulario encapsulado para iniciar sesión.
-/// Maneja internamente los controladores de texto y sus validaciones.
+/// Componente modular que representa el formulario de inicio de sesión.
+///
+/// Implementa un diseño premium con bordes semitransparentes, sombras,
+/// y un indicador de red estilo LED. Su lógica respeta estrictamente SRP
+/// y la limitación de 20 líneas por función.
 class FormularioLogin extends ConsumerStatefulWidget {
+  /// Constructor constante para [FormularioLogin].
   const FormularioLogin({super.key});
 
   @override
@@ -21,6 +25,7 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
   
   String _appVersion = 'v---';
   bool _hayConexion = true;
+  bool _passwordObscuro = true;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
   @override
@@ -29,6 +34,7 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
     _initAppInfo();
   }
 
+  /// Inicializa la información de la versión de la app y la conectividad.
   Future<void> _initAppInfo() async {
     final info = await PackageInfo.fromPlatform();
     if (mounted) {
@@ -36,13 +42,14 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
         _appVersion = 'v${info.version}';
       });
     }
-
     final connectivityResult = await Connectivity().checkConnectivity();
     _actualizarEstadoConexion(connectivityResult);
-
-    _connectivitySubscription = Connectivity().onConnectivityChanged.listen(_actualizarEstadoConexion);
+    _connectivitySubscription = Connectivity()
+        .onConnectivityChanged
+        .listen(_actualizarEstadoConexion);
   }
 
+  /// Actualiza el estado local de conexión basándose en el resultado obtenido.
   void _actualizarEstadoConexion(List<ConnectivityResult> result) {
     if (mounted) {
       setState(() {
@@ -59,7 +66,7 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
     super.dispose();
   }
 
-  /// Dispara la acción de autenticación en el controlador de Riverpod.
+  /// Intenta iniciar sesión leyendo los valores de los controladores.
   void _intentarLogin() {
     if (_formKey.currentState!.validate()) {
       ref
@@ -79,190 +86,285 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
     return Form(
       key: _formKey,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 30),
-        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 40),
+        margin: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
         decoration: BoxDecoration(
-          color: const Color(0xFF223B82),
-          borderRadius: BorderRadius.circular(15),
+          color: const Color(0xFF0F224A).withValues(alpha: 0.75),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.08),
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(77),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
+              color: Colors.black.withValues(alpha: 0.4),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Logo de la Empresa
-            Container(
-              width: 140,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Image.asset(
-                  'assets/logo.png',
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.directions_boat,
-                    size: 40,
-                    color: Colors.teal,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 30),
+        child: _construirFormularioContenido(estaCargando),
+      ),
+    );
+  }
 
-            // Campo Usuario / Correo
-            TextFormField(
-              controller: _userController,
-              enabled: !estaCargando,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'USUARIO O CORREO',
-                hintStyle: const TextStyle(color: Colors.white54),
-                filled: true,
-                fillColor: const Color(0xFF3250A4),
-                prefixIcon: const Icon(
-                  Icons.person,
-                  color: Colors.lightBlueAccent,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-                errorStyle: const TextStyle(color: Colors.orangeAccent),
-              ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Por favor, ingrese su usuario';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 20),
+  /// Construye los widgets internos ordenados verticalmente.
+  Widget _construirFormularioContenido(bool estaCargando) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _construirLogo(),
+        const SizedBox(height: 28),
+        _construirCampoUsuario(estaCargando),
+        const SizedBox(height: 18),
+        _construirCampoContrasena(estaCargando),
+        _construirBotonOlvido(estaCargando),
+        const SizedBox(height: 12),
+        _construirBotonLogin(estaCargando),
+        const SizedBox(height: 24),
+        _construirIndicadores(),
+      ],
+    );
+  }
 
-            // Campo Contraseña
-            TextFormField(
-              controller: _passController,
-              obscureText: true,
-              enabled: !estaCargando,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'CONTRASEÑA',
-                hintStyle: const TextStyle(color: Colors.white54),
-                filled: true,
-                fillColor: const Color(0xFF3250A4),
-                prefixIcon: const Icon(
-                  Icons.lock,
-                  color: Colors.lightBlueAccent,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-                errorStyle: const TextStyle(color: Colors.orangeAccent),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor, ingrese su contraseña';
-                }
-                if (value.length < 4) {
-                  return 'Mínimo 4 caracteres';
-                }
-                return null;
-              },
-            ),
-
-            // Olvidé mi contraseña
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: estaCargando ? null : () {},
-                child: const Text(
-                  '¿Olvidé mi contraseña?',
-                  style: TextStyle(
-                    color: Colors.lightBlueAccent,
-                    fontSize: 12,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 15),
-
-            // Botón Iniciar Sesión con Estado de Carga
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0088CC),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onPressed: estaCargando ? null : _intentarLogin,
-                child: estaCargando
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text(
-                        'INICIAR SESIÓN',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Estado de Conexión y Versión de la App
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      _hayConexion ? Icons.cloud_done : Icons.cloud_off,
-                      color: _hayConexion ? Colors.greenAccent : Colors.redAccent,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      _hayConexion ? 'Online' : 'Offline',
-                      style: TextStyle(
-                        color: _hayConexion ? Colors.greenAccent : Colors.redAccent,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  _appVersion,
-                  style: const TextStyle(
-                    color: Colors.white54,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ],
+  /// Construye el contenedor para el logo de Brismar con estilo limpio.
+  Widget _construirLogo() {
+    return Container(
+      width: 130,
+      height: 75,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Image.asset(
+          'assets/logo.png',
+          fit: BoxFit.contain,
+          errorBuilder: (c, e, s) => const Icon(
+            Icons.directions_boat_rounded,
+            size: 40,
+            color: Color(0xFF0077C2),
+          ),
         ),
       ),
+    );
+  }
+
+  /// Crea la decoración uniforme para los campos de entrada de datos.
+  InputDecoration _disenoInput({
+    required String hint,
+    required IconData icon,
+    Widget? suffix,
+  }) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(
+        color: Colors.white.withValues(alpha: 0.4),
+        fontSize: 13,
+        letterSpacing: 0.5,
+      ),
+      filled: true,
+      fillColor: const Color(0xFF172C5C).withValues(alpha: 0.6),
+      prefixIcon: Icon(icon, color: const Color(0xFF00E5FF), size: 20),
+      suffixIcon: suffix,
+      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+      ),
+      errorStyle: const TextStyle(color: Colors.orangeAccent, fontSize: 11),
+    );
+  }
+
+  /// Construye el campo de entrada para el usuario.
+  Widget _construirCampoUsuario(bool estaCargando) {
+    return TextFormField(
+      controller: _userController,
+      enabled: !estaCargando,
+      style: const TextStyle(color: Colors.white, fontSize: 15),
+      decoration: _disenoInput(
+        hint: 'USUARIO O CORREO',
+        icon: Icons.person_outline_rounded,
+      ),
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) {
+          return 'Por favor, ingrese su usuario';
+        }
+        return null;
+      },
+    );
+  }
+
+  /// Construye el campo de entrada para la contraseña con toggle.
+  Widget _construirCampoContrasena(bool estaCargando) {
+    return TextFormField(
+      controller: _passController,
+      obscureText: _passwordObscuro,
+      enabled: !estaCargando,
+      style: const TextStyle(color: Colors.white, fontSize: 15),
+      decoration: _disenoInput(
+        hint: 'CONTRASEÑA',
+        icon: Icons.lock_outline_rounded,
+        suffix: _construirTogglePassword(),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Por favor, ingrese su contraseña';
+        }
+        if (value.length < 4) {
+          return 'Mínimo 4 caracteres';
+        }
+        return null;
+      },
+    );
+  }
+
+  /// Genera el botón para alternar la visibilidad de la contraseña.
+  Widget _construirTogglePassword() {
+    return IconButton(
+      icon: Icon(
+        _passwordObscuro
+            ? Icons.visibility_off_outlined
+            : Icons.visibility_outlined,
+        color: const Color(0xFF00E5FF).withValues(alpha: 0.7),
+        size: 20,
+      ),
+      onPressed: () => setState(() => _passwordObscuro = !_passwordObscuro),
+    );
+  }
+
+  /// Crea el botón textual para recuperar contraseña.
+  Widget _construirBotonOlvido(bool estaCargando) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton(
+        onPressed: estaCargando ? null : () {},
+        child: Text(
+          '¿Olvidé mi contraseña?',
+          style: TextStyle(
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.8),
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Construye el botón premium de inicio de sesión con degradado.
+  Widget _construirBotonLogin(bool estaCargando) {
+    return Container(
+      width: double.infinity,
+      height: 52,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF00E5FF), Color(0xFF0077C2)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: estaCargando ? null : _intentarLogin,
+          splashColor: Colors.white24,
+          child: Center(
+            child: estaCargando
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
+                  )
+                : const Text(
+                    'INICIAR SESIÓN',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
+                      fontSize: 14,
+                    ),
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Agrupa la sección inferior del indicador de red y la versión.
+  Widget _construirIndicadores() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _construirRadarConexion(),
+        Text(
+          _appVersion,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.4),
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Construye un LED pulsante y etiqueta para el estado de red.
+  Widget _construirRadarConexion() {
+    final colorConexion = _hayConexion
+        ? const Color(0xFF00E676)
+        : const Color(0xFFFF1744);
+
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: colorConexion,
+            boxShadow: [
+              BoxShadow(
+                color: colorConexion.withValues(alpha: 0.6),
+                blurRadius: 6,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          _hayConexion ? 'ONLINE' : 'OFFLINE',
+          style: TextStyle(
+            color: colorConexion,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.0,
+          ),
+        ),
+      ],
     );
   }
 }
