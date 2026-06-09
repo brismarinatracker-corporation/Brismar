@@ -563,7 +563,8 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DataOutputAssociation_SaveSession_di" bpmnElement="DataOutputAssociation_SaveSession">
         <di:waypoint x="2270" y="485" />
-        <di:waypoint x="2095" y="614" />
+        <di:waypoint x="2270" y="632" />
+        <di:waypoint x="2095" y="632" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DataInputAssociation_OfflineRead_di" bpmnElement="DataInputAssociation_OfflineRead">
         <di:waypoint x="2070" y="640" />
@@ -572,12 +573,14 @@
         <di:waypoint x="570" y="800" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DataOutputAssociation_ClearSession_di" bpmnElement="DataOutputAssociation_ClearSession">
-        <di:waypoint x="1920" y="599" />
-        <di:waypoint x="2045" y="621" />
+        <di:waypoint x="1920" y="615" />
+        <di:waypoint x="2045" y="615" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DataOutputAssociation_UpdateTimestamp_di" bpmnElement="DataOutputAssociation_UpdateTimestamp">
-        <di:waypoint x="1970" y="360" />
-        <di:waypoint x="2064" y="590" />
+        <di:waypoint x="1954" y="360" />
+        <di:waypoint x="1954" y="460" />
+        <di:waypoint x="2074" y="460" />
+        <di:waypoint x="2074" y="590" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
