@@ -104,6 +104,19 @@
       <bpmn:incoming>Flow_InicioAIngreso</bpmn:incoming>
       <bpmn:incoming>Flow_ReintentoPermitido</bpmn:incoming>
       <bpmn:outgoing>Flow_IngresoAValidar</bpmn:outgoing>
+      <!--
+        MARCADOR DE LOOP: Muestra el ícono ↻ en la parte inferior
+        de la tarea en bpmn.io. loopMaximum=5 indica el límite.
+        testBefore=false = la tarea se ejecuta al menos una vez
+        antes de evaluar si continúa el loop (do-while).
+      -->
+      <bpmn:standardLoopCharacteristics
+        testBefore="false"
+        loopMaximum="5">
+        <bpmn:loopCondition xsi:type="bpmn:tFormalExpression">
+          ${credencialesCorrectas == false AND intentos &lt; 5}
+        </bpmn:loopCondition>
+      </bpmn:standardLoopCharacteristics>
     </bpmn:task>
 
     <bpmn:task id="Task_ValidarEnServidor"
@@ -227,6 +240,62 @@
     <bpmn:sequenceFlow id="Flow_BloqueoAFin"
       sourceRef="Task_BloquearCuenta"
       targetRef="EndEvent_Bloqueado" />
+
+    <!-- ═══════════════ TEXT ANNOTATIONS (visibles en bpmn.io) ═══════════════ -->
+
+    <!-- Anotación 1: Explica el marcador de loop en la tarea -->
+    <bpmn:textAnnotation id="Annotation_LoopExplain">
+      <bpmn:text>↻ BUCLE (máx. 5 veces)
+Esta tarea se repite
+cada vez que las
+credenciales son
+incorrectas.
+El ícono ↻ en la base
+indica que es un loop.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Assoc_LoopExplain"
+      sourceRef="Annotation_LoopExplain"
+      targetRef="Task_IngresarCredenciales" />
+
+    <!-- Anotación 2: Explica la flecha de regreso del loop -->
+    <bpmn:textAnnotation id="Annotation_LoopBack">
+      <bpmn:text>⬅ REGRESO AL LOOP
+Cuando intentos &lt; 5
+el token vuelve aquí.
+La flecha larga hacia
+la izquierda ES el bucle
+visual en BPMN.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Assoc_LoopBack"
+      sourceRef="Annotation_LoopBack"
+      targetRef="Gateway_LimiteAlcanzado" />
+
+    <!-- Anotación 3: Explica la salida del bucle -->
+    <bpmn:textAnnotation id="Annotation_LoopExit">
+      <bpmn:text>🔒 SALIDA DEL BUCLE
+Cuando intentos = 5
+el gateway toma
+esta ruta y bloquea
+la cuenta 30 min.
+El bucle TERMINA aquí.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Assoc_LoopExit"
+      sourceRef="Annotation_LoopExit"
+      targetRef="Task_BloquearCuenta" />
+
+    <!-- Anotación 4: Explica el DataObject contador -->
+    <bpmn:textAnnotation id="Annotation_Contador">
+      <bpmn:text>📊 VARIABLE CONTADOR
+intentos: int
+Inicio = 0
+Se incrementa +1
+cada fallo.
+Se resetea a 0
+si el login es correcto.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Assoc_Contador"
+      sourceRef="Annotation_Contador"
+      targetRef="DataObjectReference_Contador" />
 
   </bpmn:process>
 
@@ -495,6 +564,46 @@
       <bpmndi:BPMNEdge id="DataOutput_EscribirContador_di" bpmnElement="DataOutput_EscribirContador">
         <di:waypoint x="1175" y="520" />
         <di:waypoint x="1175" y="570" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ════════════════════════════════════
+           TEXT ANNOTATIONS — Shapes y Edges
+           ════════════════════════════════════ -->
+
+      <!-- Anotación 1: Loop en la tarea (arriba izquierda) -->
+      <bpmndi:BPMNShape id="Annotation_LoopExplain_di" bpmnElement="Annotation_LoopExplain">
+        <dc:Bounds x="160" y="82" width="160" height="120" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Assoc_LoopExplain_di" bpmnElement="Assoc_LoopExplain">
+        <di:waypoint x="320" y="142" />
+        <di:waypoint x="380" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Anotación 2: Flecha de regreso del loop (encima del gateway) -->
+      <bpmndi:BPMNShape id="Annotation_LoopBack_di" bpmnElement="Annotation_LoopBack">
+        <dc:Bounds x="1390" y="82" width="170" height="120" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Assoc_LoopBack_di" bpmnElement="Assoc_LoopBack">
+        <di:waypoint x="1475" y="202" />
+        <di:waypoint x="1500" y="455" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Anotación 3: Salida del bucle (encima de bloquear cuenta) -->
+      <bpmndi:BPMNShape id="Annotation_LoopExit_di" bpmnElement="Annotation_LoopExit">
+        <dc:Bounds x="1760" y="82" width="175" height="130" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Assoc_LoopExit_di" bpmnElement="Assoc_LoopExit">
+        <di:waypoint x="1847" y="212" />
+        <di:waypoint x="1850" y="345" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Anotación 4: DataObject contador (a la derecha del objeto) -->
+      <bpmndi:BPMNShape id="Annotation_Contador_di" bpmnElement="Annotation_Contador">
+        <dc:Bounds x="1210" y="555" width="175" height="130" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Assoc_Contador_di" bpmnElement="Assoc_Contador">
+        <di:waypoint x="1210" y="595" />
+        <di:waypoint x="1173" y="595" />
       </bpmndi:BPMNEdge>
 
     </bpmndi:BPMNPlane>
