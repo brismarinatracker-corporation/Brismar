@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0"
+  xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0"
+  id="Definitions_Prueba"
+  targetNamespace="http://bpmn.io/schema/bpmn">
+
+  <!-- ══════════════════════════════════════════════════════════════
+       FLUJO 01 — PRUEBA: Bucle con máximo 5 intentos de login
+       Demuestra cómo modelar un loop acotado en BPMN.
+       Tras 5 intentos fallidos → cuenta bloqueada 30 minutos.
+       ══════════════════════════════════════════════════════════════ -->
+
+  <bpmn:collaboration id="Colaboracion_Prueba">
+    <bpmn:participant
+      id="Participant_Prueba"
+      name="PRUEBA: Bucle de Login con Máximo 5 Intentos"
+      processRef="Process_Prueba" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_Prueba" name="Proceso de Prueba — Bucle Acotado de Autenticación" isExecutable="false">
+    <bpmn:documentation>
+      ARCHIVO DE PRUEBA — No es el flujo oficial.
+      Demuestra el patrón BPMN para un bucle con límite de iteraciones.
+      Caso de uso: el usuario intenta login con correo + contraseña.
+      Si falla 5 veces consecutivas, la cuenta se bloquea 30 minutos.
+      Si acierta en cualquier intento (1–5), accede al Dashboard.
+    </bpmn:documentation>
+
+    <bpmn:laneSet id="LaneSet_Prueba">
+
+      <!-- Lane 1: El usuario -->
+      <bpmn:lane id="Lane_Usuario" name="Personal de Bahía (Usuario)">
+        <bpmn:flowNodeRef>StartEvent_AbreApp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_IngresarCredenciales</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Dashboard</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Bloqueado</bpmn:flowNodeRef>
+      </bpmn:lane>
+
+      <!-- Lane 2: La aplicación -->
+      <bpmn:lane id="Lane_App" name="Aplicación Móvil (Lógica)">
+        <bpmn:flowNodeRef>Task_IncrementarContador</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ResetContador</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_BloquearCuenta</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_CredCorrectas</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_LimiteAlcanzado</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>DataObjectReference_Contador</bpmn:flowNodeRef>
+      </bpmn:lane>
+
+      <!-- Lane 3: Supabase -->
+      <bpmn:lane id="Lane_Supabase" name="Servidor Central (Supabase)">
+        <bpmn:flowNodeRef>Task_ValidarEnServidor</bpmn:flowNodeRef>
+      </bpmn:lane>
+
+    </bpmn:laneSet>
+
+    <!-- ── DATA OBJECT: Contador de intentos ── -->
+    <bpmn:dataObjectReference id="DataObjectReference_Contador" name="Contador de Intentos&#10;(inicial = 0, máx = 5)" dataObjectRef="DataObject_Contador" />
+    <bpmn:dataObject id="DataObject_Contador" />
+
+    <!-- ── EVENTOS ── -->
+    <bpmn:startEvent id="StartEvent_AbreApp" name="Usuario Abre la App">
+      <bpmn:outgoing>Flow_InicioAIngreso</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:endEvent id="EndEvent_Dashboard" name="Acceso Concedido&#10;(Dashboard)">
+      <bpmn:incoming>Flow_ResetADashboard</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="EndEvent_Bloqueado" name="Cuenta Bloqueada&#10;30 minutos">
+      <bpmn:incoming>Flow_BloqueoAFin</bpmn:incoming>
+      <bpmn:errorEventDefinition id="ErrorDef_Bloqueo" />
+    </bpmn:endEvent>
+
+    <!-- ── TAREAS ── -->
+
+    <!-- El usuario escribe correo y contraseña -->
+    <bpmn:task id="Task_IngresarCredenciales" name="Ingresar Correo&#10;y Contraseña">
+      <bpmn:incoming>Flow_InicioAIngreso</bpmn:incoming>
+      <bpmn:incoming>Flow_ReintentoPermitido</bpmn:incoming>
+      <bpmn:outgoing>Flow_IngresoAValidar</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- Supabase valida las credenciales -->
+    <bpmn:task id="Task_ValidarEnServidor" name="Validar Credenciales&#10;en Supabase">
+      <bpmn:incoming>Flow_IngresoAValidar</bpmn:incoming>
+      <bpmn:outgoing>Flow_ValidarAGateway</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- Si falló: sumar 1 al contador -->
+    <bpmn:task id="Task_IncrementarContador" name="Incrementar Contador&#10;(contador + 1)">
+      <bpmn:incoming>Flow_CredInvalidas</bpmn:incoming>
+      <bpmn:outgoing>Flow_ContadorALimite</bpmn:outgoing>
+      <!-- Lee y escribe el contador -->
+      <bpmn:property id="Property_ContadorIn" name="__targetRef_placeholder" />
+      <bpmn:dataInputAssociation id="DataInput_LeerContador">
+        <bpmn:sourceRef>DataObjectReference_Contador</bpmn:sourceRef>
+        <bpmn:targetRef>Property_ContadorIn</bpmn:targetRef>
+      </bpmn:dataInputAssociation>
+      <bpmn:dataOutputAssociation id="DataOutput_EscribirContador">
+        <bpmn:targetRef>DataObjectReference_Contador</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+
+    <!-- Si acertó: resetear el contador a 0 -->
+    <bpmn:task id="Task_ResetContador" name="Resetear Contador&#10;a Cero">
+      <bpmn:incoming>Flow_CredCorrectas</bpmn:incoming>
+      <bpmn:outgoing>Flow_ResetADashboard</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOutput_ResetContador">
+        <bpmn:targetRef>DataObjectReference_Contador</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+
+    <!-- Si llegó a 5: bloquear la cuenta -->
+    <bpmn:task id="Task_BloquearCuenta" name="Bloquear Cuenta&#10;(guardar timestamp bloqueo)">
+      <bpmn:incoming>Flow_LimiteSuperado</bpmn:incoming>
+      <bpmn:outgoing>Flow_BloqueoAFin</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- ── GATEWAYS ── -->
+
+    <!-- ¿Las credenciales son correctas? -->
+    <bpmn:exclusiveGateway id="Gateway_CredCorrectas" name="¿Credenciales&#10;Correctas?">
+      <bpmn:incoming>Flow_ValidarAGateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_CredCorrectas</bpmn:outgoing>
+      <bpmn:outgoing>Flow_CredInvalidas</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <!-- ¿Se alcanzó el límite de 5 intentos? -->
+    <bpmn:exclusiveGateway id="Gateway_LimiteAlcanzado" name="¿Intentos = 5?">
+      <bpmn:incoming>Flow_ContadorALimite</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReintentoPermitido</bpmn:outgoing>
+      <bpmn:outgoing>Flow_LimiteSuperado</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <!-- ── SEQUENCE FLOWS ── -->
+
+    <bpmn:sequenceFlow id="Flow_InicioAIngreso"
+      sourceRef="StartEvent_AbreApp"
+      targetRef="Task_IngresarCredenciales" />
+
+    <bpmn:sequenceFlow id="Flow_IngresoAValidar"
+      sourceRef="Task_IngresarCredenciales"
+      targetRef="Task_ValidarEnServidor" />
+
+    <bpmn:sequenceFlow id="Flow_ValidarAGateway"
+      sourceRef="Task_ValidarEnServidor"
+      targetRef="Gateway_CredCorrectas" />
+
+    <!-- Camino exitoso -->
+    <bpmn:sequenceFlow id="Flow_CredCorrectas"
+      name="Correcto ✓"
+      sourceRef="Gateway_CredCorrectas"
+      targetRef="Task_ResetContador" />
+
+    <!-- Camino fallido -->
+    <bpmn:sequenceFlow id="Flow_CredInvalidas"
+      name="Incorrecto ✗"
+      sourceRef="Gateway_CredCorrectas"
+      targetRef="Task_IncrementarContador" />
+
+    <!-- Contador actualizado → revisar límite -->
+    <bpmn:sequenceFlow id="Flow_ContadorALimite"
+      sourceRef="Task_IncrementarContador"
+      targetRef="Gateway_LimiteAlcanzado" />
+
+    <!-- Aún puede reintentar (intentos < 5) -->
+    <bpmn:sequenceFlow id="Flow_ReintentoPermitido"
+      name="No — intentos &lt; 5&#10;(puede reintentar)"
+      sourceRef="Gateway_LimiteAlcanzado"
+      targetRef="Task_IngresarCredenciales" />
+
+    <!-- Límite superado (intentos = 5) → bloquear -->
+    <bpmn:sequenceFlow id="Flow_LimiteSuperado"
+      name="Sí — intentos = 5&#10;(cuenta bloqueada)"
+      sourceRef="Gateway_LimiteAlcanzado"
+      targetRef="Task_BloquearCuenta" />
+
+    <!-- Reset → Dashboard -->
+    <bpmn:sequenceFlow id="Flow_ResetADashboard"
+      sourceRef="Task_ResetContador"
+      targetRef="EndEvent_Dashboard" />
+
+    <!-- Bloqueo → Fin con error -->
+    <bpmn:sequenceFlow id="Flow_BloqueoAFin"
+      sourceRef="Task_BloquearCuenta"
+      targetRef="EndEvent_Bloqueado" />
+
+  </bpmn:process>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       DIAGRAMA VISUAL (posicionamiento de elementos)
+       ══════════════════════════════════════════════════════════════ -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Prueba">
+    <bpmndi:BPMNPlane id="BPMNPlane_Prueba" bpmnElement="Colaboracion_Prueba">
+
+      <!-- Participante contenedor -->
+      <bpmndi:BPMNShape id="Participant_Prueba_di" bpmnElement="Participant_Prueba" isHorizontal="true">
+        <dc:Bounds x="100" y="80" width="1600" height="620" />
+      </bpmndi:BPMNShape>
+
+      <!-- ── LANES ── -->
+      <bpmndi:BPMNShape id="Lane_Usuario_di" bpmnElement="Lane_Usuario" isHorizontal="true"
+        bioc:stroke="#0d4372" bioc:fill="#bbdefb"
+        color:background-color="#bbdefb" color:border-color="#0d4372">
+        <dc:Bounds x="130" y="80" width="1570" height="200" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Lane_App_di" bpmnElement="Lane_App" isHorizontal="true"
+        bioc:stroke="#5b176d" bioc:fill="#e1bee7"
+        color:background-color="#e1bee7" color:border-color="#5b176d">
+        <dc:Bounds x="130" y="280" width="1570" height="240" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Lane_Supabase_di" bpmnElement="Lane_Supabase" isHorizontal="true"
+        bioc:stroke="#831311" bioc:fill="#ffcdd2"
+        color:background-color="#ffcdd2" color:border-color="#831311">
+        <dc:Bounds x="130" y="520" width="1570" height="180" />
+      </bpmndi:BPMNShape>
+
+      <!-- ── NODOS: Lane Usuario ── -->
+
+      <!-- StartEvent -->
+      <bpmndi:BPMNShape id="StartEvent_AbreApp_di" bpmnElement="StartEvent_AbreApp">
+        <dc:Bounds x="202" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="181" y="205" width="79" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Task: Ingresar Credenciales -->
+      <bpmndi:BPMNShape id="Task_IngresarCredenciales_di" bpmnElement="Task_IngresarCredenciales"
+        bioc:stroke="#0d4372" bioc:fill="#bbdefb"
+        color:background-color="#bbdefb" color:border-color="#0d4372">
+        <dc:Bounds x="310" y="140" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- EndEvent Dashboard -->
+      <bpmndi:BPMNShape id="EndEvent_Dashboard_di" bpmnElement="EndEvent_Dashboard">
+        <dc:Bounds x="1572" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1551" y="205" width="79" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- EndEvent Bloqueado (error) -->
+      <bpmndi:BPMNShape id="EndEvent_Bloqueado_di" bpmnElement="EndEvent_Bloqueado"
+        bioc:stroke="#831311" bioc:fill="#ffcdd2"
+        color:background-color="#ffcdd2" color:border-color="#831311">
+        <dc:Bounds x="1572" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1549" y="85" width="83" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- ── NODOS: Lane App ── -->
+
+      <!-- Gateway: ¿Credenciales Correctas? -->
+      <bpmndi:BPMNShape id="Gateway_CredCorrectas_di" bpmnElement="Gateway_CredCorrectas" isMarkerVisible="true"
+        bioc:stroke="#5b176d" bioc:fill="#e1bee7"
+        color:background-color="#e1bee7" color:border-color="#5b176d">
+        <dc:Bounds x="655" y="375" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="575" y="388" width="74" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Task: Incrementar Contador -->
+      <bpmndi:BPMNShape id="Task_IncrementarContador_di" bpmnElement="Task_IncrementarContador"
+        bioc:stroke="#6b3a00" bioc:fill="#ffe0b2"
+        color:background-color="#ffe0b2" color:border-color="#6b3a00">
+        <dc:Bounds x="840" y="360" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Gateway: ¿Intentos = 5? -->
+      <bpmndi:BPMNShape id="Gateway_LimiteAlcanzado_di" bpmnElement="Gateway_LimiteAlcanzado" isMarkerVisible="true"
+        bioc:stroke="#6b3a00" bioc:fill="#ffe0b2"
+        color:background-color="#ffe0b2" color:border-color="#6b3a00">
+        <dc:Bounds x="1055" y="375" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1037" y="433" width="87" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Task: Reset Contador -->
+      <bpmndi:BPMNShape id="Task_ResetContador_di" bpmnElement="Task_ResetContador"
+        bioc:stroke="#1b5e20" bioc:fill="#c8e6c9"
+        color:background-color="#c8e6c9" color:border-color="#1b5e20">
+        <dc:Bounds x="1360" y="360" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task: Bloquear Cuenta -->
+      <bpmndi:BPMNShape id="Task_BloquearCuenta_di" bpmnElement="Task_BloquearCuenta"
+        bioc:stroke="#831311" bioc:fill="#ffcdd2"
+        color:background-color="#ffcdd2" color:border-color="#831311">
+        <dc:Bounds x="1360" y="280" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Data Object: Contador -->
+      <bpmndi:BPMNShape id="DataObjectReference_Contador_di" bpmnElement="DataObjectReference_Contador" isHorizontal="false">
+        <dc:Bounds x="962" y="455" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="937" y="511" width="87" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- ── NODOS: Lane Supabase ── -->
+
+      <!-- Task: Validar en Servidor -->
+      <bpmndi:BPMNShape id="Task_ValidarEnServidor_di" bpmnElement="Task_ValidarEnServidor"
+        bioc:stroke="#831311" bioc:fill="#ffcdd2"
+        color:background-color="#ffcdd2" color:border-color="#831311">
+        <dc:Bounds x="530" y="570" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- ══ EDGES (flechas) ══ -->
+
+      <!-- Inicio → Ingresar credenciales -->
+      <bpmndi:BPMNEdge id="Flow_InicioAIngreso_di" bpmnElement="Flow_InicioAIngreso">
+        <di:waypoint x="238" y="180" />
+        <di:waypoint x="310" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Ingresar → Validar en servidor (baja al lane Supabase) -->
+      <bpmndi:BPMNEdge id="Flow_IngresoAValidar_di" bpmnElement="Flow_IngresoAValidar">
+        <di:waypoint x="450" y="180" />
+        <di:waypoint x="600" y="180" />
+        <di:waypoint x="600" y="570" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Validar → Gateway CredCorrectas (sube al lane App) -->
+      <bpmndi:BPMNEdge id="Flow_ValidarAGateway_di" bpmnElement="Flow_ValidarAGateway">
+        <di:waypoint x="670" y="570" />
+        <di:waypoint x="680" y="570" />
+        <di:waypoint x="680" y="425" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Gateway → Correcto → Reset (salta al final) -->
+      <bpmndi:BPMNEdge id="Flow_CredCorrectas_di" bpmnElement="Flow_CredCorrectas">
+        <di:waypoint x="705" y="400" />
+        <di:waypoint x="1360" y="400" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="980" y="378" width="62" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- Gateway → Incorrecto → Incrementar Contador -->
+      <bpmndi:BPMNEdge id="Flow_CredInvalidas_di" bpmnElement="Flow_CredInvalidas">
+        <di:waypoint x="680" y="425" />
+        <di:waypoint x="680" y="460" />
+        <di:waypoint x="840" y="460" />
+        <di:waypoint x="840" y="420" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="740" y="438" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- Contador → Gateway Límite -->
+      <bpmndi:BPMNEdge id="Flow_ContadorALimite_di" bpmnElement="Flow_ContadorALimite">
+        <di:waypoint x="980" y="400" />
+        <di:waypoint x="1055" y="400" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Límite: No (< 5) → regresa a Ingresar (LOOP) -->
+      <bpmndi:BPMNEdge id="Flow_ReintentoPermitido_di" bpmnElement="Flow_ReintentoPermitido">
+        <di:waypoint x="1080" y="375" />
+        <di:waypoint x="1080" y="260" />
+        <di:waypoint x="380" y="260" />
+        <di:waypoint x="380" y="220" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="660" y="238" width="120" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- Límite: Sí (= 5) → Bloquear -->
+      <bpmndi:BPMNEdge id="Flow_LimiteSuperado_di" bpmnElement="Flow_LimiteSuperado">
+        <di:waypoint x="1105" y="400" />
+        <di:waypoint x="1230" y="400" />
+        <di:waypoint x="1230" y="320" />
+        <di:waypoint x="1360" y="320" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1175" y="350" width="110" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- Reset → Dashboard (sube al lane usuario) -->
+      <bpmndi:BPMNEdge id="Flow_ResetADashboard_di" bpmnElement="Flow_ResetADashboard">
+        <di:waypoint x="1500" y="400" />
+        <di:waypoint x="1590" y="400" />
+        <di:waypoint x="1590" y="198" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Bloqueo → EndEvent Error (sube al lane usuario) -->
+      <bpmndi:BPMNEdge id="Flow_BloqueoAFin_di" bpmnElement="Flow_BloqueoAFin">
+        <di:waypoint x="1500" y="320" />
+        <di:waypoint x="1540" y="320" />
+        <di:waypoint x="1540" y="130" />
+        <di:waypoint x="1572" y="130" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Data associations: Leer contador -->
+      <bpmndi:BPMNEdge id="DataInput_LeerContador_di" bpmnElement="DataInput_LeerContador">
+        <di:waypoint x="980" y="455" />
+        <di:waypoint x="980" y="420" />
+        <di:waypoint x="980" y="420" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Data associations: Escribir contador -->
+      <bpmndi:BPMNEdge id="DataOutput_EscribirContador_di" bpmnElement="DataOutput_EscribirContador">
+        <di:waypoint x="980" y="440" />
+        <di:waypoint x="980" y="455" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
