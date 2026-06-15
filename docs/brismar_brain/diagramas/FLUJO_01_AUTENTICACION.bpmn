@@ -53,7 +53,7 @@
     <bpmn:sequenceFlow id="Flow_Start" sourceRef="StartEvent_1" targetRef="Gateway_HasSession" />
     <bpmn:sequenceFlow id="Flow_NoSession" name="No" sourceRef="Gateway_HasSession" targetRef="Task_FullLoginInput" />
     <bpmn:sequenceFlow id="Flow_OnlineFailLoop" name="Incorrecto" sourceRef="Gateway_OnlineAuthCheck" targetRef="Task_FullLoginInput" />
-    <bpmn:sequenceFlow id="Flow_OfflineFailLoop" name="Incorrecto" sourceRef="Gateway_OfflineHashCheck" targetRef="Task_FullLoginInput" />
+    <bpmn:sequenceFlow id="Flow_OfflineFailLoop" name="Incorrecto" sourceRef="Gateway_OfflineHashCheck" targetRef="EndEvent_FailOfflineNoCache" />
     <bpmn:sequenceFlow id="Flow_FromClearSession" sourceRef="Task_ClearSession" targetRef="Task_FullLoginInput" />
     <bpmn:sequenceFlow id="Flow_ToNetworkCheck" sourceRef="Task_FullLoginInput" targetRef="Gateway_NetworkCheck" />
     <bpmn:sequenceFlow id="Flow_HasSession" name="Sí" sourceRef="Gateway_HasSession" targetRef="Gateway_GracePeriod" />
@@ -72,7 +72,7 @@
     <bpmn:sequenceFlow id="Flow_OfflineNoCache" name="Sin Caché" sourceRef="Gateway_OfflineHashCheck" targetRef="EndEvent_FailOfflineNoCache" />
     <bpmn:sequenceFlow id="Flow_ToSaveSession" sourceRef="Task_SetupBiometrics" targetRef="Task_SaveSession" />
     <bpmn:sequenceFlow id="Flow_BiometricSuccess" name="Correcto" sourceRef="Gateway_BiometricCheck" targetRef="Task_UpdateTimestamp" />
-    <bpmn:sequenceFlow id="Flow_OfflineSuccess" name="Correcto" sourceRef="Gateway_OfflineHashCheck" targetRef="Task_SetupPIN" />
+    <bpmn:sequenceFlow id="Flow_OfflineSuccess" name="Correcto" sourceRef="Gateway_OfflineHashCheck" targetRef="EndEvent_Dashboard" />
     <bpmn:sequenceFlow id="Flow_ToOfflineHashCheck" sourceRef="Task_OfflineAuth" targetRef="Gateway_OfflineHashCheck" />
     <bpmn:startEvent id="StartEvent_1" name="Usuario Abre la App">
       <bpmn:outgoing>Flow_Start</bpmn:outgoing>
@@ -81,11 +81,11 @@
       <bpmn:incoming>Flow_ToDashboardDirect</bpmn:incoming>
       <bpmn:incoming>Flow_GraceYes</bpmn:incoming>
       <bpmn:incoming>Flow_ToDashboardAfterUpdate</bpmn:incoming>
+      <bpmn:incoming>Flow_OfflineSuccess</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:task id="Task_FullLoginInput" name="Ingresar Correo y Contraseña">
       <bpmn:incoming>Flow_NoSession</bpmn:incoming>
       <bpmn:incoming>Flow_OnlineFailLoop</bpmn:incoming>
-      <bpmn:incoming>Flow_OfflineFailLoop</bpmn:incoming>
       <bpmn:incoming>Flow_FromClearSession</bpmn:incoming>
       <bpmn:outgoing>Flow_ToNetworkCheck</bpmn:outgoing>
     </bpmn:task>
@@ -126,6 +126,7 @@
     </bpmn:exclusiveGateway>
     <bpmn:endEvent id="EndEvent_FailOfflineNoCache" name="Error: Requiere Inicio de Sesión Online">
       <bpmn:incoming>Flow_OfflineNoCache</bpmn:incoming>
+      <bpmn:incoming>Flow_OfflineFailLoop</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:exclusiveGateway id="Gateway_NetworkCheck" name="¿Tiene Internet?">
       <bpmn:incoming>Flow_ToNetworkCheck</bpmn:incoming>
@@ -151,7 +152,6 @@
     </bpmn:task>
     <bpmn:task id="Task_SetupPIN" name="Configurar PIN (Obligatorio)">
       <bpmn:incoming>Flow_OnlineSuccess</bpmn:incoming>
-      <bpmn:incoming>Flow_OfflineSuccess</bpmn:incoming>
       <bpmn:outgoing>Flow_ToSetupBiometrics</bpmn:outgoing>
     </bpmn:task>
     <bpmn:task id="Task_SetupBiometrics" name="Configurar Huella (Opcional)">
@@ -237,7 +237,7 @@
       <bpmndi:BPMNShape id="EndEvent_Dashboard_di" bpmnElement="EndEvent_Dashboard" isMarkerVisible="true">
         <dc:Bounds x="2562" y="152" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="2549" y="102" width="62" height="40" />
+          <dc:Bounds x="2509" y="102" width="62" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_FullLoginInput_di" bpmnElement="Task_FullLoginInput">
@@ -361,15 +361,13 @@
           <dc:Bounds x="1025" y="361" width="49" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_OfflineFailLoop_di" bpmnElement="Flow_OfflineFailLoop" bioc:stroke="#205022" color:border-color="#205022">
-        <di:waypoint x="1128" y="750" />
-        <di:waypoint x="1230" y="750" />
-        <di:waypoint x="1230" y="170" />
-        <di:waypoint x="330" y="170" />
-        <di:waypoint x="330" y="80" />
-        <di:waypoint x="385" y="80" />
+      <bpmndi:BPMNEdge id="Flow_OfflineFailLoop_di" bpmnElement="Flow_OfflineFailLoop" bioc:stroke="#831311" color:border-color="#831311">
+        <di:waypoint x="1118" y="740" />
+        <di:waypoint x="2730" y="740" />
+        <di:waypoint x="2730" y="-10" />
+        <di:waypoint x="2698" y="-10" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1149" y="723" width="49" height="14" />
+          <dc:Bounds x="1155" y="723" width="49" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_FromClearSession_di" bpmnElement="Flow_FromClearSession">
@@ -507,11 +505,12 @@
           <dc:Bounds x="1423" y="125" width="43" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_OfflineSuccess_di" bpmnElement="Flow_OfflineSuccess">
+      <bpmndi:BPMNEdge id="Flow_OfflineSuccess_di" bpmnElement="Flow_OfflineSuccess" bioc:stroke="#205022" color:border-color="#205022">
         <di:waypoint x="1128" y="770" />
         <di:waypoint x="1750" y="770" />
-        <di:waypoint x="1750" y="-7" />
-        <di:waypoint x="1795" y="-7" />
+        <di:waypoint x="1750" y="80" />
+        <di:waypoint x="2580" y="80" />
+        <di:waypoint x="2580" y="152" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1152" y="783" width="43" height="14" />
         </bpmndi:BPMNLabel>
