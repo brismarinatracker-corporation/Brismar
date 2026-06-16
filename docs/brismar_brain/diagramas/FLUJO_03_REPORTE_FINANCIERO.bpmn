@@ -12,111 +12,49 @@
         <bpmn:flowNodeRef>Task_FillFilters</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Gateway_SelectAction</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>EndEvent_ShowWeb</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>EndEvent_DownloadPDF</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>EndEvent_FailReport</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_DownloadPDF</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="Lane_Web" name="Dashboard Web (Frontend)">
+        <bpmn:flowNodeRef>Task_RenderError</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_RenderStats</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_TriggerDownload</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_RenderError</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="Lane_Server" name="Servidor API Web (Backend Node/Express)">
         <bpmn:flowNodeRef>Task_QueryDB</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_CompilePDF</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_StreamPDF</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CompilePDF</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ResponseSplit</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Gateway_QueryCheck</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="Lane_DB" name="Base de Datos Central (Supabase / Postgres)">
-        <bpmn:flowNodeRef>Task_DBSelect</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>DataStore_Reporte</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DBSelect</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
-    
     <bpmn:startEvent id="StartEvent_Reporte" name="Iniciar Auditoría de Periodo">
       <bpmn:outgoing>Flow_Start</bpmn:outgoing>
     </bpmn:startEvent>
-    
     <bpmn:task id="Task_AccessPanel" name="Acceder al Panel Web de Brismar">
       <bpmn:incoming>Flow_Start</bpmn:incoming>
       <bpmn:outgoing>Flow_ToFilters</bpmn:outgoing>
     </bpmn:task>
-    
     <bpmn:task id="Task_FillFilters" name="Seleccionar Rango de Fechas y Bahía">
       <bpmn:incoming>Flow_ToFilters</bpmn:incoming>
       <bpmn:outgoing>Flow_ToSelection</bpmn:outgoing>
     </bpmn:task>
-    
     <bpmn:exclusiveGateway id="Gateway_SelectAction" name="¿Qué acción desea realizar?">
       <bpmn:incoming>Flow_ToSelection</bpmn:incoming>
       <bpmn:outgoing>Flow_ToStats</bpmn:outgoing>
       <bpmn:outgoing>Flow_ToPDF</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    
-    <bpmn:task id="Task_QueryDB" name="Ejecutar Query de Sumarización (Sequelize)">
-      <bpmn:incoming>Flow_ToStats</bpmn:incoming>
-      <bpmn:incoming>Flow_ToPDF</bpmn:incoming>
-      <bpmn:outgoing>Flow_ToDB</bpmn:outgoing>
-    </bpmn:task>
-    
-    <bpmn:task id="Task_DBSelect" name="Calcular SUM de Ventas e Ingresos por Categoría">
-      <bpmn:incoming>Flow_ToDB</bpmn:incoming>
-      <bpmn:outgoing>Flow_FromDB</bpmn:outgoing>
-      <bpmn:dataOutputAssociation id="DataOutput_DB">
-        <bpmn:targetRef>DataStore_Reporte</bpmn:targetRef>
-      </bpmn:dataOutputAssociation>
-    </bpmn:task>
-    
     <bpmn:dataStoreReference id="DataStore_Reporte" name="PostgreSQL (Supabase DB)" />
-    
-    <bpmn:exclusiveGateway id="Gateway_QueryCheck" name="¿Consulta Exitosa?">
-      <bpmn:incoming>Flow_FromDB</bpmn:incoming>
-      <bpmn:outgoing>Flow_QueryOk</bpmn:outgoing>
-      <bpmn:outgoing>Flow_QueryErr</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    
-    <bpmn:exclusiveGateway id="Gateway_ResponseSplit" name="¿Tipo de Petición?">
-      <bpmn:incoming>Flow_QueryOk</bpmn:incoming>
-      <bpmn:outgoing>Flow_RespStats</bpmn:outgoing>
-      <bpmn:outgoing>Flow_RespPDF</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    
-    <bpmn:task id="Task_RenderStats" name="Renderizar Totales y Gráficos en Pantalla">
-      <bpmn:incoming>Flow_RespStats</bpmn:incoming>
-      <bpmn:outgoing>Flow_EndWeb</bpmn:outgoing>
-    </bpmn:task>
-    
-    <bpmn:task id="Task_CompilePDF" name="Generar y Dibujar PDF en Memoria (PDFKit)">
-      <bpmn:incoming>Flow_RespPDF</bpmn:incoming>
-      <bpmn:outgoing>Flow_ToStream</bpmn:outgoing>
-    </bpmn:task>
-    
-    <bpmn:task id="Task_StreamPDF" name="Transmitir Bytes al HTTP Response (pipe res)">
-      <bpmn:incoming>Flow_ToStream</bpmn:incoming>
-      <bpmn:outgoing>Flow_ToDownload</bpmn:outgoing>
-    </bpmn:task>
-    
-    <bpmn:task id="Task_TriggerDownload" name="Iniciar Descarga del Archivo Binario (Navegador)">
-      <bpmn:incoming>Flow_ToDownload</bpmn:incoming>
-      <bpmn:outgoing>Flow_EndPDF</bpmn:outgoing>
-    </bpmn:task>
-    
-    <bpmn:task id="Task_RenderError" name="Mostrar Alerta de Error en Pantalla">
-      <bpmn:incoming>Flow_QueryErr</bpmn:incoming>
-      <bpmn:outgoing>Flow_EndErr</bpmn:outgoing>
-    </bpmn:task>
-    
     <bpmn:endEvent id="EndEvent_ShowWeb" name="Visualizado en Pantalla">
       <bpmn:incoming>Flow_EndWeb</bpmn:incoming>
     </bpmn:endEvent>
-    
-    <bpmn:endEvent id="EndEvent_DownloadPDF" name="Reporte PDF Descargado">
-      <bpmn:incoming>Flow_EndPDF</bpmn:incoming>
-    </bpmn:endEvent>
-    
     <bpmn:endEvent id="EndEvent_FailReport" name="Fallo de Conciliación">
       <bpmn:incoming>Flow_EndErr</bpmn:incoming>
     </bpmn:endEvent>
-    
     <bpmn:sequenceFlow id="Flow_Start" sourceRef="StartEvent_Reporte" targetRef="Task_AccessPanel" />
     <bpmn:sequenceFlow id="Flow_ToFilters" sourceRef="Task_AccessPanel" targetRef="Task_FillFilters" />
     <bpmn:sequenceFlow id="Flow_ToSelection" sourceRef="Task_FillFilters" targetRef="Gateway_SelectAction" />
@@ -133,8 +71,52 @@
     <bpmn:sequenceFlow id="Flow_EndWeb" sourceRef="Task_RenderStats" targetRef="EndEvent_ShowWeb" />
     <bpmn:sequenceFlow id="Flow_EndPDF" sourceRef="Task_TriggerDownload" targetRef="EndEvent_DownloadPDF" />
     <bpmn:sequenceFlow id="Flow_EndErr" sourceRef="Task_RenderError" targetRef="EndEvent_FailReport" />
+    <bpmn:task id="Task_QueryDB" name="Ejecutar Query de Sumarización (Sequelize)">
+      <bpmn:incoming>Flow_ToStats</bpmn:incoming>
+      <bpmn:incoming>Flow_ToPDF</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToDB</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_DownloadPDF" name="Reporte PDF Descargado">
+      <bpmn:incoming>Flow_EndPDF</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_RenderError" name="Mostrar Alerta de Error en Pantalla">
+      <bpmn:incoming>Flow_QueryErr</bpmn:incoming>
+      <bpmn:outgoing>Flow_EndErr</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_RenderStats" name="Renderizar Totales y Gráficos en Pantalla">
+      <bpmn:incoming>Flow_RespStats</bpmn:incoming>
+      <bpmn:outgoing>Flow_EndWeb</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_StreamPDF" name="Transmitir Bytes al HTTP Response (pipe res)">
+      <bpmn:incoming>Flow_ToStream</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToDownload</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_CompilePDF" name="Generar y Dibujar PDF en Memoria (PDFKit)">
+      <bpmn:incoming>Flow_RespPDF</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToStream</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_ResponseSplit" name="¿Tipo de Petición?">
+      <bpmn:incoming>Flow_QueryOk</bpmn:incoming>
+      <bpmn:outgoing>Flow_RespStats</bpmn:outgoing>
+      <bpmn:outgoing>Flow_RespPDF</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_QueryCheck" name="¿Consulta Exitosa?">
+      <bpmn:incoming>Flow_FromDB</bpmn:incoming>
+      <bpmn:outgoing>Flow_QueryOk</bpmn:outgoing>
+      <bpmn:outgoing>Flow_QueryErr</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_DBSelect" name="Calcular SUM de Ventas e Ingresos por Categoría">
+      <bpmn:incoming>Flow_ToDB</bpmn:incoming>
+      <bpmn:outgoing>Flow_FromDB</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOutput_DB">
+        <bpmn:targetRef>DataStore_Reporte</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+    <bpmn:task id="Task_TriggerDownload" name="Iniciar Descarga del Archivo Binario (Navegador)">
+      <bpmn:incoming>Flow_ToDownload</bpmn:incoming>
+      <bpmn:outgoing>Flow_EndPDF</bpmn:outgoing>
+    </bpmn:task>
   </bpmn:process>
-  
   <bpmndi:BPMNDiagram id="BPMNDiagram_Reporte">
     <bpmndi:BPMNPlane id="BPMNPlane_Reporte" bpmnElement="Collaboration_Reporte">
       <bpmndi:BPMNShape id="Participant_Reporte_di" bpmnElement="Participant_Reporte" isHorizontal="true">
@@ -167,14 +149,8 @@
       <bpmndi:BPMNShape id="Gateway_SelectAction_di" bpmnElement="Gateway_SelectAction" isMarkerVisible="true">
         <dc:Bounds x="635" y="135" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="622" y="90" width="76" height="27" />
+          <dc:Bounds x="632" y="104" width="76" height="27" />
         </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_QueryDB_di" bpmnElement="Task_QueryDB">
-        <dc:Bounds x="600" y="440" width="120" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_DBSelect_di" bpmnElement="Task_DBSelect">
-        <dc:Bounds x="600" y="620" width="120" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DataStore_Reporte_di" bpmnElement="DataStore_Reporte">
         <dc:Bounds x="455" y="635" width="50" height="50" />
@@ -182,43 +158,10 @@
           <dc:Bounds x="444" y="695" width="73" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_ResponseSplit_di" bpmnElement="Gateway_ResponseSplit" isMarkerVisible="true">
-        <dc:Bounds x="785" y="455" width="50" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="766" y="515" width="88" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_QueryCheck_di" bpmnElement="Gateway_QueryCheck" isMarkerVisible="true">
-        <dc:Bounds x="720" y="455" width="50" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="702" y="515" width="87" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_RenderStats_di" bpmnElement="Task_RenderStats">
-        <dc:Bounds x="750" y="270" width="120" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_CompilePDF_di" bpmnElement="Task_CompilePDF">
-        <dc:Bounds x="920" y="440" width="120" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_StreamPDF_di" bpmnElement="Task_StreamPDF">
-        <dc:Bounds x="1080" y="440" width="120" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_TriggerDownload_di" bpmnElement="Task_TriggerDownload">
-        <dc:Bounds x="1080" y="270" width="120" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_RenderError_di" bpmnElement="Task_RenderError">
-        <dc:Bounds x="920" y="270" width="120" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_ShowWeb_di" bpmnElement="EndEvent_ShowWeb">
         <dc:Bounds x="912" y="142" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="896" y="185" width="70" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_DownloadPDF_di" bpmnElement="EndEvent_DownloadPDF">
-        <dc:Bounds x="1262" y="142" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1248" y="185" width="65" height="27" />
+          <dc:Bounds x="894" y="104.5" width="71" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_FailReport_di" bpmnElement="EndEvent_FailReport">
@@ -226,6 +169,45 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1068" y="185" width="60" height="27" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_QueryDB_di" bpmnElement="Task_QueryDB">
+        <dc:Bounds x="520" y="410" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_DownloadPDF_di" bpmnElement="EndEvent_DownloadPDF">
+        <dc:Bounds x="1282" y="142" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1267" y="104.5" width="65" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RenderError_di" bpmnElement="Task_RenderError">
+        <dc:Bounds x="950" y="270" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RenderStats_di" bpmnElement="Task_RenderStats">
+        <dc:Bounds x="790" y="270" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_StreamPDF_di" bpmnElement="Task_StreamPDF">
+        <dc:Bounds x="1240" y="440" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CompilePDF_di" bpmnElement="Task_CompilePDF">
+        <dc:Bounds x="1038" y="440" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ResponseSplit_di" bpmnElement="Gateway_ResponseSplit" isMarkerVisible="true">
+        <dc:Bounds x="875" y="455" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="877" y="515" width="46" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_QueryCheck_di" bpmnElement="Gateway_QueryCheck" isMarkerVisible="true">
+        <dc:Bounds x="775" y="455" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="739" y="506" width="51" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DBSelect_di" bpmnElement="Task_DBSelect">
+        <dc:Bounds x="630" y="610" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TriggerDownload_di" bpmnElement="Task_TriggerDownload">
+        <dc:Bounds x="1240" y="260" width="120" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_Start_di" bpmnElement="Flow_Start">
         <di:waypoint x="278" y="160" />
@@ -239,85 +221,94 @@
         <di:waypoint x="600" y="160" />
         <di:waypoint x="635" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_ToStats_di" bpmnElement="Flow_ToStats">
+      <bpmndi:BPMNEdge id="Flow_ToStats_di" bpmnElement="Flow_ToStats" bioc:stroke="#0d4372" color:border-color="#0d4372">
         <di:waypoint x="660" y="185" />
-        <di:waypoint x="660" y="440" />
+        <di:waypoint x="660" y="210" />
+        <di:waypoint x="580" y="210" />
+        <di:waypoint x="580" y="410" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="578" y="223" width="79" height="14" />
+          <dc:Bounds x="487" y="303" width="86" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_ToPDF_di" bpmnElement="Flow_ToPDF">
+      <bpmndi:BPMNEdge id="Flow_ToPDF_di" bpmnElement="Flow_ToPDF" bioc:stroke="#0d4372" color:border-color="#0d4372">
         <di:waypoint x="685" y="160" />
-        <di:waypoint x="700" y="160" />
-        <di:waypoint x="700" y="440" />
+        <di:waypoint x="710" y="160" />
+        <di:waypoint x="710" y="450" />
+        <di:waypoint x="640" y="450" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="707" y="223" width="79" height="14" />
+          <dc:Bounds x="618" y="393" width="84" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_ToDB_di" bpmnElement="Flow_ToDB">
-        <di:waypoint x="660" y="520" />
-        <di:waypoint x="660" y="620" />
+        <di:waypoint x="580" y="490" />
+        <di:waypoint x="580" y="570" />
+        <di:waypoint x="690" y="570" />
+        <di:waypoint x="690" y="610" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_FromDB_di" bpmnElement="Flow_FromDB">
-        <di:waypoint x="720" y="660" />
-        <di:waypoint x="745" y="660" />
-        <di:waypoint x="745" y="505" />
+        <di:waypoint x="750" y="650" />
+        <di:waypoint x="800" y="650" />
+        <di:waypoint x="800" y="505" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_QueryOk_di" bpmnElement="Flow_QueryOk">
-        <di:waypoint x="770" y="480" />
-        <di:waypoint x="785" y="480" />
+      <bpmndi:BPMNEdge id="Flow_QueryOk_di" bpmnElement="Flow_QueryOk" bioc:stroke="#205022" color:border-color="#205022">
+        <di:waypoint x="825" y="480" />
+        <di:waypoint x="875" y="480" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="772" y="462" width="11" height="14" />
+          <dc:Bounds x="845" y="462" width="11" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_QueryErr_di" bpmnElement="Flow_QueryErr">
-        <di:waypoint x="745" y="455" />
-        <di:waypoint x="745" y="380" />
-        <di:waypoint x="920" y="310" />
+      <bpmndi:BPMNEdge id="Flow_QueryErr_di" bpmnElement="Flow_QueryErr" bioc:stroke="#831311" color:border-color="#831311">
+        <di:waypoint x="800" y="455" />
+        <di:waypoint x="800" y="400" />
+        <di:waypoint x="760" y="400" />
+        <di:waypoint x="760" y="370" />
+        <di:waypoint x="1000" y="370" />
+        <di:waypoint x="1000" y="350" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="752" y="415" width="15" height="14" />
+          <dc:Bounds x="777" y="447" width="15" height="14" />
         </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_EndErr_di" bpmnElement="Flow_EndErr">
-        <di:waypoint x="1040" y="310" />
-        <di:waypoint x="1098" y="310" />
-        <di:waypoint x="1098" y="178" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_RespStats_di" bpmnElement="Flow_RespStats">
-        <di:waypoint x="810" y="455" />
-        <di:waypoint x="810" y="350" />
+        <di:waypoint x="900" y="455" />
+        <di:waypoint x="900" y="403" />
+        <di:waypoint x="860" y="403" />
+        <di:waypoint x="860" y="350" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="817" y="393" width="77" height="14" />
+          <dc:Bounds x="854" y="421" width="83" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_RespPDF_di" bpmnElement="Flow_RespPDF">
-        <di:waypoint x="835" y="480" />
-        <di:waypoint x="920" y="480" />
+        <di:waypoint x="925" y="480" />
+        <di:waypoint x="1038" y="480" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="846" y="462" width="46" height="14" />
+          <dc:Bounds x="947" y="462" width="49" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_ToStream_di" bpmnElement="Flow_ToStream">
-        <di:waypoint x="1040" y="480" />
-        <di:waypoint x="1080" y="480" />
+        <di:waypoint x="1158" y="480" />
+        <di:waypoint x="1240" y="480" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_ToDownload_di" bpmnElement="Flow_ToDownload">
-        <di:waypoint x="1140" y="440" />
-        <di:waypoint x="1140" y="350" />
+        <di:waypoint x="1300" y="440" />
+        <di:waypoint x="1300" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_EndWeb_di" bpmnElement="Flow_EndWeb">
-        <di:waypoint x="870" y="310" />
-        <di:waypoint x="930" y="310" />
-        <di:waypoint x="930" y="178" />
+        <di:waypoint x="870" y="270" />
+        <di:waypoint x="870" y="160" />
+        <di:waypoint x="912" y="160" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_EndPDF_di" bpmnElement="Flow_EndPDF">
-        <di:waypoint x="1200" y="310" />
-        <di:waypoint x="1280" y="310" />
-        <di:waypoint x="1280" y="178" />
+        <di:waypoint x="1300" y="260" />
+        <di:waypoint x="1300" y="178" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_EndErr_di" bpmnElement="Flow_EndErr">
+        <di:waypoint x="1030" y="270" />
+        <di:waypoint x="1030" y="160" />
+        <di:waypoint x="1080" y="160" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DataOutput_DB_di" bpmnElement="DataOutput_DB">
-        <di:waypoint x="600" y="660" />
-        <di:waypoint x="505" y="660" />
+        <di:waypoint x="630" y="653" />
+        <di:waypoint x="505" y="659" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
