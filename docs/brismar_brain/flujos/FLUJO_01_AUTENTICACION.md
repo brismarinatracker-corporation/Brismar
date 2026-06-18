@@ -86,16 +86,20 @@ graph TB
 
 * **Cuándo ocurre**: La primera vez que se usa la app en el dispositivo, o tras un cierre de sesión manual que destruye el token local.
 * **Proceso**:
-  1. El usuario ingresa su **Correo y Contraseña** (es el único proceso de red que no requiere token, ya que es el que lo genera).
+  1. El usuario ingresa su **Correo y Contraseña**.
   2. Al presionar "Iniciar Sesión", la app evalúa si cuenta con conexión a internet.
+     * > [!IMPORTANT]
+     * > **El primer inicio de sesión de un usuario en un dispositivo nuevo requiere obligatoriamente conexión a internet (Online)** para validar sus credenciales con Supabase Auth. No es posible realizar un primer inicio de sesión de forma offline porque la bóveda segura del dispositivo aún no posee el hash BCrypt de la contraseña del usuario.
   3. **Con Internet (Online)**: Envía la petición a Supabase, valida las credenciales y genera el token de autorización JWT.
-  4. **Sin Internet (Offline)**: Compara los datos ingresados contra el hash **BCrypt** almacenado en la **Bóveda Segura** del dispositivo. Si no existe registro previo offline de ese usuario, se rechaza la autenticación indicando que requiere conectarse a internet.
-  5. **Configuración de Acceso Rápido**: Tras el login exitoso, se le exige al usuario definir un **PIN numérico (Obligatorio)** y se le ofrece configurar la **Huella Digital (Opcional)**.
-  6. **Persistencia**: Se encriptan y guardan en la Bóveda Segura (`Flutter Secure Storage`):
-     * El token local de autorización.
-     * El hash de contraseña para ingresos offline.
+  4. **Sin Internet (Offline - Solo usuarios previamente autenticados)**: Compara los datos ingresados contra el hash **BCrypt** almacenado en la **Bóveda Segura** del dispositivo. Si coincide, autoriza el acceso local. Si no existe registro previo offline de ese usuario o no coincide el hash, se rechaza la autenticación indicando que requiere conectarse a internet.
+  5. **Configuración de Acceso Rápido**: Tras el login exitoso (ya sea online u offline), se le exige al usuario definir un **PIN numérico (Obligatorio)** y se le ofrece configurar la **Huella Digital (Opcional)**.
+  6. **Persistencia y Hardware Keys**: Se encriptan y guardan en la Bóveda Segura (`flutter_secure_storage`), la cual utiliza encriptación por hardware (Android Keystore / iOS Keychain):
+     * El token local de autorización (JWT) de Supabase.
+     * El refresh token de Supabase.
+     * El hash de contraseña local (`offline_password_hash` hasheado con BCrypt) para ingresos offline.
      * Las preferencias de acceso (PIN y huella).
-     * El timestamp exacto de la verificación actual.
+     * La **Clave Maestra de SQLCipher** generada aleatoriamente al inicializar la base de datos (esta clave encripta los archivos locales `.db` y se almacena únicamente en el secure storage del hardware).
+     * El timestamp exacto de la última verificación exitosa.
 
 ---
 
@@ -105,9 +109,11 @@ graph TB
 * **Proceso**:
   1. La app pregunta si la última verificación de identidad ocurrió hace **menos de 12 horas**.
   2. **Menos de 12 horas**: El usuario entra directamente al **Dashboard** sin interrupciones.
-  3. **Más de 12 horas**: Se bloquea la pantalla y se le pide re-verificar su identidad:
+  3. **Más de 12 horas (Re-verificación)**: Se bloquea la pantalla y se le pide re-verificar su identidad:
      * Por defecto se presenta el teclado numérico del **PIN** (obligatorio).
      * Si activó la biometría, el sistema invoca automáticamente el lector de **Huella Digital**.
+     * > [!NOTE]
+     * > **Manejo del JWT Offline**: Dado que el token JWT de Supabase tiene una vigencia por defecto de 1 hora, la aplicación móvil ignora la caducidad del JWT local mientras el dispositivo se encuentre sin conexión a internet (offline), confiando plenamente en la validación local del PIN o la huella. La renovación del JWT contra el servidor de Supabase mediante el refresh token se pospone y ejecuta de forma transparente en cuanto la app detecte conexión activa (Flujo 04).
   4. **Actualización de Tiempo**: Una vez que el usuario ingresa su PIN o Huella de forma exitosa, la aplicación **actualiza el timestamp de última verificación** en la Bóveda Segura, reiniciando el temporizador de 12 horas de gracia.
 
 ---

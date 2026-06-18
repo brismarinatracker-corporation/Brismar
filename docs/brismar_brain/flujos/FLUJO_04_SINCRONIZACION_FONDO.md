@@ -57,33 +57,44 @@ graph TB
 ## 📊 Especificación de la Sincronización en Lote
 
 ### 1. Disparadores del Proceso (Triggers)
-El flujo de sincronización puede ser despertado por dos eventos mutuamente excluyentes:
-1.  **Gatillo Automático (Sistema):** El listener de la librería `connectivity_plus` detecta una transición de red (de sin conexión a conexión WIFI, Móvil o Ethernet) y despierta al servicio `SyncNotifier` en [registro_controlador.dart](file:///c:/BRISMAR_APP/brismar_app/lib/modulos/registro/presentacion/controladores/registro_controlador.dart).
-2.  **Gatillo Manual (Usuario):** El operario arrastra la lista de historial hacia abajo (`RefreshIndicator`) en la pantalla de la app, forzando la ejecución del método `ejecutarSincronizacion()`.
 
-### 2. Extracción de Datos en Lote
-La app móvil consulta la base de datos local SQLite utilizando el método `obtenerPendientesSincronizar()` en [fuente_datos_registro_local.dart](file:///c:/BRISMAR_APP/brismar_app/lib/modulos/registro/datos/fuentes_datos/fuente_datos_registro_local.dart):
+El flujo de sincronización puede ser despertado por dos eventos mutuamente excluyentes:
+
+1. **Gatillo Automático (Sistema):** El listener de la librería `connectivity_plus` detecta una transición de red (de sin conexión a conexión WIFI, Móvil o Ethernet) y despierta al servicio `SyncNotifier` en [registro_controlador.dart](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/brismar_app/lib/modulos/registro/presentacion/controladores/registro_controlador.dart).
+2. **Gatillo Manual (Usuario):** El operario arrastra la lista de historial hacia abajo (`RefreshIndicator`) en la pantalla de la app, forzando la ejecución del método `ejecutarSincronizacion()`.
+
+### 2. Extracción Paginada y Límites de Lote (Batch Limits)
+
+Para evitar sobrecargar la red móvil inestable en la bahía o generar timeouts con cargas de datos excesivas, la extracción local se realiza de forma paginada:
+
 ```sql
-SELECT * FROM registro_embarcaciones WHERE sincronizado = 0;
+SELECT * FROM registro_embarcaciones WHERE sincronizado = 0 LIMIT 20;
 ```
-*   **Si la lista está vacía:** El flujo termina inmediatamente sin consumir datos móviles ni batería.
-*   **Si contiene registros:** Convierte cada registro a JSON y los agrupa en un lote de datos.
+
+* **Límite de Lote:** Se extrae un máximo de **20 registros por lote**.
+* **Procesamiento Secuencial:** Si existen más de 20 registros pendientes, la app procesa el primer lote, lo sube exitosamente y de inmediato ejecuta un nuevo ciclo para el siguiente lote, hasta vaciar la cola de pendientes.
+* **Cola Vacía:** Si la consulta retorna cero registros, el flujo finaliza de forma silenciosa para conservar batería y datos.
 
 ### 3. Subida Masiva y Upsert (Nube)
-El lote se transmite a Supabase mediante la función `subirRegistros()` en [fuente_datos_registro_remota.dart](file:///c:/BRISMAR_APP/brismar_app/lib/modulos/registro/datos/fuentes_datos/fuente_datos_registro_remota.dart).
-*   **Estrategia de Idempotencia:** Se utiliza un **`upsert`** basado en la clave primaria (`id` UUID v4). Si un registro ya se había subido parcialmente en un intento anterior fallido, Supabase simplemente actualiza sus campos en lugar de crear un duplicado, evitando la corrupción de datos y resolviendo problemas de reintentos.
 
-### 4. Actualización del Estado Local
-Al recibir la confirmación exitosa de Supabase:
-*   Se ejecuta `marcarComoSincronizados(ids)` en SQLite.
-*   Se cambia el flag local de `sincronizado` a `1` para liberar la cola de pendientes.
-*   La interfaz gráfica refresca los iconos de estado (el icono de reloj naranja "pendiente" cambia a un check verde "sincronizado").
+El lote de 20 registros se serializa a JSON y se transmite a Supabase mediante la función `subirRegistros()` en [fuente_datos_registro_remota.dart](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/brismar_app/lib/modulos/registro/datos/fuentes_datos/fuente_datos_registro_remota.dart).
+
+* **Estrategia de Idempotencia:** Se realiza un **`upsert`** en Supabase usando el `id` (UUID v4) como clave. Si un registro ya existe en el servidor debido a un intento de subida previo que no recibió confirmación, se sobrescribe en lugar de duplicarse, evitando inconsistencias financieras.
+
+### 4. Control de Errores Individuales y Marcación Local
+
+Al finalizar la petición a Supabase:
+
+* **Sincronización Exitosa:** Para los registros subidos correctamente, se ejecuta `marcarComoSincronizados(ids)` en SQLite, cambiando el flag `sincronizado` a `1`. La UI actualiza el icono de reloj naranja por un check verde.
+* **Aislamiento de Registros Corruptos (Errores RLS o Validación):** Si un registro específico es rechazado por el servidor debido a fallos de validación o políticas RLS:
+  * Se marca en SQLite local como `sincronizado = -1` (Error de Sincronización) en lugar de dejarlo en `0`.
+  * Esto evita que el registro corrupto bloquee de forma infinita la sincronización del resto de la cola de pendientes.
+  * El registro con error se muestra en la UI con una alerta roja para que el operario lo revise o reporte a soporte.
+* **Reintento de Red:** Si la subida falla por desconexión general de red, no se altera el flag local y se programa un reintento automático en el próximo cambio de conectividad.
 
 ---
 
 ## 🏗️ Arquitectura de Clases y Métodos Asociados
-
-El proceso asíncrono y reactivo se integra en la arquitectura limpia móvil mediante los siguientes componentes:
 
 ```mermaid
 classDiagram
@@ -119,6 +130,6 @@ classDiagram
 
 ## 🔗 Enlaces Relacionados
 
-*   Creación inicial de un registro en modo local: [[FLUJO_02_REGISTRO_PESCA]].
-*   Soporte técnico de persistencia SQLite: [gestor_base_datos.dart](file:///c:/BRISMAR_APP/brismar_app/lib/nucleo/base_datos/gestor_base_datos.dart) y [fuente_datos_registro_local.dart](file:///c:/BRISMAR_APP/brismar_app/lib/modulos/registro/datos/fuentes_datos/fuente_datos_registro_local.dart).
-*   Controlador de sincronización móvil: [registro_controlador.dart](file:///c:/BRISMAR_APP/brismar_app/lib/modulos/registro/presentacion/controladores/registro_controlador.dart).
+* Creación inicial de un registro en modo local: [[FLUJO_02_REGISTRO_PESCA]].
+* Soporte técnico de persistencia SQLite: [gestor_base_datos.dart](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/brismar_app/lib/nucleo/base_datos/gestor_base_datos.dart) y [fuente_datos_registro_local.dart](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/brismar_app/lib/modulos/registro/datos/fuentes_datos/fuente_datos_registro_local.dart).
+* Controlador de sincronización móvil: [registro_controlador.dart](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/brismar_app/lib/modulos/registro/presentacion/controladores/registro_controlador.dart).
