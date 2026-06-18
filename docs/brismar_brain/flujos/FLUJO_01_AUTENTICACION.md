@@ -63,6 +63,8 @@ graph TB
         CheckBio -- No --> ProvideBio
         
         %% Rutas de Escape / Recuperación
+        InputPIN --> ClickForgotPIN
+        ProvideBio --> ClickForgotPIN
         ClickForgotPIN --> ClearSession[Limpiar Sesión y Forzar Login Completo]
         ClearSession --> InputFull
         UpdateTimestamp --> Dashboard

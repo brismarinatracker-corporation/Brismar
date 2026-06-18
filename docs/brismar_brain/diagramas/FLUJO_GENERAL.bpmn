@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" id="Definitions_General" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:collaboration id="Collaboration_General">
+    <bpmn:participant id="Participant_General" name="Ciclo de Operación de Pesca, Sincronización y Cierre Financiero (Brismar)" processRef="Process_General" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_General" name="Proceso General de Operación y Reportes" isExecutable="false">
+    <bpmn:documentation>Este proceso describe la orquestación general de la plataforma Brismar: desde el inicio de jornada de pesca en el muelle (offline/online), pasando por la persistencia y la sincronización asíncrona, hasta la visualización en tiempo real y cierre financiero en la oficina.</bpmn:documentation>
+    <bpmn:laneSet id="LaneSet_General">
+      <bpmn:lane id="Lane_User" name="Personal de Bahía (Usuario Móvil)">
+        <bpmn:flowNodeRef>StartEvent_General</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AbrirApp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_VerMenu</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_App" name="Aplicación Móvil (SQLite y Riverpod)">
+        <bpmn:flowNodeRef>Gateway_SesionValida</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AuthFlow</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_GuardarLocal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_TieneInternet</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Bloqueado</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Autodestruccion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RegistroPesca</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_GuardarOffline</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Server" name="Servidor Central (Supabase / Nube)">
+        <bpmn:flowNodeRef>Task_RecibirDatos</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_InvalidateJWT</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_NotificarRealtime</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Reject401</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SincronizarInmediato</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Admin" name="Administrador / Financiero (Tierra - Web)">
+        <bpmn:startEvent id="StartEvent_Robo" name="Reporte de Celular Robado" />
+        <bpmn:flowNodeRef>Task_ActualizarWeb</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ConciliacionFinanciera</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ExportarPDF</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_General</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RevokeUser</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_General" name="Inicio de Jornada en Muelle">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_AbrirApp" name="Abrir Aplicación Móvil Brismar">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_SesionValida" name="¿Sesión Activa?">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_SesionNo</bpmn:outgoing>
+      <bpmn:outgoing>Flow_SesionSi</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_AuthFlow" name="Ejecutar Autenticación (Flujo 01)">
+      <bpmn:incoming>Flow_SesionNo</bpmn:incoming>
+      <bpmn:outgoing>Flow_AuthOk</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_VerMenu" name="Acceder a Menú Principal y Panel">
+      <bpmn:incoming>Flow_SesionSi</bpmn:incoming>
+      <bpmn:incoming>Flow_AuthOk</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToRegistro</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_GuardarLocal" name="Cifrar y Guardar Registro en SQLite (SQLCipher)">
+      <bpmn:incoming>Flow_ToGuardado</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToCheckInternet</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_TieneInternet" name="¿Tiene Conexión a Internet?">
+      <bpmn:incoming>Flow_ToCheckInternet</bpmn:incoming>
+      <bpmn:outgoing>Flow_NetYes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_NetNo</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_ActualizarWeb" name="Recibir y Reflejar Datos en Dashboard Web">
+      <bpmn:incoming>Flow_ToWeb</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToCierre</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_ConciliacionFinanciera" name="Visualizar Estadísticas y Cierre de Caja (Flujo 03)">
+      <bpmn:incoming>Flow_ToCierre</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToPDF</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_ExportarPDF" name="Descargar Liquidaciones y Resúmenes PDF">
+      <bpmn:incoming>Flow_ToPDF</bpmn:incoming>
+      <bpmn:outgoing>Flow_End</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_General" name="Operación del Día Cerrada y Liquidada">
+      <bpmn:incoming>Flow_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_RevokeUser" name="Ingresar a Consola Supabase y Revocar Acceso">
+      <bpmn:incoming>Flow_R1</bpmn:incoming>
+      <bpmn:outgoing>Flow_R2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_General" targetRef="Task_AbrirApp" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_AbrirApp" targetRef="Gateway_SesionValida" />
+    <bpmn:sequenceFlow id="Flow_SesionNo" name="No" sourceRef="Gateway_SesionValida" targetRef="Task_AuthFlow" />
+    <bpmn:sequenceFlow id="Flow_SesionSi" name="Sí" sourceRef="Gateway_SesionValida" targetRef="Task_VerMenu" />
+    <bpmn:sequenceFlow id="Flow_AuthOk" sourceRef="Task_AuthFlow" targetRef="Task_VerMenu" />
+    <bpmn:sequenceFlow id="Flow_ToRegistro" sourceRef="Task_VerMenu" targetRef="Task_RegistroPesca" />
+    <bpmn:sequenceFlow id="Flow_ToGuardado" sourceRef="Task_RegistroPesca" targetRef="Task_GuardarLocal" />
+    <bpmn:sequenceFlow id="Flow_ToCheckInternet" sourceRef="Task_GuardarLocal" targetRef="Gateway_TieneInternet" />
+    <bpmn:sequenceFlow id="Flow_NetYes" name="Sí" sourceRef="Gateway_TieneInternet" targetRef="Task_SincronizarInmediato" />
+    <bpmn:sequenceFlow id="Flow_NetNo" name="No" sourceRef="Gateway_TieneInternet" targetRef="Task_GuardarOffline" />
+    <bpmn:sequenceFlow id="Flow_ToCloudSync" sourceRef="Task_SincronizarInmediato" targetRef="Task_RecibirDatos" />
+    <bpmn:sequenceFlow id="Flow_ToCloudSyncAsync" sourceRef="Task_GuardarOffline" targetRef="Task_RecibirDatos" />
+    <bpmn:sequenceFlow id="Flow_ToNotificar" sourceRef="Task_RecibirDatos" targetRef="Task_InvalidateJWT" />
+    <bpmn:sequenceFlow id="Flow_ToWeb" sourceRef="Task_NotificarRealtime" targetRef="Task_ActualizarWeb" />
+    <bpmn:sequenceFlow id="Flow_ToCierre" sourceRef="Task_ActualizarWeb" targetRef="Task_ConciliacionFinanciera" />
+    <bpmn:sequenceFlow id="Flow_ToPDF" sourceRef="Task_ConciliacionFinanciera" targetRef="Task_ExportarPDF" />
+    <bpmn:sequenceFlow id="Flow_End" sourceRef="Task_ExportarPDF" targetRef="EndEvent_General" />
+    <bpmn:sequenceFlow id="Flow_R1" sourceRef="StartEvent_Robo" targetRef="Task_RevokeUser" />
+    <bpmn:sequenceFlow id="Flow_R2" sourceRef="Task_RevokeUser" targetRef="Task_InvalidateJWT" />
+    <bpmn:sequenceFlow id="Flow_R4" sourceRef="Task_Reject401" targetRef="Task_Autodestruccion" />
+    <bpmn:sequenceFlow id="Flow_REnd" sourceRef="Task_Autodestruccion" targetRef="EndEvent_Bloqueado" />
+    <bpmn:endEvent id="EndEvent_Bloqueado" name="Celular Bloqueado Localmente">
+      <bpmn:incoming>Flow_REnd</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_Autodestruccion" name="Borrar Master Key, Purgar SQLite y UI Bloqueada (Flujo 05)">
+      <bpmn:incoming>Flow_R4</bpmn:incoming>
+      <bpmn:outgoing>Flow_REnd</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_1whlipd" sourceRef="Task_NotificarRealtime" targetRef="Task_Reject401" />
+    <bpmn:task id="Task_RecibirDatos" name="Validar RLS y Almacenar en PostgreSQL">
+      <bpmn:incoming>Flow_ToCloudSync</bpmn:incoming>
+      <bpmn:incoming>Flow_ToCloudSyncAsync</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToNotificar</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_InvalidateJWT" name="Invalidar Sesión del Operador en Supabase">
+      <bpmn:incoming>Flow_R2</bpmn:incoming>
+      <bpmn:incoming>Flow_ToNotificar</bpmn:incoming>
+      <bpmn:outgoing>Flow_075phnw</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_075phnw" sourceRef="Task_InvalidateJWT" targetRef="Task_NotificarRealtime" />
+    <bpmn:task id="Task_NotificarRealtime" name="Emitir Evento Realtime (WebSockets)">
+      <bpmn:incoming>Flow_075phnw</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToWeb</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1whlipd</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Reject401" name="Responder HTTP 401 Unauthorized ante Petición">
+      <bpmn:incoming>Flow_1whlipd</bpmn:incoming>
+      <bpmn:outgoing>Flow_R4</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_RegistroPesca" name="Registrar Pesca y Gastos de Embarcación (Flujo 02)">
+      <bpmn:incoming>Flow_ToRegistro</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToGuardado</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_SincronizarInmediato" name="Subir Registro Inmediatamente a Supabase">
+      <bpmn:incoming>Flow_NetYes</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToCloudSync</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_GuardarOffline" name="Guardar en SQLite y esperar Sincro de Fondo (Flujo 04)">
+      <bpmn:incoming>Flow_NetNo</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToCloudSyncAsync</bpmn:outgoing>
+    </bpmn:task>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_General">
+    <bpmndi:BPMNPlane id="BPMNPlane_General" bpmnElement="Collaboration_General">
+      <bpmndi:BPMNShape id="Participant_General_di" bpmnElement="Participant_General" isHorizontal="true">
+        <dc:Bounds x="120" y="80" width="2200" height="760" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Admin_di" bpmnElement="Lane_Admin" isHorizontal="true" bioc:stroke="#263238" bioc:fill="#cfd8dc" color:background-color="#cfd8dc" color:border-color="#263238">
+        <dc:Bounds x="150" y="660" width="2170" height="180" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Server_di" bpmnElement="Lane_Server" isHorizontal="true" bioc:stroke="#831311" bioc:fill="#ffcdd2" color:background-color="#ffcdd2" color:border-color="#831311">
+        <dc:Bounds x="150" y="500" width="2170" height="160" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_App_di" bpmnElement="Lane_App" isHorizontal="true" bioc:stroke="#5b176d" bioc:fill="#e1bee7" color:background-color="#e1bee7" color:border-color="#5b176d">
+        <dc:Bounds x="150" y="320" width="2170" height="180" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_User_di" bpmnElement="Lane_User" isHorizontal="true" bioc:stroke="#0d4372" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#0d4372">
+        <dc:Bounds x="150" y="80" width="2170" height="240" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_General_di" bpmnElement="StartEvent_General" bioc:stroke="#205022" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#205022">
+        <dc:Bounds x="200" y="180" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="177" y="223" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AbrirApp_di" bpmnElement="Task_AbrirApp">
+        <dc:Bounds x="290" y="158" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_SesionValida_di" bpmnElement="Gateway_SesionValida" isMarkerVisible="true">
+        <dc:Bounds x="440" y="385" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="425" y="445" width="79" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AuthFlow_di" bpmnElement="Task_AuthFlow">
+        <dc:Bounds x="540" y="370" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_VerMenu_di" bpmnElement="Task_VerMenu">
+        <dc:Bounds x="700" y="158" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_GuardarLocal_di" bpmnElement="Task_GuardarLocal">
+        <dc:Bounds x="980" y="370" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_TieneInternet_di" bpmnElement="Gateway_TieneInternet" isMarkerVisible="true">
+        <dc:Bounds x="1120" y="385" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1165" y="376" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ActualizarWeb_di" bpmnElement="Task_ActualizarWeb">
+        <dc:Bounds x="1740" y="710" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ConciliacionFinanciera_di" bpmnElement="Task_ConciliacionFinanciera">
+        <dc:Bounds x="1890" y="710" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ExportarPDF_di" bpmnElement="Task_ExportarPDF">
+        <dc:Bounds x="2040" y="710" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_General_di" bpmnElement="EndEvent_General">
+        <dc:Bounds x="2210" y="732" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2190" y="775" width="77" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RevokeUser_di" bpmnElement="Task_RevokeUser">
+        <dc:Bounds x="1330" y="710" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Bloqueado_di" bpmnElement="EndEvent_Bloqueado">
+        <dc:Bounds x="2202" y="402" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2192" y="445" width="57" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Autodestruccion_di" bpmnElement="Task_Autodestruccion">
+        <dc:Bounds x="1980" y="370" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RecibirDatos_di" bpmnElement="Task_RecibirDatos">
+        <dc:Bounds x="1325" y="540" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_InvalidateJWT_di" bpmnElement="Task_InvalidateJWT">
+        <dc:Bounds x="1475" y="540" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_NotificarRealtime_di" bpmnElement="Task_NotificarRealtime">
+        <dc:Bounds x="1625" y="540" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Reject401_di" bpmnElement="Task_Reject401">
+        <dc:Bounds x="1855" y="540" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RegistroPesca_di" bpmnElement="Task_RegistroPesca">
+        <dc:Bounds x="810" y="370" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SincronizarInmediato_di" bpmnElement="Task_SincronizarInmediato">
+        <dc:Bounds x="1125" y="520" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_GuardarOffline_di" bpmnElement="Task_GuardarOffline">
+        <dc:Bounds x="1255" y="390" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="236" y="198" />
+        <di:waypoint x="290" y="198" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="390" y="198" />
+        <di:waypoint x="415" y="198" />
+        <di:waypoint x="415" y="410" />
+        <di:waypoint x="440" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_SesionNo_di" bpmnElement="Flow_SesionNo">
+        <di:waypoint x="490" y="410" />
+        <di:waypoint x="540" y="410" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="508" y="392" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_SesionSi_di" bpmnElement="Flow_SesionSi">
+        <di:waypoint x="465" y="385" />
+        <di:waypoint x="465" y="198" />
+        <di:waypoint x="700" y="198" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="474" y="363" width="11" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AuthOk_di" bpmnElement="Flow_AuthOk">
+        <di:waypoint x="650" y="410" />
+        <di:waypoint x="740" y="410" />
+        <di:waypoint x="740" y="238" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToRegistro_di" bpmnElement="Flow_ToRegistro">
+        <di:waypoint x="800" y="198" />
+        <di:waypoint x="870" y="198" />
+        <di:waypoint x="870" y="370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToGuardado_di" bpmnElement="Flow_ToGuardado">
+        <di:waypoint x="930" y="410" />
+        <di:waypoint x="980" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToCheckInternet_di" bpmnElement="Flow_ToCheckInternet">
+        <di:waypoint x="1090" y="410" />
+        <di:waypoint x="1120" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_NetYes_di" bpmnElement="Flow_NetYes">
+        <di:waypoint x="1145" y="435" />
+        <di:waypoint x="1145" y="520" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1150" y="453" width="11" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_NetNo_di" bpmnElement="Flow_NetNo">
+        <di:waypoint x="1170" y="410" />
+        <di:waypoint x="1213" y="410" />
+        <di:waypoint x="1213" y="430" />
+        <di:waypoint x="1255" y="430" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1195" y="413" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToCloudSync_di" bpmnElement="Flow_ToCloudSync">
+        <di:waypoint x="1235" y="550" />
+        <di:waypoint x="1260" y="550" />
+        <di:waypoint x="1260" y="600" />
+        <di:waypoint x="1325" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToCloudSyncAsync_di" bpmnElement="Flow_ToCloudSyncAsync">
+        <di:waypoint x="1365" y="430" />
+        <di:waypoint x="1410" y="430" />
+        <di:waypoint x="1410" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToNotificar_di" bpmnElement="Flow_ToNotificar">
+        <di:waypoint x="1435" y="580" />
+        <di:waypoint x="1475" y="580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToWeb_di" bpmnElement="Flow_ToWeb">
+        <di:waypoint x="1680" y="620" />
+        <di:waypoint x="1680" y="750" />
+        <di:waypoint x="1740" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToCierre_di" bpmnElement="Flow_ToCierre">
+        <di:waypoint x="1850" y="750" />
+        <di:waypoint x="1890" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToPDF_di" bpmnElement="Flow_ToPDF">
+        <di:waypoint x="2010" y="750" />
+        <di:waypoint x="2040" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_End_di" bpmnElement="Flow_End">
+        <di:waypoint x="2150" y="750" />
+        <di:waypoint x="2210" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_R2_di" bpmnElement="Flow_R2">
+        <di:waypoint x="1440" y="750" />
+        <di:waypoint x="1530" y="750" />
+        <di:waypoint x="1530" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_R4_di" bpmnElement="Flow_R4">
+        <di:waypoint x="1910" y="540" />
+        <di:waypoint x="1910" y="410" />
+        <di:waypoint x="1980" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_REnd_di" bpmnElement="Flow_REnd">
+        <di:waypoint x="2100" y="410" />
+        <di:waypoint x="2151" y="410" />
+        <di:waypoint x="2151" y="420" />
+        <di:waypoint x="2202" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1whlipd_di" bpmnElement="Flow_1whlipd">
+        <di:waypoint x="1735" y="580" />
+        <di:waypoint x="1855" y="580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_075phnw_di" bpmnElement="Flow_075phnw">
+        <di:waypoint x="1585" y="580" />
+        <di:waypoint x="1625" y="580" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -54,18 +54,47 @@
       <bpmn:outgoing>Flow_GraceYes</bpmn:outgoing>
       <bpmn:outgoing>Flow_GraceNo</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:dataStoreReference id="DataStoreReference_SecureStorage" name="Bóveda Segura SQLITE3 (Secure Storage)">
-      <bpmn:documentation id="documentation_m4GwUg" />
-    </bpmn:dataStoreReference>
+    <bpmn:dataStoreReference id="DataStoreReference_SecureStorage" name="Bóveda Segura SQLITE3 (Secure Storage)" />
+    <bpmn:sequenceFlow id="Flow_PINSuccess" name="Correcto" sourceRef="Gateway_PINCheck" targetRef="Task_UpdateTimestamp" />
+    <bpmn:sequenceFlow id="Flow_PINForgot" name="Olvidé PIN" sourceRef="Gateway_PINCheck" targetRef="Task_ClearSession" />
+    <bpmn:sequenceFlow id="Flow_Start" sourceRef="StartEvent_1" targetRef="Gateway_HasSession" />
+    <bpmn:sequenceFlow id="Flow_NoSession" name="No" sourceRef="Gateway_HasSession" targetRef="Task_FullLoginInput" />
+    <bpmn:sequenceFlow id="Flow_OnlineFailLoop" name="Incorrecto" sourceRef="Gateway_OnlineAuthCheck" targetRef="Task_FullLoginInput" />
+    <bpmn:sequenceFlow id="Flow_OfflineFailLoop" name="Incorrecto" sourceRef="Gateway_OfflineHashCheck" targetRef="EndEvent_FailOfflineNoCache" />
+    <bpmn:sequenceFlow id="Flow_FromClearSession" sourceRef="Task_ClearSession" targetRef="Task_FullLoginInput" />
+    <bpmn:sequenceFlow id="Flow_ToNetworkCheck" sourceRef="Task_FullLoginInput" targetRef="Gateway_NetworkCheck" />
+    <bpmn:sequenceFlow id="Flow_HasSession" name="Sí" sourceRef="Gateway_HasSession" targetRef="Gateway_GracePeriod" />
+    <bpmn:sequenceFlow id="Flow_OnlineSuccess" name="Correcto" sourceRef="Gateway_OnlineAuthCheck" targetRef="Task_SetupPIN" />
+    <bpmn:sequenceFlow id="Flow_OnlinePath" name="Sí" sourceRef="Gateway_NetworkCheck" targetRef="Task_OnlineAuth" />
+    <bpmn:sequenceFlow id="Flow_ToSupabase" sourceRef="Task_OnlineAuth" targetRef="Task_SupabaseAuth" />
+    <bpmn:sequenceFlow id="Flow_BiometricForgot" name="Olvidé PIN" sourceRef="Task_ProvideBiometrics" targetRef="Task_ClearSession" />
+    <bpmn:sequenceFlow id="Flow_PrefPIN" name="PIN" sourceRef="Gateway_QuickAccessType" targetRef="Task_InputPIN" />
+    <bpmn:sequenceFlow id="Flow_GraceYes" name="Sí" sourceRef="Gateway_GracePeriod" targetRef="EndEvent_Dashboard" />
+    <bpmn:sequenceFlow id="Flow_GraceNo" name="No" sourceRef="Gateway_GracePeriod" targetRef="Gateway_QuickAccessType" />
+    <bpmn:sequenceFlow id="Flow_PrefBiometrics" name="Huella" sourceRef="Gateway_QuickAccessType" targetRef="Task_ProvideBiometrics" />
+    <bpmn:sequenceFlow id="Flow_OfflinePath" name="No" sourceRef="Gateway_NetworkCheck" targetRef="Task_OfflineAuth" />
+    <bpmn:sequenceFlow id="Flow_FromSupabase" sourceRef="Task_SupabaseAuth" targetRef="Gateway_OnlineAuthCheck" />
+    <bpmn:sequenceFlow id="Flow_ToDashboardDirect" sourceRef="Task_SaveSession" targetRef="EndEvent_Dashboard" />
+    <bpmn:sequenceFlow id="Flow_ToDashboardAfterUpdate" sourceRef="Task_UpdateTimestamp" targetRef="EndEvent_Dashboard" />
+    <bpmn:sequenceFlow id="Flow_OfflineNoCache" name="Sin Caché" sourceRef="Gateway_OfflineHashCheck" targetRef="EndEvent_FailOfflineNoCache" />
+    <bpmn:sequenceFlow id="Flow_ToSaveSession" sourceRef="Task_SetupBiometrics" targetRef="Task_SaveSession" />
+    <bpmn:sequenceFlow id="Flow_BiometricSuccess" name="Correcto" sourceRef="Gateway_BiometricCheck" targetRef="Task_UpdateTimestamp" />
+    <bpmn:sequenceFlow id="Flow_OfflineSuccess" name="Correcto" sourceRef="Gateway_OfflineHashCheck" targetRef="EndEvent_Dashboard" />
+    <bpmn:sequenceFlow id="Flow_ToOfflineHashCheck" sourceRef="Task_OfflineAuth" targetRef="Gateway_OfflineHashCheck" />
     <bpmn:startEvent id="StartEvent_1" name="Usuario Abre la App">
       <bpmn:documentation id="documentation_pYaKhg" />
       <bpmn:outgoing>Flow_Start</bpmn:outgoing>
     </bpmn:startEvent>
+    <bpmn:endEvent id="EndEvent_Dashboard" name="Acceso Concedido (Dashboard)">
+      <bpmn:incoming>Flow_ToDashboardDirect</bpmn:incoming>
+      <bpmn:incoming>Flow_GraceYes</bpmn:incoming>
+      <bpmn:incoming>Flow_ToDashboardAfterUpdate</bpmn:incoming>
+      <bpmn:incoming>Flow_OfflineSuccess</bpmn:incoming>
+    </bpmn:endEvent>
     <bpmn:task id="Task_FullLoginInput" name="Ingresar Correo y Contraseña">
       <bpmn:documentation id="documentation_dNvLSQ" />
       <bpmn:incoming>Flow_NoSession</bpmn:incoming>
       <bpmn:incoming>Flow_OnlineFailLoop</bpmn:incoming>
-      <bpmn:incoming>Flow_OfflineFailLoop</bpmn:incoming>
       <bpmn:incoming>Flow_FromClearSession</bpmn:incoming>
       <bpmn:outgoing>Flow_ToNetworkCheck</bpmn:outgoing>
     </bpmn:task>
@@ -93,8 +122,7 @@
       <bpmn:outgoing>Flow_PrefPIN</bpmn:outgoing>
       <bpmn:outgoing>Flow_PrefBiometrics</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:task id="Task_ClearSession" name="Invalidad Token y PIN anterior en Bóveda">
-      <bpmn:documentation id="documentation_CdSiOg" />
+    <bpmn:task id="Task_ClearSession" name="Invalidar Token y PIN anterior en Bóveda">
       <bpmn:incoming>Flow_PINForgot</bpmn:incoming>
       <bpmn:incoming>Flow_BiometricForgot</bpmn:incoming>
       <bpmn:outgoing>Flow_FromClearSession</bpmn:outgoing>
@@ -109,6 +137,10 @@
       <bpmn:outgoing>Flow_OfflineFailLoop</bpmn:outgoing>
       <bpmn:outgoing>Flow_OfflineNoCache</bpmn:outgoing>
     </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_FailOfflineNoCache" name="Error: Requiere Inicio de Sesión Online">
+      <bpmn:incoming>Flow_OfflineNoCache</bpmn:incoming>
+      <bpmn:incoming>Flow_OfflineFailLoop</bpmn:incoming>
+    </bpmn:endEvent>
     <bpmn:exclusiveGateway id="Gateway_NetworkCheck" name="¿Tiene Internet?">
       <bpmn:documentation id="documentation_YrCckQ" />
       <bpmn:incoming>Flow_ToNetworkCheck</bpmn:incoming>
@@ -121,7 +153,6 @@
       <bpmn:outgoing>Flow_ToSupabase</bpmn:outgoing>
     </bpmn:task>
     <bpmn:exclusiveGateway id="Gateway_OnlineAuthCheck" name="¿Credenciales Correctas?">
-      <bpmn:documentation id="documentation_yzu0DA" />
       <bpmn:incoming>Flow_FromSupabase</bpmn:incoming>
       <bpmn:outgoing>Flow_OnlineSuccess</bpmn:outgoing>
       <bpmn:outgoing>Flow_OnlineFailLoop</bpmn:outgoing>
@@ -150,13 +181,13 @@
       <bpmn:incoming>Flow_PrefBiometrics</bpmn:incoming>
       <bpmn:incoming>Flow_BiometricFailLoop</bpmn:incoming>
       <bpmn:outgoing>Flow_ToBiometricCheck</bpmn:outgoing>
+      <bpmn:outgoing>Flow_BiometricForgot</bpmn:outgoing>
     </bpmn:task>
     <bpmn:exclusiveGateway id="Gateway_BiometricCheck" name="¿Huella Válida?">
       <bpmn:documentation id="documentation_PoIEmw" />
       <bpmn:incoming>Flow_ToBiometricCheck</bpmn:incoming>
       <bpmn:outgoing>Flow_BiometricSuccess</bpmn:outgoing>
       <bpmn:outgoing>Flow_BiometricFailLoop</bpmn:outgoing>
-      <bpmn:outgoing>Flow_BiometricForgot</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:task id="Task_InputPIN" name="Digitar PIN (Pantalla Numérica)">
       <bpmn:documentation id="documentation_UqPGPA" />
@@ -290,7 +321,15 @@
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Flujo1">
       <bpmndi:BPMNShape id="Participant_1_di" bpmnElement="Participant_1" isHorizontal="true">
-        <dc:Bounds x="150" y="-520" width="2450" height="1265" />
+        <dc:Bounds x="100" y="-210" width="2668" height="1320" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_User_di" bpmnElement="Lane_User" isHorizontal="true" bioc:stroke="#0d4372" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#0d4372">
+        <dc:Bounds x="130" y="-210" width="2638" height="450" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_App_di" bpmnElement="Lane_App" isHorizontal="true" bioc:stroke="#5b176d" bioc:fill="#e1bee7" color:background-color="#e1bee7" color:border-color="#5b176d">
+        <dc:Bounds x="130" y="240" width="2638" height="710" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Lane_Server_di" bpmnElement="Lane_Server" isHorizontal="true" bioc:stroke="#831311" bioc:fill="#ffcdd2" color:background-color="#ffcdd2" color:border-color="#831311">
         <dc:Bounds x="180" y="585" width="2420" height="160" />
@@ -325,8 +364,14 @@
           <dc:Bounds x="257" y="-439" width="77" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_FullLoginInput_di" bpmnElement="Task_FullLoginInput" bioc:stroke="#5b176d" bioc:fill="#e1bee7" color:background-color="#e1bee7" color:border-color="#5b176d">
-        <dc:Bounds x="435" y="-335" width="130" height="80" />
+      <bpmndi:BPMNShape id="EndEvent_Dashboard_di" bpmnElement="EndEvent_Dashboard" isMarkerVisible="true">
+        <dc:Bounds x="2562" y="152" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2509" y="102" width="62" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_FullLoginInput_di" bpmnElement="Task_FullLoginInput">
+        <dc:Bounds x="385" y="30" width="130" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_SaveSession_di" bpmnElement="Task_SaveSession">
         <dc:Bounds x="2260" y="40" width="120" height="80" />
@@ -388,7 +433,7 @@
       <bpmndi:BPMNShape id="Gateway_PINCheck_di" bpmnElement="Gateway_PINCheck" isMarkerVisible="true">
         <dc:Bounds x="1165" y="-454" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1090" y="-456" width="78" height="14" />
+          <dc:Bounds x="1061" y="-157" width="77" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_SupabaseAuth_di" bpmnElement="Task_SupabaseAuth">
@@ -403,13 +448,13 @@
       <bpmndi:BPMNShape id="EndEvent_FailOfflineNoCache_di" bpmnElement="EndEvent_FailOfflineNoCache" isMarkerVisible="true">
         <dc:Bounds x="2497" y="-323" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="2476" y="-375" width="78" height="40" />
+          <dc:Bounds x="1088" y="-7" width="43" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DataStoreReference_0cjk3je_di" bpmnElement="DataStoreReference_Supabase">
         <dc:Bounds x="495" y="630" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="484" y="680" width="73" height="40" />
+          <dc:Bounds x="1351" y="-77" width="53" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_Start_di" bpmnElement="Flow_Start">
@@ -425,12 +470,83 @@
           <dc:Bounds x="333" y="-37" width="15" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_OnlineFailLoop_di" bpmnElement="Flow_OnlineFailLoop">
+        <di:waypoint x="1020" y="420" />
+        <di:waypoint x="1020" y="130" />
+        <di:waypoint x="350" y="130" />
+        <di:waypoint x="350" y="100" />
+        <di:waypoint x="385" y="100" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1025" y="361" width="49" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_OfflineFailLoop_di" bpmnElement="Flow_OfflineFailLoop" bioc:stroke="#831311" color:border-color="#831311">
+        <di:waypoint x="1118" y="740" />
+        <di:waypoint x="2730" y="740" />
+        <di:waypoint x="2730" y="-10" />
+        <di:waypoint x="2698" y="-10" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1155" y="723" width="49" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FromClearSession_di" bpmnElement="Flow_FromClearSession">
+        <di:waypoint x="1860" y="575" />
+        <di:waypoint x="1860" y="200" />
+        <di:waypoint x="290" y="200" />
+        <di:waypoint x="290" y="40" />
+        <di:waypoint x="385" y="40" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToNetworkCheck_di" bpmnElement="Flow_ToNetworkCheck">
+        <di:waypoint x="515" y="70" />
+        <di:waypoint x="570" y="70" />
+        <di:waypoint x="570" y="455" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_HasSession_di" bpmnElement="Flow_HasSession">
         <di:waypoint x="295" y="5" />
         <di:waypoint x="295" y="170" />
         <di:waypoint x="325" y="170" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="274" y="9" width="11" height="14" />
+          <dc:Bounds x="224" y="374" width="11" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_OnlineSuccess_di" bpmnElement="Flow_OnlineSuccess">
+        <di:waypoint x="1045" y="445" />
+        <di:waypoint x="1710" y="445" />
+        <di:waypoint x="1710" y="-37" />
+        <di:waypoint x="1795" y="-37" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1057" y="423" width="43" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_OnlinePath_di" bpmnElement="Flow_OnlinePath">
+        <di:waypoint x="595" y="480" />
+        <di:waypoint x="660" y="480" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="611" y="465" width="11" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToSupabase_di" bpmnElement="Flow_ToSupabase">
+        <di:waypoint x="780" y="480" />
+        <di:waypoint x="855" y="480" />
+        <di:waypoint x="855" y="980" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_BiometricForgot_di" bpmnElement="Flow_BiometricForgot">
+        <di:waypoint x="1260" y="83" />
+        <di:waypoint x="1260" y="100" />
+        <di:waypoint x="1570" y="100" />
+        <di:waypoint x="1570" y="160" />
+        <di:waypoint x="1820" y="160" />
+        <di:waypoint x="1820" y="575" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1800" y="253" width="53" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PrefPIN_di" bpmnElement="Flow_PrefPIN">
+        <di:waypoint x="810" y="295" />
+        <di:waypoint x="810" y="-64" />
+        <di:waypoint x="840" y="-64" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="780" y="273" width="19" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_GraceYes_di" bpmnElement="Flow_GraceYes">
@@ -498,9 +614,12 @@
         <di:waypoint x="2415" y="80" />
         <di:waypoint x="2415" y="-177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_OfflinePath_di" bpmnElement="Flow_OfflinePath">
-        <di:waypoint x="620" y="140" />
-        <di:waypoint x="620" y="355" />
+      <bpmndi:BPMNEdge id="Flow_OfflineSuccess_di" bpmnElement="Flow_OfflineSuccess" bioc:stroke="#205022" color:border-color="#205022">
+        <di:waypoint x="1128" y="770" />
+        <di:waypoint x="1750" y="770" />
+        <di:waypoint x="1750" y="80" />
+        <di:waypoint x="2580" y="80" />
+        <di:waypoint x="2580" y="152" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="592" y="144" width="15" height="14" />
         </bpmndi:BPMNLabel>
@@ -637,10 +756,10 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_ToPINCheck_di" bpmnElement="Flow_ToPINCheck">
-        <di:waypoint x="950" y="-469" />
-        <di:waypoint x="950" y="-499" />
-        <di:waypoint x="1190" y="-499" />
-        <di:waypoint x="1190" y="-454" />
+        <di:waypoint x="900" y="-104" />
+        <di:waypoint x="900" y="-134" />
+        <di:waypoint x="1140" y="-134" />
+        <di:waypoint x="1140" y="-89" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DataOutputAssociation_SaveSession_di" bpmnElement="DataOutputAssociation_SaveSession">
         <di:waypoint x="2320" y="120" />
@@ -666,6 +785,10 @@
       <bpmndi:BPMNEdge id="DataOutputAssociation_Supabase_di" bpmnElement="DataOutputAssociation_Supabase">
         <di:waypoint x="845" y="655" />
         <di:waypoint x="545" y="655" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataOutputAssociation_Supabase_di" bpmnElement="DataOutputAssociation_Supabase">
+        <di:waypoint x="795" y="1020" />
+        <di:waypoint x="495" y="1020" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
