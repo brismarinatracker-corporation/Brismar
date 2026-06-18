@@ -44,9 +44,16 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
 
   /// Escucha los cambios de estado de autenticación y reacciona.
   void _escucharEstadoAutenticacion(EstadoAutenticacion? anterior, EstadoAutenticacion siguiente) {
-    if (siguiente is EstadoAutenticacionAutenticado) {
+    if (siguiente is EstadoConfigurarPin) {
+      // Primer login exitoso → configurar PIN obligatorio
       _mostrarSnack('Bienvenido: ${siguiente.usuario.nombreReal}', Colors.teal.shade600);
+      const ConfigurarPinRoute().go(context);
+    } else if (siguiente is EstadoAutenticacionAutenticado) {
+      // Sesión existente restaurada → ir al Dashboard directamente
       const RegistroRoute().go(context);
+    } else if (siguiente is EstadoAccesoRapidoRequerido) {
+      // Periodo de gracia expiró → pantalla de acceso rápido
+      AccesoRapidoRoute(preferencia: siguiente.preferencia.toStorageString()).go(context);
     } else if (siguiente is EstadoAutenticacionError) {
       _mostrarSnack(siguiente.mensaje, Colors.redAccent.shade700);
     }
