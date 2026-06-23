@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:screen_protector/screen_protector.dart';
 import 'nucleo/red/cliente_supabase.dart';
 import 'nucleo/rutas/enrutador.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Prevención contra captura de pantalla/grabación
+  await ScreenProtector.preventScreenshotOn();
 
   // Cargamos las variables de entorno desde el archivo .env
   await dotenv.load(fileName: ".env");

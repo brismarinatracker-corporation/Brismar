@@ -66,13 +66,13 @@ En el momento en que la aplicación móvil recibe el código `401` o el flag de 
    > **"DISPOSITIVO BLOQUEADO POR SEGURIDAD. Contacte al administrador en el muelle."**
    * Esta pantalla bloquea el botón físico de volver atrás y no se quita incluso si el teléfono se reinicia o se abre offline.
 
-### 3. Protocolo de Autodestrucción Offline (Defensa contra Fuerza Bruta)
+### 3. Protocolo de Bloqueo Offline (Defensa contra Fuerza Bruta)
 
-Si el dispositivo robado es desconectado de internet (modo avión) por el ladrón para evitar la revocación remota:
+Si el dispositivo es desconectado de internet (modo avión) para evitar la revocación remota y se intenta descifrar el PIN por fuerza bruta:
 
-* **Límite de Intentos Offline:** La aplicación móvil mantiene un contador local persistente en el Secure Storage que registra los intentos fallidos de PIN.
-* **Auto-Detonación:** Si el usuario ingresa un PIN incorrecto **5 veces consecutivas sin conexión a internet**, la aplicación móvil activa de forma autónoma el mismo protocolo de autodestrucción local descritos anteriormente (Fase 2: borrado total de la Bóveda Segura de hardware, cierre de base de datos SQLite y bloqueo físico de la UI).
-* **Falso Positivo:** Si el dispositivo fue bloqueado por error del usuario legítimo, al eliminarse la llave de cifrado maestro local de SQLite, la base de datos no podrá recuperarse directamente. Para reactivar el celular, el administrador en tierra deberá habilitar nuevamente al usuario en Supabase, y el operario deberá realizar un inicio de sesión completo (online) con su correo y contraseña para regenerar una nueva base de datos local y clave de cifrado.
+* **Límite de Intentos Offline (MVP):** La aplicación móvil mantiene un contador local de intentos fallidos de PIN. Tras **5 intentos fallidos consecutivos sin conexión**, la app bloquea de inmediato el acceso rápido local (PIN/Biometría), borra las credenciales temporales y exige de forma obligatoria realizar un inicio de sesión online con correo y contraseña.
+* **Auto-Detonación (Fase de Seguridad Avanzada - Pendiente):** En la fase de producción segura y con el cifrado de SQLCipher activo, tras 5 intentos fallidos se activará un protocolo de borrado total de la Bóveda Segura de hardware, cierre de base de datos SQLite y bloqueo físico permanente de la UI (autodestrucción).
+* **Falso Positivo:** Si el acceso rápido se bloquea por error del usuario legítimo en el MVP, este podrá volver a ingresar simplemente restableciendo la sesión de forma online con sus credenciales completas. En la fase de seguridad avanzada, al eliminarse la llave de cifrado maestro local, la base de datos no podrá recuperarse y requerirá regeneración total desde Supabase tras habilitación del administrador.
 
 ---
 

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../../../../nucleo/errores/diccionario_errores.dart';
 import '../../../../nucleo/seguridad/servicio_cifrado.dart';
 import '../../dominio/entidades/usuario.dart';
 import '../../dominio/repositorios/repositorio_autenticacion.dart';
@@ -132,20 +133,34 @@ class RepositorioAutenticacionImpl implements RepositorioAutenticacion {
     final savedHash = await _secureStorage.obtenerHashOffline();
     final savedUserStr = await _secureStorage.obtenerDatosUsuarioOffline();
 
-    if (savedHash == null || savedUserStr == null) {
-      throw Exception(
-        'No hay conexión a internet y no existen datos offline guardados.',
-      );
-    }
+    _validarDatosOfflineExistentes(savedHash, savedUserStr);
+    _validarPasswordOffline(password, savedHash!);
 
-    if (!ServicioCifrado.verificarPasswordBcrypt(password, savedHash)) {
-      throw Exception('Contraseña incorrecta (Modo Offline).');
-    }
-
-    final user = Usuario.fromJson(jsonDecode(savedUserStr));
+    final user = Usuario.fromJson(jsonDecode(savedUserStr!));
     await _secureStorage.guardarToken(user.id);
     await _secureStorage.guardarTimestamp();
     return user;
+  }
+
+  /// Lanza [ExcepcionApp] si no hay datos offline guardados.
+  void _validarDatosOfflineExistentes(String? hash, String? userStr) {
+    if (hash == null || userStr == null) {
+      throw const ExcepcionApp(
+        'NET-002',
+        mensajeTecnico:
+            'Sin conexión y sin sesión offline previa en la bóveda.',
+      );
+    }
+  }
+
+  /// Lanza [ExcepcionApp] si el password no coincide con el hash BCrypt.
+  void _validarPasswordOffline(String password, String hash) {
+    if (!ServicioCifrado.verificarPasswordBcrypt(password, hash)) {
+      throw const ExcepcionApp(
+        'AUTH-001',
+        mensajeTecnico: 'Contraseña incorrecta en modo offline.',
+      );
+    }
   }
 
   /// Reconstruye el [Usuario] desde los datos cacheados en la bóveda.

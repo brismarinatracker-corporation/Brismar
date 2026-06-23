@@ -21,7 +21,12 @@ class GestorBaseDatos {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(
+      path,
+      version: 2,
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB,
+    );
   }
 
   /// Estructura inicial de las tablas en SQLite local.
@@ -29,6 +34,7 @@ class GestorBaseDatos {
     await db.execute('''
       CREATE TABLE registro_embarcaciones (
         id TEXT PRIMARY KEY,
+        usuario_id TEXT NOT NULL,
         nombre_embarcacion TEXT NOT NULL,
         producto TEXT NOT NULL,
         placa_carro TEXT,
@@ -50,9 +56,19 @@ class GestorBaseDatos {
     ''');
   }
 
+  /// Migraciones incrementales para instalaciones que ya tienen datos locales.
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute(
+        'ALTER TABLE registro_embarcaciones ADD COLUMN usuario_id TEXT',
+      );
+    }
+  }
+
   /// Cierra la base de datos cuando ya no se requiere.
   Future<void> close() async {
     final db = await instance.database;
     await db.close();
+    _database = null;
   }
 }

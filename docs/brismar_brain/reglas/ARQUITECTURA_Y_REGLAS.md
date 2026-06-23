@@ -12,12 +12,13 @@ Este documento contiene las directrices técnicas y arquitectónicas inmutables 
 ## 2. Persistencia y Bóveda Segura (Offline-First)
 
 - **SQLite Local (App Móvil):** La app está diseñada para funcionar sin internet ("Offline-first") en alta mar. Todos los registros críticos deben guardarse primero localmente.
-- **SQLCipher / Encriptación:** Evaluar constantemente el riesgo de robo físico del dispositivo. Las bases de datos locales y preferencias deben estar encriptadas.
-- **Validación de Hash (SHA-256):** Las contraseñas de los usuarios se guardan hasheadas localmente para permitir el login sin conexión a internet. JAMÁS enviar contraseñas en texto plano por la red o guardarlas sin hashear en local.
+- **Estado de Cifrado (SQLite normal):** Actualmente la base de datos SQLite se ejecuta sin cifrado completo.
+- **Pendiente Crítico (SQLCipher):** Migrar a SQLCipher o un esquema de cifrado de base de datos equivalente antes de considerarse una versión segura para producción.
+- **Validación de Hash (BCrypt):** Para autenticación offline, las contraseñas se almacenan localmente en formato hash utilizando BCrypt. JAMÁS guardar contraseñas en texto plano.
 
-## 3. Entorno de Datos (Supabase)
+## 3. Entorno de Datos (Supabase como Fuente Única de Verdad)
 
-- **Convivencia (App y Web):** `brismar_app` (App) y `brismar_web` (Web) consumen el mismo proyecto de Supabase. NO hacer migraciones destructivas (borrar columnas o cambiar tipos de datos) que puedan romper la otra plataforma.
+- **Convivencia (App y Web):** Supabase PostgreSQL será la fuente única de verdad para todo el ecosistema. Tanto `brismar_app` (App) como `brismar_web` (Web) leen y escriben del mismo esquema de datos. NO realizar migraciones destructivas (borrar columnas o alterar tipos de datos) sin validar compatibilidad en ambas plataformas.
 - **Gestión de Secretos:** TODAS las URL y Anon Keys deben leerse desde el entorno. En la máquina local del desarrollador están almacenadas en `CREDENCIALES_MAESTRAS.env` (que nunca se sube a GitHub).
 
 ---

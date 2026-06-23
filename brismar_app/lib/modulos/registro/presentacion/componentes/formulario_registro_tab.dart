@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../../nucleo/errores/diccionario_errores.dart';
 import '../../dominio/entidades/registro_entidad.dart';
 import '../controladores/registro_controlador.dart';
 import '../controladores/registro_formulario_controlador.dart';
@@ -15,11 +16,13 @@ import 'encabezado_usuario.dart';
 /// Controla el ciclo de vida de los TextEditingControllers.
 class FormularioRegistroTab extends ConsumerStatefulWidget {
   final String nombreUsuario;
+  final String? usuarioId;
   final VoidCallback onRegistroExitoso;
 
   const FormularioRegistroTab({
     super.key,
     required this.nombreUsuario,
+    required this.usuarioId,
     required this.onRegistroExitoso,
   });
 
@@ -114,6 +117,18 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
       return;
     }
 
+    final usuarioId = widget.usuarioId;
+    if (usuarioId == null || usuarioId.trim().isEmpty) {
+      final detalle = DiccionarioErrores.obtener('AUTH-004');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(detalle.toString()),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final now = DateTime.now();
     final fecha =
         '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
@@ -122,6 +137,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
 
     final reg = RegistroEntidad(
       id: const Uuid().v4(),
+      usuarioId: usuarioId,
       nombreEmbarcacion: _nombreNaveController.text,
       producto: estadoForm.productoSeleccionado!,
       placaCarro: _placaController.text,
@@ -156,9 +172,10 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
       widget.onRegistroExitoso();
     } catch (e) {
       if (mounted) {
+        final detalle = DiccionarioErrores.mapear(e);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al guardar: $e'),
+            content: Text(detalle.toString()),
             backgroundColor: Colors.red,
           ),
         );

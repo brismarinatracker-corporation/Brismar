@@ -32,11 +32,11 @@ graph TB
         CallStatsAPI --> GetStats[Recibir query params: fechaInicio, fechaFin]
         CallPdfAPI --> GetPdfReq[Recibir query params: fechaInicio, fechaFin, nombreBahia]
         
-        GetStats --> RunSeqStats[Ejecutar Query de Sumarización en Sequelize]
-        GetPdfReq --> RunSeqPdf[Ejecutar Query de Sumarización en Sequelize]
+        GetStats --> RunSupabaseStats[Consultar Estadísticas en Supabase]
+        GetPdfReq --> RunSupabasePdf[Consultar Detalle en Supabase]
         
-        RunSeqStats --> CheckStats{¿Consulta Exitosa?}
-        RunSeqPdf --> CheckPdf{¿Consulta Exitosa?}
+        RunSupabaseStats --> CheckStats{¿Consulta Exitosa?}
+        RunSupabasePdf --> CheckPdf{¿Consulta Exitosa?}
         
         CheckStats -->|Sí| ReturnJson[Responder JSON de Estadísticas]
         CheckStats -->|No| ReturnError[Responder JSON de Error 500]
@@ -53,8 +53,8 @@ graph TB
     end
 
     subgraph CentralDB ["Base de Datos Central (Supabase / Postgres)"]
-        RunSeqStats --> DbQueryStats[SUM gastos y kilos * precio]
-        RunSeqPdf --> DbQueryPdf[SUM gastos y kilos * precio]
+        RunSupabaseStats --> DbQueryStats[SUM gastos y kilos * precio]
+        RunSupabasePdf --> DbQueryPdf[SUM gastos y kilos * precio]
         DbQueryStats --> ReturnStatsData[Retornar Datos o Error]
         DbQueryPdf --> ReturnPdfData[Retornar Datos o Error]
         ReturnStatsData --> CheckStats
@@ -77,7 +77,7 @@ El administrador del sistema puede filtrar el consolidado de las operaciones de 
 
 ### 2. Consulta y Consolidación Financiera (Cierre de Caja)
 
-Al recibir la petición, el servidor Node.js/Express ejecuta una consulta SQL agregada utilizando Sequelize ORM sobre la tabla `registro_embarcaciones` para totalizar ingresos y gastos del periodo:
+Al recibir la petición, el servidor Node.js/Express ejecuta una consulta SQL agregada consultando el cliente de Supabase (PostgreSQL) sobre la tabla `registro_embarcaciones` para totalizar ingresos y gastos del periodo:
 
 * **Ingreso Bruto:** Calculado mediante la suma ponderada del producto:
     $$\text{Ingreso Bruto} = \sum (\text{kilos} \times \text{precio\_por\_kilo})$$
@@ -121,14 +121,8 @@ classDiagram
         +estadisticasRango(req, res) Promise
         +reportePdf(req, res) Promise
     }
-    class ModeloEmbarcacion {
-        +id : String
-        +nombre_embarcacion : String
-        +kilos : Decimal
-        +precio_por_kilo : Decimal
-        +virtual ingresoBruto : float
-        +virtual totalGastos : float
-        +virtual utilidadNeta : float
+    class ClienteSupabase {
+        +from(tabla) select
     }
     class ServicioPdf {
         +calcularTotal(datos) float
@@ -136,7 +130,7 @@ classDiagram
     }
 
     RutasEmbarcaciones --> ControladorEmbarcaciones : delega peticiones
-    ControladorEmbarcaciones --> ModeloEmbarcacion : consulta datos Sequelize
+    ControladorEmbarcaciones --> ClienteSupabase : consulta datos a Supabase
     ControladorEmbarcaciones --> ServicioPdf : llama para armar stream PDF
 ```
 
@@ -146,4 +140,4 @@ classDiagram
 
 *   Para ver cómo se originan los datos consolidados en alta mar: [[FLUJO_02_REGISTRO_PESCA]].
 *   Estructura física de la base de datos compartida: [[SISTEMA_CENTRAL_SUPABASE]].
-*   Controladores de Rutas en la Web: [rutas_embarcaciones.js](file:///c:/BRISMAR_APP/brismar_web/src/modulos/embarcaciones/rutas_embarcaciones.js) y [controlador_embarcaciones.js](file:///c:/BRISMAR_APP/brismar_web/src/modulos/embarcaciones/controlador_embarcaciones.js).
+*   Controladores de Rutas en la Web: [rutas_embarcaciones.js](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/brismar_web/src/modulos/embarcaciones/rutas_embarcaciones.js) y [controlador_embarcaciones.js](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/brismar_web/src/modulos/embarcaciones/controlador_embarcaciones.js).

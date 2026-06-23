@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vibration/vibration.dart';
 import '../../dominio/entidades/preferencia_acceso.dart';
 import '../controladores/controlador_autenticacion.dart';
 import '../../../../nucleo/rutas/enrutador.dart';
@@ -316,10 +317,18 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
     } else if (siguiente is EstadoAutenticacionNoAutenticado) {
       LoginRoute().go(context);
     } else if (siguiente is EstadoAutenticacionError) {
-      setState(() {
-        _error = siguiente.mensaje;
-        _pinIngresado = '';
-      });
+      _notificarError(siguiente.mensaje);
     }
+  }
+
+  /// Vibra y muestra el error en pantalla.
+  Future<void> _notificarError(String mensaje) async {
+    if (await Vibration.hasVibrator() == true) {
+      Vibration.vibrate(duration: 150);
+    }
+    setState(() {
+      _error = mensaje;
+      _pinIngresado = '';
+    });
   }
 }

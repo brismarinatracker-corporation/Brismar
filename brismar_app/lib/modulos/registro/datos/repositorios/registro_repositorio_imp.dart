@@ -1,5 +1,6 @@
 import '../../dominio/entidades/registro_entidad.dart';
 import '../../dominio/repositorios/registro_repositorio.dart';
+import '../../../../nucleo/errores/diccionario_errores.dart';
 import '../fuentes_datos/fuente_datos_registro_local.dart';
 import '../fuentes_datos/fuente_datos_registro_remota.dart';
 import '../modelos/registro_modelo.dart';
@@ -45,11 +46,27 @@ class RegistroRepositorioImp implements RegistroRepositorio {
     final pendientes = await _localDatasource.obtenerPendientesSincronizar();
     if (pendientes.isEmpty) return;
 
-    // 2. Subir en lote a Supabase
-    await _remotoDatasource.subirRegistros(pendientes);
+    final pendientesConUsuario = pendientes
+        .where((registro) => registro.usuarioId.trim().isNotEmpty)
+        .toList();
+    final hayRegistrosSinUsuario =
+        pendientesConUsuario.length != pendientes.length;
 
-    // 3. Marcar localmente como sincronizados
-    final ids = pendientes.map((p) => p.id).toList();
-    await _localDatasource.marcarComoSincronizados(ids);
+    // 2. Subir en lote a Supabase
+    if (pendientesConUsuario.isNotEmpty) {
+      await _remotoDatasource.subirRegistros(pendientesConUsuario);
+
+      // 3. Marcar localmente como sincronizados
+      final ids = pendientesConUsuario.map((p) => p.id).toList();
+      await _localDatasource.marcarComoSincronizados(ids);
+    }
+
+    if (hayRegistrosSinUsuario) {
+      throw const ExcepcionApp(
+        'NET-003',
+        mensajeTecnico:
+            'Existen registros locales antiguos sin usuario_id; no se sincronizaron.',
+      );
+    }
   }
 }

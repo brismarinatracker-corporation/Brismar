@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../dominio/entidades/usuario.dart';
+import '../../../../nucleo/errores/diccionario_errores.dart';
 import '../../../../nucleo/red/cliente_supabase.dart';
 
 /// Fuente de datos remota para la autenticación en Supabase.
@@ -25,26 +27,51 @@ class FuenteDatosAutenticacionRemota {
 
       final user = response.user;
       if (user == null) {
-        throw Exception('El servidor no devolvió información del usuario.');
+        throw const ExcepcionApp(
+          'AUTH-001',
+          mensajeTecnico: 'El servidor no devolvió información del usuario.',
+        );
       }
 
-      // Consultamos el rol y nombre real en la tabla de base de datos 'usuarios'
+      // Guardamos la versión actual de la app en los metadatos del usuario
+      try {
+        final info = await PackageInfo.fromPlatform();
+        await _client.auth.updateUser(sb.UserAttributes(
+          data: {'app_version': info.version},
+        ));
+      } catch (_) {
+        // Ignorar fallo de versión para no bloquear el login
+      }
+
+      // Consultamos el rol y nombre real en la tabla 'usuarios'.
+      // maybeSingle() retorna null en vez de PGRST116 si el perfil aún no existe.
       final userDetails = await _client
           .from('usuarios')
           .select('nombre_real, rol')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
       return Usuario(
         id: user.id,
         nombreUsuario: user.email ?? correo,
-        nombreReal: userDetails['nombre_real'] ?? 'Usuario Brismar',
-        rol: userDetails['rol'] ?? 'bahia',
+        nombreReal: userDetails?['nombre_real'] ?? 'Usuario Brismar',
+        rol: userDetails?['rol'] ?? 'bahia',
       );
+    } on ExcepcionApp {
+      rethrow;
     } on sb.AuthException catch (e) {
-      throw Exception('Error de autenticación: ${e.message}');
-    } catch (e) {
-      throw Exception('Error de red al iniciar sesión: $e');
+      throw ExcepcionApp(
+        'AUTH-001',
+        mensajeTecnico: 'AuthException de Supabase: ${e.message}',
+        causa: e,
+      );
+    } catch (e, stack) {
+      throw ExcepcionApp(
+        'NET-002',
+        mensajeTecnico: 'Error de red al iniciar sesión.',
+        causa: e,
+        stackTrace: stack,
+      );
     }
   }
 
@@ -53,8 +80,13 @@ class FuenteDatosAutenticacionRemota {
     if (ConfiguracionSupabase.url.contains('tu-proyecto-supabase')) return;
     try {
       await _client.auth.signOut();
-    } catch (e) {
-      throw Exception('Error al cerrar sesión remota: $e');
+    } catch (e, stack) {
+      throw ExcepcionApp(
+        'NET-002',
+        mensajeTecnico: 'Error al cerrar sesión remota.',
+        causa: e,
+        stackTrace: stack,
+      );
     }
   }
 
@@ -70,6 +102,9 @@ class FuenteDatosAutenticacionRemota {
         rol: 'bahia',
       );
     }
-    throw Exception('Usuario o contraseña incorrectos (Modo Simulación)');
+    throw const ExcepcionApp(
+      'AUTH-001',
+      mensajeTecnico: 'Credenciales incorrectas (Modo Simulación).',
+    );
   }
 }

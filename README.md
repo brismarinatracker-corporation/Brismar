@@ -9,8 +9,8 @@ Este archivo es la puerta de entrada para entender la estructura técnica y de c
 
 ## 📁 Arquitectura del Monorepo
 
-* 📱 [**brismar_app**](./brismar_app/) — Código fuente de la aplicación móvil (Flutter). Contiene la lógica *Offline-First* usada por los operadores en la bahía. (Encargados: **Jhonatan y Belén**).
-* ⚙️ [**brismar_web**](./brismar_web/) — Código fuente del backend y dashboard administrativo. (Encargado: **Yisus**).
+* 📱 [**brismar_app**](./brismar_app/) — Código fuente de la aplicación móvil (Flutter). Implementa una robusta arquitectura *Offline-First* enfocada en seguridad. (Actualmente: **Fase 1 Autenticación COMPLETADA**, transitando a Fase 2 Registro). Revisa el detalle en `ESTADO_PROYECTO.md`. (Encargados: **Jhonatan y Belén**).
+* ⚙️ [**brismar_web**](./brismar_web/) — Código fuente del backend y dashboard administrativo (migrado a Supabase PostgreSQL como base de datos única). (Encargado: **Yisus**).
 * 🗄️ [**supabase**](./supabase/) — Definiciones de tablas y migraciones de la base de datos PostgreSQL compartida.
 
 ---
@@ -32,6 +32,11 @@ Para evitar la pérdida de contexto en WhatsApp y permitir la integración con I
 
 ### 3. 🧪 Google Colab / Notebooks
 Para el análisis de datos masivos de pesca, reportes contables o scripts de Python que consuman la BD de Supabase, usen Google Colab enlazado a la misma cuenta de Drive de Brismar.
+
+### 4. 📊 Políticas de Datos y Canales Operativos
+- **Supabase PostgreSQL** es la fuente única de verdad para la App y la Web.
+- **WhatsApp** queda erradicado como canal operativo principal para evitar pérdidas de contexto y desorden en datos de fletes, gastos o pesca.
+- **Excel** se mantiene como formato de salida compatible para reportes, entrega contable, análisis administrativo y respaldos operativos, buscando reducir la digitación manual mas no eliminar su uso tradicional en oficina.
 
 ---
 

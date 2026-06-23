@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../nucleo/rutas/enrutador.dart';
@@ -25,6 +26,9 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
       _escucharEstadoAutenticacion,
     );
 
+    final estado = ref.watch(proveedorControladorAutenticacion);
+    final estaCargando = estado is EstadoAutenticacionCargando;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -37,7 +41,35 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
               child: FormularioLogin(),
             ),
           ),
+          if (estaCargando) _construirOverlayCarga(),
         ],
+      ),
+    );
+  }
+
+  /// Construye un overlay oscuro con desenfoque mientras se conecta al servidor.
+  Widget _construirOverlayCarga() {
+    return Positioned.fill(
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: const Duration(milliseconds: 300),
+        builder: (context, val, child) {
+          return Opacity(
+            opacity: val,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5 * val, sigmaY: 5 * val),
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.4 * val),
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF00E5FF),
+                    strokeWidth: 3,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

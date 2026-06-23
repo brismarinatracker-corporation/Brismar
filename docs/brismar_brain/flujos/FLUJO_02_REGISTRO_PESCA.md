@@ -90,4 +90,4 @@ Dado que varios dispositivos pueden reportar registros al mismo tiempo al volver
 
 * Capa de persistencia local en Flutter: [fuente_datos_registro_local.dart](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/brismar_app/lib/modulos/registro/datos/fuentes_datos/fuente_datos_registro_local.dart).
 * Proceso técnico detallado de subida en lote: [[FLUJO_04_SINCRONIZACION_FONDO]].
-* Esquema de base de datos de Sequelize en la Web: [modelo_embarcacion.js](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/brismar_web/src/modulos/embarcaciones/modelo_embarcacion.js).
+* Esquema único de base de datos en Supabase (compartido con la Web): [registro_embarcaciones en Supabase](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/supabase/migrations/).

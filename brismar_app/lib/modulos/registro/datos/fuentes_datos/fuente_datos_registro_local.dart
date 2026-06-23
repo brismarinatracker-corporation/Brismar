@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import '../../../../nucleo/base_datos/gestor_base_datos.dart';
+import '../../../../nucleo/errores/diccionario_errores.dart';
 import '../modelos/registro_modelo.dart';
 
 /// Fuente de datos local para la persistencia offline en SQLite.
@@ -16,9 +17,12 @@ class FuenteDatosRegistroLocal {
         modelo.toSqlite(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-    } catch (e) {
-      throw Exception(
-        'Error al guardar el registro en la base de datos local: $e',
+    } catch (e, stack) {
+      throw ExcepcionApp(
+        'DB-002',
+        mensajeTecnico: 'Error al guardar el registro en SQLite.',
+        causa: e,
+        stackTrace: stack,
       );
     }
   }
@@ -32,8 +36,13 @@ class FuenteDatosRegistroLocal {
         orderBy: 'fecha DESC, hora DESC',
       );
       return result.map((map) => RegistroModelo.fromSqlite(map)).toList();
-    } catch (e) {
-      throw Exception('Error al leer el historial local: $e');
+    } catch (e, stack) {
+      throw ExcepcionApp(
+        'DB-004',
+        mensajeTecnico: 'Error al leer el historial local.',
+        causa: e,
+        stackTrace: stack,
+      );
     }
   }
 
@@ -46,8 +55,13 @@ class FuenteDatosRegistroLocal {
         where: 'sincronizado = 0',
       );
       return result.map((map) => RegistroModelo.fromSqlite(map)).toList();
-    } catch (e) {
-      throw Exception('Error al consultar registros pendientes: $e');
+    } catch (e, stack) {
+      throw ExcepcionApp(
+        'DB-004',
+        mensajeTecnico: 'Error al consultar registros pendientes.',
+        causa: e,
+        stackTrace: stack,
+      );
     }
   }
 
@@ -65,8 +79,13 @@ class FuenteDatosRegistroLocal {
           );
         }
       });
-    } catch (e) {
-      throw Exception('Error al actualizar estado de sincronización: $e');
+    } catch (e, stack) {
+      throw ExcepcionApp(
+        'DB-002',
+        mensajeTecnico: 'Error al actualizar estado de sincronización.',
+        causa: e,
+        stackTrace: stack,
+      );
     }
   }
 }

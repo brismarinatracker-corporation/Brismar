@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_GestionIncidenciasTI" targetNamespace="http://brismar.com/bpmn/incidencias-ti" exporter="Antigravity IDE - BRISMAR" exporterVersion="3.0">
+  <bpmn:collaboration id="Collaboration_GestionIncidencias">
+    <bpmn:participant id="Pool_Brismar" name="BRISMAR — Gestión de Incidencias TI" processRef="Process_GestionIncidencias" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_GestionIncidencias" name="Gestión de Incidencias TI - BRISMAR" isExecutable="false">
+    <bpmn:documentation>
+      Proceso de gestión de incidencias TI con 3 carriles:
+      - Operario: reporta y confirma la solución final.
+      - Técnico TI (N1): clasifica y resuelve incidencias bajas.
+      - Jefe TI (N2): gestiona prioridades media/alta y escala al proveedor externo.
+      Cuando se escala al proveedor, el proceso interno de BRISMAR termina.
+      Si el Operario rechaza la solución, el Jefe TI retoma (loop limpio por encabezado del pool).
+    </bpmn:documentation>
+    <bpmn:laneSet id="LaneSet_Principal">
+      <bpmn:lane id="Lane_Operario" name="Operario (Reportante)">
+        <bpmn:flowNodeRef>StartEvent_IncidenciaDetectada</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ReportarIncidencia</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ConfirmarSolucion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_SolucionConfirmada</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_TicketCerrado</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_TecnicoTI" name="Técnico TI (Nivel 1)">
+        <bpmn:flowNodeRef>Task_RecopilarInformacion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ClasificarIncidencia</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_DeterminarPrioridad</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Solucionar</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_JefeTI" name="Jefe TI (Nivel 2)">
+        <bpmn:flowNodeRef>Gateway_Nivel2Resuelve</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ResolverYNotificar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Atender</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_EscaladoProveedor</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_EscalarProveedor</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:sequenceFlow id="Flow_Inicio_Reportar" sourceRef="StartEvent_IncidenciaDetectada" targetRef="Task_ReportarIncidencia" />
+    <bpmn:sequenceFlow id="Flow_Reportar_Recopilar" sourceRef="Task_ReportarIncidencia" targetRef="Task_RecopilarInformacion" />
+    <bpmn:sequenceFlow id="Flow_Recopilar_Clasificar" sourceRef="Task_RecopilarInformacion" targetRef="Task_ClasificarIncidencia" />
+    <bpmn:sequenceFlow id="Flow_Clasificar_Prioridad" sourceRef="Task_ClasificarIncidencia" targetRef="Gateway_DeterminarPrioridad" />
+    <bpmn:sequenceFlow id="Flow_Prioridad_MediaAlta" name="MEDIA / ALTA" sourceRef="Gateway_DeterminarPrioridad" targetRef="Task_Atender" />
+    <bpmn:sequenceFlow id="Flow_Confirmada_No" name="No / Reintentar" sourceRef="Gateway_SolucionConfirmada" targetRef="Task_Atender" />
+    <bpmn:startEvent id="StartEvent_IncidenciaDetectada" name="Incidencia detectada">
+      <bpmn:outgoing>Flow_Inicio_Reportar</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_ReportarIncidencia" name="Reportar Incidencia">
+      <bpmn:documentation>El operario describe la incidencia, adjunta evidencia y la registra en el sistema de tickets.</bpmn:documentation>
+      <bpmn:incoming>Flow_Inicio_Reportar</bpmn:incoming>
+      <bpmn:outgoing>Flow_Reportar_Recopilar</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_Atender_Nivel2Gateway" sourceRef="Task_Atender" targetRef="Gateway_Nivel2Resuelve" />
+    <bpmn:userTask id="Task_RecopilarInformacion" name="Recopilar información de la incidencia">
+      <bpmn:documentation>El técnico recopila logs, capturas de pantalla y contexto del entorno afectado para documentar la incidencia.</bpmn:documentation>
+      <bpmn:incoming>Flow_Reportar_Recopilar</bpmn:incoming>
+      <bpmn:outgoing>Flow_Recopilar_Clasificar</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_ClasificarIncidencia" name="Clasificar incidencia&#10;(impacto + urgencia)">
+      <bpmn:documentation>El técnico evalúa el impacto operativo y la urgencia para asignar prioridad: BAJA, MEDIA o ALTA.</bpmn:documentation>
+      <bpmn:incoming>Flow_Recopilar_Clasificar</bpmn:incoming>
+      <bpmn:outgoing>Flow_Clasificar_Prioridad</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Nivel2Resuelve" name="¿Nivel 2 resuelve?" gatewayDirection="Diverging">
+      <bpmn:incoming>Flow_Atender_Nivel2Gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_Nivel2Si</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Nivel2No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_Solucionar_Confirmar" sourceRef="Task_Solucionar" targetRef="Task_ConfirmarSolucion" />
+    <bpmn:sequenceFlow id="Flow_Resolver_Confirmar" sourceRef="Task_ResolverYNotificar" targetRef="Task_ConfirmarSolucion" />
+    <bpmn:sequenceFlow id="Flow_Confirmar_Gateway" sourceRef="Task_ConfirmarSolucion" targetRef="Gateway_SolucionConfirmada" />
+    <bpmn:sequenceFlow id="Flow_Confirmada_Si" name="Sí" sourceRef="Gateway_SolucionConfirmada" targetRef="EndEvent_TicketCerrado" />
+    <bpmn:sequenceFlow id="Flow_Prioridad_Baja" name="BAJA" sourceRef="Gateway_DeterminarPrioridad" targetRef="Task_Solucionar" />
+    <bpmn:sequenceFlow id="Flow_Nivel2Si" name="Sí" sourceRef="Gateway_Nivel2Resuelve" targetRef="Task_ResolverYNotificar" />
+    <bpmn:sequenceFlow id="Flow_Nivel2No" name="No" sourceRef="Gateway_Nivel2Resuelve" targetRef="Task_EscalarProveedor" />
+    <bpmn:sequenceFlow id="Flow_Escalar_Fin" sourceRef="Task_EscalarProveedor" targetRef="EndEvent_EscaladoProveedor" />
+    <bpmn:exclusiveGateway id="Gateway_DeterminarPrioridad" name="¿Cuál es la prioridad?" gatewayDirection="Diverging">
+      <bpmn:incoming>Flow_Clasificar_Prioridad</bpmn:incoming>
+      <bpmn:outgoing>Flow_Prioridad_Baja</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Prioridad_MediaAlta</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_ResolverYNotificar" name="Resolver y notificar al Operario">
+      <bpmn:documentation>El Jefe TI aplica la solución y notifica al Operario para que confirme que el servicio fue restaurado.</bpmn:documentation>
+      <bpmn:incoming>Flow_Nivel2Si</bpmn:incoming>
+      <bpmn:outgoing>Flow_Resolver_Confirmar</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Solucionar" name="Solucionar incidencia&#10;(Nivel 1)">
+      <bpmn:documentation>El Técnico TI resuelve directamente incidencias de prioridad BAJA. Notifica al Operario para confirmación.</bpmn:documentation>
+      <bpmn:incoming>Flow_Prioridad_Baja</bpmn:incoming>
+      <bpmn:outgoing>Flow_Solucionar_Confirmar</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_ConfirmarSolucion" name="Confirmar solución">
+      <bpmn:documentation>El operario verifica en su entorno que la incidencia fue resuelta. Confirma o rechaza la solución.</bpmn:documentation>
+      <bpmn:incoming>Flow_Solucionar_Confirmar</bpmn:incoming>
+      <bpmn:incoming>Flow_Resolver_Confirmar</bpmn:incoming>
+      <bpmn:outgoing>Flow_Confirmar_Gateway</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_SolucionConfirmada" name="¿Solución confirmada?" gatewayDirection="Diverging">
+      <bpmn:incoming>Flow_Confirmar_Gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_Confirmada_Si</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Confirmada_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_Atender" name="Atender incidencia&#10;(Nivel 2)">
+      <bpmn:documentation>El Jefe TI recibe incidencias MEDIA o ALTA (o rechazos del Operario) y las gestiona o decide escalar.</bpmn:documentation>
+      <bpmn:incoming>Flow_Prioridad_MediaAlta</bpmn:incoming>
+      <bpmn:incoming>Flow_Confirmada_No</bpmn:incoming>
+      <bpmn:outgoing>Flow_Atender_Nivel2Gateway</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_EscaladoProveedor" name="Escalado a Proveedor&#10;(Proceso interno cerrado)">
+      <bpmn:documentation>El proceso interno de BRISMAR concluye. El seguimiento pasa al proveedor externo fuera del alcance de este proceso.</bpmn:documentation>
+      <bpmn:incoming>Flow_Escalar_Fin</bpmn:incoming>
+      <bpmn:terminateEventDefinition id="TerminateEventDef_Proveedor" />
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_TicketCerrado" name="Ticket cerrado y archivado">
+      <bpmn:incoming>Flow_Confirmada_Si</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Task_EscalarProveedor" name="Escalar a Proveedor Externo&#10;y documentar ticket">
+      <bpmn:documentation>El Jefe TI escala formalmente la incidencia al proveedor externo, documenta el ticket con toda la información recopilada y cierra el seguimiento interno.</bpmn:documentation>
+      <bpmn:incoming>Flow_Nivel2No</bpmn:incoming>
+      <bpmn:outgoing>Flow_Escalar_Fin</bpmn:outgoing>
+    </bpmn:userTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_GestionIncidencias">
+    <bpmndi:BPMNPlane id="BPMNPlane_GestionIncidencias" bpmnElement="Collaboration_GestionIncidencias">
+      <bpmndi:BPMNShape id="Shape_Pool_Brismar" bpmnElement="Pool_Brismar" isHorizontal="true">
+        <dc:Bounds x="100" y="40" width="1420" height="780" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_JefeTI" bpmnElement="Lane_JefeTI" isHorizontal="true" bioc:stroke="#8a3a00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#8a3a00">
+        <dc:Bounds x="130" y="490" width="1390" height="330" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_TecnicoTI" bpmnElement="Lane_TecnicoTI" isHorizontal="true" bioc:stroke="#5b176d" bioc:fill="#e1bee7" color:background-color="#e1bee7" color:border-color="#5b176d">
+        <dc:Bounds x="130" y="235" width="1390" height="255" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_Operario" bpmnElement="Lane_Operario" isHorizontal="true" bioc:stroke="#0d4372" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#0d4372">
+        <dc:Bounds x="130" y="40" width="1390" height="195" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_StartEvent" bpmnElement="StartEvent_IncidenciaDetectada" bioc:stroke="#205022" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#205022">
+        <dc:Bounds x="162" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="155" y="155" width="51" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_ReportarIncidencia" bpmnElement="Task_ReportarIncidencia">
+        <dc:Bounds x="250" y="90" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_RecopilarInformacion" bpmnElement="Task_RecopilarInformacion">
+        <dc:Bounds x="250" y="260" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_ClasificarIncidencia" bpmnElement="Task_ClasificarIncidencia">
+        <dc:Bounds x="250" y="380" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_Nivel2Resuelve" bpmnElement="Gateway_Nivel2Resuelve" isMarkerVisible="true">
+        <dc:Bounds x="645" y="570" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="616" y="627" width="48" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_DeterminarPrioridad" bpmnElement="Gateway_DeterminarPrioridad" isMarkerVisible="true">
+        <dc:Bounds x="645" y="395" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="704.5" y="406.5" width="57" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_ResolverYNotificar" bpmnElement="Task_ResolverYNotificar">
+        <dc:Bounds x="830" y="555" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Solucionar" bpmnElement="Task_Solucionar">
+        <dc:Bounds x="720" y="287" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_ConfirmarSolucion" bpmnElement="Task_ConfirmarSolucion">
+        <dc:Bounds x="930" y="117" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_SolucionConfirmada" bpmnElement="Gateway_SolucionConfirmada" isMarkerVisible="true">
+        <dc:Bounds x="1115" y="132" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1110" y="189" width="61" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Atender" bpmnElement="Task_Atender">
+        <dc:Bounds x="460" y="555" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_EndEvent_EscaladoProveedor" bpmnElement="EndEvent_EscaladoProveedor">
+        <dc:Bounds x="1422" y="692" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1400" y="735" width="81" height="53" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_EndEvent_TicketCerrado" bpmnElement="EndEvent_TicketCerrado" bioc:stroke="#831311" bioc:fill="#ffcdd2" color:background-color="#ffcdd2" color:border-color="#831311">
+        <dc:Bounds x="1422" y="139" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1401" y="182" width="79" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_EscalarProveedor" bpmnElement="Task_EscalarProveedor">
+        <dc:Bounds x="620" y="694" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_Flow_Inicio_Reportar" bpmnElement="Flow_Inicio_Reportar">
+        <di:waypoint x="198" y="130" />
+        <di:waypoint x="250" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Reportar_Recopilar" bpmnElement="Flow_Reportar_Recopilar">
+        <di:waypoint x="310" y="170" />
+        <di:waypoint x="310" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Recopilar_Clasificar" bpmnElement="Flow_Recopilar_Clasificar">
+        <di:waypoint x="310" y="340" />
+        <di:waypoint x="310" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Clasificar_Prioridad" bpmnElement="Flow_Clasificar_Prioridad">
+        <di:waypoint x="370" y="420" />
+        <di:waypoint x="645" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Prioridad_MediaAlta" bpmnElement="Flow_Prioridad_MediaAlta">
+        <di:waypoint x="670" y="445" />
+        <di:waypoint x="670" y="460" />
+        <di:waypoint x="520" y="460" />
+        <di:waypoint x="520" y="555" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="535" y="445" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Confirmada_No" bpmnElement="Flow_Confirmada_No">
+        <di:waypoint x="1140" y="132" />
+        <di:waypoint x="1140" y="90" />
+        <di:waypoint x="400" y="90" />
+        <di:waypoint x="400" y="595" />
+        <di:waypoint x="460" y="595" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="814" y="73" width="75" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Atender_Nivel2Gateway" bpmnElement="Flow_Atender_Nivel2Gateway">
+        <di:waypoint x="580" y="595" />
+        <di:waypoint x="645" y="595" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Solucionar_Confirmar" bpmnElement="Flow_Solucionar_Confirmar">
+        <di:waypoint x="780" y="287" />
+        <di:waypoint x="780" y="157" />
+        <di:waypoint x="930" y="157" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Resolver_Confirmar" bpmnElement="Flow_Resolver_Confirmar">
+        <di:waypoint x="890" y="555" />
+        <di:waypoint x="890" y="180" />
+        <di:waypoint x="930" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Confirmar_Gateway" bpmnElement="Flow_Confirmar_Gateway">
+        <di:waypoint x="1050" y="157" />
+        <di:waypoint x="1115" y="157" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Confirmada_Si" bpmnElement="Flow_Confirmada_Si">
+        <di:waypoint x="1165" y="157" />
+        <di:waypoint x="1422" y="157" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1286" y="140" width="11" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Prioridad_Baja" bpmnElement="Flow_Prioridad_Baja">
+        <di:waypoint x="670" y="395" />
+        <di:waypoint x="670" y="327" />
+        <di:waypoint x="720" y="327" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="625" y="363" width="29" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Nivel2Si" bpmnElement="Flow_Nivel2Si">
+        <di:waypoint x="695" y="595" />
+        <di:waypoint x="830" y="595" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="753" y="578" width="11" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Nivel2No" bpmnElement="Flow_Nivel2No">
+        <di:waypoint x="670" y="620" />
+        <di:waypoint x="670" y="694" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="683" y="653" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Escalar_Fin" bpmnElement="Flow_Escalar_Fin">
+        <di:waypoint x="740" y="738" />
+        <di:waypoint x="1076" y="738" />
+        <di:waypoint x="1076" y="704" />
+        <di:waypoint x="1423" y="704" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

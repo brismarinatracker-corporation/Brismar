@@ -4,6 +4,11 @@ Este documento describe detalladamente la lógica, la experiencia de usuario y l
 
 Para evitar la fricción de ingresar correo y contraseña constantemente, se implementa un **Flujo Híbrido de Doble Estado**.
 
+> [!NOTE]
+> **Estado del Proyecto:**
+> - **Estado actual:** MVP funcional offline-first.
+> - **Pendiente para producción segura:** cifrado SQLCipher completo de la base de datos, implementación de revocación por robo (Flujo 05), uso de tokens reales de sesión de Supabase persistidos de forma robusta, sincronización robusta con manejo de errores y auditoría.
+
 ---
 
 ## 🗺️ Diagrama de Procesos (Carriles / Swimlanes)
@@ -41,7 +46,7 @@ graph TB
         
         %% Configuración de Acceso Rápido tras Login Exitoso
         SetupPIN --> SetupBio
-        SetupBio --> SaveSession[Guardar Token, Hash, PIN/Bio y Timestamp de Verificación]
+        SetupBio --> SaveSession[Guardar access_token, refresh_token y datos de usuario]
         SaveSession --> Dashboard
         
         %% RUTA B: ACCESO RÁPIDO DIARIO (Sí existe Token)
@@ -56,7 +61,10 @@ graph TB
         %% Validaciones de PIN / Biometría
         InputPIN --> CheckPIN{¿PIN Correcto?}
         CheckPIN -- Sí --> UpdateTimestamp[Actualizar Timestamp de Verificación]
-        CheckPIN -- No --> InputPIN
+        CheckPIN -- No (Menos de 5 intentos) --> InputPIN
+        CheckPIN -- No (5 intentos fallidos) --> ForceOnlineLogin[Bloquear Acceso Rápido y Forzar Login Online]
+        
+        ForceOnlineLogin --> ClearSession[Limpiar Sesión y Forzar Login Completo]
         
         ProvideBio --> CheckBio{¿Huella Correcta?}
         CheckBio -- Sí --> UpdateTimestamp
@@ -65,7 +73,7 @@ graph TB
         %% Rutas de Escape / Recuperación
         InputPIN --> ClickForgotPIN
         ProvideBio --> ClickForgotPIN
-        ClickForgotPIN --> ClearSession[Limpiar Sesión y Forzar Login Completo]
+        ClickForgotPIN --> ClearSession
         ClearSession --> InputFull
         UpdateTimestamp --> Dashboard
     end
@@ -84,37 +92,36 @@ graph TB
 
 ### Fase 1: Inicio de Sesión Inicial (Completo)
 
-* **Cuándo ocurre**: La primera vez que se usa la app en el dispositivo, o tras un cierre de sesión manual que destruye el token local.
+* **Cuándo ocurre**: La primera vez que se usa la app en el dispositivo, o tras un cierre de sesión manual o bloqueo por intentos fallidos.
 * **Proceso**:
   1. El usuario ingresa su **Correo y Contraseña**.
   2. Al presionar "Iniciar Sesión", la app evalúa si cuenta con conexión a internet.
      * > [!IMPORTANT]
-     * > **El primer inicio de sesión de un usuario en un dispositivo nuevo requiere obligatoriamente conexión a internet (Online)** para validar sus credenciales con Supabase Auth. No es posible realizar un primer inicio de sesión de forma offline porque la bóveda segura del dispositivo aún no posee el hash BCrypt de la contraseña del usuario.
-  3. **Con Internet (Online)**: Envía la petición a Supabase, valida las credenciales y genera el token de autorización JWT.
-  4. **Sin Internet (Offline - Solo usuarios previamente autenticados)**: Compara los datos ingresados contra el hash **BCrypt** almacenado en la **Bóveda Segura** del dispositivo. Si coincide, autoriza el acceso local. Si no existe registro previo offline de ese usuario o no coincide el hash, se rechaza la autenticación indicando que requiere conectarse a internet.
-  5. **Configuración de Acceso Rápido**: Tras el login exitoso (ya sea online u offline), se le exige al usuario definir un **PIN numérico (Obligatorio)** y se le ofrece configurar la **Huella Digital (Opcional)**.
-  6. **Persistencia y Hardware Keys**: Se encriptan y guardan en la Bóveda Segura (`flutter_secure_storage`), la cual utiliza encriptación por hardware (Android Keystore / iOS Keychain):
-     * El token local de autorización (JWT) de Supabase.
-     * El refresh token de Supabase.
-     * El hash de contraseña local (`offline_password_hash` hasheado con BCrypt) para ingresos offline.
-     * Las preferencias de acceso (PIN y huella).
-     * La **Clave Maestra de SQLCipher** generada aleatoriamente al inicializar la base de datos (esta clave encripta los archivos locales `.db` y se almacena únicamente en el secure storage del hardware).
-     * El timestamp exacto de la última verificación exitosa.
+     * > **Primer inicio en dispositivo nuevo: obligatorio online.** El primer inicio de sesión de un usuario en un dispositivo nuevo requiere obligatoriamente conexión a internet para validar sus credenciales con Supabase Auth. El inicio offline solo está permitido si el usuario ya inició sesión online previamente en ese dispositivo (para contar con el hash local de validación).
+  3. **Con Internet (Online)**: Envía la petición a Supabase, valida las credenciales y descarga el perfil del usuario.
+  4. **Sin Internet (Offline)**: Compara los datos ingresados contra el hash **BCrypt** almacenado en la Bóveda Segura del dispositivo. Si coincide, autoriza el acceso local.
+  5. **Configuración de Acceso Rápido (PIN Obligatorio)**: Tras el primer login exitoso, la configuración de un **PIN de 4 dígitos es obligatoria**. Sin un PIN configurado, el usuario no puede entrar al módulo principal.
+  6. **Biometría Opcional**: La opción de biometría se ofrece únicamente si el dispositivo posee hardware compatible y biometría previamente registrada. Si no está disponible, la app continúa operando exclusivamente con PIN.
+  7. **Almacenamiento Seguro**: La app almacena de forma segura en `flutter_secure_storage` los siguientes elementos:
+     * La sesión real de Supabase (`access_token` y `refresh_token`). El `user.id` no debe usarse directamente como token de sesión.
+     * El hash BCrypt de la contraseña para validación offline.
+     * Datos mínimos indispensables del usuario (nombre, rol, id).
+     * El timestamp de última verificación exitosa.
+     * *(Pendiente Crítico para producción segura)*: La clave maestra para cifrado de base de datos SQLCipher (actualmente SQLite funciona sin cifrado completo de base de datos local).
 
 ---
 
 ### Fase 2: Acceso Simplificado (Uso Diario)
 
-* **Cuándo ocurre**: Cada vez que el usuario abre la app y ya cuenta con un token almacenado localmente.
+* **Cuándo ocurre**: Cada vez que el usuario abre la app y ya cuenta con una sesión válida almacenada localmente.
 * **Proceso**:
   1. La app pregunta si la última verificación de identidad ocurrió hace **menos de 12 horas**.
   2. **Menos de 12 horas**: El usuario entra directamente al **Dashboard** sin interrupciones.
   3. **Más de 12 horas (Re-verificación)**: Se bloquea la pantalla y se le pide re-verificar su identidad:
      * Por defecto se presenta el teclado numérico del **PIN** (obligatorio).
-     * Si activó la biometría, el sistema invoca automáticamente el lector de **Huella Digital**.
-     * > [!NOTE]
-     * > **Manejo del JWT Offline**: Dado que el token JWT de Supabase tiene una vigencia por defecto de 1 hora, la aplicación móvil ignora la caducidad del JWT local mientras el dispositivo se encuentre sin conexión a internet (offline), confiando plenamente en la validación local del PIN o la huella. La renovación del JWT contra el servidor de Supabase mediante el refresh token se pospone y ejecuta de forma transparente en cuanto la app detecte conexión activa (Flujo 04).
-  4. **Actualización de Tiempo**: Una vez que el usuario ingresa su PIN o Huella de forma exitosa, la aplicación **actualiza el timestamp de última verificación** en la Bóveda Segura, reiniciando el temporizador de 12 horas de gracia.
+     * Si activó la biometría (y es soportada), se invoca automáticamente el lector biométrico.
+  4. **Límite de Intentos Offline**: Tras **5 intentos fallidos de PIN offline**, la app bloquea el acceso rápido y exige iniciar sesión de forma completa (online) con correo y contraseña. Esto limpia los tokens locales de acceso rápido para proteger el dispositivo. La autodestrucción total de datos locales se delega a la fase de seguridad avanzada y pertenece exclusivamente al **Flujo 05**.
+  5. **Actualización de Tiempo**: Una vez que el usuario ingresa su PIN o Huella de forma exitosa, la aplicación **actualiza el timestamp de última verificación**, reiniciando las 12 horas de gracia.
 
 ---
 
@@ -123,10 +130,12 @@ graph TB
 1. **Olvidé mi PIN**:
    * En la pantalla de ingreso del PIN, se muestra la opción *"Olvidé mi PIN"*.
    * Al presionarla, la aplicación **invalida el acceso rápido actual** y limpia el PIN anterior de la Bóveda Segura.
-   * Se solicita al usuario autenticarse ingresando su **Correo y Contraseña** para validar su identidad de forma segura.
-   * Una vez completado el inicio de sesión con credenciales, la app lo redirige obligatoriamente a la pantalla de **Configurar PIN**, donde registrará su nuevo código de acceso rápido para restablecer el flujo de uso diario.
+   * Se solicita al usuario autenticarse ingresando su **Correo y Contraseña** para validar su identidad de forma online (o local si ya tiene caché).
+   * Una vez completado el inicio de sesión, se redirige obligatoriamente a configurar un nuevo PIN de 4 dígitos.
 2. **Olvidé mi Contraseña**:
-   * En la pantalla de login con credenciales completas, habrá un botón de ayuda y recuperación. Dado que en alta mar no se pueden procesar envíos de correo automáticos, el botón mostrará información de contacto de soporte local y el muelle de ayuda en tierra para el reestablecimiento de credenciales por el administrador del sistema.
+   * Dado que en alta mar no se pueden procesar envíos de correo automáticos, el botón de ayuda mostrará información de contacto de soporte local en el muelle de ayuda en tierra para el reestablecimiento de credenciales por el administrador.
+
+---ntacto de soporte local y el muelle de ayuda en tierra para el reestablecimiento de credenciales por el administrador del sistema.
 
 ---
 

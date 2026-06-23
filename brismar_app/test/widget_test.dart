@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:brismar_mobile/modulos/registro/dominio/entidades/registro_entidad.dart';
+import 'package:brismar_mobile/modulos/registro/datos/modelos/registro_modelo.dart';
 import 'package:brismar_mobile/nucleo/seguridad/servicio_cifrado.dart';
 
 void main() {
@@ -7,6 +8,7 @@ void main() {
     test('Cálculo correcto de Ingreso Bruto, Gastos y Utilidad Neta', () {
       const registro = RegistroEntidad(
         id: 'test-uuid-12345',
+        usuarioId: 'usuario-uuid-12345',
         nombreEmbarcacion: 'Don Jose',
         producto: 'POTA',
         kilos: 1000.0,
@@ -32,6 +34,61 @@ void main() {
 
       // Utilidad neta: 5500 - 880 = 4620
       expect(registro.utilidadNeta, equals(4620.0));
+    });
+  });
+
+  group('RegistroModelo Tests de Mapeo', () {
+    test('Incluye usuario_id en payload Supabase para soportar RLS', () {
+      const registro = RegistroModelo(
+        id: '11111111-1111-4111-8111-111111111111',
+        usuarioId: '22222222-2222-4222-8222-222222222222',
+        nombreEmbarcacion: 'Don Jose',
+        producto: 'POTA',
+        kilos: 1000,
+        precioPorKilo: 5.5,
+        fecha: '2026-05-26',
+        hora: '10:00',
+        muelleInicio: 'Muelle A',
+      );
+
+      expect(
+        registro.toJson()['usuario_id'],
+        equals('22222222-2222-4222-8222-222222222222'),
+      );
+    });
+
+    test('fromJson acepta sincronizado booleano, entero y decimal string', () {
+      final baseJson = {
+        'id': '11111111-1111-4111-8111-111111111111',
+        'usuario_id': '22222222-2222-4222-8222-222222222222',
+        'nombre_embarcacion': 'Don Jose',
+        'producto': 'POTA',
+        'placa_carro': null,
+        'kilos': '1000.25',
+        'precio_por_kilo': '5.50',
+        'fecha': '2026-05-26',
+        'hora': '10:00',
+        'muelle_inicio': 'Muelle A',
+        'gasto_facturacion': '100.00',
+        'gasto_personal': '150.00',
+        'gasto_apoyo': '50.00',
+        'gasto_agua': '20.00',
+        'gasto_clorox': '10.00',
+        'gasto_flete': '300.00',
+        'gasto_hielo': '200.00',
+        'gasto_otros': '50.00',
+      };
+
+      final boolJson = RegistroModelo.fromJson({
+        ...baseJson,
+        'sincronizado': true,
+      });
+      final intJson = RegistroModelo.fromJson({...baseJson, 'sincronizado': 1});
+
+      expect(boolJson.sincronizado, isTrue);
+      expect(intJson.sincronizado, isTrue);
+      expect(intJson.kilos, equals(1000.25));
+      expect(intJson.precioPorKilo, equals(5.5));
     });
   });
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../dominio/entidades/registro_entidad.dart';
@@ -81,8 +83,9 @@ class HistorialNotifier
     try {
       await _guardarRegistro.ejecutar(registro);
       await cargarHistorial(); // Refrescamos el historial local
-    } catch (e) {
-      throw Exception('Error al guardar registro: $e');
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+      rethrow;
     }
   }
 }
@@ -97,6 +100,7 @@ final proveedorSyncController =
 class SyncNotifier extends StateNotifier<AsyncValue<void>> {
   final SincronizarPendientesCasoUso _syncUsecase;
   final Ref _ref;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
   SyncNotifier({
     required SincronizarPendientesCasoUso syncUsecase,
@@ -105,7 +109,9 @@ class SyncNotifier extends StateNotifier<AsyncValue<void>> {
        _ref = ref,
        super(const AsyncValue.data(null)) {
     // Escucha cambios de conectividad en segundo plano
-    Connectivity().onConnectivityChanged.listen((results) {
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((
+      results,
+    ) {
       // connectivity_plus v6.0+ devuelve una lista de ConnectivityResult
       final hasConnection = results.any(
         (result) =>
@@ -115,7 +121,7 @@ class SyncNotifier extends StateNotifier<AsyncValue<void>> {
       );
 
       if (hasConnection) {
-        ejecutarSincronizacion();
+        unawaited(ejecutarSincronizacion());
       }
     });
   }
@@ -125,11 +131,21 @@ class SyncNotifier extends StateNotifier<AsyncValue<void>> {
     state = const AsyncValue.loading();
     try {
       await _syncUsecase.ejecutar();
+      if (!mounted) return;
       state = const AsyncValue.data(null);
       // Recargar historial si se sincronizó correctamente
-      _ref.read(proveedorHistorialController.notifier).cargarHistorial();
+      unawaited(
+        _ref.read(proveedorHistorialController.notifier).cargarHistorial(),
+      );
     } catch (e, stack) {
+      if (!mounted) return;
       state = AsyncValue.error(e, stack);
     }
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
   }
 }

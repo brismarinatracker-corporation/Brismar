@@ -44,6 +44,9 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
     final nombreUsuario = authState is EstadoAutenticacionAutenticado
         ? authState.usuario.nombreReal
         : 'Daniel';
+    final usuarioId = authState is EstadoAutenticacionAutenticado
+        ? authState.usuario.id
+        : null;
 
     // Escuchamos la sincronización para alertar de errores remotos
     ref.listen(proveedorSyncController, (previous, next) {
@@ -68,7 +71,9 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
             ),
             onTabChanged: (index) => setState(() => _activeTabIndex = index),
           ),
-          Expanded(child: _buildBodyContent(historialState, nombreUsuario)),
+          Expanded(
+            child: _buildBodyContent(historialState, nombreUsuario, usuarioId),
+          ),
         ],
       ),
     );
@@ -143,6 +148,7 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
   Widget _buildBodyContent(
     AsyncValue<List<RegistroEntidad>> state,
     String nombreUsuario,
+    String? usuarioId,
   ) {
     return Container(
       width: double.infinity,
@@ -156,6 +162,7 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
       child: _activeTabIndex == 0
           ? FormularioRegistroTab(
               nombreUsuario: nombreUsuario,
+              usuarioId: usuarioId,
               onRegistroExitoso: () => setState(() => _activeTabIndex = 1),
             )
           : _buildListaHistorial(state, nombreUsuario),

@@ -5,6 +5,7 @@ import '../../dominio/repositorios/repositorio_autenticacion.dart';
 import '../../datos/fuentes_datos/fuente_datos_autenticacion_remota.dart';
 import '../../datos/repositorios/repositorio_autenticacion_impl.dart';
 import '../../../../nucleo/seguridad/gestor_almacenamiento_seguro.dart';
+import '../../../../nucleo/errores/diccionario_errores.dart';
 
 // ─── Estados de Autenticación ────────────────────────────────────────────────
 
@@ -116,7 +117,7 @@ class NotificadorAutenticacion extends StateNotifier<EstadoAutenticacion> {
     } on SesionExpiradaException {
       await _transicionarAAccesoRapido();
     } catch (e) {
-      state = EstadoAutenticacionError(e.toString());
+      state = EstadoAutenticacionError(DiccionarioErrores.mapear(e).toString());
     }
   }
 
@@ -131,8 +132,7 @@ class NotificadorAutenticacion extends StateNotifier<EstadoAutenticacion> {
       _usuarioActivo = user;
       state = EstadoConfigurarPin(user);
     } catch (e) {
-      final mensaje = e.toString().replaceAll('Exception: ', '');
-      state = EstadoAutenticacionError(mensaje);
+      state = EstadoAutenticacionError(DiccionarioErrores.mapear(e).toString());
     }
   }
 
@@ -143,7 +143,7 @@ class NotificadorAutenticacion extends StateNotifier<EstadoAutenticacion> {
       await _repositorio.configurarPin(pin);
       state = const EstadoConfigurarBiometria();
     } catch (e) {
-      state = EstadoAutenticacionError(e.toString());
+      state = EstadoAutenticacionError(DiccionarioErrores.mapear(e).toString());
     }
   }
 
@@ -151,10 +151,12 @@ class NotificadorAutenticacion extends StateNotifier<EstadoAutenticacion> {
   Future<void> configurarBiometria(PreferenciaAcceso preferencia) async {
     state = const EstadoAutenticacionCargando();
     try {
-      await _repositorio.guardarPreferenciaAcceso(preferencia.toStorageString());
+      await _repositorio.guardarPreferenciaAcceso(
+        preferencia.toStorageString(),
+      );
       state = EstadoAutenticacionAutenticado(_usuarioActivo!);
     } catch (e) {
-      state = EstadoAutenticacionError(e.toString());
+      state = EstadoAutenticacionError(DiccionarioErrores.mapear(e).toString());
     }
   }
 
@@ -167,10 +169,12 @@ class NotificadorAutenticacion extends StateNotifier<EstadoAutenticacion> {
         final usuario = await _repositorio.obtenerUsuarioActual();
         state = EstadoAutenticacionAutenticado(usuario!);
       } else {
-        state = const EstadoAutenticacionError('PIN incorrecto. Intenta de nuevo.');
+        state = EstadoAutenticacionError(
+          DiccionarioErrores.obtener('AUTH-002').toString(),
+        );
       }
     } catch (e) {
-      state = EstadoAutenticacionError(e.toString());
+      state = EstadoAutenticacionError(DiccionarioErrores.mapear(e).toString());
     }
   }
 
@@ -183,10 +187,12 @@ class NotificadorAutenticacion extends StateNotifier<EstadoAutenticacion> {
         final usuario = await _repositorio.obtenerUsuarioActual();
         state = EstadoAutenticacionAutenticado(usuario!);
       } else {
-        state = const EstadoAutenticacionError('Huella no reconocida. Intenta de nuevo.');
+        state = EstadoAutenticacionError(
+          DiccionarioErrores.obtener('BIO-003').toString(),
+        );
       }
     } catch (e) {
-      state = EstadoAutenticacionError(e.toString());
+      state = EstadoAutenticacionError(DiccionarioErrores.mapear(e).toString());
     }
   }
 
@@ -197,7 +203,7 @@ class NotificadorAutenticacion extends StateNotifier<EstadoAutenticacion> {
       await _repositorio.invalidarPinYToken();
       state = const EstadoAutenticacionNoAutenticado();
     } catch (e) {
-      state = EstadoAutenticacionError(e.toString());
+      state = EstadoAutenticacionError(DiccionarioErrores.mapear(e).toString());
     }
   }
 
@@ -208,13 +214,14 @@ class NotificadorAutenticacion extends StateNotifier<EstadoAutenticacion> {
       await _repositorio.cerrarSesion();
       state = const EstadoAutenticacionNoAutenticado();
     } catch (e) {
-      state = EstadoAutenticacionError(e.toString());
+      state = EstadoAutenticacionError(DiccionarioErrores.mapear(e).toString());
     }
   }
 
   /// Determina y emite el estado de acceso rápido según preferencia guardada.
   Future<void> _transicionarAAccesoRapido() async {
-    final prefRaw = await GestorAlmacenamientoSeguro.instance.obtenerPreferenciaAcceso();
+    final prefRaw = await GestorAlmacenamientoSeguro.instance
+        .obtenerPreferenciaAcceso();
     final preferencia = PreferenciaAcceso.fromString(prefRaw);
     state = EstadoAccesoRapidoRequerido(preferencia);
   }

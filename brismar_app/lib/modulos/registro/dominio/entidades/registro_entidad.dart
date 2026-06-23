@@ -1,6 +1,7 @@
 /// Entidad de dominio pura que representa un registro de pesca y gastos asociados.
 class RegistroEntidad {
   final String id;
+  final String usuarioId;
   final String nombreEmbarcacion;
   final String producto;
   final String? placaCarro;
@@ -22,6 +23,7 @@ class RegistroEntidad {
   /// Constructor de [RegistroEntidad].
   const RegistroEntidad({
     required this.id,
+    required this.usuarioId,
     required this.nombreEmbarcacion,
     required this.producto,
     this.placaCarro,

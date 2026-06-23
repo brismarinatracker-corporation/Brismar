@@ -7,12 +7,12 @@ const sequelize = require('../../config/database');
  */
 const RegistroEmbarcacion = sequelize.define('RegistroEmbarcacion', {
   id: {
-    type: DataTypes.STRING,
+    type: DataTypes.UUID,
     primaryKey: true
   },
   usuario_id: {
     type: DataTypes.UUID,
-    allowNull: true
+    allowNull: false
   },
   nombre_embarcacion: {
     type: DataTypes.STRING,

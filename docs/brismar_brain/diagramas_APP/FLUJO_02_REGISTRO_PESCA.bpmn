@@ -26,8 +26,8 @@
       <bpmn:lane id="Lane_User" name="Personal de Bahía (Usuario)">
         <bpmn:flowNodeRef>Task_InputForm</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>StartEvent_Registro</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_ShowErr</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>EndEvent_Offline</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ShowErr</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
     <bpmn:exclusiveGateway id="Gateway_FormValid" name="¿Formulario Válido?">
@@ -50,10 +50,6 @@
     <bpmn:task id="Task_CalcTotals" name="Calcular reactivamente utilidad neta">
       <bpmn:incoming>Flow_2</bpmn:incoming>
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:task id="Task_ShowErr" name="Mostrar Snackbar con error de validación">
-      <bpmn:incoming>Flow_FormErr</bpmn:incoming>
-      <bpmn:outgoing>Flow_ErrRetry</bpmn:outgoing>
     </bpmn:task>
     <bpmn:endEvent id="EndEvent_Sync" name="Sincronizado con Éxito">
       <bpmn:incoming>Flow_7</bpmn:incoming>
@@ -105,24 +101,28 @@
       <bpmn:outgoing>Flow_ToSyncCheck</bpmn:outgoing>
       <bpmn:outgoing>Flow_ToWeb</bpmn:outgoing>
     </bpmn:parallelGateway>
+    <bpmn:task id="Task_ShowErr" name="Mostrar Snackbar con error de validación">
+      <bpmn:incoming>Flow_FormErr</bpmn:incoming>
+      <bpmn:outgoing>Flow_ErrRetry</bpmn:outgoing>
+    </bpmn:task>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_Registro">
     <bpmndi:BPMNPlane id="BPMNPlane_Registro" bpmnElement="Collaboration_Registro">
       <bpmndi:BPMNShape id="Participant_Registro_di" bpmnElement="Participant_Registro" isHorizontal="true">
         <dc:Bounds x="130" y="80" width="1310" height="480" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Lane_Web_di" bpmnElement="Lane_Web" isHorizontal="true" bioc:stroke="#1b5e20" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#1b5e20">
-        <dc:Bounds x="160" y="440" width="1280" height="120" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Lane_Server_di" bpmnElement="Lane_Server" isHorizontal="true" bioc:stroke="#831311" bioc:fill="#ffcdd2" color:background-color="#ffcdd2" color:border-color="#831311">
-        <dc:Bounds x="160" y="320" width="1280" height="120" />
+      <bpmndi:BPMNShape id="Lane_User_di" bpmnElement="Lane_User" isHorizontal="true" bioc:stroke="#0d4372" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#0d4372">
+        <dc:Bounds x="160" y="80" width="1280" height="120" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Lane_App_di" bpmnElement="Lane_App" isHorizontal="true" bioc:stroke="#5b176d" bioc:fill="#e1bee7" color:background-color="#e1bee7" color:border-color="#5b176d">
         <dc:Bounds x="160" y="200" width="1280" height="120" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Lane_User_di" bpmnElement="Lane_User" isHorizontal="true" bioc:stroke="#0d4372" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#0d4372">
-        <dc:Bounds x="160" y="80" width="1280" height="120" />
-        <bpmndi:BPMNLabel />
+      <bpmndi:BPMNShape id="Lane_Server_di" bpmnElement="Lane_Server" isHorizontal="true" bioc:stroke="#831311" bioc:fill="#ffcdd2" color:background-color="#ffcdd2" color:border-color="#831311">
+        <dc:Bounds x="160" y="320" width="1280" height="120" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Web_di" bpmnElement="Lane_Web" isHorizontal="true" bioc:stroke="#1b5e20" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#1b5e20">
+        <dc:Bounds x="160" y="440" width="1280" height="120" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_FormValid_di" bpmnElement="Gateway_FormValid" isMarkerVisible="true">
         <dc:Bounds x="565" y="235" width="50" height="50" />
@@ -146,9 +146,6 @@
       <bpmndi:BPMNShape id="Task_CalcTotals_di" bpmnElement="Task_CalcTotals">
         <dc:Bounds x="340" y="220" width="120" height="80" />
         <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_ShowErr_di" bpmnElement="Task_ShowErr">
-        <dc:Bounds x="570" y="100" width="120" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_Sync_di" bpmnElement="EndEvent_Sync">
         <dc:Bounds x="1382" y="232" width="36" height="36" />
@@ -192,6 +189,9 @@
           <dc:Bounds x="1175" y="383" width="89" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ShowErr_di" bpmnElement="Task_ShowErr">
+        <dc:Bounds x="530" y="100" width="120" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
         <di:waypoint x="460" y="260" />
         <di:waypoint x="565" y="260" />
@@ -205,11 +205,9 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_FormErr_di" bpmnElement="Flow_FormErr">
         <di:waypoint x="590" y="235" />
-        <di:waypoint x="590" y="203" />
-        <di:waypoint x="630" y="203" />
-        <di:waypoint x="630" y="180" />
+        <di:waypoint x="590" y="180" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="573" y="212" width="15" height="14" />
+          <dc:Bounds x="562" y="213" width="15" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1of8e9w_di" bpmnElement="Flow_1of8e9w">
@@ -221,7 +219,7 @@
         <di:waypoint x="350" y="140" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_ErrRetry_di" bpmnElement="Flow_ErrRetry">
-        <di:waypoint x="570" y="140" />
+        <di:waypoint x="530" y="140" />
         <di:waypoint x="470" y="140" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">

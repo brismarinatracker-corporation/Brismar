@@ -1,6 +1,9 @@
 # 📱 Brismar App — Cliente Móvil (Flutter)
 
-Este directorio contiene todo el código fuente de la aplicación móvil de **Brismar**, diseñada para la recolección y sincronización asíncrona de datos de pesca en alta mar (offline-first) por parte del **Personal de Bahía**.
+Este directorio contiene todo el código fuente de la aplicación móvil de **Brismar**, diseñada para la recolección y sincronización asíncrona de datos de pesca en alta mar por parte del **Personal de Bahía**. Actualmente se encuentra en estado de **MVP funcional offline-first** (parcialmente implementado).
+
+> [!NOTE]
+> **Estado de Persistencia y Seguridad:** Actualmente la app utiliza SQLite local sin cifrado completo de la base de datos. La migración a **SQLCipher** es un pendiente crítico requerido antes de considerarse lista para producción segura.
 
 ---
 
@@ -42,15 +45,18 @@ brismar_app/
 Para balancear la seguridad y la usabilidad del Personal de Bahía en alta mar, el inicio de sesión opera bajo dos esquemas:
 
 ### 1. Inicio de Sesión Inicial (Completo)
-* Se requiere la primera vez que se instala la aplicación o si el usuario cierra su sesión de manera explícita.
+* Se requiere la primera vez que se instala la aplicación o tras un cierre de sesión manual o bloqueo por intentos fallidos.
+* **Primer inicio en dispositivo nuevo: obligatorio online** para validar credenciales contra Supabase Auth.
 * Solicita **Correo y Contraseña**.
-* Valida en la nube vía **Supabase Auth** si hay conexión, o de forma local comparando hashes **BCrypt** contra la base SQLite si está offline.
-* Al ser exitoso, permite al usuario configurar de forma opcional su **PIN de 4 dígitos** o la **Biometría (Huella/Face ID)**, y almacena el token de sesión de forma encriptada.
+* Valida en la nube vía **Supabase Auth** si hay conexión, o localmente usando el hash **BCrypt** almacenado si está offline (solo para usuarios autenticados previamente en ese dispositivo).
+* Tras el login exitoso, la app obliga a configurar un **PIN de 4 dígitos (Obligatorio)** y ofrece de forma opcional la **Biometría (Huella/Face ID)** únicamente si el hardware del dispositivo es compatible y tiene registros activos.
+* Almacena de forma segura la sesión real de Supabase (`access_token` y `refresh_token`), desestimando el uso del simple `user.id` como token de sesión.
 
 ### 2. Acceso Simplificado (Uso Diario)
-* Si ya existe un token de sesión almacenado en el dispositivo, la aplicación no solicita las credenciales completas.
+* Si ya existe una sesión guardada localmente, la aplicación no solicita las credenciales completas de entrada.
 * **Periodo de Gracia (12 Horas):** Si el usuario ya validó su identidad en las últimas 12 horas, ingresa **directamente al Dashboard** sin pantallas de bloqueo.
-* **Re-verificación:** Transcurrido el periodo de gracia (o en la primera apertura de la jornada), solicita el **PIN de 4 dígitos** o la **Biometría** configurada para re-verificar identidad.
+* **Re-verificación:** Transcurrido el periodo de gracia (o en la primera apertura de la jornada), solicita el **PIN de 4 dígitos** o la **Biometría** configurada.
+* **Límite de Intentos Offline:** Si se registran **5 intentos fallidos consecutivos de PIN offline**, la app bloquea el acceso rápido local y exige de forma obligatoria realizar un inicio de sesión online con correo y contraseña. La autodestrucción total de la base de datos queda para la fase de seguridad avanzada (Flujo 05).
 
 ---
 
