@@ -61,12 +61,22 @@ class FuenteDatosAutenticacionRemota {
   /// Simulación del login para testing/pruebas locales.
   Future<Usuario> _iniciarSesionSimulado(String correo, String password) async {
     await Future.delayed(const Duration(milliseconds: 800)); // Simula latencia
-    if ((correo == 'usuario@brismar.com.pe' || correo == 'usuario') &&
+    final correoLower = correo.toLowerCase().trim();
+    
+    if ((correoLower == 'daniel@brismar.com.pe' || correoLower == 'daniel' || correoLower == 'usuario') &&
         password == '1234') {
       return const Usuario(
-        id: 'mock-uuid-99999',
-        nombreUsuario: 'usuario@brismar.com.pe',
+        id: 'mock-uuid-daniel',
+        nombreUsuario: 'daniel@brismar.com.pe',
         nombreReal: 'Daniel',
+        rol: 'bahia',
+      );
+    } else if ((correoLower == 'jim@brismar.com.pe' || correoLower == 'jim') &&
+        password == '1234') {
+      return const Usuario(
+        id: 'mock-uuid-jim',
+        nombreUsuario: 'jim@brismar.com.pe',
+        nombreReal: 'Jim',
         rol: 'bahia',
       );
     }
