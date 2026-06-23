@@ -4,6 +4,7 @@ import '../../dominio/entidades/registro_entidad.dart';
 class RegistroModelo extends RegistroEntidad {
   const RegistroModelo({
     required super.id,
+    required super.usuarioId,
     required super.nombreEmbarcacion,
     required super.producto,
     super.placaCarro,
@@ -29,6 +30,7 @@ class RegistroModelo extends RegistroEntidad {
   factory RegistroModelo.fromEntidad(RegistroEntidad e) {
     return RegistroModelo(
       id: e.id,
+      usuarioId: e.usuarioId,
       nombreEmbarcacion: e.nombreEmbarcacion,
       producto: e.producto,
       placaCarro: e.placaCarro,
@@ -55,6 +57,7 @@ class RegistroModelo extends RegistroEntidad {
   factory RegistroModelo.fromSqlite(Map<String, dynamic> map) {
     return RegistroModelo(
       id: map['id'] as String,
+      usuarioId: map['usuario_id'] as String,
       nombreEmbarcacion: map['nombre_embarcacion'] as String,
       producto: map['producto'] as String,
       placaCarro: map['placa_carro'] as String?,
@@ -81,6 +84,7 @@ class RegistroModelo extends RegistroEntidad {
   Map<String, dynamic> toSqlite() {
     return {
       'id': id,
+      'usuario_id': usuarioId,
       'nombre_embarcacion': nombreEmbarcacion,
       'producto': producto,
       'placa_carro': placaCarro,
@@ -107,6 +111,7 @@ class RegistroModelo extends RegistroEntidad {
   factory RegistroModelo.fromJson(Map<String, dynamic> json) {
     return RegistroModelo(
       id: json['id'] as String,
+      usuarioId: json['usuario_id'] as String,
       nombreEmbarcacion: json['nombre_embarcacion'] as String,
       producto: json['producto'] as String,
       placaCarro: json['placa_carro'] as String?,
@@ -133,6 +138,7 @@ class RegistroModelo extends RegistroEntidad {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'usuario_id': usuarioId,
       'nombre_embarcacion': nombreEmbarcacion,
       'producto': producto,
       'placa_carro': placaCarro,

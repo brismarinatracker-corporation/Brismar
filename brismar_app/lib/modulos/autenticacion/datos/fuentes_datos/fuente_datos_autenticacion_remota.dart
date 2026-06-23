@@ -3,6 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../dominio/entidades/usuario.dart';
 import '../../../../nucleo/errores/diccionario_errores.dart';
 import '../../../../nucleo/red/cliente_supabase.dart';
+import 'dart:async';
 
 /// Fuente de datos remota para la autenticación en Supabase.
 class FuenteDatosAutenticacionRemota {
@@ -23,7 +24,7 @@ class FuenteDatosAutenticacionRemota {
       final response = await _client.auth.signInWithPassword(
         email: correo,
         password: password,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final user = response.user;
       if (user == null) {
@@ -49,7 +50,8 @@ class FuenteDatosAutenticacionRemota {
           .from('usuarios')
           .select('nombre_real, rol')
           .eq('id', user.id)
-          .maybeSingle();
+          .maybeSingle()
+          .timeout(const Duration(seconds: 10));
 
       return Usuario(
         id: user.id,
@@ -64,6 +66,11 @@ class FuenteDatosAutenticacionRemota {
         'AUTH-001',
         mensajeTecnico: 'AuthException de Supabase: ${e.message}',
         causa: e,
+      );
+    } on TimeoutException {
+      throw const ExcepcionApp(
+        'NET-002',
+        mensajeTecnico: 'Timeout al iniciar sesión.',
       );
     } catch (e, stack) {
       throw ExcepcionApp(

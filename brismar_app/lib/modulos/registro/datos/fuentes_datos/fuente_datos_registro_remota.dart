@@ -2,6 +2,9 @@ import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../modelos/registro_modelo.dart';
 import '../../../../nucleo/red/cliente_supabase.dart';
 
+import '../../../../nucleo/errores/diccionario_errores.dart';
+import 'dart:async';
+
 /// Fuente de datos remota para gestionar registros en Supabase.
 /// Sigue el principio de Responsabilidad Única (SRP).
 class FuenteDatosRegistroRemota {
@@ -18,9 +21,14 @@ class FuenteDatosRegistroRemota {
     try {
       final cargasUtiles = registros.map((r) => r.toJson()).toList();
       // Usamos upsert para evitar duplicados en caso de reintentos
-      await _client.from('registro_embarcaciones').upsert(cargasUtiles);
+      await _client
+          .from('registro_embarcaciones')
+          .upsert(cargasUtiles)
+          .timeout(const Duration(seconds: 10));
+    } on TimeoutException {
+      throw const ExcepcionApp('NET-002', mensajeTecnico: 'Timeout al subir registros');
     } catch (e) {
-      throw Exception('Error al subir registros a Supabase: $e');
+      throw ExcepcionApp('DB-001', mensajeTecnico: 'Error al subir registros a Supabase: $e');
     }
   }
 
@@ -35,11 +43,14 @@ class FuenteDatosRegistroRemota {
           .from('registro_embarcaciones')
           .select()
           .order('fecha', ascending: false)
-          .order('hora', ascending: false);
+          .order('hora', ascending: false)
+          .timeout(const Duration(seconds: 10));
 
       return response.map((json) => RegistroModelo.fromJson(json)).toList();
+    } on TimeoutException {
+      throw const ExcepcionApp('NET-002', mensajeTecnico: 'Timeout al descargar historial');
     } catch (e) {
-      throw Exception('Error al descargar historial remoto: $e');
+      throw ExcepcionApp('DB-002', mensajeTecnico: 'Error al descargar historial remoto: $e');
     }
   }
 }

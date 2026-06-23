@@ -51,6 +51,9 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
     final nombreUsuario = estadoAutenticacion is EstadoAutenticacionAutenticado
         ? estadoAutenticacion.usuario.nombreReal
         : 'Daniel';
+    final usuarioId = estadoAutenticacion is EstadoAutenticacionAutenticado
+        ? estadoAutenticacion.usuario.id
+        : 'offline-user-id';
 
     // Escuchamos la sincronización para alertar de errores remotos
     ref.listen(proveedorSyncController, (previous, next) {
@@ -72,7 +75,7 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
           _construirEsferaBrillo(top: -100, left: -50, color: const Color(0x2200E5FF)),
           _construirEsferaBrillo(bottom: -150, right: -100, color: const Color(0x1B0D47A1)),
           SafeArea(
-            child: _buildBodyContent(historialState, nombreUsuario),
+            child: _buildBodyContent(historialState, nombreUsuario, usuarioId),
           ),
         ],
       ),
@@ -204,10 +207,12 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
   Widget _buildBodyContent(
     AsyncValue<List<RegistroEntidad>> state,
     String nombreUsuario,
+    String usuarioId,
   ) {
     if (_indicePestanaActiva == 0) {
       return FormularioRegistroTab(
         nombreUsuario: nombreUsuario,
+        usuarioId: usuarioId,
         onRegistroExitoso: () => setState(() => _indicePestanaActiva = 1),
       );
     } else if (_indicePestanaActiva == 1) {

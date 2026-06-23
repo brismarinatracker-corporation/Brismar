@@ -137,6 +137,12 @@ class DiccionarioErrores {
     if (str.contains('securestorage') || str.contains('almacenamiento')) {
       return obtener('DB-003');
     }
+    if (str.contains('postgrest') ||
+        str.contains('row level security') ||
+        str.contains('database') ||
+        str.contains('violat')) {
+      return obtener('SRV-002');
+    }
     return obtener('GEN-001');
   }
 }

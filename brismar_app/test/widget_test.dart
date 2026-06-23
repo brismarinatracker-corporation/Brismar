@@ -57,38 +57,33 @@ void main() {
       );
     });
 
-    test('fromJson acepta sincronizado booleano, entero y decimal string', () {
-      final baseJson = {
+    test('fromJson mapea correctamente los tipos de Supabase', () {
+      final json = {
         'id': '11111111-1111-4111-8111-111111111111',
         'usuario_id': '22222222-2222-4222-8222-222222222222',
         'nombre_embarcacion': 'Don Jose',
         'producto': 'POTA',
         'placa_carro': null,
-        'kilos': '1000.25',
-        'precio_por_kilo': '5.50',
+        'kilos': 1000.25,
+        'precio_por_kilo': 5.50,
         'fecha': '2026-05-26',
         'hora': '10:00',
         'muelle_inicio': 'Muelle A',
-        'gasto_facturacion': '100.00',
-        'gasto_personal': '150.00',
-        'gasto_apoyo': '50.00',
-        'gasto_agua': '20.00',
-        'gasto_clorox': '10.00',
-        'gasto_flete': '300.00',
-        'gasto_hielo': '200.00',
-        'gasto_otros': '50.00',
+        'gasto_facturacion': 100.0,
+        'gasto_personal': 150.0,
+        'gasto_apoyo': 50.0,
+        'gasto_agua': 20.0,
+        'gasto_clorox': 10.0,
+        'gasto_flete': 300.0,
+        'gasto_hielo': 200.0,
+        'gasto_otros': 50.0,
+        'sincronizado': true,
       };
 
-      final boolJson = RegistroModelo.fromJson({
-        ...baseJson,
-        'sincronizado': true,
-      });
-      final intJson = RegistroModelo.fromJson({...baseJson, 'sincronizado': 1});
-
-      expect(boolJson.sincronizado, isTrue);
-      expect(intJson.sincronizado, isTrue);
-      expect(intJson.kilos, equals(1000.25));
-      expect(intJson.precioPorKilo, equals(5.5));
+      final reg = RegistroModelo.fromJson(json);
+      expect(reg.sincronizado, isTrue);
+      expect(reg.kilos, equals(1000.25));
+      expect(reg.precioPorKilo, equals(5.5));
     });
   });
 

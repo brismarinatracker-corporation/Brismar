@@ -36,11 +36,13 @@ class EntradaEmbarcacion {
 /// Controla el ciclo de vida de los TextEditingControllers.
 class FormularioRegistroTab extends ConsumerStatefulWidget {
   final String nombreUsuario;
+  final String usuarioId;
   final VoidCallback onRegistroExitoso;
 
   const FormularioRegistroTab({
     super.key,
     required this.nombreUsuario,
+    required this.usuarioId,
     required this.onRegistroExitoso,
   });
 
@@ -241,6 +243,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
         final precioVenta = double.tryParse(emb.precioVentaController.text) ?? 0.0;
         final reg = RegistroEntidad(
           id: const Uuid().v4(),
+          usuarioId: widget.usuarioId,
           nombreEmbarcacion: emb.nombreNaveController.text.trim(),
           producto: _productoSeleccionado!,
           placaCarro: _placaController.text.trim(),
