@@ -117,7 +117,11 @@ class GestorPdf {
           style: const pw.TextStyle(fontSize: 10),
         ),
         pw.Text(
-          '- Duelle de Inicio: ${reg.muelleInicio}',
+          '- Total de Cajas: ${reg.cajas}',
+          style: const pw.TextStyle(fontSize: 10),
+        ),
+        pw.Text(
+          '- Muelle de Partida: ${reg.muelleInicio}',
           style: const pw.TextStyle(fontSize: 10),
         ),
       ],
@@ -135,9 +139,10 @@ class GestorPdf {
         pw.SizedBox(height: 5),
         _buildFilaGasto('Gasto de Hielo', reg.gastoHielo),
         _buildFilaGasto(
-          'Gasto de Personal (Cargadores/Pesadores)',
+          'Gasto de Personal (Estibas/Cargadores)',
           reg.gastoPersonal,
         ),
+        _buildFilaGasto('Gasto de Pesador', reg.gastoPesador),
         _buildFilaGasto('Gasto de Flete (Transporte)', reg.gastoFlete),
         _buildFilaGasto(
           'Gasto de Agua y Clorox',

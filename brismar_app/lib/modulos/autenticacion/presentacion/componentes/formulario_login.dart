@@ -7,9 +7,7 @@ import '../controladores/controlador_autenticacion.dart';
 
 /// Componente modular que representa el formulario de inicio de sesión.
 ///
-/// Implementa un diseño premium con bordes semitransparentes, sombras,
-/// y un indicador de red estilo LED. Su lógica respeta estrictamente SRP
-/// y la limitación de 20 líneas por función.
+/// Adaptado exactamente al diseño de la imagen del cliente.
 class FormularioLogin extends ConsumerStatefulWidget {
   /// Constructor constante para [FormularioLogin].
   const FormularioLogin({super.key});
@@ -85,24 +83,8 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
 
     return Form(
       key: _formKey,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 24),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0F224A).withValues(alpha: 0.75),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.08),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 28),
         child: _construirFormularioContenido(estaCargando),
       ),
     );
@@ -112,39 +94,105 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
   Widget _construirFormularioContenido(bool estaCargando) {
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _construirLogo(),
-        const SizedBox(height: 28),
-        _construirCampoUsuario(estaCargando),
-        const SizedBox(height: 18),
-        _construirCampoContrasena(estaCargando),
-        _construirBotonOlvido(estaCargando),
-        const SizedBox(height: 12),
-        _construirBotonLogin(estaCargando),
+        Center(child: _construirLogo()),
         const SizedBox(height: 24),
+        const Center(
+          child: Text(
+            'NEGOCIOS BRISMAR S.R.L.',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        const Center(
+          child: Text(
+            'SISTEMA DE REGISTRO · BAHÍA',
+            style: TextStyle(
+              color: Color(0xFF00E5FF),
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.8,
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        // Separador con el punto cyan
+        Row(
+          children: [
+            Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1), height: 1)),
+            const SizedBox(width: 8),
+            Container(
+              width: 5,
+              height: 5,
+              decoration: const BoxDecoration(
+                color: Color(0xFF00E5FF),
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1), height: 1)),
+          ],
+        ),
+        const SizedBox(height: 28),
+        // Etiqueta Usuario
+        const Text(
+          'USUARIO',
+          style: TextStyle(
+            color: Color(0xFF00E5FF),
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _construirCampoUsuario(estaCargando),
+        const SizedBox(height: 20),
+        // Etiqueta Contraseña
+        const Text(
+          'CONTRASEÑA',
+          style: TextStyle(
+            color: Color(0xFF00E5FF),
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _construirCampoContrasena(estaCargando),
+        const SizedBox(height: 10),
+        _construirBotonOlvido(estaCargando),
+        const SizedBox(height: 24),
+        _construirBotonLogin(estaCargando),
+        const SizedBox(height: 35),
         _construirIndicadores(),
       ],
     );
   }
 
-  /// Construye el contenedor para el logo de Brismar con estilo limpio.
+  /// Construye el logo con bordes redondeados exactos.
   Widget _construirLogo() {
     return Container(
-      width: 130,
-      height: 75,
+      width: 140,
+      height: 80,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
+            blurRadius: 15,
+            spreadRadius: 2,
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(10.0),
         child: Image.asset(
           'assets/logo.png',
           fit: BoxFit.contain,
@@ -167,22 +215,34 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
     return InputDecoration(
       hintText: hint,
       hintStyle: TextStyle(
-        color: Colors.white.withValues(alpha: 0.4),
+        color: Colors.white.withValues(alpha: 0.25),
         fontSize: 13,
         letterSpacing: 0.5,
       ),
       filled: true,
-      fillColor: const Color(0xFF172C5C).withValues(alpha: 0.6),
-      prefixIcon: Icon(icon, color: const Color(0xFF00E5FF), size: 20),
+      fillColor: const Color(0xFF070E22), // Fondo oscuro idéntico a la imagen
+      prefixIcon: Icon(icon, color: Colors.white38, size: 18),
       suffixIcon: suffix,
-      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+      contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF1C2A54)), // Borde azul oscuro uniforme
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF1C2A54)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.orangeAccent, width: 1),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.orangeAccent, width: 1.5),
       ),
       errorStyle: const TextStyle(color: Colors.orangeAccent, fontSize: 11),
     );
@@ -193,9 +253,9 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
     return TextFormField(
       controller: _userController,
       enabled: !estaCargando,
-      style: const TextStyle(color: Colors.white, fontSize: 15),
+      style: const TextStyle(color: Colors.white, fontSize: 14),
       decoration: _disenoInput(
-        hint: 'USUARIO O CORREO',
+        hint: 'Ingresa tu usuario',
         icon: Icons.person_outline_rounded,
       ),
       validator: (value) {
@@ -213,9 +273,9 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
       controller: _passController,
       obscureText: _passwordObscuro,
       enabled: !estaCargando,
-      style: const TextStyle(color: Colors.white, fontSize: 15),
+      style: const TextStyle(color: Colors.white, fontSize: 14),
       decoration: _disenoInput(
-        hint: 'CONTRASEÑA',
+        hint: '........',
         icon: Icons.lock_outline_rounded,
         suffix: _construirTogglePassword(),
       ),
@@ -238,25 +298,25 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
         _passwordObscuro
             ? Icons.visibility_off_outlined
             : Icons.visibility_outlined,
-        color: const Color(0xFF00E5FF).withValues(alpha: 0.7),
-        size: 20,
+        color: Colors.white38,
+        size: 18,
       ),
       onPressed: () => setState(() => _passwordObscuro = !_passwordObscuro),
     );
   }
 
-  /// Crea el botón textual para recuperar contraseña.
+  /// Crea el botón de recuperar contraseña.
   Widget _construirBotonOlvido(bool estaCargando) {
     return Align(
       alignment: Alignment.centerRight,
-      child: TextButton(
-        onPressed: estaCargando ? null : () {},
-        child: Text(
-          '¿Olvidé mi contraseña?',
+      child: InkWell(
+        onTap: estaCargando ? null : () {},
+        child: const Text(
+          '¿Olvidaste tu contraseña?',
           style: TextStyle(
-            color: const Color(0xFF00E5FF).withValues(alpha: 0.8),
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+            color: Color(0xFF00E5FF),
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -269,7 +329,7 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
       width: double.infinity,
       height: 52,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         gradient: const LinearGradient(
           colors: [Color(0xFF00E5FF), Color(0xFF0077C2)],
           begin: Alignment.centerLeft,
@@ -277,14 +337,14 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
-            blurRadius: 10,
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.25),
+            blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: estaCargando ? null : _intentarLogin,
           splashColor: Colors.white24,
@@ -303,7 +363,7 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
+                      letterSpacing: 1.2,
                       fontSize: 14,
                     ),
                   ),
@@ -315,16 +375,29 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
 
   /// Agrupa la sección inferior del indicador de red y la versión.
   Widget _construirIndicadores() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
       children: [
-        _construirRadarConexion(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _construirRadarConexion(),
+            Text(
+              _appVersion,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.3),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 35),
         Text(
-          _appVersion,
+          'Sistema protegido · Brismar © 2026',
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.4),
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+            color: Colors.white.withValues(alpha: 0.2),
+            fontSize: 11,
+            letterSpacing: 0.5,
           ),
         ),
       ],

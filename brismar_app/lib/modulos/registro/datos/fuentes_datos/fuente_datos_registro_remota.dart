@@ -1,6 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../modelos/registro_modelo.dart';
-import '../../../../nucleo/errores/diccionario_errores.dart';
 import '../../../../nucleo/red/cliente_supabase.dart';
 
 /// Fuente de datos remota para gestionar registros en Supabase.
@@ -17,29 +16,11 @@ class FuenteDatosRegistroRemota {
     }
 
     try {
-      final registrosSinUsuario = registros.where(
-        (registro) => registro.usuarioId.trim().isEmpty,
-      );
-      if (registrosSinUsuario.isNotEmpty) {
-        throw const ExcepcionApp(
-          'NET-003',
-          mensajeTecnico:
-              'El lote contiene registros sin usuario_id para aplicar RLS.',
-        );
-      }
-
-      final payloads = registros.map((r) => r.toJson()).toList();
+      final cargasUtiles = registros.map((r) => r.toJson()).toList();
       // Usamos upsert para evitar duplicados en caso de reintentos
-      await _client.from('registro_embarcaciones').upsert(payloads);
-    } on ExcepcionApp {
-      rethrow;
-    } catch (e, stack) {
-      throw ExcepcionApp(
-        'NET-003',
-        mensajeTecnico: 'Error al subir registros a Supabase.',
-        causa: e,
-        stackTrace: stack,
-      );
+      await _client.from('registro_embarcaciones').upsert(cargasUtiles);
+    } catch (e) {
+      throw Exception('Error al subir registros a Supabase: $e');
     }
   }
 
@@ -57,13 +38,8 @@ class FuenteDatosRegistroRemota {
           .order('hora', ascending: false);
 
       return response.map((json) => RegistroModelo.fromJson(json)).toList();
-    } catch (e, stack) {
-      throw ExcepcionApp(
-        'NET-003',
-        mensajeTecnico: 'Error al descargar historial remoto.',
-        causa: e,
-        stackTrace: stack,
-      );
+    } catch (e) {
+      throw Exception('Error al descargar historial remoto: $e');
     }
   }
 }

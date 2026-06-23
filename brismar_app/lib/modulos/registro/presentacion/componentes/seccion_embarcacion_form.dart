@@ -1,138 +1,111 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+class _UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    return newValue.copyWith(text: newValue.text.toUpperCase());
+  }
+}
 
 class SeccionEmbarcacionForm extends StatelessWidget {
+  final int index;
+  final bool mostrarBotonEliminar;
+  final VoidCallback? onEliminar;
   final TextEditingController nombreNaveController;
   final TextEditingController kilosController;
-  final TextEditingController placaController;
-  final TextEditingController muelleController;
-  final String? productoSeleccionado;
-  final ValueChanged<String?> onProductoChanged;
+  final TextEditingController precioVentaController;
 
   const SeccionEmbarcacionForm({
     super.key,
+    required this.index,
+    required this.mostrarBotonEliminar,
+    this.onEliminar,
     required this.nombreNaveController,
     required this.kilosController,
-    required this.placaController,
-    required this.muelleController,
-    required this.productoSeleccionado,
-    required this.onProductoChanged,
+    required this.precioVentaController,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(10),
-          decoration: const BoxDecoration(
-            color: Color(0xFF0D255F),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(12),
-              topRight: Radius.circular(12),
-            ),
-          ),
-          child: const Text(
-            '⚓ DATOS DE LA EMBARCACIÓN',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 11,
-            ),
-          ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0E1938), // Color de la imagen
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF1C2A54), // Borde de la imagen
+          width: 1.2,
         ),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(12),
-              bottomRight: Radius.circular(12),
-            ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.anchor_rounded, color: Color(0xFF00E5FF), size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'EMBARCACIÓN #${index + 1}',
+                    style: TextStyle(
+                      color: const Color(0xFF00E5FF).withValues(alpha: 0.9),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ],
+              ),
+              if (mostrarBotonEliminar)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.orangeAccent, size: 20),
+                  onPressed: onEliminar,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  splashRadius: 20,
+                  tooltip: "Eliminar embarcación",
+                ),
+            ],
           ),
-          child: Column(
+          const SizedBox(height: 14),
+          _buildTextField(
+            "Nombre de la Embarcación *",
+            "Ej: DON JOSÉ I",
+            nombreNaveController,
+            esObligatorio: true,
+            inputFormatters: [_UpperCaseTextFormatter()],
+          ),
+          const SizedBox(height: 12),
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTextField(
-                "Nombre de la Embarcación *",
-                "Ej: Don José I",
-                nombreNaveController,
-                esObligatorio: true,
+              Expanded(
+                child: _buildTextField(
+                  "Kilos capturados *",
+                  "0.0",
+                  kilosController,
+                  isNumeric: true,
+                  esObligatorio: true,
+                ),
               ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(
-                      "Kilos capturados *",
-                      "0.0",
-                      kilosController,
-                      isNumeric: true,
-                      esObligatorio: true,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          '🐟 PRODUCTO *',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        DropdownButtonFormField<String>(
-                          initialValue: productoSeleccionado,
-                          decoration: _inputDecoration("Seleccionar.."),
-                          items: ["POTA", "JUREL", "BONITO", "CABALLA"]
-                              .map(
-                                (e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(
-                                    e,
-                                    style: const TextStyle(fontSize: 11),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: onProductoChanged,
-                          validator: (v) => v == null ? 'Obligatorio' : null,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(
-                      "Placa de Cámara",
-                      "Ej: ABC-123",
-                      placaController,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildTextField(
-                      "Muelle de Partida *",
-                      "Ej: Muelle A",
-                      muelleController,
-                      esObligatorio: true,
-                    ),
-                  ),
-                ],
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildTextField(
+                  "Precio de venta (Kg) *",
+                  "0.00",
+                  precioVentaController,
+                  isNumeric: true,
+                  esObligatorio: true,
+                ),
               ),
             ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -142,27 +115,34 @@ class SeccionEmbarcacionForm extends StatelessWidget {
     TextEditingController controller, {
     bool isNumeric = false,
     bool esObligatorio = false,
+    List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          label.toUpperCase(),
           style: const TextStyle(
-            color: Colors.grey,
+            color: Colors.white54,
             fontSize: 10,
             fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         TextFormField(
           controller: controller,
           keyboardType: isNumeric
               ? const TextInputType.numberWithOptions(decimal: true)
               : TextInputType.text,
-          style: const TextStyle(fontSize: 12),
+          style: const TextStyle(fontSize: 13, color: Colors.white),
           decoration: _inputDecoration(hint),
-          validator: (v) {
+          inputFormatters: [
+            if (isNumeric) FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ...?inputFormatters,
+          ],
+          validator: validator ?? (v) {
             if (esObligatorio && (v == null || v.trim().isEmpty)) {
               return 'Requerido';
             }
@@ -176,18 +156,32 @@ class SeccionEmbarcacionForm extends StatelessWidget {
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
+      hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 12),
       isDense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       filled: true,
-      fillColor: const Color(0xFFF8FAFC),
+      fillColor: const Color(0xFF070E22), // Fondo oscuro de los campos de la imagen
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF1C2A54)), // Borde de los campos de la imagen
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.shade100),
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF1C2A54)),
       ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.orangeAccent, width: 1),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.orangeAccent, width: 1.5),
+      ),
+      errorStyle: const TextStyle(color: Colors.orangeAccent, fontSize: 10),
     );
   }
 }

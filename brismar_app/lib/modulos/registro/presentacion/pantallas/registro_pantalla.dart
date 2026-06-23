@@ -6,7 +6,6 @@ import '../../../autenticacion/presentacion/controladores/controlador_autenticac
 import '../../dominio/entidades/registro_entidad.dart';
 import '../controladores/registro_controlador.dart';
 import '../componentes/encabezado_usuario.dart';
-import '../componentes/selector_pestanas.dart';
 import '../componentes/historial_lista.dart';
 import '../componentes/formulario_registro_tab.dart';
 import '../../../../nucleo/utilidades/gestor_pdf.dart';
@@ -20,7 +19,7 @@ class RegistroPantalla extends ConsumerStatefulWidget {
 }
 
 class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
-  int _activeTabIndex = 0;
+  int _indicePestanaActiva = 0;
 
   void _mostrarMensaje(String msg, Color color) {
     ScaffoldMessenger.of(
@@ -37,16 +36,21 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
     }
   }
 
+  String _formatearNumero(double valor, {int decimales = 2}) {
+    String str = valor.toStringAsFixed(decimales);
+    List<String> partes = str.split('.');
+    RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
+    partes[0] = partes[0].replaceAllMapped(reg, (Match m) => '${m[1]},');
+    return partes.join('.');
+  }
+
   @override
   Widget build(BuildContext context) {
     final historialState = ref.watch(proveedorHistorialController);
-    final authState = ref.watch(proveedorControladorAutenticacion);
-    final nombreUsuario = authState is EstadoAutenticacionAutenticado
-        ? authState.usuario.nombreReal
+    final estadoAutenticacion = ref.watch(proveedorControladorAutenticacion);
+    final nombreUsuario = estadoAutenticacion is EstadoAutenticacionAutenticado
+        ? estadoAutenticacion.usuario.nombreReal
         : 'Daniel';
-    final usuarioId = authState is EstadoAutenticacionAutenticado
-        ? authState.usuario.id
-        : null;
 
     // Escuchamos la sincronización para alertar de errores remotos
     ref.listen(proveedorSyncController, (previous, next) {
@@ -59,29 +63,26 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D255F),
+      backgroundColor: Colors.transparent,
       appBar: _buildAppBar(context),
-      body: Column(
+      extendBodyBehindAppBar: true,
+      body: Stack(
         children: [
-          SelectorPestanas(
-            indiceActivo: _activeTabIndex,
-            totalRegistros: historialState.maybeWhen(
-              data: (list) => list.length,
-              orElse: () => 0,
-            ),
-            onTabChanged: (index) => setState(() => _activeTabIndex = index),
-          ),
-          Expanded(
-            child: _buildBodyContent(historialState, nombreUsuario, usuarioId),
+          _construirFondoGradiente(),
+          _construirEsferaBrillo(top: -100, left: -50, color: const Color(0x2200E5FF)),
+          _construirEsferaBrillo(bottom: -150, right: -100, color: const Color(0x1B0D47A1)),
+          SafeArea(
+            child: _buildBodyContent(historialState, nombreUsuario),
           ),
         ],
       ),
+      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: const Color(0xFF0D255F),
+      backgroundColor: Colors.transparent,
       elevation: 0,
       automaticallyImplyLeading: false,
       title: Row(
@@ -90,17 +91,27 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
           Row(
             children: [
               Container(
+                height: 32,
+                width: 32,
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                child: const Text(
-                  'BRISMAR',
-                  style: TextStyle(
-                    color: Colors.teal,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10,
+                child: Image.asset(
+                  'assets/logo.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (c, e, s) => const Icon(
+                    Icons.directions_boat_rounded,
+                    size: 20,
+                    color: Color(0xFF0077C2),
                   ),
                 ),
               ),
@@ -110,7 +121,7 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
                 children: [
                   Text(
                     'NEGOCIOS',
-                    style: TextStyle(fontSize: 9, color: Colors.white70),
+                    style: TextStyle(fontSize: 9, color: Colors.white60, letterSpacing: 0.5),
                   ),
                   Text(
                     'BRISMAR S.R.L.',
@@ -118,29 +129,74 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          ElevatedButton(
-            onPressed: () {
-              ref
-                  .read(proveedorControladorAutenticacion.notifier)
-                  .cerrarSesion();
-              context.go('/login');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF7B1F31),
-              shape: const StadiumBorder(),
-            ),
-            child: const Text(
-              'Salir',
-              style: TextStyle(color: Colors.white, fontSize: 11),
-            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F224A).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildNavItem(0, Icons.assignment_turned_in_rounded, "Registrar"),
+          _buildNavItem(1, Icons.history_rounded, "Historial"),
+          _buildNavItem(2, Icons.sync_rounded, "Sincronizar"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData icon, String label) {
+    final isActive = _indicePestanaActiva == index;
+    return InkWell(
+      onTap: () => setState(() => _indicePestanaActiva = index),
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isActive ? const Color(0xFFFFD54F) : Colors.white54, // Color activo amarillo
+              size: 22,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive ? const Color(0xFFFFD54F) : Colors.white54,
+                fontSize: 10,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -148,25 +204,17 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
   Widget _buildBodyContent(
     AsyncValue<List<RegistroEntidad>> state,
     String nombreUsuario,
-    String? usuarioId,
   ) {
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF1F4F9),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(25),
-          topRight: Radius.circular(25),
-        ),
-      ),
-      child: _activeTabIndex == 0
-          ? FormularioRegistroTab(
-              nombreUsuario: nombreUsuario,
-              usuarioId: usuarioId,
-              onRegistroExitoso: () => setState(() => _activeTabIndex = 1),
-            )
-          : _buildListaHistorial(state, nombreUsuario),
-    );
+    if (_indicePestanaActiva == 0) {
+      return FormularioRegistroTab(
+        nombreUsuario: nombreUsuario,
+        onRegistroExitoso: () => setState(() => _indicePestanaActiva = 1),
+      );
+    } else if (_indicePestanaActiva == 1) {
+      return _buildListaHistorial(state, nombreUsuario);
+    } else {
+      return _buildPerfilTab(state, nombreUsuario);
+    }
   }
 
   Widget _buildListaHistorial(
@@ -182,7 +230,7 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Column(
             children: [
               EncabezadoUsuario(nombreUsuario: nombreUsuario),
@@ -196,7 +244,232 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
         ),
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, _) => Center(child: Text('Error: $err')),
+      error: (err, _) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.white70))),
+    );
+  }
+
+  Widget _buildPerfilTab(AsyncValue<List<RegistroEntidad>> state, String nombreUsuario) {
+    final totalKilos = state.maybeWhen(
+      data: (list) => list.fold<double>(0.0, (sum, item) => sum + item.kilos),
+      orElse: () => 0.0,
+    );
+    final totalViajes = state.maybeWhen(
+      data: (list) => list.length,
+      orElse: () => 0,
+    );
+
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        children: [
+          EncabezadoUsuario(nombreUsuario: nombreUsuario),
+          const SizedBox(height: 20),
+          // Profile card
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F224A).withValues(alpha: 0.55),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.08),
+                width: 1.2,
+              ),
+            ),
+            child: Column(
+              children: [
+                CircleAvatar(
+                  radius: 35,
+                  backgroundColor: const Color(0xFF00E5FF).withValues(alpha: 0.1),
+                  child: const Icon(
+                    Icons.person_rounded,
+                    size: 40,
+                    color: Color(0xFF00E5FF),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Text(
+                  nombreUsuario,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'BAHÍA ACTIVA',
+                  style: TextStyle(
+                    color: const Color(0xFF00E5FF).withValues(alpha: 0.8),
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 15),
+          // Metrics
+          Row(
+            children: [
+              Expanded(
+                child: _buildMetricCard(
+                  'Kilos Registrados',
+                  '${_formatearNumero(totalKilos, decimales: 0)} kg',
+                  Icons.scale_rounded,
+                  const Color(0xFF00E5FF),
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: _buildMetricCard(
+                  'Total Registros',
+                  '$totalViajes',
+                  Icons.anchor_rounded,
+                  const Color(0xFF00E676),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Sincronizar Button
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F224A).withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.05),
+              ),
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.sync_rounded, color: Color(0xFF00E5FF)),
+              title: const Text('Sincronizar Datos', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+              subtitle: const Text('Enviar registros pendientes a la nube', style: TextStyle(color: Colors.white54, fontSize: 11)),
+              trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+              onTap: () async {
+                _mostrarMensaje('Sincronizando...', Colors.teal);
+                await ref.read(proveedorSyncController.notifier).ejecutarSincronizacion();
+                _mostrarMensaje('Sincronización finalizada', Colors.teal);
+              },
+            ),
+          ),
+          const SizedBox(height: 15),
+          // Logout Button
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.redAccent.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.redAccent.withValues(alpha: 0.2),
+              ),
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+              title: const Text('Cerrar Sesión', style: TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.bold)),
+              subtitle: const Text('Salir de la cuenta actual', style: TextStyle(color: Colors.white54, fontSize: 11)),
+              trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+              onTap: () {
+                ref.read(proveedorControladorAutenticacion.notifier).cerrarSesion();
+                context.go('/login');
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F224A).withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.05),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title.toUpperCase(),
+                style: const TextStyle(
+                  color: Colors.white54,
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              Icon(icon, color: color, size: 16),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Construye el fondo degradado principal de la pantalla.
+  Widget _construirFondoGradiente() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF040B1E),
+            Color(0xFF0C1D3F),
+            Color(0xFF143068),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Genera una esfera decorativa de brillo de fondo para la interfaz premium.
+  Widget _construirEsferaBrillo({
+    double? top,
+    double? bottom,
+    double? left,
+    double? right,
+    required Color color,
+  }) {
+    return Positioned(
+      top: top,
+      bottom: bottom,
+      left: left,
+      right: right,
+      child: Container(
+        width: 300,
+        height: 300,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color,
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.15),
+              blurRadius: 120,
+              spreadRadius: 60,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

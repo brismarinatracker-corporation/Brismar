@@ -15,11 +15,23 @@ class SelectorPestanas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _buildTabItem("+ NUEVO REGISTRO", 0),
-        _buildTabItem("⚓ REGISTRADOS ($totalRegistros)", 1),
-      ],
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F224A).withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+          width: 1.2,
+        ),
+      ),
+      child: Row(
+        children: [
+          _buildTabItem("➕ NUEVO REGISTRO", 0),
+          _buildTabItem("⚓ REGISTRADOS ($totalRegistros)", 1),
+        ],
+      ),
     );
   }
 
@@ -28,21 +40,36 @@ class SelectorPestanas extends StatelessWidget {
     return Expanded(
       child: GestureDetector(
         onTap: () => onTabChanged(index),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: active ? Colors.lightBlue : Colors.transparent,
-            borderRadius: active
-                ? const BorderRadius.only(topRight: Radius.circular(20))
+            borderRadius: BorderRadius.circular(10),
+            gradient: active
+                ? const LinearGradient(
+                    colors: [Color(0xFF00E5FF), Color(0xFF0077C2)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  )
                 : null,
+            boxShadow: active
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [],
           ),
           child: Center(
             child: Text(
               label,
               style: TextStyle(
-                color: active ? Colors.white : Colors.white54,
+                color: active ? Colors.white : Colors.white.withValues(alpha: 0.5),
                 fontWeight: FontWeight.bold,
-                fontSize: 11,
+                fontSize: 12,
+                letterSpacing: 0.8,
               ),
             ),
           ),

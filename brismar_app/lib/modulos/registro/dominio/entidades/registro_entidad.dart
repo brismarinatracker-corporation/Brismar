@@ -10,6 +10,7 @@ class RegistroEntidad {
   final String fecha;
   final String hora;
   final String muelleInicio;
+  final int cajas; // Cantidad de cajas en total de la cámara de transporte
   final double gastoFacturacion;
   final double gastoPersonal;
   final double gastoApoyo;
@@ -17,6 +18,7 @@ class RegistroEntidad {
   final double gastoClorox;
   final double gastoFlete;
   final double gastoHielo;
+  final double gastoPesador;
   final double gastoOtros;
   final bool sincronizado;
 
@@ -32,6 +34,7 @@ class RegistroEntidad {
     required this.fecha,
     required this.hora,
     required this.muelleInicio,
+    this.cajas = 0,
     this.gastoFacturacion = 0,
     this.gastoPersonal = 0,
     this.gastoApoyo = 0,
@@ -39,6 +42,7 @@ class RegistroEntidad {
     this.gastoClorox = 0,
     this.gastoFlete = 0,
     this.gastoHielo = 0,
+    this.gastoPesador = 0,
     this.gastoOtros = 0,
     this.sincronizado = false,
   });
@@ -55,6 +59,7 @@ class RegistroEntidad {
       gastoClorox +
       gastoFlete +
       gastoHielo +
+      gastoPesador +
       gastoOtros;
 
   /// Calcula la utilidad neta (Ingreso Bruto - Total Gastos).

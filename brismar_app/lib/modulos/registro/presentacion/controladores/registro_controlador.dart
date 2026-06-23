@@ -14,8 +14,8 @@ import '../../datos/repositorios/registro_repositorio_imp.dart';
 /// Proveedor para la instancia de [RegistroRepositorio].
 final proveedorRegistroRepositorio = Provider<RegistroRepositorio>((ref) {
   return RegistroRepositorioImp(
-    localDatasource: FuenteDatosRegistroLocal(),
-    remotoDatasource: FuenteDatosRegistroRemota(),
+    fuenteDatosLocal: FuenteDatosRegistroLocal(),
+    fuenteDatosRemota: FuenteDatosRegistroRemota(),
   );
 });
 
