@@ -142,7 +142,7 @@ class HistorialLista extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Especie: ${reg.producto}  |  Muelle: ${reg.muelleInicio}',
+                'Especie: ${reg.producto}  |  Muelle: ${reg.muelleInicio}  |  Cajas: ${reg.cajas}',
                 style: const TextStyle(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 3),

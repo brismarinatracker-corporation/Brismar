@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -11,19 +12,23 @@ import 'seccion_gastos_form.dart';
 import 'seccion_totales.dart';
 import 'encabezado_usuario.dart';
 
+class _UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    return newValue.copyWith(text: newValue.text.toUpperCase());
+  }
+}
+
 /// Helper class to group text controllers and local state for each boat input form.
 class EntradaEmbarcacion {
   final nombreNaveController = TextEditingController();
   final kilosController = TextEditingController();
-  final placaController = TextEditingController();
-  final muelleController = TextEditingController();
-  String? productoSeleccionado;
+  final precioVentaController = TextEditingController();
 
   void dispose() {
     nombreNaveController.dispose();
     kilosController.dispose();
-    placaController.dispose();
-    muelleController.dispose();
+    precioVentaController.dispose();
   }
 }
 
@@ -50,13 +55,16 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
   // --- FECHA EDITABLE ---
   DateTime _fechaSeleccionada = DateTime.now();
 
+  // --- DATOS GLOBALES DE LA CÁMARA ---
+  String? _productoSeleccionado;
+  final _placaController = TextEditingController();
+  final _muelleController = TextEditingController();
+  final _cajasController = TextEditingController();
+
   // --- LISTA DINÁMICA DE EMBARCACIONES (MÁX 5) ---
   final List<EntradaEmbarcacion> _embarcaciones = [];
 
-  // --- CONTROLADORES GLOBALES DE VENTAS Y GASTOS ---
-  final _precioKiloVentaController = TextEditingController();
-
-  // Gastos (Desglose de los 8 tipos)
+  // Gastos (Desglose de los 9 tipos)
   final _facturacionController = TextEditingController();
   final _personalController = TextEditingController();
   final _apoyoController = TextEditingController();
@@ -64,6 +72,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
   final _cloroxController = TextEditingController();
   final _fleteController = TextEditingController();
   final _hieloController = TextEditingController();
+  final _pesadorController = TextEditingController();
   final _otrosController = TextEditingController();
 
   @override
@@ -73,7 +82,6 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     _agregarEmbarcacion(notificar: false);
 
     // Suscribir los controladores globales para disparar el cálculo matemático en Riverpod
-    _precioKiloVentaController.addListener(_notificarCalculo);
     _facturacionController.addListener(_notificarCalculo);
     _personalController.addListener(_notificarCalculo);
     _apoyoController.addListener(_notificarCalculo);
@@ -81,6 +89,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     _cloroxController.addListener(_notificarCalculo);
     _fleteController.addListener(_notificarCalculo);
     _hieloController.addListener(_notificarCalculo);
+    _pesadorController.addListener(_notificarCalculo);
     _otrosController.addListener(_notificarCalculo);
   }
 
@@ -89,7 +98,9 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     for (var emb in _embarcaciones) {
       emb.dispose();
     }
-    _precioKiloVentaController.dispose();
+    _placaController.dispose();
+    _muelleController.dispose();
+    _cajasController.dispose();
     _facturacionController.dispose();
     _personalController.dispose();
     _apoyoController.dispose();
@@ -97,6 +108,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     _cloroxController.dispose();
     _fleteController.dispose();
     _hieloController.dispose();
+    _pesadorController.dispose();
     _otrosController.dispose();
     super.dispose();
   }
@@ -106,6 +118,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
 
     final nueva = EntradaEmbarcacion();
     nueva.kilosController.addListener(_notificarCalculo);
+    nueva.precioVentaController.addListener(_notificarCalculo);
 
     setState(() {
       _embarcaciones.add(nueva);
@@ -121,6 +134,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
 
     final eliminada = _embarcaciones.removeAt(index);
     eliminada.kilosController.removeListener(_notificarCalculo);
+    eliminada.precioVentaController.removeListener(_notificarCalculo);
     eliminada.dispose();
 
     setState(() {});
@@ -161,15 +175,21 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
   /// Lee los valores de los inputs y los envía al controlador matemático
   void _notificarCalculo() {
     double totalKilos = 0.0;
+    double totalVenta = 0.0;
     for (var emb in _embarcaciones) {
-      totalKilos += double.tryParse(emb.kilosController.text) ?? 0.0;
+      final kilos = double.tryParse(emb.kilosController.text) ?? 0.0;
+      final precio = double.tryParse(emb.precioVentaController.text) ?? 0.0;
+      totalKilos += kilos;
+      totalVenta += kilos * precio;
     }
+
+    final precioVentaConsolidado = totalKilos > 0 ? totalVenta / totalKilos : 0.0;
 
     ref
         .read(proveedorRegistroFormController.notifier)
         .calcularTotales(
           kilos: totalKilos,
-          precioVenta: double.tryParse(_precioKiloVentaController.text) ?? 0.0,
+          precioVenta: precioVentaConsolidado,
           gFacturacion: double.tryParse(_facturacionController.text) ?? 0.0,
           gPersonal: double.tryParse(_personalController.text) ?? 0.0,
           gApoyo: double.tryParse(_apoyoController.text) ?? 0.0,
@@ -177,14 +197,14 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
           gClorox: double.tryParse(_cloroxController.text) ?? 0.0,
           gFlete: double.tryParse(_fleteController.text) ?? 0.0,
           gHielo: double.tryParse(_hieloController.text) ?? 0.0,
+          gPesador: double.tryParse(_pesadorController.text) ?? 0.0,
           gOtros: double.tryParse(_otrosController.text) ?? 0.0,
         );
   }
 
   Future<void> _guardarRegistro() async {
-    final estadoForm = ref.read(proveedorRegistroFormController);
 
-    if (!_formKey.currentState!.validate()) {
+    if (!_formKey.currentState!.validate() || _productoSeleccionado == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Rellene todos los campos obligatorios'),
@@ -192,19 +212,6 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
         ),
       );
       return;
-    }
-
-    // Validar que todas las embarcaciones tengan un producto seleccionado
-    for (int i = 0; i < _embarcaciones.length; i++) {
-      if (_embarcaciones[i].productoSeleccionado == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Seleccione el producto para la Embarcación #${i + 1}'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-        return;
-      }
     }
 
     final now = DateTime.now();
@@ -223,21 +230,26 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     final gClorox = (double.tryParse(_cloroxController.text) ?? 0.0) / totalNaves;
     final gFlete = (double.tryParse(_fleteController.text) ?? 0.0) / totalNaves;
     final gHielo = (double.tryParse(_hieloController.text) ?? 0.0) / totalNaves;
+    final gPesador = (double.tryParse(_pesadorController.text) ?? 0.0) / totalNaves;
     final gOtros = (double.tryParse(_otrosController.text) ?? 0.0) / totalNaves;
+
+    final cajasTotales = int.tryParse(_cajasController.text) ?? 0;
 
     try {
       for (var emb in _embarcaciones) {
         final kilos = double.tryParse(emb.kilosController.text) ?? 0.0;
+        final precioVenta = double.tryParse(emb.precioVentaController.text) ?? 0.0;
         final reg = RegistroEntidad(
           id: const Uuid().v4(),
           nombreEmbarcacion: emb.nombreNaveController.text.trim(),
-          producto: emb.productoSeleccionado!,
-          placaCarro: emb.placaController.text.trim(),
+          producto: _productoSeleccionado!,
+          placaCarro: _placaController.text.trim(),
           kilos: kilos,
-          precioPorKilo: estadoForm.precioVenta,
+          precioPorKilo: precioVenta,
           fecha: fecha,
           hora: hora,
-          muelleInicio: emb.muelleController.text.trim(),
+          muelleInicio: _muelleController.text.trim(),
+          cajas: cajasTotales,
           gastoFacturacion: gFacturacion,
           gastoPersonal: gPersonal,
           gastoApoyo: gApoyo,
@@ -245,6 +257,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
           gastoClorox: gClorox,
           gastoFlete: gFlete,
           gastoHielo: gHielo,
+          gastoPesador: gPesador,
           gastoOtros: gOtros,
         );
 
@@ -284,7 +297,9 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     _embarcaciones.clear();
     _agregarEmbarcacion(notificar: false);
 
-    _precioKiloVentaController.clear();
+    _placaController.clear();
+    _muelleController.clear();
+    _cajasController.clear();
     _facturacionController.clear();
     _personalController.clear();
     _apoyoController.clear();
@@ -292,9 +307,11 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     _cloroxController.clear();
     _fleteController.clear();
     _hieloController.clear();
+    _pesadorController.clear();
     _otrosController.clear();
     
     setState(() {
+      _productoSeleccionado = null;
       _fechaSeleccionada = DateTime.now();
     });
 
@@ -339,6 +356,169 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
               fechaSeleccionada: _fechaSeleccionada,
               onTapFecha: _seleccionarFecha,
             ),
+            const SizedBox(height: 20),
+
+            // --- SECCIÓN: DATOS DE LA CÁMARA ---
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0E1938),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFF1C2A54),
+                  width: 1.2,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.local_shipping_rounded, color: Color(0xFFFFD54F), size: 18),
+                      SizedBox(width: 8),
+                      Text(
+                        'DATOS DE LA CÁMARA',
+                        style: TextStyle(
+                          color: Color(0xFFFFD54F),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  // Row 1: Producto y Placa
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              '🐟 PRODUCTO *',
+                              style: TextStyle(
+                                color: Color(0xFF00E5FF),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            DropdownButtonFormField<String>(
+                              initialValue: _productoSeleccionado,
+                              dropdownColor: const Color(0xFF0E1938),
+                              iconEnabledColor: const Color(0xFF00E5FF),
+                              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF00E5FF)),
+                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              hint: const Text(
+                                "Seleccionar..",
+                                style: TextStyle(color: Colors.white, fontSize: 12),
+                              ),
+                              decoration: _inputDecoration(""),
+                              items: ["POTA", "JUREL", "BONITO", "CABALLA"]
+                                  .map(
+                                    (e) {
+                                      final Map<String, Color> coloresProductos = {
+                                        "POTA": const Color(0xFFE040FB),
+                                        "JUREL": const Color(0xFF29B6F6),
+                                        "BONITO": const Color(0xFF00E676),
+                                        "CABALLA": const Color(0xFFFFB74D),
+                                      };
+                                      final colorTag = coloresProductos[e] ?? const Color(0xFF00E5FF);
+                                      return DropdownMenuItem(
+                                        value: e,
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              width: 8,
+                                              height: 8,
+                                              decoration: BoxDecoration(
+                                                color: colorTag,
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              e,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  )
+                                  .toList(),
+                              onChanged: (val) {
+                                setState(() {
+                                  _productoSeleccionado = val;
+                                });
+                              },
+                              validator: (v) => v == null ? 'Obligatorio' : null,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildTextField(
+                          "Placa de Cámara *",
+                          "Ej: ABC123",
+                          _placaController,
+                          esObligatorio: true,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+                            LengthLimitingTextInputFormatter(6),
+                            _UpperCaseTextFormatter(),
+                          ],
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) {
+                              return 'Requerido';
+                            }
+                            if (v.trim().length != 6) {
+                              return 'Exactamente 6 caracteres';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Row 2: Cajas y Muelle
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          "Cajas totales *",
+                          "Ej: 150",
+                          _cajasController,
+                          isNumeric: true,
+                          esObligatorio: true,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildTextField(
+                          "Muelle de Partida *",
+                          "Ej: Muelle A",
+                          _muelleController,
+                          esObligatorio: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 24),
 
             // --- SECCIÓN DEDICADA DE EMBARCACIONES CON HEADER Y BOTÓN AGREGAR ---
@@ -372,7 +552,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
                   ElevatedButton(
                     onPressed: () => _agregarEmbarcacion(),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1565C0), // Azul sólido de la imagen
+                      backgroundColor: const Color(0xFF1565C0),
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -401,23 +581,18 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
                     onEliminar: () => _eliminarEmbarcacion(index),
                     nombreNaveController: emb.nombreNaveController,
                     kilosController: emb.kilosController,
-                    placaController: emb.placaController,
-                    muelleController: emb.muelleController,
-                    productoSeleccionado: emb.productoSeleccionado,
-                    onProductoChanged: (val) {
-                      setState(() {
-                        emb.productoSeleccionado = val;
-                      });
-                    },
+                    precioVentaController: emb.precioVentaController,
                   ),
                 );
               }),
             ),
 
             const SizedBox(height: 10),
+            // Muestra el total consolidado de venta estimado de forma informativa
             SeccionVentaForm(
-              precioKiloVentaController: _precioKiloVentaController,
+              precioKiloVentaController: TextEditingController(), // Dummy, no se edita aquí
               totalVenta: estado.totalVenta,
+              esSoloVisual: true,
             ),
             const SizedBox(height: 15),
             SeccionGastosForm(
@@ -429,6 +604,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
               fleteController: _fleteController,
               hieloController: _hieloController,
               otrosController: _otrosController,
+              pesadorController: _pesadorController,
             ),
             const SizedBox(height: 15),
             SeccionTotales(
@@ -478,6 +654,82 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(
+    String label,
+    String hint,
+    TextEditingController controller, {
+    bool isNumeric = false,
+    bool esObligatorio = false,
+    List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: const TextStyle(
+            color: Colors.white54,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: controller,
+          keyboardType: isNumeric
+              ? const TextInputType.numberWithOptions(decimal: true)
+              : TextInputType.text,
+          style: const TextStyle(fontSize: 13, color: Colors.white),
+          decoration: _inputDecoration(hint),
+          inputFormatters: [
+            if (isNumeric) FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ...?inputFormatters,
+          ],
+          validator: validator ?? (v) {
+            if (esObligatorio && (v == null || v.trim().isEmpty)) {
+              return 'Requerido';
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  InputDecoration _inputDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 12),
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      filled: true,
+      fillColor: const Color(0xFF070E22), // Fondo oscuro uniforme
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF1C2A54)), // Borde azul oscuro uniforme
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF1C2A54)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.orangeAccent, width: 1),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.orangeAccent, width: 1.5),
+      ),
+      errorStyle: const TextStyle(color: Colors.orangeAccent, fontSize: 10),
     );
   }
 }

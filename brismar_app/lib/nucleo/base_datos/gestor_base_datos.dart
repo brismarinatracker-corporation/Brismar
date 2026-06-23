@@ -21,7 +21,12 @@ class GestorBaseDatos {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(
+      path, 
+      version: 3, 
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB,
+    );
   }
 
   /// Estructura inicial de las tablas en SQLite local.
@@ -37,6 +42,7 @@ class GestorBaseDatos {
         fecha TEXT NOT NULL,
         hora TEXT NOT NULL,
         muelle_inicio TEXT NOT NULL,
+        cajas INTEGER DEFAULT 0,
         gasto_facturacion REAL DEFAULT 0,
         gasto_personal REAL DEFAULT 0,
         gasto_apoyo REAL DEFAULT 0,
@@ -44,10 +50,25 @@ class GestorBaseDatos {
         gasto_clorox REAL DEFAULT 0,
         gasto_flete REAL DEFAULT 0,
         gasto_hielo REAL DEFAULT 0,
+        gasto_pesador REAL DEFAULT 0,
         gasto_otros REAL DEFAULT 0,
         sincronizado INTEGER DEFAULT 0
       )
     ''');
+  }
+
+  /// Manejo de actualizaciones de base de datos local.
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute(
+        'ALTER TABLE registro_embarcaciones ADD COLUMN cajas INTEGER DEFAULT 0',
+      );
+    }
+    if (oldVersion < 3) {
+      await db.execute(
+        'ALTER TABLE registro_embarcaciones ADD COLUMN gasto_pesador REAL DEFAULT 0',
+      );
+    }
   }
 
   /// Cierra la base de datos cuando ya no se requiere.

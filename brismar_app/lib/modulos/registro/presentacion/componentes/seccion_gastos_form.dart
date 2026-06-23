@@ -10,6 +10,7 @@ class SeccionGastosForm extends StatelessWidget {
   final TextEditingController fleteController;
   final TextEditingController hieloController;
   final TextEditingController otrosController;
+  final TextEditingController pesadorController;
 
   const SeccionGastosForm({
     super.key,
@@ -21,6 +22,7 @@ class SeccionGastosForm extends StatelessWidget {
     required this.fleteController,
     required this.hieloController,
     required this.otrosController,
+    required this.pesadorController,
   });
 
   @override
@@ -143,6 +145,24 @@ class SeccionGastosForm extends StatelessWidget {
                   otrosController,
                   isNumeric: true,
                 ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  "Pesador",
+                  "0.0",
+                  pesadorController,
+                  isNumeric: true,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(),
               ),
             ],
           ),

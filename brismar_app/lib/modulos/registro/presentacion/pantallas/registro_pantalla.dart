@@ -91,27 +91,27 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                height: 32,
+                width: 32,
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF00E5FF), Color(0xFF0077C2)],
-                  ),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(6),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
-                      blurRadius: 6,
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                child: const Text(
-                  'BRISMAR',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10,
-                    letterSpacing: 1.0,
+                child: Image.asset(
+                  'assets/logo.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (c, e, s) => const Icon(
+                    Icons.directions_boat_rounded,
+                    size: 20,
+                    color: Color(0xFF0077C2),
                   ),
                 ),
               ),

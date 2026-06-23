@@ -4,11 +4,13 @@ import 'package:flutter/services.dart';
 class SeccionVentaForm extends StatelessWidget {
   final TextEditingController precioKiloVentaController;
   final double totalVenta;
+  final bool esSoloVisual;
 
   const SeccionVentaForm({
     super.key,
     required this.precioKiloVentaController,
     required this.totalVenta,
+    this.esSoloVisual = false,
   });
 
   @override
@@ -42,14 +44,16 @@ class SeccionVentaForm extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          _buildTextField(
-            "Precio de venta por Kilo *",
-            "0.00",
-            precioKiloVentaController,
-            isNumeric: true,
-            esObligatorio: true,
-          ),
+          if (!esSoloVisual) ...[
+            const SizedBox(height: 14),
+            _buildTextField(
+              "Precio de venta por Kilo *",
+              "0.00",
+              precioKiloVentaController,
+              isNumeric: true,
+              esObligatorio: true,
+            ),
+          ],
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

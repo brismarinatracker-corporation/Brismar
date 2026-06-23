@@ -12,6 +12,7 @@ class RegistroModelo extends RegistroEntidad {
     required super.fecha,
     required super.hora,
     required super.muelleInicio,
+    super.cajas,
     super.gastoFacturacion,
     super.gastoPersonal,
     super.gastoApoyo,
@@ -19,6 +20,7 @@ class RegistroModelo extends RegistroEntidad {
     super.gastoClorox,
     super.gastoFlete,
     super.gastoHielo,
+    super.gastoPesador,
     super.gastoOtros,
     super.sincronizado,
   });
@@ -35,6 +37,7 @@ class RegistroModelo extends RegistroEntidad {
       fecha: e.fecha,
       hora: e.hora,
       muelleInicio: e.muelleInicio,
+      cajas: e.cajas,
       gastoFacturacion: e.gastoFacturacion,
       gastoPersonal: e.gastoPersonal,
       gastoApoyo: e.gastoApoyo,
@@ -42,6 +45,7 @@ class RegistroModelo extends RegistroEntidad {
       gastoClorox: e.gastoClorox,
       gastoFlete: e.gastoFlete,
       gastoHielo: e.gastoHielo,
+      gastoPesador: e.gastoPesador,
       gastoOtros: e.gastoOtros,
       sincronizado: e.sincronizado,
     );
@@ -59,6 +63,7 @@ class RegistroModelo extends RegistroEntidad {
       fecha: map['fecha'] as String,
       hora: map['hora'] as String,
       muelleInicio: map['muelle_inicio'] as String,
+      cajas: map['cajas'] as int? ?? 0,
       gastoFacturacion: (map['gasto_facturacion'] as num).toDouble(),
       gastoPersonal: (map['gasto_personal'] as num).toDouble(),
       gastoApoyo: (map['gasto_apoyo'] as num).toDouble(),
@@ -66,6 +71,7 @@ class RegistroModelo extends RegistroEntidad {
       gastoClorox: (map['gasto_clorox'] as num).toDouble(),
       gastoFlete: (map['gasto_flete'] as num).toDouble(),
       gastoHielo: (map['gasto_hielo'] as num).toDouble(),
+      gastoPesador: (map['gasto_pesador'] as num? ?? 0.0).toDouble(),
       gastoOtros: (map['gasto_otros'] as num).toDouble(),
       sincronizado: (map['sincronizado'] as int) == 1,
     );
@@ -83,6 +89,7 @@ class RegistroModelo extends RegistroEntidad {
       'fecha': fecha,
       'hora': hora,
       'muelle_inicio': muelleInicio,
+      'cajas': cajas,
       'gasto_facturacion': gastoFacturacion,
       'gasto_personal': gastoPersonal,
       'gasto_apoyo': gastoApoyo,
@@ -90,6 +97,7 @@ class RegistroModelo extends RegistroEntidad {
       'gasto_clorox': gastoClorox,
       'gasto_flete': gastoFlete,
       'gasto_hielo': gastoHielo,
+      'gasto_pesador': gastoPesador,
       'gasto_otros': gastoOtros,
       'sincronizado': sincronizado ? 1 : 0,
     };
@@ -107,6 +115,7 @@ class RegistroModelo extends RegistroEntidad {
       fecha: json['fecha'] as String,
       hora: json['hora'] as String,
       muelleInicio: json['muelle_inicio'] as String,
+      cajas: json['cajas'] as int? ?? 0,
       gastoFacturacion: (json['gasto_facturacion'] as num).toDouble(),
       gastoPersonal: (json['gasto_personal'] as num).toDouble(),
       gastoApoyo: (json['gasto_apoyo'] as num).toDouble(),
@@ -114,6 +123,7 @@ class RegistroModelo extends RegistroEntidad {
       gastoClorox: (json['gasto_clorox'] as num).toDouble(),
       gastoFlete: (json['gasto_flete'] as num).toDouble(),
       gastoHielo: (json['gasto_hielo'] as num).toDouble(),
+      gastoPesador: (json['gasto_pesador'] as num? ?? 0.0).toDouble(),
       gastoOtros: (json['gasto_otros'] as num).toDouble(),
       sincronizado: json['sincronizado'] as bool? ?? false,
     );
@@ -131,6 +141,7 @@ class RegistroModelo extends RegistroEntidad {
       'fecha': fecha,
       'hora': hora,
       'muelle_inicio': muelleInicio,
+      'cajas': cajas,
       'gasto_facturacion': gastoFacturacion,
       'gasto_personal': gastoPersonal,
       'gasto_apoyo': gastoApoyo,
@@ -138,6 +149,7 @@ class RegistroModelo extends RegistroEntidad {
       'gasto_clorox': gastoClorox,
       'gasto_flete': gastoFlete,
       'gasto_hielo': gastoHielo,
+      'gasto_pesador': gastoPesador,
       'gasto_otros': gastoOtros,
     };
   }

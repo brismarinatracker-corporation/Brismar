@@ -59,6 +59,7 @@ class RegistroFormController extends StateNotifier<RegistroFormState> {
     required double gClorox,
     required double gFlete,
     required double gHielo,
+    required double gPesador,
     required double gOtros,
   }) {
     final tVenta = kilos * precioVenta;
@@ -70,6 +71,7 @@ class RegistroFormController extends StateNotifier<RegistroFormState> {
         gClorox +
         gFlete +
         gHielo +
+        gPesador +
         gOtros;
     final tNeto = tVenta - tGastos;
 

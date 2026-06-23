@@ -14,10 +14,7 @@ class SeccionEmbarcacionForm extends StatelessWidget {
   final VoidCallback? onEliminar;
   final TextEditingController nombreNaveController;
   final TextEditingController kilosController;
-  final TextEditingController placaController;
-  final TextEditingController muelleController;
-  final String? productoSeleccionado;
-  final ValueChanged<String?> onProductoChanged;
+  final TextEditingController precioVentaController;
 
   const SeccionEmbarcacionForm({
     super.key,
@@ -26,10 +23,7 @@ class SeccionEmbarcacionForm extends StatelessWidget {
     this.onEliminar,
     required this.nombreNaveController,
     required this.kilosController,
-    required this.placaController,
-    required this.muelleController,
-    required this.productoSeleccionado,
-    required this.onProductoChanged,
+    required this.precioVentaController,
   });
 
   @override
@@ -100,146 +94,11 @@ class SeccionEmbarcacionForm extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '🐟 PRODUCTO *',
-                      style: TextStyle(
-                        color: Color(0xFF00E5FF), // Color turquesa neón para máxima legibilidad
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    DropdownButtonFormField<String>(
-                      initialValue: productoSeleccionado,
-                      dropdownColor: const Color(0xFF0E1938), // Fondo del desplegable
-                      iconEnabledColor: const Color(0xFF00E5FF),
-                      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF00E5FF)),
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
-                      hint: const Text(
-                        "Seleccionar..",
-                        style: TextStyle(color: Colors.white, fontSize: 12),
-                      ),
-                      decoration: _inputDecoration(""),
-                      items: ["POTA", "JUREL", "BONITO", "CABALLA"]
-                          .map(
-                            (e) {
-                              final Map<String, Color> coloresProductos = {
-                                "POTA": const Color(0xFFE040FB), // Magenta/Morado
-                                "JUREL": const Color(0xFF29B6F6), // Celeste
-                                "BONITO": const Color(0xFF00E676), // Verde brillante
-                                "CABALLA": const Color(0xFFFFB74D), // Ámbar/Naranja
-                              };
-                              final colorTag = coloresProductos[e] ?? const Color(0xFF00E5FF);
-                              return DropdownMenuItem(
-                                value: e,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: 8,
-                                      height: 8,
-                                      decoration: BoxDecoration(
-                                        color: colorTag,
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: colorTag.withValues(alpha: 0.4),
-                                            blurRadius: 4,
-                                            spreadRadius: 1,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      e,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          )
-                          .toList(),
-                      selectedItemBuilder: (BuildContext context) {
-                        return ["POTA", "JUREL", "BONITO", "CABALLA"].map((e) {
-                          final Map<String, Color> coloresProductos = {
-                            "POTA": const Color(0xFFE040FB),
-                            "JUREL": const Color(0xFF29B6F6),
-                            "BONITO": const Color(0xFF00E676),
-                            "CABALLA": const Color(0xFFFFB74D),
-                          };
-                          final colorTag = coloresProductos[e] ?? const Color(0xFF00E5FF);
-                          return Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: colorTag,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                e,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList();
-                      },
-                      onChanged: onProductoChanged,
-                      validator: (v) => v == null ? 'Obligatorio' : null,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
                 child: _buildTextField(
-                  "Placa de Cámara",
-                  "Ej: ABC123",
-                  placaController,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
-                    LengthLimitingTextInputFormatter(6),
-                    _UpperCaseTextFormatter(),
-                  ],
-                  validator: (v) {
-                    if (v != null && v.trim().isNotEmpty) {
-                      if (v.trim().length != 6) {
-                        return 'Exactamente 6 caracteres';
-                      }
-                    }
-                    return null;
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildTextField(
-                  "Muelle de Partida *",
-                  "Ej: Muelle A",
-                  muelleController,
+                  "Precio de venta (Kg) *",
+                  "0.00",
+                  precioVentaController,
+                  isNumeric: true,
                   esObligatorio: true,
                 ),
               ),
