@@ -16,9 +16,9 @@ class FuenteDatosRegistroRemota {
     }
 
     try {
-      final payloads = registros.map((r) => r.toJson()).toList();
+      final cargasUtiles = registros.map((r) => r.toJson()).toList();
       // Usamos upsert para evitar duplicados en caso de reintentos
-      await _client.from('registro_embarcaciones').upsert(payloads);
+      await _client.from('registro_embarcaciones').upsert(cargasUtiles);
     } catch (e) {
       throw Exception('Error al subir registros a Supabase: $e');
     }

@@ -37,8 +37,8 @@ final proveedorRepositorioAutenticacion = Provider<RepositorioAutenticacion>((
   ref,
 ) {
   return RepositorioAutenticacionImpl(
-    remotoDatasource: FuenteDatosAutenticacionRemota(),
-    secureStorage: GestorAlmacenamientoSeguro.instance,
+    fuenteDatosRemota: FuenteDatosAutenticacionRemota(),
+    almacenamientoSeguro: GestorAlmacenamientoSeguro.instance,
   );
 });
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SeccionVentaForm extends StatelessWidget {
   final TextEditingController precioKiloVentaController;
@@ -12,72 +13,77 @@ class SeccionVentaForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(10),
-          decoration: const BoxDecoration(
-            color: Color(0xFF006B3D),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(12),
-              topRight: Radius.circular(12),
-            ),
-          ),
-          child: const Text(
-            '\$ PRECIO Y VENTA',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 11,
-            ),
-          ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0E1938),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF1C2A54),
+          width: 1.2,
         ),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(12),
-              bottomRight: Radius.circular(12),
-            ),
-          ),
-          child: Column(
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
             children: [
-              _buildTextField(
-                "PRECIO DE VENTA POR KILO *",
-                "0.00",
-                precioKiloVentaController,
-                isNumeric: true,
-                esObligatorio: true,
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'TOTAL DE VENTA ESTIMADO',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 11,
-                    ),
-                  ),
-                  Text(
-                    'S/ ${totalVenta.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+              Icon(Icons.monetization_on_rounded, color: Color(0xFFFFD54F), size: 18),
+              SizedBox(width: 8),
+              Text(
+                'PRECIO Y VENTA',
+                style: TextStyle(
+                  color: Color(0xFFFFD54F),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  letterSpacing: 0.8,
+                ),
               ),
             ],
           ),
-        ),
-      ],
+          const SizedBox(height: 14),
+          _buildTextField(
+            "Precio de venta por Kilo *",
+            "0.00",
+            precioKiloVentaController,
+            isNumeric: true,
+            esObligatorio: true,
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF00E676).withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF00E676).withValues(alpha: 0.15), width: 1),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'TOTAL DE VENTA ESTIMADO',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                Text(
+                  'S/ ${_formatearNumero(totalVenta)}',
+                  style: const TextStyle(
+                    color: Color(0xFF00E676),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -92,21 +98,25 @@ class SeccionVentaForm extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          label.toUpperCase(),
           style: const TextStyle(
-            color: Colors.grey,
+            color: Colors.white54,
             fontSize: 10,
             fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         TextFormField(
           controller: controller,
           keyboardType: isNumeric
               ? const TextInputType.numberWithOptions(decimal: true)
               : TextInputType.text,
-          style: const TextStyle(fontSize: 12),
+          style: const TextStyle(fontSize: 13, color: Colors.white),
           decoration: _inputDecoration(hint),
+          inputFormatters: [
+            if (isNumeric) FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+          ],
           validator: (v) {
             if (esObligatorio && (v == null || v.trim().isEmpty)) {
               return 'Requerido';
@@ -121,18 +131,40 @@ class SeccionVentaForm extends StatelessWidget {
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
+      hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 12),
       isDense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       filled: true,
-      fillColor: const Color(0xFFF8FAFC),
+      fillColor: const Color(0xFF070E22), // Fondo oscuro uniforme
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF1C2A54)), // Borde azul oscuro uniforme
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.shade100),
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF1C2A54)),
       ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.orangeAccent, width: 1),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.orangeAccent, width: 1.5),
+      ),
+      errorStyle: const TextStyle(color: Colors.orangeAccent, fontSize: 10),
     );
+  }
+
+  String _formatearNumero(double valor, {int decimales = 2}) {
+    String str = valor.toStringAsFixed(decimales);
+    List<String> partes = str.split('.');
+    RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
+    partes[0] = partes[0].replaceAllMapped(reg, (Match m) => '${m[1]},');
+    return partes.join('.');
   }
 }

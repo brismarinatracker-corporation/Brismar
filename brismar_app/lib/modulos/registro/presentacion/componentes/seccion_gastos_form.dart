@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SeccionGastosForm extends StatelessWidget {
   final TextEditingController facturacionController;
@@ -24,130 +25,129 @@ class SeccionGastosForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(10),
-          decoration: const BoxDecoration(
-            color: Color(0xFF8B3A0F),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(12),
-              topRight: Radius.circular(12),
-            ),
-          ),
-          child: const Text(
-            '💵 DESGLOSE DE GASTOS DEL MUELLE',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 11,
-            ),
-          ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0E1938),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF1C2A54),
+          width: 1.2,
         ),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(12),
-              bottomRight: Radius.circular(12),
-            ),
-          ),
-          child: Column(
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(
-                      "FACTURACIÓN",
-                      "0.0",
-                      facturacionController,
-                      isNumeric: true,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildTextField(
-                      "PERSONAL/ESTIBAS",
-                      "0.0",
-                      personalController,
-                      isNumeric: true,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(
-                      "APOYO OPERATIVO",
-                      "0.0",
-                      apoyoController,
-                      isNumeric: true,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildTextField(
-                      "AGUA potable",
-                      "0.0",
-                      aguaController,
-                      isNumeric: true,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(
-                      "CLOROX / LIMPIEZA",
-                      "0.0",
-                      cloroxController,
-                      isNumeric: true,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildTextField(
-                      "FLETE / TRANSPORTE",
-                      "0.0",
-                      fleteController,
-                      isNumeric: true,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(
-                      "HIELO DE CONSERVACIÓN",
-                      "0.0",
-                      hieloController,
-                      isNumeric: true,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildTextField(
-                      "OTROS GASTOS",
-                      "0.0",
-                      otrosController,
-                      isNumeric: true,
-                    ),
-                  ),
-                ],
+              Icon(Icons.payments_rounded, color: Color(0xFFFFD54F), size: 18),
+              SizedBox(width: 8),
+              Text(
+                'DESGLOSE DE GASTOS DEL MUELLE',
+                style: TextStyle(
+                  color: Color(0xFFFFD54F),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  letterSpacing: 0.8,
+                ),
               ),
             ],
           ),
-        ),
-      ],
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  "Facturación",
+                  "0.0",
+                  facturacionController,
+                  isNumeric: true,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildTextField(
+                  "Personal / Estibas",
+                  "0.0",
+                  personalController,
+                  isNumeric: true,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  "Apoyo Operativo",
+                  "0.0",
+                  apoyoController,
+                  isNumeric: true,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildTextField(
+                  "Agua Potable",
+                  "0.0",
+                  aguaController,
+                  isNumeric: true,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  "Clorox / Limpieza",
+                  "0.0",
+                  cloroxController,
+                  isNumeric: true,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildTextField(
+                  "Flete / Transporte",
+                  "0.0",
+                  fleteController,
+                  isNumeric: true,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  "Hielo de Conservación",
+                  "0.0",
+                  hieloController,
+                  isNumeric: true,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildTextField(
+                  "Otros Gastos",
+                  "0.0",
+                  otrosController,
+                  isNumeric: true,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -162,21 +162,25 @@ class SeccionGastosForm extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          label.toUpperCase(),
           style: const TextStyle(
-            color: Colors.grey,
+            color: Colors.white54,
             fontSize: 10,
             fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         TextFormField(
           controller: controller,
           keyboardType: isNumeric
               ? const TextInputType.numberWithOptions(decimal: true)
               : TextInputType.text,
-          style: const TextStyle(fontSize: 12),
+          style: const TextStyle(fontSize: 13, color: Colors.white),
           decoration: _inputDecoration(hint),
+          inputFormatters: [
+            if (isNumeric) FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+          ],
           validator: (v) {
             if (esObligatorio && (v == null || v.trim().isEmpty)) {
               return 'Requerido';
@@ -191,18 +195,32 @@ class SeccionGastosForm extends StatelessWidget {
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
+      hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 12),
       isDense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       filled: true,
-      fillColor: const Color(0xFFF8FAFC),
+      fillColor: const Color(0xFF070E22), // Fondo oscuro uniforme
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF1C2A54)), // Borde azul oscuro uniforme
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.shade100),
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF1C2A54)),
       ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.orangeAccent, width: 1),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.orangeAccent, width: 1.5),
+      ),
+      errorStyle: const TextStyle(color: Colors.orangeAccent, fontSize: 10),
     );
   }
 }

@@ -8,15 +8,15 @@ import '../../../../nucleo/red/verificador_conexion.dart';
 
 /// Implementación concreta del repositorio de autenticación.
 class RepositorioAutenticacionImpl implements RepositorioAutenticacion {
-  final FuenteDatosAutenticacionRemota _remotoDatasource;
-  final GestorAlmacenamientoSeguro _secureStorage;
+  final FuenteDatosAutenticacionRemota _fuenteDatosRemota;
+  final GestorAlmacenamientoSeguro _almacenamientoSeguro;
 
   /// Constructor de [RepositorioAutenticacionImpl].
   RepositorioAutenticacionImpl({
-    required FuenteDatosAutenticacionRemota remotoDatasource,
-    required GestorAlmacenamientoSeguro secureStorage,
-  }) : _remotoDatasource = remotoDatasource,
-       _secureStorage = secureStorage;
+    required FuenteDatosAutenticacionRemota fuenteDatosRemota,
+    required GestorAlmacenamientoSeguro almacenamientoSeguro,
+  }) : _fuenteDatosRemota = fuenteDatosRemota,
+       _almacenamientoSeguro = almacenamientoSeguro;
 
   @override
   Future<Usuario> iniciarSesion({
@@ -31,7 +31,7 @@ class RepositorioAutenticacionImpl implements RepositorioAutenticacion {
 
     if (tieneInternet) {
       // Flujo Online
-      final user = await _remotoDatasource.iniciarSesion(
+      final user = await _fuenteDatosRemota.iniciarSesion(
         correo: correoNormalized,
         password: password,
       );
@@ -39,16 +39,16 @@ class RepositorioAutenticacionImpl implements RepositorioAutenticacion {
       // Guardar token y credenciales offline hasheadas con BCrypt
       final hashedPass = ServicioCifrado.hashearPasswordBcrypt(password);
       
-      await _secureStorage.guardarToken(user.id);
-      await _secureStorage.guardarCredencialesOffline(
+      await _almacenamientoSeguro.guardarToken(user.id);
+      await _almacenamientoSeguro.guardarCredencialesOffline(
         hashedPass,
         jsonEncode(user.toJson()),
       );
       return user;
     } else {
       // Flujo Offline
-      final savedHash = await _secureStorage.obtenerHashOffline();
-      final savedUserStr = await _secureStorage.obtenerDatosUsuarioOffline();
+      final savedHash = await _almacenamientoSeguro.obtenerHashOffline();
+      final savedUserStr = await _almacenamientoSeguro.obtenerDatosUsuarioOffline();
 
       if (savedHash == null || savedUserStr == null) {
         throw Exception(
@@ -60,7 +60,7 @@ class RepositorioAutenticacionImpl implements RepositorioAutenticacion {
         final userData = jsonDecode(savedUserStr);
         final user = Usuario.fromJson(userData);
         // Opcional: Podríamos reinyectar el token al storage
-        await _secureStorage.guardarToken(user.id);
+        await _almacenamientoSeguro.guardarToken(user.id);
         return user;
       } else {
         throw Exception('Contraseña incorrecta (Modo Offline).');
@@ -70,16 +70,16 @@ class RepositorioAutenticacionImpl implements RepositorioAutenticacion {
 
   @override
   Future<void> cerrarSesion() async {
-    await _remotoDatasource.cerrarSesion();
-    await _secureStorage.eliminarToken();
+    await _fuenteDatosRemota.cerrarSesion();
+    await _almacenamientoSeguro.eliminarToken();
   }
 
   @override
   Future<Usuario?> obtenerUsuarioActual() async {
-    final token = await _secureStorage.obtenerToken();
+    final token = await _almacenamientoSeguro.obtenerToken();
     if (token == null) return null;
 
-    final savedUserStr = await _secureStorage.obtenerDatosUsuarioOffline();
+    final savedUserStr = await _almacenamientoSeguro.obtenerDatosUsuarioOffline();
     if (savedUserStr != null) {
       final userData = jsonDecode(savedUserStr);
       return Usuario.fromJson(userData);
