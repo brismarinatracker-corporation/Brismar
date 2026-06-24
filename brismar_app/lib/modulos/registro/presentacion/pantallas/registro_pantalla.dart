@@ -100,21 +100,13 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: Align(
-                    alignment: const Alignment(0.0, -0.35),
-                    widthFactor: 0.55,
-                    heightFactor: 0.55,
-                    child: Image.asset(
-                      'assets/logo.png',
-                      fit: BoxFit.cover,
-                      errorBuilder: (c, e, s) => const Icon(
-                        Icons.directions_boat_rounded,
-                        size: 20,
-                        color: Color(0xFF0077C2),
-                      ),
-                    ),
+                child: Image.asset(
+                  'assets/logo.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (c, e, s) => const Icon(
+                    Icons.directions_boat_rounded,
+                    size: 20,
+                    color: Color(0xFF0077C2),
                   ),
                 ),
               ),
@@ -149,16 +141,22 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F224A).withValues(alpha: 0.8),
+        color: const Color(0xFF070E22).withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-          width: 1.2,
+          color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.08),
             blurRadius: 20,
+            spreadRadius: 1,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 15,
             offset: const Offset(0, 8),
           ),
         ],
@@ -169,31 +167,94 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
           _buildNavItem(0, Icons.assignment_turned_in_rounded, "Registrar"),
           _buildNavItem(1, Icons.history_rounded, "Historial"),
           _buildNavItem(2, Icons.sync_rounded, "Sincronizar"),
+          _buildLogoutNavItem(Icons.logout_rounded, "Salir"),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, String label) {
-    final isActive = _indicePestanaActiva == index;
+  Widget _buildLogoutNavItem(IconData icon, String label) {
     return InkWell(
-      onTap: () => setState(() => _indicePestanaActiva = index),
+      onTap: _mostrarConfirmacionCerrarSesion,
       borderRadius: BorderRadius.circular(16),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
-              color: isActive ? const Color(0xFFFFD54F) : Colors.white54, // Color activo amarillo
+              color: const Color(0xFFFF5252),
+              size: 22,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFFFF5252),
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _mostrarConfirmacionCerrarSesion() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF0F224A),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Cerrar Sesión', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          content: const Text('¿Estás seguro de que deseas salir del sistema?', style: TextStyle(color: Colors.white70)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar', style: TextStyle(color: Colors.white54)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                ref.read(proveedorControladorAutenticacion.notifier).cerrarSesion();
+                context.go('/login');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Salir', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData icon, String label) {
+    final isActive = _indicePestanaActiva == index;
+    final colorItem = isActive ? const Color(0xFF00E5FF) : Colors.white.withValues(alpha: 0.4);
+    return InkWell(
+      onTap: () => setState(() => _indicePestanaActiva = index),
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: colorItem,
               size: 22,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isActive ? const Color(0xFFFFD54F) : Colors.white54,
+                color: colorItem,
                 fontSize: 10,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
               ),
@@ -377,10 +438,7 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
               title: const Text('Cerrar Sesión', style: TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.bold)),
               subtitle: const Text('Salir de la cuenta actual', style: TextStyle(color: Colors.white54, fontSize: 11)),
               trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
-              onTap: () {
-                ref.read(proveedorControladorAutenticacion.notifier).cerrarSesion();
-                context.go('/login');
-              },
+              onTap: _mostrarConfirmacionCerrarSesion,
             ),
           ),
         ],
