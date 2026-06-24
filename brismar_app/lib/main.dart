@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -8,8 +9,10 @@ import 'nucleo/rutas/enrutador.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Prevención contra captura de pantalla/grabación
-  await ScreenProtector.preventScreenshotOn();
+  // Prevención contra captura de pantalla/grabación (solo móvil)
+  if (!kIsWeb) {
+    await ScreenProtector.preventScreenshotOn();
+  }
 
   // Cargamos las variables de entorno desde el archivo .env
   await dotenv.load(fileName: ".env");

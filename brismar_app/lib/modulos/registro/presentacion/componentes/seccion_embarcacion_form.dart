@@ -1,6 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+class _MascaraMilesFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    String cleanText = newValue.text.replaceAll(',', '');
+
+    // Permite números con un único punto decimal
+    final regExp = RegExp(r'^\d*\.?\d*$');
+    if (!regExp.hasMatch(cleanText)) {
+      return oldValue;
+    }
+
+    List<String> partes = cleanText.split('.');
+    String entero = partes[0];
+    String decimal = partes.length > 1 ? '.${partes[1]}' : '';
+
+    if (entero.isNotEmpty) {
+      final reg = RegExp(r'(\d+?)(?=(\d{3})+(?!\d))');
+      entero = entero.replaceAllMapped(reg, (Match m) => '${m[1]},');
+    }
+
+    final formatted = entero + decimal;
+
+    // Coloca el cursor al final del texto formateado
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
+
 class _UpperCaseTextFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
@@ -89,6 +123,7 @@ class SeccionEmbarcacionForm extends StatelessWidget {
                   "0.0",
                   kilosController,
                   isNumeric: true,
+                  isFormatted: true,
                   esObligatorio: true,
                 ),
               ),
@@ -99,6 +134,7 @@ class SeccionEmbarcacionForm extends StatelessWidget {
                   "0.00",
                   precioVentaController,
                   isNumeric: true,
+                  isCurrency: true,
                   esObligatorio: true,
                 ),
               ),
@@ -114,6 +150,8 @@ class SeccionEmbarcacionForm extends StatelessWidget {
     String hint,
     TextEditingController controller, {
     bool isNumeric = false,
+    bool isCurrency = false,
+    bool isFormatted = false,
     bool esObligatorio = false,
     List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
@@ -137,9 +175,12 @@ class SeccionEmbarcacionForm extends StatelessWidget {
               ? const TextInputType.numberWithOptions(decimal: true)
               : TextInputType.text,
           style: const TextStyle(fontSize: 13, color: Colors.white),
-          decoration: _inputDecoration(hint),
+          decoration: _inputDecoration(hint, isCurrency: isCurrency),
           inputFormatters: [
-            if (isNumeric) FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            if (isNumeric) ...[
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+              if (isCurrency || isFormatted) _MascaraMilesFormatter() else FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ],
             ...?inputFormatters,
           ],
           validator: validator ?? (v) {
@@ -153,7 +194,7 @@ class SeccionEmbarcacionForm extends StatelessWidget {
     );
   }
 
-  InputDecoration _inputDecoration(String hint) {
+  InputDecoration _inputDecoration(String hint, {required bool isCurrency}) {
     return InputDecoration(
       hintText: hint,
       hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 12),
@@ -161,6 +202,12 @@ class SeccionEmbarcacionForm extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       filled: true,
       fillColor: const Color(0xFF070E22), // Fondo oscuro de los campos de la imagen
+      prefixText: isCurrency ? 'S/ ' : null,
+      prefixStyle: const TextStyle(
+        color: Color(0xFF00E5FF),
+        fontWeight: FontWeight.bold,
+        fontSize: 13,
+      ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
         borderSide: const BorderSide(color: Color(0xFF1C2A54)), // Borde de los campos de la imagen
@@ -185,3 +232,4 @@ class SeccionEmbarcacionForm extends StatelessWidget {
     );
   }
 }
+

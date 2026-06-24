@@ -96,25 +96,25 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
               Container(
                 height: 32,
                 width: 32,
-                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Colors.transparent,
                   borderRadius: BorderRadius.circular(6),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
                 ),
-                child: Image.asset(
-                  'assets/logo.png',
-                  fit: BoxFit.contain,
-                  errorBuilder: (c, e, s) => const Icon(
-                    Icons.directions_boat_rounded,
-                    size: 20,
-                    color: Color(0xFF0077C2),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Align(
+                    alignment: const Alignment(0.0, -0.35),
+                    widthFactor: 0.55,
+                    heightFactor: 0.55,
+                    child: Image.asset(
+                      'assets/logo.png',
+                      fit: BoxFit.cover,
+                      errorBuilder: (c, e, s) => const Icon(
+                        Icons.directions_boat_rounded,
+                        size: 20,
+                        color: Color(0xFF0077C2),
+                      ),
+                    ),
                   ),
                 ),
               ),

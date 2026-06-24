@@ -23,6 +23,7 @@ class RegistroModelo extends RegistroEntidad {
     super.gastoHielo,
     super.gastoPesador,
     super.gastoOtros,
+    super.observaciones,
     super.sincronizado,
   });
 
@@ -49,6 +50,7 @@ class RegistroModelo extends RegistroEntidad {
       gastoHielo: e.gastoHielo,
       gastoPesador: e.gastoPesador,
       gastoOtros: e.gastoOtros,
+      observaciones: e.observaciones,
       sincronizado: e.sincronizado,
     );
   }
@@ -76,6 +78,7 @@ class RegistroModelo extends RegistroEntidad {
       gastoHielo: (map['gasto_hielo'] as num).toDouble(),
       gastoPesador: (map['gasto_pesador'] as num? ?? 0.0).toDouble(),
       gastoOtros: (map['gasto_otros'] as num).toDouble(),
+      observaciones: map['observaciones'] as String?,
       sincronizado: (map['sincronizado'] as int) == 1,
     );
   }
@@ -103,6 +106,7 @@ class RegistroModelo extends RegistroEntidad {
       'gasto_hielo': gastoHielo,
       'gasto_pesador': gastoPesador,
       'gasto_otros': gastoOtros,
+      'observaciones': observaciones,
       'sincronizado': sincronizado ? 1 : 0,
     };
   }
@@ -130,6 +134,7 @@ class RegistroModelo extends RegistroEntidad {
       gastoHielo: (json['gasto_hielo'] as num).toDouble(),
       gastoPesador: (json['gasto_pesador'] as num? ?? 0.0).toDouble(),
       gastoOtros: (json['gasto_otros'] as num).toDouble(),
+      observaciones: json['observaciones'] as String?,
       sincronizado: json['sincronizado'] as bool? ?? false,
     );
   }
@@ -157,6 +162,7 @@ class RegistroModelo extends RegistroEntidad {
       'gasto_hielo': gastoHielo,
       'gasto_pesador': gastoPesador,
       'gasto_otros': gastoOtros,
+      'observaciones': observaciones,
     };
   }
 }

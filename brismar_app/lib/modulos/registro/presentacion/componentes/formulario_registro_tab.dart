@@ -76,6 +76,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
   final _hieloController = TextEditingController();
   final _pesadorController = TextEditingController();
   final _otrosController = TextEditingController();
+  final _observacionesController = TextEditingController();
 
   @override
   void initState() {
@@ -112,6 +113,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     _hieloController.dispose();
     _pesadorController.dispose();
     _otrosController.dispose();
+    _observacionesController.dispose();
     super.dispose();
   }
 
@@ -179,8 +181,8 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     double totalKilos = 0.0;
     double totalVenta = 0.0;
     for (var emb in _embarcaciones) {
-      final kilos = double.tryParse(emb.kilosController.text) ?? 0.0;
-      final precio = double.tryParse(emb.precioVentaController.text) ?? 0.0;
+      final kilos = double.tryParse(emb.kilosController.text.replaceAll(',', '')) ?? 0.0;
+      final precio = double.tryParse(emb.precioVentaController.text.replaceAll(',', '')) ?? 0.0;
       totalKilos += kilos;
       totalVenta += kilos * precio;
     }
@@ -192,15 +194,15 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
         .calcularTotales(
           kilos: totalKilos,
           precioVenta: precioVentaConsolidado,
-          gFacturacion: double.tryParse(_facturacionController.text) ?? 0.0,
-          gPersonal: double.tryParse(_personalController.text) ?? 0.0,
-          gApoyo: double.tryParse(_apoyoController.text) ?? 0.0,
-          gAgua: double.tryParse(_aguaController.text) ?? 0.0,
-          gClorox: double.tryParse(_cloroxController.text) ?? 0.0,
-          gFlete: double.tryParse(_fleteController.text) ?? 0.0,
-          gHielo: double.tryParse(_hieloController.text) ?? 0.0,
-          gPesador: double.tryParse(_pesadorController.text) ?? 0.0,
-          gOtros: double.tryParse(_otrosController.text) ?? 0.0,
+          gFacturacion: double.tryParse(_facturacionController.text.replaceAll(',', '')) ?? 0.0,
+          gPersonal: double.tryParse(_personalController.text.replaceAll(',', '')) ?? 0.0,
+          gApoyo: double.tryParse(_apoyoController.text.replaceAll(',', '')) ?? 0.0,
+          gAgua: double.tryParse(_aguaController.text.replaceAll(',', '')) ?? 0.0,
+          gClorox: double.tryParse(_cloroxController.text.replaceAll(',', '')) ?? 0.0,
+          gFlete: double.tryParse(_fleteController.text.replaceAll(',', '')) ?? 0.0,
+          gHielo: double.tryParse(_hieloController.text.replaceAll(',', '')) ?? 0.0,
+          gPesador: double.tryParse(_pesadorController.text.replaceAll(',', '')) ?? 0.0,
+          gOtros: double.tryParse(_otrosController.text.replaceAll(',', '')) ?? 0.0,
         );
   }
 
@@ -225,22 +227,22 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     final totalNaves = _embarcaciones.length;
 
     // Distribuir los gastos equitativamente entre las embarcaciones registradas
-    final gFacturacion = (double.tryParse(_facturacionController.text) ?? 0.0) / totalNaves;
-    final gPersonal = (double.tryParse(_personalController.text) ?? 0.0) / totalNaves;
-    final gApoyo = (double.tryParse(_apoyoController.text) ?? 0.0) / totalNaves;
-    final gAgua = (double.tryParse(_aguaController.text) ?? 0.0) / totalNaves;
-    final gClorox = (double.tryParse(_cloroxController.text) ?? 0.0) / totalNaves;
-    final gFlete = (double.tryParse(_fleteController.text) ?? 0.0) / totalNaves;
-    final gHielo = (double.tryParse(_hieloController.text) ?? 0.0) / totalNaves;
-    final gPesador = (double.tryParse(_pesadorController.text) ?? 0.0) / totalNaves;
-    final gOtros = (double.tryParse(_otrosController.text) ?? 0.0) / totalNaves;
+    final gFacturacion = (double.tryParse(_facturacionController.text.replaceAll(',', '')) ?? 0.0) / totalNaves;
+    final gPersonal = (double.tryParse(_personalController.text.replaceAll(',', '')) ?? 0.0) / totalNaves;
+    final gApoyo = (double.tryParse(_apoyoController.text.replaceAll(',', '')) ?? 0.0) / totalNaves;
+    final gAgua = (double.tryParse(_aguaController.text.replaceAll(',', '')) ?? 0.0) / totalNaves;
+    final gClorox = (double.tryParse(_cloroxController.text.replaceAll(',', '')) ?? 0.0) / totalNaves;
+    final gFlete = (double.tryParse(_fleteController.text.replaceAll(',', '')) ?? 0.0) / totalNaves;
+    final gHielo = (double.tryParse(_hieloController.text.replaceAll(',', '')) ?? 0.0) / totalNaves;
+    final gPesador = (double.tryParse(_pesadorController.text.replaceAll(',', '')) ?? 0.0) / totalNaves;
+    final gOtros = (double.tryParse(_otrosController.text.replaceAll(',', '')) ?? 0.0) / totalNaves;
 
     final cajasTotales = int.tryParse(_cajasController.text) ?? 0;
 
     try {
       for (var emb in _embarcaciones) {
-        final kilos = double.tryParse(emb.kilosController.text) ?? 0.0;
-        final precioVenta = double.tryParse(emb.precioVentaController.text) ?? 0.0;
+        final kilos = double.tryParse(emb.kilosController.text.replaceAll(',', '')) ?? 0.0;
+        final precioVenta = double.tryParse(emb.precioVentaController.text.replaceAll(',', '')) ?? 0.0;
         final reg = RegistroEntidad(
           id: const Uuid().v4(),
           usuarioId: widget.usuarioId,
@@ -262,6 +264,9 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
           gastoHielo: gHielo,
           gastoPesador: gPesador,
           gastoOtros: gOtros,
+          observaciones: _observacionesController.text.trim().isEmpty 
+              ? null 
+              : _observacionesController.text.trim(),
         );
 
         await ref
@@ -312,6 +317,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     _hieloController.clear();
     _pesadorController.clear();
     _otrosController.clear();
+    _observacionesController.clear();
     
     setState(() {
       _productoSeleccionado = null;
@@ -608,6 +614,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
               hieloController: _hieloController,
               otrosController: _otrosController,
               pesadorController: _pesadorController,
+              observacionesController: _observacionesController,
             ),
             const SizedBox(height: 15),
             SeccionTotales(

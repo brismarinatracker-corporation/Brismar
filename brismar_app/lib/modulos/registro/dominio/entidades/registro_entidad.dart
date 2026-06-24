@@ -20,6 +20,7 @@ class RegistroEntidad {
   final double gastoHielo;
   final double gastoPesador;
   final double gastoOtros;
+  final String? observaciones;
   final bool sincronizado;
 
   /// Constructor de [RegistroEntidad].
@@ -44,6 +45,7 @@ class RegistroEntidad {
     this.gastoHielo = 0,
     this.gastoPesador = 0,
     this.gastoOtros = 0,
+    this.observaciones,
     this.sincronizado = false,
   });
 

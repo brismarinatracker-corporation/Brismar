@@ -17,6 +17,7 @@ create table if not exists public.registro_embarcaciones (
   gasto_flete numeric(10, 2) not null default 0,
   gasto_hielo numeric(10, 2) not null default 0,
   gasto_otros numeric(10, 2) not null default 0,
+  observaciones text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

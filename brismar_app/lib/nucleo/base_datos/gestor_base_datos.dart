@@ -23,7 +23,7 @@ class GestorBaseDatos {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -43,6 +43,7 @@ class GestorBaseDatos {
         fecha TEXT NOT NULL,
         hora TEXT NOT NULL,
         muelle_inicio TEXT NOT NULL,
+        cajas INTEGER DEFAULT 0,
         gasto_facturacion REAL DEFAULT 0,
         gasto_personal REAL DEFAULT 0,
         gasto_apoyo REAL DEFAULT 0,
@@ -50,7 +51,9 @@ class GestorBaseDatos {
         gasto_clorox REAL DEFAULT 0,
         gasto_flete REAL DEFAULT 0,
         gasto_hielo REAL DEFAULT 0,
+        gasto_pesador REAL DEFAULT 0,
         gasto_otros REAL DEFAULT 0,
+        observaciones TEXT,
         sincronizado INTEGER DEFAULT 0
       )
     ''');
@@ -61,6 +64,17 @@ class GestorBaseDatos {
     if (oldVersion < 2) {
       await db.execute(
         'ALTER TABLE registro_embarcaciones ADD COLUMN usuario_id TEXT',
+      );
+    }
+    if (oldVersion < 3) {
+      await db.execute(
+        'ALTER TABLE registro_embarcaciones ADD COLUMN cajas INTEGER DEFAULT 0',
+      );
+      await db.execute(
+        'ALTER TABLE registro_embarcaciones ADD COLUMN gasto_pesador REAL DEFAULT 0',
+      );
+      await db.execute(
+        'ALTER TABLE registro_embarcaciones ADD COLUMN observaciones TEXT',
       );
     }
   }

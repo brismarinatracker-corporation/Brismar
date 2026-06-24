@@ -1,6 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+class _MascaraMilesFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    String cleanText = newValue.text.replaceAll(',', '');
+
+    // Permite números con un único punto decimal
+    final regExp = RegExp(r'^\d*\.?\d*$');
+    if (!regExp.hasMatch(cleanText)) {
+      return oldValue;
+    }
+
+    List<String> partes = cleanText.split('.');
+    String entero = partes[0];
+    String decimal = partes.length > 1 ? '.${partes[1]}' : '';
+
+    if (entero.isNotEmpty) {
+      final reg = RegExp(r'(\d+?)(?=(\d{3})+(?!\d))');
+      entero = entero.replaceAllMapped(reg, (Match m) => '${m[1]},');
+    }
+
+    final formatted = entero + decimal;
+
+    // Coloca el cursor al final del texto formateado
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
+
 class SeccionGastosForm extends StatelessWidget {
   final TextEditingController facturacionController;
   final TextEditingController personalController;
@@ -11,6 +45,7 @@ class SeccionGastosForm extends StatelessWidget {
   final TextEditingController hieloController;
   final TextEditingController otrosController;
   final TextEditingController pesadorController;
+  final TextEditingController observacionesController;
 
   const SeccionGastosForm({
     super.key,
@@ -23,6 +58,7 @@ class SeccionGastosForm extends StatelessWidget {
     required this.hieloController,
     required this.otrosController,
     required this.pesadorController,
+    required this.observacionesController,
   });
 
   @override
@@ -166,6 +202,29 @@ class SeccionGastosForm extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "OBSERVACIONES / NOTAS",
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 6),
+              TextFormField(
+                controller: observacionesController,
+                keyboardType: TextInputType.multiline,
+                maxLines: 3,
+                style: const TextStyle(fontSize: 13, color: Colors.white),
+                decoration: _inputDecoration("Escribe algún problema o nota adicional...", isNumeric: false),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -197,9 +256,12 @@ class SeccionGastosForm extends StatelessWidget {
               ? const TextInputType.numberWithOptions(decimal: true)
               : TextInputType.text,
           style: const TextStyle(fontSize: 13, color: Colors.white),
-          decoration: _inputDecoration(hint),
+          decoration: _inputDecoration(hint, isNumeric: isNumeric),
           inputFormatters: [
-            if (isNumeric) FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            if (isNumeric) ...[
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+              _MascaraMilesFormatter(),
+            ],
           ],
           validator: (v) {
             if (esObligatorio && (v == null || v.trim().isEmpty)) {
@@ -212,7 +274,7 @@ class SeccionGastosForm extends StatelessWidget {
     );
   }
 
-  InputDecoration _inputDecoration(String hint) {
+  InputDecoration _inputDecoration(String hint, {required bool isNumeric}) {
     return InputDecoration(
       hintText: hint,
       hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 12),
@@ -220,6 +282,12 @@ class SeccionGastosForm extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       filled: true,
       fillColor: const Color(0xFF070E22), // Fondo oscuro uniforme
+      prefixText: isNumeric ? 'S/ ' : null,
+      prefixStyle: const TextStyle(
+        color: Color(0xFF00E5FF),
+        fontWeight: FontWeight.bold,
+        fontSize: 13,
+      ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
         borderSide: const BorderSide(color: Color(0xFF1C2A54)), // Borde azul oscuro uniforme
@@ -244,3 +312,4 @@ class SeccionGastosForm extends StatelessWidget {
     );
   }
 }
+
