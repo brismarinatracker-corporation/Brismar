@@ -262,9 +262,9 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
           gastoClorox: gClorox,
           gastoFlete: gFlete,
           gastoHielo: gHielo,
-          gastoPesador: gPesador,
+          gastoPesador: gPesador, //se implementoel nuevo campo del pesador en gastos del muelle
           gastoOtros: gOtros,
-          observaciones: _observacionesController.text.trim().isEmpty 
+          observaciones: _observacionesController.text.trim().isEmpty //se integro este nuevo campo, para el registro de la captura de gastos 
               ? null 
               : _observacionesController.text.trim(),
         );
