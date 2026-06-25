@@ -44,6 +44,8 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
       _escucharEstado,
     );
 
+    final estado = ref.watch(proveedorControladorAutenticacion);
+    final cargando = estado is EstadoAutenticacionCargando;
     final mostrarPin = widget.preferencia == PreferenciaAcceso.pin || _usarPinTemporalmente;
 
     return Scaffold(
@@ -58,16 +60,17 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
         child: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 32),
+              const SizedBox(height: 48),
               _construirCabecera(),
-              const SizedBox(height: 24),
-              Expanded(
-                child: mostrarPin
-                    ? _construirVistaPin()
-                    : _construirVistaBiometria(),
-              ),
+              const SizedBox(height: 40),
+              cargando
+                  ? const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF)))
+                  : mostrarPin
+                      ? _construirVistaPin()
+                      : _construirVistaBiometria(),
+              const Spacer(),
               _construirBotonOlvidePin(),
-              const SizedBox(height: 16),
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -108,7 +111,6 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
   /// Construye la vista de entrada de PIN con indicadores y teclado.
   Widget _construirVistaPin() {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _construirIndicadoresPIN(),
         const SizedBox(height: 16),
@@ -122,7 +124,6 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
   /// Construye la vista de autenticación biométrica.
   Widget _construirVistaBiometria() {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         GestureDetector(
           onTap: _iniciarBiometria,

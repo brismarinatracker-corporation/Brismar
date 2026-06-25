@@ -1,0 +1,111 @@
+import 'package:sqflite/sqflite.dart';
+import '../../../../nucleo/base_datos/gestor_base_datos.dart';
+import '../../../../nucleo/errores/diccionario_errores.dart';
+import '../modelos/cuadre_modelo.dart';
+
+class FuenteDatosCuadresLocal {
+  final GestorBaseDatos _gestorBD;
+
+  FuenteDatosCuadresLocal(this._gestorBD);
+
+  Future<void> guardarCuadreCompleto(CuadreModelo cuadre) async {
+    try {
+      final db = await _gestorBD.database;
+
+      await db.transaction((txn) async {
+        // 1. Guardar/Actualizar cabecera
+        await txn.insert(
+          'cuadres',
+          cuadre.toSqlite(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+
+        // 2. Limpiar relaciones anteriores (por si es una actualización)
+        await txn.delete('compras', where: 'cuadre_id = ?', whereArgs: [cuadre.id]);
+        await txn.delete('gastos', where: 'cuadre_id = ?', whereArgs: [cuadre.id]);
+        await txn.delete('ventas', where: 'cuadre_id = ?', whereArgs: [cuadre.id]);
+
+        // 3. Insertar nuevas relaciones
+        for (var compra in cuadre.compras) {
+          final cModelo = compra is CompraModelo ? compra : CompraModelo.fromEntidad(compra);
+          await txn.insert('compras', cModelo.toSqlite());
+        }
+
+        for (var gasto in cuadre.gastos) {
+          final gModelo = gasto is GastoModelo ? gasto : GastoModelo.fromEntidad(gasto);
+          await txn.insert('gastos', gModelo.toSqlite());
+        }
+
+        for (var venta in cuadre.ventas) {
+          final vModelo = venta is VentaModelo ? venta : VentaModelo.fromEntidad(venta);
+          await txn.insert('ventas', vModelo.toSqlite());
+        }
+      });
+    } catch (e) {
+      throw const ExcepcionBaseDatos(mensaje: 'Error guardando cuadre en SQLite');
+    }
+  }
+
+  Future<List<CuadreModelo>> obtenerCuadres() async {
+    try {
+      final db = await _gestorBD.database;
+      final cuadresMaps = await db.query('cuadres', orderBy: 'fecha_zarpe DESC');
+
+      List<CuadreModelo> cuadres = [];
+
+      for (var map in cuadresMaps) {
+        final id = map['id'] as String;
+
+        // Consultar relaciones
+        final comprasMaps = await db.query('compras', where: 'cuadre_id = ?', whereArgs: [id]);
+        final gastosMaps = await db.query('gastos', where: 'cuadre_id = ?', whereArgs: [id]);
+        final ventasMaps = await db.query('ventas', where: 'cuadre_id = ?', whereArgs: [id]);
+
+        final compras = comprasMaps.map((c) => CompraModelo.fromSqlite(c)).toList();
+        final gastos = gastosMaps.map((g) => GastoModelo.fromSqlite(g)).toList();
+        final ventas = ventasMaps.map((v) => VentaModelo.fromSqlite(v)).toList();
+
+        var cuadre = CuadreModelo.fromSqlite(map);
+        // Creamos una copia con las listas llenas porque fromSqlite no las llena por defecto
+        cuadre = CuadreModelo(
+          id: cuadre.id,
+          usuarioId: cuadre.usuarioId,
+          placa: cuadre.placa,
+          fechaZarpe: cuadre.fechaZarpe,
+          fechaCuadre: cuadre.fechaCuadre,
+          estado: cuadre.estado,
+          urlPdfCloud: cuadre.urlPdfCloud,
+          urlExcelCloud: cuadre.urlExcelCloud,
+          sincronizado: cuadre.sincronizado,
+          compras: compras,
+          gastos: gastos,
+          ventas: ventas,
+        );
+
+        cuadres.add(cuadre);
+      }
+
+      return cuadres;
+    } catch (e) {
+      throw const ExcepcionBaseDatos(mensaje: 'Error leyendo cuadres de SQLite');
+    }
+  }
+
+  Future<void> marcarComoSincronizado(String id, String? urlPdf, String? urlExcel) async {
+    try {
+      final db = await _gestorBD.database;
+      await db.update(
+        'cuadres',
+        {
+          'sincronizado': 1,
+          'url_pdf_cloud': urlPdf,
+          'url_excel_cloud': urlExcel,
+        },
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } catch (e) {
+      throw const ExcepcionBaseDatos(mensaje: 'Error actualizando estado de sincronización');
+    }
+  }
+}

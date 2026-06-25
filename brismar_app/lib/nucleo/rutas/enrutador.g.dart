@@ -124,13 +124,13 @@ mixin $AccesoRapidoRoute on GoRouteData {
 }
 
 RouteBase get $registroRoute =>
-    GoRouteData.$route(path: '/registro', factory: $RegistroRoute._fromState);
+    GoRouteData.$route(path: '/', factory: $RegistroRoute._fromState);
 
 mixin $RegistroRoute on GoRouteData {
   static RegistroRoute _fromState(GoRouterState state) => const RegistroRoute();
 
   @override
-  String get location => GoRouteData.$location('/registro');
+  String get location => GoRouteData.$location('/');
 
   @override
   void go(BuildContext context) => context.go(location);

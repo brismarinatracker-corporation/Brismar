@@ -54,6 +54,15 @@ class RepositorioAutenticacionImpl implements RepositorioAutenticacion {
     final pinConfigurado = await _secureStorage.obtenerPin();
     if (pinConfigurado == null) return null;
 
+    // Verificar en línea si el token fue revocado o usuario eliminado
+    final tieneInternet = await VerificadorConexion.hayConexion();
+    if (tieneInternet) {
+      if (!_remotoDatasource.esSesionValida) {
+        await cerrarSesion(); // Borra la bóveda
+        return null; // Forzamos el re-login
+      }
+    }
+
     final graciaVigente = await _secureStorage.esPeriodoGraciaVigente();
     if (!graciaVigente) throw const SesionExpiradaException();
 

@@ -88,4 +88,10 @@ class FuenteDatosAutenticacionRemota {
       );
     }
   }
+
+  /// Verifica de forma sincrónica si la sesión remota sigue siendo válida.
+  /// Si el usuario fue eliminado, esto retornará false (depende del refresh token background).
+  bool get esSesionValida {
+    return _client.auth.currentUser != null;
+  }
 }

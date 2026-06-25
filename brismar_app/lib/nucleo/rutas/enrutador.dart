@@ -5,7 +5,7 @@ import '../../modulos/autenticacion/presentacion/pantallas/login_pantalla.dart';
 import '../../modulos/autenticacion/presentacion/pantallas/configurar_pin_pantalla.dart';
 import '../../modulos/autenticacion/presentacion/pantallas/configurar_biometria_pantalla.dart';
 import '../../modulos/autenticacion/presentacion/pantallas/acceso_rapido_pantalla.dart';
-import '../../modulos/registro/presentacion/pantallas/registro_pantalla.dart';
+import '../../modulos/registro_pesca/presentacion/pantallas/dashboard_cuadres.dart';
 
 part 'enrutador.g.dart';
 
@@ -57,14 +57,14 @@ class AccesoRapidoRoute extends GoRouteData with $AccesoRapidoRoute {
   }
 }
 
-/// Ruta del registro de pesca (Dashboard principal).
-@TypedGoRoute<RegistroRoute>(path: '/registro')
+/// Ruta de la pantalla principal (Dashboard).
+@TypedGoRoute<RegistroRoute>(path: '/')
 class RegistroRoute extends GoRouteData with $RegistroRoute {
   const RegistroRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) =>
-      const RegistroPantalla();
+      const DashboardCuadresPantalla();
 }
 
 /// Configuración de rutas declarativas mediante GoRouter generadas.

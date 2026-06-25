@@ -23,7 +23,7 @@ class GestorBaseDatos {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -32,50 +32,65 @@ class GestorBaseDatos {
   /// Estructura inicial de las tablas en SQLite local.
   Future<void> _createDB(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE registro_embarcaciones (
+      CREATE TABLE cuadres (
         id TEXT PRIMARY KEY,
         usuario_id TEXT NOT NULL,
-        nombre_embarcacion TEXT NOT NULL,
-        producto TEXT NOT NULL,
-        placa_carro TEXT,
-        kilos REAL NOT NULL,
-        precio_por_kilo REAL NOT NULL,
-        fecha TEXT NOT NULL,
-        hora TEXT NOT NULL,
-        muelle_inicio TEXT NOT NULL,
-        cajas INTEGER DEFAULT 0,
-        gasto_facturacion REAL DEFAULT 0,
-        gasto_personal REAL DEFAULT 0,
-        gasto_apoyo REAL DEFAULT 0,
-        gasto_agua REAL DEFAULT 0,
-        gasto_clorox REAL DEFAULT 0,
-        gasto_flete REAL DEFAULT 0,
-        gasto_hielo REAL DEFAULT 0,
-        gasto_pesador REAL DEFAULT 0,
-        gasto_otros REAL DEFAULT 0,
-        observaciones TEXT,
+        placa TEXT NOT NULL,
+        fecha_zarpe TEXT,
+        fecha_cuadre TEXT,
+        estado TEXT DEFAULT 'borrador',
+        url_pdf_cloud TEXT,
+        url_excel_cloud TEXT,
         sincronizado INTEGER DEFAULT 0
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE compras (
+        id TEXT PRIMARY KEY,
+        cuadre_id TEXT NOT NULL,
+        embarcacion TEXT NOT NULL,
+        producto TEXT NOT NULL,
+        kilos REAL DEFAULT 0,
+        precio_unitario REAL DEFAULT 0,
+        total REAL DEFAULT 0,
+        FOREIGN KEY (cuadre_id) REFERENCES cuadres (id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE gastos (
+        id TEXT PRIMARY KEY,
+        cuadre_id TEXT NOT NULL,
+        tipo TEXT NOT NULL,
+        concepto TEXT NOT NULL,
+        cantidad REAL DEFAULT 0,
+        costo_unitario REAL DEFAULT 0,
+        total REAL DEFAULT 0,
+        FOREIGN KEY (cuadre_id) REFERENCES cuadres (id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE ventas (
+        id TEXT PRIMARY KEY,
+        cuadre_id TEXT NOT NULL,
+        lugar TEXT NOT NULL,
+        producto TEXT NOT NULL,
+        kilos REAL DEFAULT 0,
+        precio_unitario REAL DEFAULT 0,
+        total REAL DEFAULT 0,
+        FOREIGN KEY (cuadre_id) REFERENCES cuadres (id) ON DELETE CASCADE
       )
     ''');
   }
 
-  /// Migraciones incrementales para instalaciones que ya tienen datos locales.
+  /// Migraciones incrementales.
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      await db.execute(
-        'ALTER TABLE registro_embarcaciones ADD COLUMN usuario_id TEXT',
-      );
-    }
-    if (oldVersion < 3) {
-      await db.execute(
-        'ALTER TABLE registro_embarcaciones ADD COLUMN cajas INTEGER DEFAULT 0',
-      );
-      await db.execute(
-        'ALTER TABLE registro_embarcaciones ADD COLUMN gasto_pesador REAL DEFAULT 0',
-      );
-      await db.execute(
-        'ALTER TABLE registro_embarcaciones ADD COLUMN observaciones TEXT',
-      );
+    if (oldVersion < 4) {
+      // Eliminar tabla vieja y crear estructura nueva
+      await db.execute('DROP TABLE IF EXISTS registro_embarcaciones');
+      await _createDB(db, newVersion);
     }
   }
 
