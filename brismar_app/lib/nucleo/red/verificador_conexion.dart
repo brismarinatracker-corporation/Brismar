@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:io' show InternetAddress, SocketException;
+import 'package:http/http.dart' as http;
 
 /// Utilidad para verificar si el dispositivo tiene acceso real a red de datos o WiFi.
 class VerificadorConexion {
@@ -17,19 +16,14 @@ class VerificadorConexion {
       return false;
     }
 
-    // En plataforma Web dart:io no es soportado, por lo que devolvemos true si hay interfaz activa
-    if (kIsWeb) {
-      return true;
-    }
-
-    // Ping real para evitar falsos positivos de conectividad (solo móvil/desktop nativo)
+    // Ping real para evitar falsos positivos de conectividad. Funciona en Web, Android, iOS.
     try {
-      final result = await InternetAddress.lookup('google.com')
+      final response = await http.head(Uri.parse('https://google.com'))
           .timeout(const Duration(seconds: 2));
-      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-    } on SocketException catch (_) {
-      return false;
-    } on Exception catch (_) {
+      return response.statusCode == 200 || response.statusCode == 301 || response.statusCode == 302;
+    } catch (_) {
+      // kIsWeb como fallback si la validación estricta falla por CORS u otros motivos web
+      if (kIsWeb) return true;
       return false;
     }
   }

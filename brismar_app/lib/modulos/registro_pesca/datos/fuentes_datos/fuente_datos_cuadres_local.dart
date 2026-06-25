@@ -46,10 +46,15 @@ class FuenteDatosCuadresLocal {
     }
   }
 
-  Future<List<CuadreModelo>> obtenerCuadres() async {
+  Future<List<CuadreModelo>> obtenerCuadres(String usuarioId) async {
     try {
       final db = await _gestorBD.database;
-      final cuadresMaps = await db.query('cuadres', orderBy: 'fecha_zarpe DESC');
+      final cuadresMaps = await db.query(
+        'cuadres', 
+        where: 'usuario_id = ?', 
+        whereArgs: [usuarioId], 
+        orderBy: 'fecha_zarpe DESC'
+      );
 
       List<CuadreModelo> cuadres = [];
 

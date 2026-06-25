@@ -57,20 +57,31 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 48),
-              _construirCabecera(),
-              const SizedBox(height: 40),
-              mostrarPin
-                  ? _construirVistaPin()
-                  : _construirVistaBiometria(),
-              const Spacer(),
-              if (mostrarPin) _construirTecladoNumerico(),
-              const SizedBox(height: 16),
-              _construirBotonOlvidePin(),
-              const SizedBox(height: 32),
-            ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 48),
+                        _construirCabecera(),
+                        const SizedBox(height: 40),
+                        mostrarPin
+                            ? _construirVistaPin()
+                            : _construirVistaBiometria(),
+                        const Spacer(),
+                        if (mostrarPin) _construirTecladoNumerico(),
+                        const SizedBox(height: 16),
+                        _construirBotonOlvidePin(),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),

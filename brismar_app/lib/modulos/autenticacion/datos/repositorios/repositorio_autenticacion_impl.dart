@@ -100,8 +100,13 @@ class RepositorioAutenticacionImpl implements RepositorioAutenticacion {
 
   @override
   Future<void> cerrarSesion() async {
-    await _remotoDatasource.cerrarSesion();
-    await _secureStorage.invalidarBoveda();
+    try {
+      await _remotoDatasource.cerrarSesion();
+    } catch (_) {
+      // Ignoramos si falla red para poder limpiar local
+    } finally {
+      await _secureStorage.invalidarBoveda();
+    }
   }
 
   @override

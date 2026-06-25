@@ -20,13 +20,13 @@ class CuadreRepositorioImp implements CuadreRepositorio {
   }
 
   @override
-  Future<List<CuadreEntidad>> obtenerHistorial() async {
-    return await local.obtenerCuadres();
+  Future<List<CuadreEntidad>> obtenerHistorial(String usuarioId) async {
+    return await local.obtenerCuadres(usuarioId);
   }
 
   @override
-  Future<void> sincronizarPendientes() async {
-    final cuadresLocales = await local.obtenerCuadres();
+  Future<void> sincronizarPendientes(String usuarioId) async {
+    final cuadresLocales = await local.obtenerCuadres(usuarioId);
     final pendientes = cuadresLocales.where((c) => !c.sincronizado).toList();
 
     for (var cuadre in pendientes) {

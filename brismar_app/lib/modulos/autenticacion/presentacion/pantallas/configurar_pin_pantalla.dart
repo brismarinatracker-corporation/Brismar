@@ -42,18 +42,29 @@ class _ConfigurarPinPantallaState extends ConsumerState<ConfigurarPinPantalla> {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 48),
-              _construirCabecera(),
-              const SizedBox(height: 40),
-              _construirIndicadoresPIN(),
-              const SizedBox(height: 16),
-              _construirMensajeError(),
-              const Spacer(),
-              _construirTecladoNumerico(),
-              const SizedBox(height: 32),
-            ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 48),
+                        _construirCabecera(),
+                        const SizedBox(height: 40),
+                        _construirIndicadoresPIN(),
+                        const SizedBox(height: 16),
+                        _construirMensajeError(),
+                        const Spacer(),
+                        _construirTecladoNumerico(),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
           ),
         ),
       ),

@@ -4,9 +4,12 @@ import 'package:uuid/uuid.dart';
 
 import '../../dominio/entidades/cuadre_entidad.dart';
 import '../controladores/controlador_cuadres.dart';
+import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 
 class FormularioCuadreTabs extends ConsumerStatefulWidget {
-  const FormularioCuadreTabs({super.key});
+  final CuadreEntidad? cuadreInicial;
+  
+  const FormularioCuadreTabs({super.key, this.cuadreInicial});
 
   @override
   ConsumerState<FormularioCuadreTabs> createState() => _FormularioCuadreTabsState();
@@ -15,6 +18,23 @@ class FormularioCuadreTabs extends ConsumerStatefulWidget {
 class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
   final _formKey = GlobalKey<FormState>();
   int _currentStep = 0;
+  late String _cuadreId;
+  bool _guardando = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.cuadreInicial != null) {
+      _cuadreId = widget.cuadreInicial!.id;
+      _placaCtrl.text = widget.cuadreInicial!.placa;
+      _fechaZarpeCtrl.text = widget.cuadreInicial!.fechaZarpe ?? '';
+      _compras.addAll(widget.cuadreInicial!.compras);
+      _gastos.addAll(widget.cuadreInicial!.gastos);
+      _ventas.addAll(widget.cuadreInicial!.ventas);
+    } else {
+      _cuadreId = const Uuid().v4();
+    }
+  }
 
   // Controladores Generales
   final _placaCtrl = TextEditingController();
@@ -25,7 +45,7 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
   final List<GastoEntidad> _gastos = [];
   final List<VentaEntidad> _ventas = [];
 
-  void _guardarCuadre() {
+  Future<void> _guardarCuadre() async {
     if (!_formKey.currentState!.validate()) return;
     
     // Validar al menos una compra
@@ -39,9 +59,24 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
     // Calcular estado: si no hay ventas, es borrador.
     final estado = _ventas.isEmpty ? 'borrador' : 'completo';
 
+    final authState = ref.read(proveedorControladorAutenticacion);
+    String usuarioActualId = 'local-placeholder';
+    if (authState is EstadoAutenticacionAutenticado) {
+      usuarioActualId = authState.usuario.id;
+    }
+
+    if (usuarioActualId == 'local-placeholder') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error de sesión: No se puede guardar como invitado local')),
+      );
+      return;
+    }
+
+    setState(() => _guardando = true);
+
     final nuevoCuadre = CuadreEntidad(
-      id: const Uuid().v4(),
-      usuarioId: 'local-placeholder', // Esto debe reemplazarse por el ID real de Supabase Auth
+      id: _cuadreId,
+      usuarioId: usuarioActualId,
       placa: _placaCtrl.text,
       fechaZarpe: _fechaZarpeCtrl.text,
       estado: estado,
@@ -50,8 +85,11 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
       ventas: _ventas,
     );
 
-    ref.read(cuadresProvider.notifier).guardarCuadre(nuevoCuadre);
-    Navigator.of(context).pop();
+    await ref.read(cuadresProvider.notifier).guardarCuadre(nuevoCuadre);
+    if (mounted) {
+      setState(() => _guardando = false);
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -184,6 +222,9 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
           ],
         ),
       ),
+      bottomNavigationBar: _guardando 
+          ? const LinearProgressIndicator(color: Color(0xFF00E5FF)) 
+          : const SizedBox.shrink(),
     );
   }
 
@@ -281,13 +322,26 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
               TextButton(
                 onPressed: () {
+                  final e = embCtrl.text.trim();
+                  if (e.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Embarcación inválida')));
+                    return;
+                  }
                   final k = double.tryParse(kilosCtrl.text) ?? 0;
+                  if (k <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kilos deben ser mayor a 0')));
+                    return;
+                  }
                   final p = double.tryParse(precioCtrl.text) ?? 0;
+                  if (p <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Precio debe ser mayor a 0')));
+                    return;
+                  }
                   setState(() {
                     _compras.add(CompraEntidad(
                       id: const Uuid().v4(),
-                      cuadreId: '', // Se asignará en base de datos local
-                      embarcacion: embCtrl.text,
+                      cuadreId: _cuadreId,
+                      embarcacion: e,
                       producto: _productoSeleccionado,
                       kilos: k,
                       precioUnitario: p,
@@ -328,13 +382,22 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
           TextButton(
             onPressed: () {
+              final c = conceptoCtrl.text.trim();
+              if (c.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Concepto inválido')));
+                return;
+              }
               final t = double.tryParse(totalCtrl.text) ?? 0;
+              if (t <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Total debe ser mayor a 0')));
+                return;
+              }
               setState(() {
                 _gastos.add(GastoEntidad(
                   id: const Uuid().v4(),
-                  cuadreId: '',
+                  cuadreId: _cuadreId,
                   tipo: tipoCtrl.text,
-                  concepto: conceptoCtrl.text,
+                  concepto: c,
                   cantidad: 1,
                   costoUnitario: t,
                   total: t,
@@ -443,13 +506,26 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
               TextButton(
                 onPressed: () {
+                  final l = lugarCtrl.text.trim();
+                  if (l.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lugar inválido')));
+                    return;
+                  }
                   final k = double.tryParse(kilosCtrl.text) ?? 0;
+                  if (k <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kilos deben ser mayor a 0')));
+                    return;
+                  }
                   final p = double.tryParse(precioCtrl.text) ?? 0;
+                  if (p <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Precio debe ser mayor a 0')));
+                    return;
+                  }
                   setState(() {
                     _ventas.add(VentaEntidad(
                       id: const Uuid().v4(),
-                      cuadreId: '',
-                      lugar: lugarCtrl.text,
+                      cuadreId: _cuadreId,
+                      lugar: l,
                       producto: _productoSeleccionado,
                       kilos: k,
                       precioUnitario: p,

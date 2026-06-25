@@ -36,6 +36,13 @@ class FuenteDatosCuadresRemota {
       await _cliente.from('cuadres').upsert(cuadreJson);
 
       // 3. Insertar Relaciones (Compras, Gastos, Ventas)
+      // Primero borramos las relaciones existentes para evitar huérfanos
+      await Future.wait([
+        _cliente.from('compras').delete().eq('cuadre_id', cuadre.id),
+        _cliente.from('gastos').delete().eq('cuadre_id', cuadre.id),
+        _cliente.from('ventas').delete().eq('cuadre_id', cuadre.id),
+      ]);
+
       if (cuadre.compras.isNotEmpty) {
         await _cliente.from('compras').upsert(cuadre.compras.map((c) {
           final cModelo = c is CompraModelo ? c : CompraModelo.fromEntidad(c);

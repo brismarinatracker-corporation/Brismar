@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../controladores/controlador_cuadres.dart';
 import 'formulario_cuadre_tabs.dart';
 
@@ -29,7 +29,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Sincronizando cuadres...')),
       );
-      // Aquí iría la lógica de sincronización
+      ref.read(cuadresProvider.notifier).cargarHistorial();
     } else {
       setState(() {
         _pestanaSeleccionada = index;
@@ -53,7 +53,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () async {
               Navigator.pop(ctx);
-              await Supabase.instance.client.auth.signOut();
+              await ref.read(proveedorControladorAutenticacion.notifier).cerrarSesion();
               if (context.mounted) context.go('/login');
             },
             child: const Text('Salir', style: TextStyle(color: Colors.white)),
@@ -166,6 +166,10 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
           icon: const Icon(Icons.refresh_rounded, color: Colors.white),
           onPressed: () => ref.read(cuadresProvider.notifier).cargarHistorial(),
         ),
+        IconButton(
+          icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+          onPressed: _mostrarConfirmacionCerrarSesion,
+        ),
       ],
     );
   }
@@ -272,13 +276,13 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: cuadre.estado == 'Cerrado' ? Colors.green.withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
+                            color: cuadre.estado == 'completo' ? Colors.green.withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            cuadre.estado,
+                            cuadre.estado.toUpperCase(),
                             style: TextStyle(
-                              color: cuadre.estado == 'Cerrado' ? Colors.green : Colors.orange,
+                              color: cuadre.estado == 'completo' ? Colors.green : Colors.orange,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -307,7 +311,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                 onTap: () {
                   // Editar cuadre
                   Navigator.of(context).push(MaterialPageRoute(
-                    builder: (ctx) => const FormularioCuadreTabs(), // Pasaría el cuadre aquí
+                    builder: (ctx) => FormularioCuadreTabs(cuadreInicial: cuadre),
                   ));
                 },
               ),

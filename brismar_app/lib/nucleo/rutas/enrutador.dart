@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../modulos/autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../../modulos/autenticacion/dominio/entidades/preferencia_acceso.dart';
 import '../../modulos/autenticacion/presentacion/pantallas/login_pantalla.dart';
 import '../../modulos/autenticacion/presentacion/pantallas/configurar_pin_pantalla.dart';
@@ -67,8 +69,31 @@ class RegistroRoute extends GoRouteData with $RegistroRoute {
       const DashboardCuadresPantalla();
 }
 
-/// Configuración de rutas declarativas mediante GoRouter generadas.
-final GoRouter enrutador = GoRouter(
-  initialLocation: '/login',
-  routes: $appRoutes,
-);
+/// Configuración de rutas declarativas mediante GoRouter generadas y protegidas por Riverpod.
+final enrutadorProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(proveedorControladorAutenticacion);
+
+  return GoRouter(
+    initialLocation: '/login',
+    routes: $appRoutes,
+    redirect: (context, state) {
+      final isLoginRoute = state.uri.path == '/login';
+      final isAccesoRapidoRoute = state.uri.path == '/acceso-rapido';
+      
+      if (authState is EstadoAutenticacionNoAutenticado) {
+        return isLoginRoute ? null : '/login';
+      }
+      
+      if (authState is EstadoAccesoRapidoRequerido) {
+        return isAccesoRapidoRoute ? null : '/acceso-rapido';
+      }
+      
+      if (authState is EstadoAutenticacionAutenticado) {
+        if (isLoginRoute || isAccesoRapidoRoute) return '/';
+        return null;
+      }
+      
+      return null;
+    },
+  );
+});
