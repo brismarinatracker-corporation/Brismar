@@ -48,6 +48,7 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
 
     return Scaffold(
       body: Container(
+        width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -65,6 +66,8 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
                   ? _construirVistaPin()
                   : _construirVistaBiometria(),
               const Spacer(),
+              if (mostrarPin) _construirTecladoNumerico(),
+              const SizedBox(height: 16),
               _construirBotonOlvidePin(),
               const SizedBox(height: 32),
             ],
@@ -80,17 +83,20 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
     
     return Column(
       children: [
-        Image.asset('assets/logo.png', height: 60),
-        const SizedBox(height: 20),
+        mostrarPin 
+            ? const Icon(Icons.lock_outline, color: Color(0xFF00E5FF), size: 48)
+            : Image.asset('assets/logo.png', height: 60),
+        const SizedBox(height: 16),
         const Text(
           'Bienvenido de vuelta',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 22,
+            fontSize: 24,
             fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Text(
           mostrarPin
               ? 'Ingresa tu PIN de 4 dígitos'
@@ -111,8 +117,6 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
         _construirIndicadoresPIN(),
         const SizedBox(height: 16),
         _construirMensajeError(),
-        const SizedBox(height: 24),
-        _construirTecladoNumerico(),
       ],
     );
   }
@@ -216,9 +220,9 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
-          childAspectRatio: 2.0, // Ajuste para evitar overflow
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
+          childAspectRatio: 1.8,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
         ),
         itemCount: teclas.length,
         itemBuilder: (_, i) => _construirTecla(teclas[i]),
