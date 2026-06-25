@@ -730,7 +730,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
                   splashColor: Colors.white24,
                   child: const Center(
                     child: Text(
-                      'REGISTRAR EMBARCACIÓN(ES)',
+                      'REGISTRAR CÁMARA',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
