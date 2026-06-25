@@ -65,6 +65,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
 
   // --- LISTA DINÁMICA DE EMBARCACIONES (MÁX 5) ---
   final List<EntradaEmbarcacion> _embarcaciones = [];
+  int _indiceEmbarcacionActiva = 0;
 
   // Gastos (Desglose de los 9 tipos)
   final _facturacionController = TextEditingController();
@@ -117,15 +118,21 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     super.dispose();
   }
 
+  void _actualizarEstadoNombres() {
+    setState(() {});
+  }
+
   void _agregarEmbarcacion({bool notificar = true}) {
     if (_embarcaciones.length >= 5) return;
 
     final nueva = EntradaEmbarcacion();
     nueva.kilosController.addListener(_notificarCalculo);
     nueva.precioVentaController.addListener(_notificarCalculo);
+    nueva.nombreNaveController.addListener(_actualizarEstadoNombres);
 
     setState(() {
       _embarcaciones.add(nueva);
+      _indiceEmbarcacionActiva = _embarcaciones.length - 1; // Foco automático en la nueva pestaña
     });
 
     if (notificar) {
@@ -139,9 +146,14 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
     final eliminada = _embarcaciones.removeAt(index);
     eliminada.kilosController.removeListener(_notificarCalculo);
     eliminada.precioVentaController.removeListener(_notificarCalculo);
+    eliminada.nombreNaveController.removeListener(_actualizarEstadoNombres);
     eliminada.dispose();
 
-    setState(() {});
+    setState(() {
+      if (_indiceEmbarcacionActiva >= _embarcaciones.length) {
+        _indiceEmbarcacionActiva = _embarcaciones.length - 1;
+      }
+    });
     _notificarCalculo();
   }
 
@@ -529,7 +541,6 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
               ),
             ),
             const SizedBox(height: 24),
-
             // --- SECCIÓN DEDICADA DE EMBARCACIONES CON HEADER Y BOTÓN AGREGAR ---
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -577,23 +588,94 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
               ],
             ),
             const SizedBox(height: 14),
-            
-            // --- SECCIÓN DINÁMICA DE EMBARCACIONES ---
-            Column(
-              children: List.generate(_embarcaciones.length, (index) {
-                final emb = _embarcaciones[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 15),
-                  child: SeccionEmbarcacionForm(
-                    index: index,
-                    mostrarBotonEliminar: _embarcaciones.length > 1,
-                    onEliminar: () => _eliminarEmbarcacion(index),
-                    nombreNaveController: emb.nombreNaveController,
-                    kilosController: emb.kilosController,
-                    precioVentaController: emb.precioVentaController,
+
+            // --- CAROUSEL DE PESTAÑAS HORIZONTALES ---
+            SizedBox(
+              height: 38,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _embarcaciones.length,
+                itemBuilder: (context, index) {
+                  final emb = _embarcaciones[index];
+                  final esActiva = index == _indiceEmbarcacionActiva;
+                  final nombre = emb.nombreNaveController.text.trim();
+                  final label = nombre.isNotEmpty
+                      ? (nombre.length > 12 ? '${nombre.substring(0, 10)}..' : nombre)
+                      : 'Emb ${index + 1}';
+
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _indiceEmbarcacionActiva = index;
+                      });
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: esActiva
+                            ? const Color(0xFF00E5FF).withValues(alpha: 0.15)
+                            : const Color(0xFF0F224A).withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: esActiva
+                              ? const Color(0xFF00E5FF).withValues(alpha: 0.6)
+                              : Colors.white.withValues(alpha: 0.08),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.directions_boat_rounded,
+                            size: 14,
+                            color: esActiva ? const Color(0xFF00E5FF) : Colors.white60,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            label.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: esActiva ? const Color(0xFF00E5FF) : Colors.white70,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // --- FORMULARIO DE LA EMBARCACIÓN ACTIVA CON ANIMACIÓN ---
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.08, 0.0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
                   ),
                 );
-              }),
+              },
+              child: KeyedSubtree(
+                key: ValueKey('form_emb_$_indiceEmbarcacionActiva'),
+                child: SeccionEmbarcacionForm(
+                  index: _indiceEmbarcacionActiva,
+                  mostrarBotonEliminar: _embarcaciones.length > 1,
+                  onEliminar: () => _eliminarEmbarcacion(_indiceEmbarcacionActiva),
+                  nombreNaveController: _embarcaciones[_indiceEmbarcacionActiva].nombreNaveController,
+                  kilosController: _embarcaciones[_indiceEmbarcacionActiva].kilosController,
+                  precioVentaController: _embarcaciones[_indiceEmbarcacionActiva].precioVentaController,
+                ),
+              ),
             ),
 
             const SizedBox(height: 10),
