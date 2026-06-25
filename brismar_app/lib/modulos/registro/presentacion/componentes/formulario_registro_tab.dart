@@ -430,7 +430,7 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
                             const SizedBox(height: 6),
                             DropdownButtonFormField<String>(
                               initialValue: _productoSeleccionado,
-                              dropdownColor: const Color(0xFF0E1938),
+                              dropdownColor: const Color(0xFF162A5B),
                               iconEnabledColor: const Color(0xFF00E5FF),
                               icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF00E5FF)),
                               style: const TextStyle(color: Colors.white, fontSize: 13),
@@ -477,6 +477,52 @@ class _FormularioRegistroTabState extends ConsumerState<FormularioRegistroTab> {
                                     },
                                   )
                                   .toList(),
+                              selectedItemBuilder: (BuildContext context) {
+                                return ["POTA", "JUREL", "BONITO", "CABALLA"].map((String value) {
+                                  final Map<String, Color> coloresProductos = {
+                                    "POTA": const Color(0xFFE040FB),
+                                    "JUREL": const Color(0xFF29B6F6),
+                                    "BONITO": const Color(0xFF00E676),
+                                    "CABALLA": const Color(0xFFFFB74D),
+                                  };
+                                  final colorTag = coloresProductos[value] ?? const Color(0xFF00E5FF);
+                                  return Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: colorTag.withValues(alpha: 0.15),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: colorTag.withValues(alpha: 0.35), width: 1.2),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              width: 6,
+                                              height: 6,
+                                              decoration: BoxDecoration(
+                                                color: colorTag,
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              value,
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold,
+                                                color: colorTag,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList();
+                              },
                               onChanged: (val) {
                                 setState(() {
                                   _productoSeleccionado = val;
