@@ -188,49 +188,119 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
   }
 
   void _agregarCompraDialog() {
-    // Variables locales para el modal
     final embCtrl = TextEditingController();
-    final prodCtrl = TextEditingController(text: 'Pota Primera');
+    String _productoSeleccionado = 'POTA';
     final kilosCtrl = TextEditingController();
     final precioCtrl = TextEditingController();
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Nueva Compra'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: embCtrl, decoration: const InputDecoration(labelText: 'Embarcación')),
-              TextField(controller: prodCtrl, decoration: const InputDecoration(labelText: 'Producto')),
-              TextField(controller: kilosCtrl, decoration: const InputDecoration(labelText: 'Kilos'), keyboardType: TextInputType.number),
-              TextField(controller: precioCtrl, decoration: const InputDecoration(labelText: 'Precio/Kg'), keyboardType: TextInputType.number),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return AlertDialog(
+            title: const Text('Nueva Compra'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(controller: embCtrl, decoration: const InputDecoration(labelText: 'Embarcación')),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: _productoSeleccionado,
+                    dropdownColor: const Color(0xFF162A5B),
+                    decoration: const InputDecoration(labelText: 'Producto'),
+                    items: ["POTA", "JUREL", "BONITO", "CABALLA"]
+                        .map(
+                          (String value) => DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          ),
+                        )
+                        .toList(),
+                    selectedItemBuilder: (BuildContext context) {
+                      return ["POTA", "JUREL", "BONITO", "CABALLA"].map((String value) {
+                        final Map<String, Color> coloresProductos = {
+                          "POTA": const Color(0xFFE040FB),
+                          "JUREL": const Color(0xFF29B6F6),
+                          "BONITO": const Color(0xFF00E676),
+                          "CABALLA": const Color(0xFFFFB74D),
+                        };
+                        final colorTag = coloresProductos[value] ?? const Color(0xFF00E5FF);
+                        return Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: colorTag.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: colorTag.withValues(alpha: 0.35), width: 1.2),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: BoxDecoration(
+                                      color: colorTag,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    value,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: colorTag,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      }).toList();
+                    },
+                    onChanged: (val) {
+                      if (val != null) {
+                        setStateDialog(() {
+                          _productoSeleccionado = val;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(controller: kilosCtrl, decoration: const InputDecoration(labelText: 'Kilos'), keyboardType: TextInputType.number),
+                  TextField(controller: precioCtrl, decoration: const InputDecoration(labelText: 'Precio/Kg'), keyboardType: TextInputType.number),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+              TextButton(
+                onPressed: () {
+                  final k = double.tryParse(kilosCtrl.text) ?? 0;
+                  final p = double.tryParse(precioCtrl.text) ?? 0;
+                  setState(() {
+                    _compras.add(CompraEntidad(
+                      id: const Uuid().v4(),
+                      cuadreId: '', // Se asignará en base de datos local
+                      embarcacion: embCtrl.text,
+                      producto: _productoSeleccionado,
+                      kilos: k,
+                      precioUnitario: p,
+                      total: k * p,
+                    ));
+                  });
+                  Navigator.pop(ctx);
+                },
+                child: const Text('Guardar'),
+              )
             ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-          TextButton(
-            onPressed: () {
-              final k = double.tryParse(kilosCtrl.text) ?? 0;
-              final p = double.tryParse(precioCtrl.text) ?? 0;
-              setState(() {
-                _compras.add(CompraEntidad(
-                  id: const Uuid().v4(),
-                  cuadreId: '', // Se asignará en base de datos local
-                  embarcacion: embCtrl.text,
-                  producto: prodCtrl.text,
-                  kilos: k,
-                  precioUnitario: p,
-                  total: k * p,
-                ));
-              });
-              Navigator.pop(ctx);
-            },
-            child: const Text('Guardar'),
-          )
-        ],
+          );
+        }
       ),
     );
   }
@@ -281,47 +351,118 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
 
   void _agregarVentaDialog() {
     final lugarCtrl = TextEditingController();
-    final prodCtrl = TextEditingController(text: 'Pota');
+    String _productoSeleccionado = 'POTA';
     final kilosCtrl = TextEditingController();
     final precioCtrl = TextEditingController();
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Nueva Venta'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: lugarCtrl, decoration: const InputDecoration(labelText: 'Destino/Lugar')),
-              TextField(controller: prodCtrl, decoration: const InputDecoration(labelText: 'Producto')),
-              TextField(controller: kilosCtrl, decoration: const InputDecoration(labelText: 'Kilos'), keyboardType: TextInputType.number),
-              TextField(controller: precioCtrl, decoration: const InputDecoration(labelText: 'Precio Venta'), keyboardType: TextInputType.number),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return AlertDialog(
+            title: const Text('Nueva Venta'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(controller: lugarCtrl, decoration: const InputDecoration(labelText: 'Destino/Lugar')),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: _productoSeleccionado,
+                    dropdownColor: const Color(0xFF162A5B),
+                    decoration: const InputDecoration(labelText: 'Producto'),
+                    items: ["POTA", "JUREL", "BONITO", "CABALLA"]
+                        .map(
+                          (String value) => DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          ),
+                        )
+                        .toList(),
+                    selectedItemBuilder: (BuildContext context) {
+                      return ["POTA", "JUREL", "BONITO", "CABALLA"].map((String value) {
+                        final Map<String, Color> coloresProductos = {
+                          "POTA": const Color(0xFFE040FB),
+                          "JUREL": const Color(0xFF29B6F6),
+                          "BONITO": const Color(0xFF00E676),
+                          "CABALLA": const Color(0xFFFFB74D),
+                        };
+                        final colorTag = coloresProductos[value] ?? const Color(0xFF00E5FF);
+                        return Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: colorTag.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: colorTag.withValues(alpha: 0.35), width: 1.2),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: BoxDecoration(
+                                      color: colorTag,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    value,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: colorTag,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      }).toList();
+                    },
+                    onChanged: (val) {
+                      if (val != null) {
+                        setStateDialog(() {
+                          _productoSeleccionado = val;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(controller: kilosCtrl, decoration: const InputDecoration(labelText: 'Kilos'), keyboardType: TextInputType.number),
+                  TextField(controller: precioCtrl, decoration: const InputDecoration(labelText: 'Precio Venta'), keyboardType: TextInputType.number),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+              TextButton(
+                onPressed: () {
+                  final k = double.tryParse(kilosCtrl.text) ?? 0;
+                  final p = double.tryParse(precioCtrl.text) ?? 0;
+                  setState(() {
+                    _ventas.add(VentaEntidad(
+                      id: const Uuid().v4(),
+                      cuadreId: '',
+                      lugar: lugarCtrl.text,
+                      producto: _productoSeleccionado,
+                      kilos: k,
+                      precioUnitario: p,
+                      total: k * p,
+                    ));
+                  });
+                  Navigator.pop(ctx);
+                },
+                child: const Text('Guardar'),
+              )
             ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-          TextButton(
-            onPressed: () {
-              final k = double.tryParse(kilosCtrl.text) ?? 0;
-              final p = double.tryParse(precioCtrl.text) ?? 0;
-              setState(() {
-                _ventas.add(VentaEntidad(
-                  id: const Uuid().v4(),
-                  cuadreId: '',
-                  lugar: lugarCtrl.text,
-                  producto: prodCtrl.text,
-                  kilos: k,
-                  precioUnitario: p,
-                  total: k * p,
-                ));
-              });
-              Navigator.pop(ctx);
-            },
-            child: const Text('Guardar'),
-          )
-        ],
+          );
+        }
       ),
     );
   }
