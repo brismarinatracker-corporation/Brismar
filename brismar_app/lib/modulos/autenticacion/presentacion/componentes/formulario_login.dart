@@ -100,7 +100,7 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
         const SizedBox(height: 24),
         const Center(
           child: Text(
-            'NEGOCIOS BRISMAR S.R.L.',
+            'BRIS GROUP',
             style: TextStyle(
               color: Colors.white,
               fontSize: 16,
