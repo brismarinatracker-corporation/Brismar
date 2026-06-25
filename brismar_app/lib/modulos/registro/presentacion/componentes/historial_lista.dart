@@ -118,10 +118,10 @@ class _ItemRegistroCardState extends State<_ItemRegistroCard> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.directions_boat_rounded, color: Color(0xFF00E5FF), size: 18),
+                  const Icon(Icons.local_shipping_rounded, color: Color(0xFFFFD54F), size: 18),
                   const SizedBox(width: 8),
                   Text(
-                    widget.reg.nombreEmbarcacion.toUpperCase(),
+                    'CÁMARA: ${widget.reg.placaCarro?.toUpperCase() ?? "SIN PLACA"}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
@@ -147,7 +147,7 @@ class _ItemRegistroCardState extends State<_ItemRegistroCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Producto y Placa
+                    // Producto y Embarcación
                     Row(
                       children: [
                         const Icon(Icons.shopping_bag_rounded, color: Colors.white70, size: 14),
@@ -156,22 +156,13 @@ class _ItemRegistroCardState extends State<_ItemRegistroCard> {
                           widget.reg.producto,
                           style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
                         ),
-                        if (widget.reg.placaCarro != null && widget.reg.placaCarro!.isNotEmpty) ...[
-                          const SizedBox(width: 12),
-                          const Icon(Icons.local_shipping_rounded, color: Colors.white60, size: 14),
-                          const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              widget.reg.placaCarro!.toUpperCase(),
-                              style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-                            ),
-                          ),
-                        ]
+                        const SizedBox(width: 12),
+                        const Icon(Icons.directions_boat_rounded, color: Color(0xFF00E5FF), size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          widget.reg.nombreEmbarcacion.toUpperCase(),
+                          style: const TextStyle(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 6),
