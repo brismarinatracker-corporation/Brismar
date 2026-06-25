@@ -73,21 +73,41 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
       }
     });
 
+    final esHorizontal = MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: _buildAppBar(context),
+      appBar: esHorizontal ? null : _buildAppBar(context),
       extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          _construirFondoGradiente(),
-          _construirEsferaBrillo(top: -100, left: -50, color: const Color(0x2200E5FF)),
-          _construirEsferaBrillo(bottom: -150, right: -100, color: const Color(0x1B0D47A1)),
-          SafeArea(
-            child: _buildBodyContent(historialState, nombreUsuario, usuarioId),
-          ),
-        ],
-      ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+      body: esHorizontal
+          ? Row(
+              children: [
+                _buildLateralNavigationRail(),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      _construirFondoGradiente(),
+                      _construirEsferaBrillo(top: -100, left: -50, color: const Color(0x2200E5FF)),
+                      _construirEsferaBrillo(bottom: -150, right: -100, color: const Color(0x1B0D47A1)),
+                      SafeArea(
+                        child: _buildBodyContent(historialState, nombreUsuario, usuarioId),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : Stack(
+              children: [
+                _construirFondoGradiente(),
+                _construirEsferaBrillo(top: -100, left: -50, color: const Color(0x2200E5FF)),
+                _construirEsferaBrillo(bottom: -150, right: -100, color: const Color(0x1B0D47A1)),
+                SafeArea(
+                  child: _buildBodyContent(historialState, nombreUsuario, usuarioId),
+                ),
+              ],
+            ),
+      bottomNavigationBar: esHorizontal ? null : _buildBottomNavigationBar(),
     );
   }
 
@@ -146,26 +166,23 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
 
   Widget _buildBottomNavigationBar() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.only(
+        top: 8,
+        bottom: 8 + MediaQuery.of(context).padding.bottom,
+      ),
       decoration: BoxDecoration(
-        color: const Color(0xFF070E22).withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
-          width: 1.5,
+        color: const Color(0xFF070E22),
+        border: Border(
+          top: BorderSide(
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+            width: 1.5,
+          ),
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00E5FF).withValues(alpha: 0.08),
-            blurRadius: 20,
-            spreadRadius: 1,
-            offset: const Offset(0, 4),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
@@ -175,6 +192,79 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
           _buildNavItem(0, Icons.assignment_turned_in_rounded, "Registrar"),
           _buildNavItem(1, Icons.history_rounded, "Historial"),
           _buildNavItem(2, Icons.sync_rounded, "Sincronizar"),
+          _buildLogoutNavItem(Icons.logout_rounded, "Salir"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLateralNavigationRail() {
+    return Container(
+      width: 96,
+      padding: EdgeInsets.only(
+        top: 20 + MediaQuery.of(context).padding.top,
+        bottom: 20 + MediaQuery.of(context).padding.bottom,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF070E22),
+        border: Border(
+          right: BorderSide(
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+            width: 1.5,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(4, 0),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // App Logo
+          Container(
+            height: 36,
+            width: 36,
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Image.asset(
+              'assets/logo.png',
+              fit: BoxFit.contain,
+              errorBuilder: (c, e, s) => const Icon(
+                Icons.directions_boat_rounded,
+                size: 24,
+                color: Color(0xFF00E5FF),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'BRISMAR',
+            style: TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              color: Colors.white70,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 40),
+          // Nav Items
+          Expanded(
+            child: Column(
+              children: [
+                _buildNavItem(0, Icons.assignment_turned_in_rounded, "Registrar"),
+                const SizedBox(height: 24),
+                _buildNavItem(1, Icons.history_rounded, "Historial"),
+                const SizedBox(height: 24),
+                _buildNavItem(2, Icons.sync_rounded, "Sincronizar"),
+              ],
+            ),
+          ),
+          // Logout Item
           _buildLogoutNavItem(Icons.logout_rounded, "Salir"),
         ],
       ),
