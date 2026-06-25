@@ -44,8 +44,6 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
       _escucharEstado,
     );
 
-    final estado = ref.watch(proveedorControladorAutenticacion);
-    final cargando = estado is EstadoAutenticacionCargando;
     final mostrarPin = widget.preferencia == PreferenciaAcceso.pin || _usarPinTemporalmente;
 
     return Scaffold(
@@ -63,11 +61,9 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
               const SizedBox(height: 48),
               _construirCabecera(),
               const SizedBox(height: 40),
-              cargando
-                  ? const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF)))
-                  : mostrarPin
-                      ? _construirVistaPin()
-                      : _construirVistaBiometria(),
+              mostrarPin
+                  ? _construirVistaPin()
+                  : _construirVistaBiometria(),
               const Spacer(),
               _construirBotonOlvidePin(),
               const SizedBox(height: 32),
@@ -123,23 +119,35 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
 
   /// Construye la vista de autenticación biométrica.
   Widget _construirVistaBiometria() {
+    final estado = ref.watch(proveedorControladorAutenticacion);
+    final cargando = estado is EstadoAutenticacionCargando;
+
     return Column(
       children: [
         GestureDetector(
-          onTap: _iniciarBiometria,
-          child: Container(
+          onTap: cargando ? null : _iniciarBiometria,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
             width: 100,
             height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
-              border: Border.all(color: const Color(0xFF00E5FF), width: 2),
+              color: const Color(0xFF00E5FF).withValues(alpha: cargando ? 0.03 : 0.1),
+              border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: cargando ? 0.3 : 1.0), width: 2),
             ),
-            child: const Icon(
-              Icons.fingerprint,
-              size: 56,
-              color: Color(0xFF00E5FF),
-            ),
+            child: cargando
+                ? const Padding(
+                    padding: EdgeInsets.all(28.0),
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF00E5FF),
+                      strokeWidth: 3,
+                    ),
+                  )
+                : const Icon(
+                    Icons.fingerprint,
+                    size: 56,
+                    color: Color(0xFF00E5FF),
+                  ),
           ),
         ),
         const SizedBox(height: 16),
