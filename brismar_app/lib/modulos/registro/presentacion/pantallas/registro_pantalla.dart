@@ -20,6 +20,14 @@ class RegistroPantalla extends ConsumerStatefulWidget {
 
 class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
   int _indicePestanaActiva = 0;
+  final TextEditingController _busquedaController = TextEditingController();
+  String _filtroBusqueda = '';
+
+  @override
+  void dispose() {
+    _busquedaController.dispose();
+    super.dispose();
+  }
 
   void _mostrarMensaje(String msg, Color color) {
     ScaffoldMessenger.of(
@@ -288,27 +296,88 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
     String nombreUsuario,
   ) {
     return state.when(
-      data: (list) => RefreshIndicator(
-        onRefresh: () async {
-          await ref
-              .read(proveedorSyncController.notifier)
-              .ejecutarSincronizacion();
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Column(
-            children: [
-              EncabezadoUsuario(nombreUsuario: nombreUsuario),
-              const SizedBox(height: 15),
-              HistorialLista(
-                registros: list,
-                onGenerarPDF: (reg) => _exportarPDF(reg, nombreUsuario),
-              ),
-            ],
+      data: (list) {
+        final query = _filtroBusqueda.toLowerCase().trim();
+        final filteredList = list.where((reg) {
+          if (query.isEmpty) return true;
+          final placa = (reg.placaCarro ?? '').toLowerCase();
+          final barco = reg.nombreEmbarcacion.toLowerCase();
+          final producto = reg.producto.toLowerCase();
+          final fecha = reg.fecha.toLowerCase();
+          return placa.contains(query) ||
+              barco.contains(query) ||
+              producto.contains(query) ||
+              fecha.contains(query);
+        }).toList();
+
+        return RefreshIndicator(
+          onRefresh: () async {
+            await ref
+                .read(proveedorSyncController.notifier)
+                .ejecutarSincronizacion();
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              children: [
+                EncabezadoUsuario(nombreUsuario: nombreUsuario),
+                const SizedBox(height: 15),
+                // --- BUSCADOR PREMIUM ---
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F224A).withValues(alpha: 0.45),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: TextField(
+                    controller: _busquedaController,
+                    onChanged: (val) {
+                      setState(() {
+                        _filtroBusqueda = val;
+                      });
+                    },
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    decoration: InputDecoration(
+                      hintText: 'Buscar por placa, embarcación, especie o fecha...',
+                      hintStyle: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 12,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search_rounded,
+                        color: Color(0xFF00E5FF),
+                        size: 20,
+                      ),
+                      suffixIcon: _filtroBusqueda.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded, size: 18, color: Colors.white70),
+                              onPressed: () {
+                                _busquedaController.clear();
+                                setState(() {
+                                  _filtroBusqueda = '';
+                                });
+                              },
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                HistorialLista(
+                  registros: filteredList,
+                  onGenerarPDF: (reg) => _exportarPDF(reg, nombreUsuario),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, _) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.white70))),
     );

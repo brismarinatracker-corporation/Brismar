@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:screen_protector/screen_protector.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'nucleo/red/cliente_supabase.dart';
 import 'nucleo/rutas/enrutador.dart';
 
@@ -37,6 +38,15 @@ class MyApp extends StatelessWidget {
         primaryColor: const Color(0xFF0D255F),
       ),
       routerConfig: enrutador,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('es', 'ES'),
+        Locale('en', 'US'),
+      ],
     );
   }
 }
