@@ -134,6 +134,7 @@ El ciclo completo se subdivide en seis fases lógicas que aseguran la tolerancia
 | 04 | **Sincronización en Fondo** | [BPMN](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/docs/brismar_brain/diagramas_APP/FLUJO_04_SINCRONIZACION_FONDO.bpmn) | [Detalle](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/docs/brismar_brain/flujos/FLUJO_04_SINCRONIZACION_FONDO.md) |
 | 05 | **Revocación por Robo** | [BPMN](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/docs/brismar_brain/diagramas_APP/FLUJO_05_REVOCACION_ROBO.bpmn) | [Detalle](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/docs/brismar_brain/flujos/FLUJO_05_REVOCACION_ROBO.md) |
 | 06 | **Gestión de Incidencias TI** | [BPMN](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/docs/brismar_brain/diagramas_TI/gestion_incidencias_TI.bpmn) | [Detalle](file:///home/jhonataningesis/Documentos/Brismar/BRISMAR_APP/docs/brismar_brain/flujos/FLUJO_06_GESTION_INCIDENCIAS_TI.md) |
+| 08 | **Zarpe de Cámara** | _Pendiente_ | [Detalle](file:///c:/BRISMAR_APP/docs/brismar_brain/flujos/FLUJO_08_ZARPE_CAMARA.md) |
 
 ---
 
