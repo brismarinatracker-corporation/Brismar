@@ -7,7 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// - Token de sesión
 /// - Hash BCrypt de contraseña (offline)
 /// - PIN hasheado (acceso rápido diario)
-/// - Timestamp de última verificación (periodo de gracia 12h)
+/// - Timestamp de última verificación (periodo de gracia 1 min para pruebas)
 /// - Preferencia de acceso rápido (pin | huella)
 class GestorAlmacenamientoSeguro {
   static final GestorAlmacenamientoSeguro instance =
@@ -104,7 +104,7 @@ class GestorAlmacenamientoSeguro {
     }
   }
 
-  // ─── Timestamp de Verificación (Periodo de Gracia 12h) ───────────────────
+  // ─── Timestamp de Verificación (Periodo de Gracia 1 min) ───────────────────
 
   /// Guarda el timestamp Unix (ms) de la última verificación exitosa.
   Future<void> guardarTimestamp() async {
@@ -127,12 +127,12 @@ class GestorAlmacenamientoSeguro {
     }
   }
 
-  /// Verifica si el periodo de gracia de 12 horas sigue vigente.
+  /// Verifica si el periodo de gracia (1 minuto para pruebas) sigue vigente.
   Future<bool> esPeriodoGraciaVigente() async {
     final ultima = await obtenerTimestamp();
     if (ultima == null) return false;
     final diferencia = DateTime.now().difference(ultima);
-    return diferencia.inHours < 12;
+    return diferencia.inMinutes < 1;
   }
 
   // ─── Preferencia de Acceso Rápido ────────────────────────────────────────

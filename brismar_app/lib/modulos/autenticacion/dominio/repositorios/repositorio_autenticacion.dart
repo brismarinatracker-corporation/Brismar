@@ -4,7 +4,7 @@ import '../entidades/usuario.dart';
 ///
 /// Cubre todos los nodos del FLUJO_01_AUTENTICACION.bpmn:
 /// - Login completo online/offline
-/// - Periodo de gracia 12h
+/// - Periodo de gracia 1 min
 /// - Configuración y verificación de PIN
 /// - Autenticación biométrica
 /// - Invalidación de bóveda ("Olvidé PIN")
@@ -26,7 +26,7 @@ abstract class RepositorioAutenticacion {
   /// Obtiene el usuario actualmente autenticado, validando el periodo de gracia.
   ///
   /// Retorna `null` si no hay sesión.
-  /// Lanza [SesionExpiradaException] si el token existe pero la gracia de 12h expiró.
+  /// Lanza [SesionExpiradaException] si el token existe pero la gracia de 1 min expiró.
   Future<Usuario?> obtenerUsuarioActual();
 
   /// Guarda el PIN hasheado en la bóveda tras el primer login exitoso.
@@ -53,7 +53,7 @@ abstract class RepositorioAutenticacion {
   Future<void> invalidarPinYToken();
 }
 
-/// Excepción lanzada cuando el token existe pero el periodo de gracia de 12h expiró.
+/// Excepción lanzada cuando el token existe pero el periodo de gracia de 1 min expiró.
 class SesionExpiradaException implements Exception {
   /// Mensaje descriptivo de la excepción.
   final String mensaje;

@@ -25,6 +25,7 @@ class AccesoRapidoPantalla extends ConsumerStatefulWidget {
 class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
   String _pinIngresado = '';
   String? _error;
+  bool _usarPinTemporalmente = false;
 
   static const int _longitudPin = 4;
 
@@ -43,6 +44,8 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
       _escucharEstado,
     );
 
+    final mostrarPin = widget.preferencia == PreferenciaAcceso.pin || _usarPinTemporalmente;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -55,15 +58,16 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
         child: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 48),
-              _construirCabecera(),
-              const SizedBox(height: 40),
-              widget.preferencia == PreferenciaAcceso.pin
-                  ? _construirVistaPin()
-                  : _construirVistaBiometria(),
-              const Spacer(),
-              _construirBotonOlvidePin(),
               const SizedBox(height: 32),
+              _construirCabecera(),
+              const SizedBox(height: 24),
+              Expanded(
+                child: mostrarPin
+                    ? _construirVistaPin()
+                    : _construirVistaBiometria(),
+              ),
+              _construirBotonOlvidePin(),
+              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -73,6 +77,8 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
 
   /// Construye el encabezado con saludo y nombre de la app.
   Widget _construirCabecera() {
+    final mostrarPin = widget.preferencia == PreferenciaAcceso.pin || _usarPinTemporalmente;
+    
     return Column(
       children: [
         Image.asset('assets/logo.png', height: 60),
@@ -87,7 +93,7 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
         ),
         const SizedBox(height: 6),
         Text(
-          widget.preferencia == PreferenciaAcceso.pin
+          mostrarPin
               ? 'Ingresa tu PIN de 4 dígitos'
               : 'Presenta tu huella digital',
           style: TextStyle(
@@ -102,6 +108,7 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
   /// Construye la vista de entrada de PIN con indicadores y teclado.
   Widget _construirVistaPin() {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _construirIndicadoresPIN(),
         const SizedBox(height: 16),
@@ -115,6 +122,7 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
   /// Construye la vista de autenticación biométrica.
   Widget _construirVistaBiometria() {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         GestureDetector(
           onTap: _iniciarBiometria,
@@ -199,9 +207,9 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
-          childAspectRatio: 1.8,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
+          childAspectRatio: 2.0, // Ajuste para evitar overflow
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
         ),
         itemCount: teclas.length,
         itemBuilder: (_, i) => _construirTecla(teclas[i]),
@@ -279,6 +287,7 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
     setState(() {
       _error = null;
       _pinIngresado = '';
+      _usarPinTemporalmente = true;
     });
   }
 
@@ -332,3 +341,4 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
     });
   }
 }
+
