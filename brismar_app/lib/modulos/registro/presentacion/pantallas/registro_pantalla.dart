@@ -143,11 +143,7 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'NEGOCIOS',
-                    style: TextStyle(fontSize: 9, color: Colors.white60, letterSpacing: 0.5),
-                  ),
-                  Text(
-                    'BRISMAR S.R.L.',
+                    'BRIS GROUP',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
@@ -243,7 +239,7 @@ class _RegistroPantallaState extends ConsumerState<RegistroPantalla> {
           ),
           const SizedBox(height: 12),
           const Text(
-            'BRISMAR',
+            'BRIS GROUP',
             style: TextStyle(
               fontSize: 9,
               fontWeight: FontWeight.bold,
