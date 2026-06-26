@@ -15,6 +15,7 @@ class DashboardCuadresPantalla extends ConsumerStatefulWidget {
 
 class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPantalla> {
   int _pestanaSeleccionada = 0;
+  final _searchCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -22,6 +23,12 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(cuadresProvider.notifier).cargarHistorial();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
   }
 
   void _onItemTapped(int index) {
@@ -312,125 +319,172 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
   Widget _buildVistaHistorial(AsyncValue estadoCuadres) {
     return estadoCuadres.when(
       data: (cuadres) {
-        if (cuadres.isEmpty) {
-          return const Center(
-            child: Text('No hay cuadres registrados.', style: TextStyle(color: Colors.white54)),
-          );
-        }
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          itemCount: cuadres.length,
-          itemBuilder: (context, index) {
-            final cuadre = cuadres[index];
-            
-            // Personalización visual del estado
-            Color badgeBg;
-            Color badgeText;
-            String labelEstado;
-            
-            if (cuadre.estado == 'completo') {
-              badgeBg = Colors.green.withValues(alpha: 0.15);
-              badgeText = Colors.greenAccent;
-              labelEstado = 'COMPLETO';
-            } else if (cuadre.estado == 'zarpe') {
-              badgeBg = const Color(0xFF00E5FF).withValues(alpha: 0.15);
-              badgeText = const Color(0xFF00E5FF);
-              labelEstado = 'EN CAMINO';
-            } else {
-              badgeBg = Colors.orange.withValues(alpha: 0.15);
-              badgeText = Colors.orangeAccent;
-              labelEstado = 'BORRADOR';
-            }
+        final query = _searchCtrl.text.toLowerCase().trim();
+        final filteredCuadres = cuadres.where((cuadre) {
+          final placa = cuadre.placa.toLowerCase();
+          return placa.contains(query);
+        }).toList();
 
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F224A).withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-              ),
-              child: ListTile(
-                contentPadding: const EdgeInsets.all(16),
-                title: Row(
-                  children: [
-                    Icon(
-                      Icons.local_shipping_rounded, 
-                      color: cuadre.estado == 'zarpe' ? const Color(0xFF00E5FF) : const Color(0xFFFFD54F), 
-                      size: 18
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'CÁMARA: ${cuadre.placa.toUpperCase()}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
-                    ),
-                  ],
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: TextFormField(
+                controller: _searchCtrl,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Buscar por cámara...',
+                  hintStyle: const TextStyle(color: Colors.white54, fontSize: 13),
+                  prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF00E5FF)),
+                  suffixIcon: _searchCtrl.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded, color: Colors.white70),
+                          onPressed: () {
+                            setState(() {
+                              _searchCtrl.clear();
+                            });
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: const Color(0xFF0F224A).withValues(alpha: 0.6),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12), width: 1.2),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+                  ),
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(Icons.date_range_rounded, color: Colors.white54, size: 14),
-                        const SizedBox(width: 4),
-                        Text(
-                          cuadre.fechaZarpe ?? 'Pendiente',
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: badgeBg,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            labelEstado,
-                            style: TextStyle(
-                              color: badgeText,
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        if (cuadre.fotoZarpeUrl != null) ...[
-                          const SizedBox(width: 8),
-                          Icon(Icons.photo_camera_rounded, color: const Color(0xFF00E5FF).withValues(alpha: 0.8), size: 14),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (cuadre.sincronizado) ...[
-                      if (cuadre.urlPdfCloud != null)
-                        const Icon(Icons.picture_as_pdf, color: Colors.redAccent, size: 20),
-                      if (cuadre.urlExcelCloud != null)
-                        const Padding(
-                          padding: EdgeInsets.only(left: 8.0),
-                          child: Icon(Icons.table_chart, color: Colors.green, size: 20),
-                        ),
-                      if (cuadre.estado == 'zarpe' && cuadre.fotoZarpeUrl != null && cuadre.fotoZarpeUrl!.startsWith('http'))
-                        const Padding(
-                          padding: EdgeInsets.only(left: 8.0),
-                          child: Icon(Icons.cloud_done_rounded, color: Color(0xFF00E5FF), size: 20),
-                        ),
-                    ] else ...[
-                      const Icon(Icons.cloud_off, color: Colors.grey, size: 20),
-                    ]
-                  ],
-                ),
-                onTap: () {
-                  // Editar/Completar cuadre
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (ctx) => FormularioCuadreTabs(cuadreInicial: cuadre),
-                  ));
+                onChanged: (value) {
+                  setState(() {});
                 },
               ),
-            );
-          },
+            ),
+            Expanded(
+              child: filteredCuadres.isEmpty
+                  ? const Center(
+                      child: Text('No se encontraron resultados.', style: TextStyle(color: Colors.white54)),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      itemCount: filteredCuadres.length,
+                      itemBuilder: (context, index) {
+                        final cuadre = filteredCuadres[index];
+                        
+                        // Personalización visual del estado
+                        Color badgeBg;
+                        Color badgeText;
+                        String labelEstado;
+                        
+                        if (cuadre.estado == 'completo') {
+                          badgeBg = Colors.green.withValues(alpha: 0.15);
+                          badgeText = Colors.greenAccent;
+                          labelEstado = 'COMPLETO';
+                        } else if (cuadre.estado == 'zarpe') {
+                          badgeBg = const Color(0xFF00E5FF).withValues(alpha: 0.15);
+                          badgeText = const Color(0xFF00E5FF);
+                          labelEstado = 'EN CAMINO';
+                        } else {
+                          badgeBg = Colors.orange.withValues(alpha: 0.15);
+                          badgeText = Colors.orangeAccent;
+                          labelEstado = 'BORRADOR';
+                        }
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F224A).withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(16),
+                            title: Row(
+                              children: [
+                                Icon(
+                                  Icons.local_shipping_rounded, 
+                                  color: cuadre.estado == 'zarpe' ? const Color(0xFF00E5FF) : const Color(0xFFFFD54F), 
+                                  size: 18
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'CÁMARA: ${cuadre.placa.toUpperCase()}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
+                                ),
+                              ],
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.date_range_rounded, color: Colors.white54, size: 14),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      cuadre.fechaZarpe ?? 'Pendiente',
+                                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: badgeBg,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        labelEstado,
+                                        style: TextStyle(
+                                          color: badgeText,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    if (cuadre.fotoZarpeUrl != null) ...[
+                                      const SizedBox(width: 8),
+                                      Icon(Icons.photo_camera_rounded, color: const Color(0xFF00E5FF).withValues(alpha: 0.8), size: 14),
+                                    ],
+                                  ],
+                                ),
+                              ],
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (cuadre.sincronizado) ...[
+                                  if (cuadre.urlPdfCloud != null)
+                                    const Icon(Icons.picture_as_pdf, color: Colors.redAccent, size: 20),
+                                  if (cuadre.urlExcelCloud != null)
+                                    const Padding(
+                                      padding: EdgeInsets.only(left: 8.0),
+                                      child: Icon(Icons.table_chart, color: Colors.green, size: 20),
+                                    ),
+                                  if (cuadre.estado == 'zarpe' && cuadre.fotoZarpeUrl != null && cuadre.fotoZarpeUrl!.startsWith('http'))
+                                    const Padding(
+                                      padding: EdgeInsets.only(left: 8.0),
+                                      child: Icon(Icons.cloud_done_rounded, color: Color(0xFF00E5FF), size: 20),
+                                    ),
+                                ] else ...[
+                                  const Icon(Icons.cloud_off, color: Colors.grey, size: 20),
+                                ]
+                              ],
+                            ),
+                            onTap: () {
+                              // Editar/Completar cuadre
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (ctx) => FormularioCuadreTabs(cuadreInicial: cuadre),
+                              ));
+                            },
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
         );
       },
       loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF))),
