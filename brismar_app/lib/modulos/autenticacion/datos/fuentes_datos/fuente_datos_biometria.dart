@@ -33,15 +33,21 @@ class FuenteDatosBiometria {
   /// Retorna `false` si el usuario canceló o la huella no coincidió.
   Future<bool> autenticarConHuella() async {
     try {
+      final disponible = await esBiometriaDisponible();
+      if (!disponible) return false;
+
       return await _auth.authenticate(
         localizedReason: 'Presenta tu huella digital para acceder a BRISMAR',
         options: const AuthenticationOptions(
           biometricOnly: true,
           stickyAuth: true,
+          useErrorDialogs: true,
         ),
       );
     } catch (e) {
-      throw Exception('Error durante la autenticación biométrica: $e');
+      // En lugar de lanzar excepción que crashea el flujo, retornamos false
+      // para que el usuario pueda usar el PIN como alternativa.
+      return false;
     }
   }
 }

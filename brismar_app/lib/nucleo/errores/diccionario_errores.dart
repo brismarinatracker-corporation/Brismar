@@ -166,3 +166,15 @@ class ExcepcionApp implements Exception {
   @override
   String toString() => detalle.toString();
 }
+
+/// Excepción específica para errores de Base de Datos.
+class ExcepcionBaseDatos extends ExcepcionApp {
+  const ExcepcionBaseDatos({required String mensaje, Object? causa})
+      : super('DB-002', mensajeTecnico: mensaje, causa: causa);
+}
+
+/// Excepción específica para errores de Red.
+class ExcepcionRed extends ExcepcionApp {
+  const ExcepcionRed({required String mensaje, Object? causa})
+      : super('NET-002', mensajeTecnico: mensaje, causa: causa);
+}

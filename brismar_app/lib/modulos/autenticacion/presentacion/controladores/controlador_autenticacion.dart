@@ -154,7 +154,17 @@ class NotificadorAutenticacion extends StateNotifier<EstadoAutenticacion> {
       await _repositorio.guardarPreferenciaAcceso(
         preferencia.toStorageString(),
       );
-      state = EstadoAutenticacionAutenticado(_usuarioActivo!);
+      if (_usuarioActivo != null) {
+        state = EstadoAutenticacionAutenticado(_usuarioActivo!);
+      } else {
+        final usuarioCache = await _repositorio.obtenerUsuarioActual();
+        if (usuarioCache != null) {
+          _usuarioActivo = usuarioCache;
+          state = EstadoAutenticacionAutenticado(usuarioCache);
+        } else {
+          state = const EstadoAutenticacionNoAutenticado();
+        }
+      }
     } catch (e) {
       state = EstadoAutenticacionError(DiccionarioErrores.mapear(e).toString());
     }

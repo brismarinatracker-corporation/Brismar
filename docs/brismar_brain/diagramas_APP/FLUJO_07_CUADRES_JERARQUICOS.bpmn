@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.0.0">
+  <bpmn:collaboration id="Collaboration_1">
+    <bpmn:participant id="Participant_App" name="Trabajador de Muelle (App)" processRef="Process_Cuadres_Jerarquicos" />
+    <bpmn:participant id="Participant_Backend" name="Sistema (Supabase / SQLite)" />
+    <bpmn:messageFlow id="Flow_Sync" sourceRef="Event_Guardar" targetRef="Participant_Backend" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Cuadres_Jerarquicos" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Crear Nuevo Cuadre">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_Compras" name="Ingresar Compras E.P.">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Gastos" name="Ingresar Gastos de Muelle/Admin">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Venta" name="¿Venta disponible?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_NoVenta</bpmn:outgoing>
+      <bpmn:outgoing>Flow_SiVenta</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Borrador" name="Guardar como Borrador">
+      <bpmn:incoming>Flow_NoVenta</bpmn:incoming>
+      <bpmn:outgoing>Flow_End1</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Ventas" name="Ingresar Ventas">
+      <bpmn:incoming>Flow_SiVenta</bpmn:incoming>
+      <bpmn:incoming>Flow_DiasDespues</bpmn:incoming>
+      <bpmn:outgoing>Flow_End2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="Event_Guardar" name="Guardar/Sincronizar">
+      <bpmn:incoming>Flow_End1</bpmn:incoming>
+      <bpmn:incoming>Flow_End2</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_Compras" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Compras" targetRef="Task_Gastos" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_Gastos" targetRef="Gateway_Venta" />
+    <bpmn:sequenceFlow id="Flow_NoVenta" name="No" sourceRef="Gateway_Venta" targetRef="Task_Borrador" />
+    <bpmn:sequenceFlow id="Flow_SiVenta" name="Sí" sourceRef="Gateway_Venta" targetRef="Task_Ventas" />
+    <bpmn:sequenceFlow id="Flow_End1" sourceRef="Task_Borrador" targetRef="Event_Guardar" />
+    <bpmn:sequenceFlow id="Flow_End2" sourceRef="Task_Ventas" targetRef="Event_Guardar" />
+    <!-- Flujo Asimétrico -->
+    <bpmn:sequenceFlow id="Flow_DiasDespues" name="Días después" sourceRef="Task_Borrador" targetRef="Task_Ventas" />
+  </bpmn:process>
+</bpmn:definitions>

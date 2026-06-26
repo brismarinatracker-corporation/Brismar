@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../modulos/autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../../modulos/autenticacion/dominio/entidades/preferencia_acceso.dart';
 import '../../modulos/autenticacion/presentacion/pantallas/login_pantalla.dart';
 import '../../modulos/autenticacion/presentacion/pantallas/configurar_pin_pantalla.dart';
 import '../../modulos/autenticacion/presentacion/pantallas/configurar_biometria_pantalla.dart';
 import '../../modulos/autenticacion/presentacion/pantallas/acceso_rapido_pantalla.dart';
-import '../../modulos/registro/presentacion/pantallas/registro_pantalla.dart';
+import '../../modulos/registro_pesca/presentacion/pantallas/dashboard_cuadres.dart';
 
 part 'enrutador.g.dart';
 
@@ -57,18 +59,41 @@ class AccesoRapidoRoute extends GoRouteData with $AccesoRapidoRoute {
   }
 }
 
-/// Ruta del registro de pesca (Dashboard principal).
-@TypedGoRoute<RegistroRoute>(path: '/registro')
+/// Ruta de la pantalla principal (Dashboard).
+@TypedGoRoute<RegistroRoute>(path: '/')
 class RegistroRoute extends GoRouteData with $RegistroRoute {
   const RegistroRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) =>
-      const RegistroPantalla();
+      const DashboardCuadresPantalla();
 }
 
-/// Configuración de rutas declarativas mediante GoRouter generadas.
-final GoRouter enrutador = GoRouter(
-  initialLocation: '/login',
-  routes: $appRoutes,
-);
+/// Configuración de rutas declarativas mediante GoRouter generadas y protegidas por Riverpod.
+final enrutadorProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(proveedorControladorAutenticacion);
+
+  return GoRouter(
+    initialLocation: '/login',
+    routes: $appRoutes,
+    redirect: (context, state) {
+      final isLoginRoute = state.uri.path == '/login';
+      final isAccesoRapidoRoute = state.uri.path == '/acceso-rapido';
+      
+      if (authState is EstadoAutenticacionNoAutenticado) {
+        return isLoginRoute ? null : '/login';
+      }
+      
+      if (authState is EstadoAccesoRapidoRequerido) {
+        return isAccesoRapidoRoute ? null : '/acceso-rapido';
+      }
+      
+      if (authState is EstadoAutenticacionAutenticado) {
+        if (isLoginRoute || isAccesoRapidoRoute) return '/';
+        return null;
+      }
+      
+      return null;
+    },
+  );
+});

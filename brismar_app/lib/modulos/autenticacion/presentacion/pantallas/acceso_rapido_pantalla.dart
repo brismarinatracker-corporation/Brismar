@@ -48,6 +48,7 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
 
     return Scaffold(
       body: Container(
+        width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -56,19 +57,31 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 32),
-              _construirCabecera(),
-              const SizedBox(height: 24),
-              Expanded(
-                child: mostrarPin
-                    ? _construirVistaPin()
-                    : _construirVistaBiometria(),
-              ),
-              _construirBotonOlvidePin(),
-              const SizedBox(height: 16),
-            ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 48),
+                        _construirCabecera(),
+                        const SizedBox(height: 40),
+                        mostrarPin
+                            ? _construirVistaPin()
+                            : _construirVistaBiometria(),
+                        const Spacer(),
+                        if (mostrarPin) _construirTecladoNumerico(),
+                        const SizedBox(height: 16),
+                        _construirBotonOlvidePin(),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -81,17 +94,20 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
     
     return Column(
       children: [
-        Image.asset('assets/logo.png', height: 60),
-        const SizedBox(height: 20),
+        mostrarPin 
+            ? const Icon(Icons.lock_outline, color: Color(0xFF00E5FF), size: 48)
+            : Image.asset('assets/logo.png', height: 60),
+        const SizedBox(height: 16),
         const Text(
           'Bienvenido de vuelta',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 22,
+            fontSize: 24,
             fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Text(
           mostrarPin
               ? 'Ingresa tu PIN de 4 dígitos'
@@ -108,37 +124,45 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
   /// Construye la vista de entrada de PIN con indicadores y teclado.
   Widget _construirVistaPin() {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _construirIndicadoresPIN(),
         const SizedBox(height: 16),
         _construirMensajeError(),
-        const SizedBox(height: 24),
-        _construirTecladoNumerico(),
       ],
     );
   }
 
   /// Construye la vista de autenticación biométrica.
   Widget _construirVistaBiometria() {
+    final estado = ref.watch(proveedorControladorAutenticacion);
+    final cargando = estado is EstadoAutenticacionCargando;
+
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         GestureDetector(
-          onTap: _iniciarBiometria,
-          child: Container(
+          onTap: cargando ? null : _iniciarBiometria,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
             width: 100,
             height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
-              border: Border.all(color: const Color(0xFF00E5FF), width: 2),
+              color: const Color(0xFF00E5FF).withValues(alpha: cargando ? 0.03 : 0.1),
+              border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: cargando ? 0.3 : 1.0), width: 2),
             ),
-            child: const Icon(
-              Icons.fingerprint,
-              size: 56,
-              color: Color(0xFF00E5FF),
-            ),
+            child: cargando
+                ? const Padding(
+                    padding: EdgeInsets.all(28.0),
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF00E5FF),
+                      strokeWidth: 3,
+                    ),
+                  )
+                : const Icon(
+                    Icons.fingerprint,
+                    size: 56,
+                    color: Color(0xFF00E5FF),
+                  ),
           ),
         ),
         const SizedBox(height: 16),
@@ -199,20 +223,34 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
 
   /// Construye el teclado numérico de 0-9 con borrar.
   Widget _construirTecladoNumerico() {
-    final teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'];
+    final filas = [
+      ['1', '2', '3'],
+      ['4', '5', '6'],
+      ['7', '8', '9'],
+      ['', '0', '⌫'],
+    ];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 2.0, // Ajuste para evitar overflow
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-        ),
-        itemCount: teclas.length,
-        itemBuilder: (_, i) => _construirTecla(teclas[i]),
+      child: Column(
+        children: filas.map((fila) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              children: fila.map((tecla) {
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: AspectRatio(
+                      aspectRatio: 1.8,
+                      child: _construirTecla(tecla),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
