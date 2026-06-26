@@ -4,6 +4,10 @@
 <dict>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Requerido para iniciar sesión de forma rápida y segura.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Requerido para tomar fotos de evidencia de los zarpes de cámara.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Requerido para seleccionar fotos de evidencia de la galería.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

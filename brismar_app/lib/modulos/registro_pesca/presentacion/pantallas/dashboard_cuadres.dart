@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../controladores/controlador_cuadres.dart';
 import 'formulario_cuadre_tabs.dart';
+import 'formulario_zarpe_pantalla.dart';
 
 class DashboardCuadresPantalla extends ConsumerStatefulWidget {
   const DashboardCuadresPantalla({super.key});
@@ -53,8 +54,9 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () async {
               Navigator.pop(ctx);
+              final router = GoRouter.of(context);
               await ref.read(proveedorControladorAutenticacion.notifier).cerrarSesion();
-              if (context.mounted) context.go('/login');
+              router.go('/login');
             },
             child: const Text('Salir', style: TextStyle(color: Colors.white)),
           ),
@@ -186,44 +188,123 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
 
   Widget _buildVistaRegistrar() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Encabezado
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.dashboard_customize_rounded, size: 48, color: Color(0xFF00E5FF)),
+              ),
             ),
-            child: const Icon(Icons.note_add_rounded, size: 64, color: Color(0xFF00E5FF)),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Crear Nuevo Cuadre',
-            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Registra compras, ventas y muelle',
-            style: TextStyle(color: Colors.white54, fontSize: 14),
-          ),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00E5FF),
-              foregroundColor: const Color(0xFF070E22),
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            const SizedBox(height: 16),
+            const Center(
+              child: Text(
+                'Operaciones de Bahía',
+                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+              ),
             ),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (ctx) => const FormularioCuadreTabs(),
-              ));
-            },
-            icon: const Icon(Icons.add_rounded),
-            label: const Text('Iniciar Cuadre', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            const Center(
+              child: Text(
+                'Selecciona una actividad para iniciar',
+                style: TextStyle(color: Colors.white54, fontSize: 13),
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Opción 1: Zarpe de Cámara
+            _buildActionCard(
+              title: 'Registrar Zarpe de Cámara',
+              description: 'Registra la salida del muelle con foto de evidencia y datos de carga básicos.',
+              icon: Icons.local_shipping_rounded,
+              color: const Color(0xFF00E5FF),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (ctx) => const FormularioZarpePantalla(),
+                ));
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Opción 2: Cuadre de Caja
+            _buildActionCard(
+              title: 'Iniciar Cuadre de Caja',
+              description: 'Reporte completo detallando compras de pesca, gastos de muelle/chofer y ventas.',
+              icon: Icons.assignment_rounded,
+              color: const Color(0xFFFFD54F),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (ctx) => const FormularioCuadreTabs(),
+                ));
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionCard({
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F224A).withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06), width: 1.2),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(icon, size: 30, color: color),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        description,
+                        style: const TextStyle(color: Colors.white54, fontSize: 11.5, height: 1.3),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.white.withValues(alpha: 0.3)),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -241,6 +322,26 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
           itemCount: cuadres.length,
           itemBuilder: (context, index) {
             final cuadre = cuadres[index];
+            
+            // Personalización visual del estado
+            Color badgeBg;
+            Color badgeText;
+            String labelEstado;
+            
+            if (cuadre.estado == 'completo') {
+              badgeBg = Colors.green.withValues(alpha: 0.15);
+              badgeText = Colors.greenAccent;
+              labelEstado = 'COMPLETO';
+            } else if (cuadre.estado == 'zarpe') {
+              badgeBg = const Color(0xFF00E5FF).withValues(alpha: 0.15);
+              badgeText = const Color(0xFF00E5FF);
+              labelEstado = 'EN CAMINO';
+            } else {
+              badgeBg = Colors.orange.withValues(alpha: 0.15);
+              badgeText = Colors.orangeAccent;
+              labelEstado = 'BORRADOR';
+            }
+
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
@@ -252,7 +353,11 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                 contentPadding: const EdgeInsets.all(16),
                 title: Row(
                   children: [
-                    const Icon(Icons.local_shipping_rounded, color: Color(0xFFFFD54F), size: 18),
+                    Icon(
+                      Icons.local_shipping_rounded, 
+                      color: cuadre.estado == 'zarpe' ? const Color(0xFF00E5FF) : const Color(0xFFFFD54F), 
+                      size: 18
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'CÁMARA: ${cuadre.placa.toUpperCase()}',
@@ -276,18 +381,22 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: cuadre.estado == 'completo' ? Colors.green.withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
+                            color: badgeBg,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            cuadre.estado.toUpperCase(),
+                            labelEstado,
                             style: TextStyle(
-                              color: cuadre.estado == 'completo' ? Colors.green : Colors.orange,
-                              fontSize: 10,
+                              color: badgeText,
+                              fontSize: 9,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
+                        if (cuadre.fotoZarpeUrl != null) ...[
+                          const SizedBox(width: 8),
+                          Icon(Icons.photo_camera_rounded, color: const Color(0xFF00E5FF).withValues(alpha: 0.8), size: 14),
+                        ],
                       ],
                     ),
                   ],
@@ -303,13 +412,18 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                           padding: EdgeInsets.only(left: 8.0),
                           child: Icon(Icons.table_chart, color: Colors.green, size: 20),
                         ),
+                      if (cuadre.estado == 'zarpe' && cuadre.fotoZarpeUrl != null && cuadre.fotoZarpeUrl!.startsWith('http'))
+                        const Padding(
+                          padding: EdgeInsets.only(left: 8.0),
+                          child: Icon(Icons.cloud_done_rounded, color: Color(0xFF00E5FF), size: 20),
+                        ),
                     ] else ...[
                       const Icon(Icons.cloud_off, color: Colors.grey, size: 20),
                     ]
                   ],
                 ),
                 onTap: () {
-                  // Editar cuadre
+                  // Editar/Completar cuadre
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (ctx) => FormularioCuadreTabs(cuadreInicial: cuadre),
                   ));

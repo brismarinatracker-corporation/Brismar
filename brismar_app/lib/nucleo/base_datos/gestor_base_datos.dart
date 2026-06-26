@@ -23,7 +23,7 @@ class GestorBaseDatos {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -41,7 +41,13 @@ class GestorBaseDatos {
         estado TEXT DEFAULT 'borrador',
         url_pdf_cloud TEXT,
         url_excel_cloud TEXT,
-        sincronizado INTEGER DEFAULT 0
+        sincronizado INTEGER DEFAULT 0,
+        foto_zarpe_url TEXT,
+        peso_total REAL,
+        cajas_llenas INTEGER,
+        cajas_vacias INTEGER,
+        tipo_producto INTEGER,
+        planta_destino TEXT
       )
     ''');
 
@@ -91,6 +97,15 @@ class GestorBaseDatos {
       // Eliminar tabla vieja y crear estructura nueva
       await db.execute('DROP TABLE IF EXISTS registro_embarcaciones');
       await _createDB(db, newVersion);
+    }
+    if (oldVersion < 5) {
+      // Agregar columnas para el zarpe de cámara
+      await db.execute('ALTER TABLE cuadres ADD COLUMN foto_zarpe_url TEXT');
+      await db.execute('ALTER TABLE cuadres ADD COLUMN peso_total REAL');
+      await db.execute('ALTER TABLE cuadres ADD COLUMN cajas_llenas INTEGER');
+      await db.execute('ALTER TABLE cuadres ADD COLUMN cajas_vacias INTEGER');
+      await db.execute('ALTER TABLE cuadres ADD COLUMN tipo_producto INTEGER');
+      await db.execute('ALTER TABLE cuadres ADD COLUMN planta_destino TEXT');
     }
   }
 

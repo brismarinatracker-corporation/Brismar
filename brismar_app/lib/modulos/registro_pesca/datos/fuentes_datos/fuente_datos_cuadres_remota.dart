@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'dart:async';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import '../modelos/cuadre_modelo.dart';
 import '../../../../nucleo/errores/diccionario_errores.dart';
 // import '../../../../nucleo/utilidades/gestor_pdf.dart';
@@ -14,6 +16,7 @@ class FuenteDatosCuadresRemota {
     try {
       String? urlPdfCloud;
       String? urlExcelCloud;
+      String? urlFotoCloud = cuadre.fotoZarpeUrl;
 
       // 1. TODO: Generar archivos y subirlos al Storage (comentado hasta adaptar los gestores)
       /*
@@ -29,10 +32,31 @@ class FuenteDatosCuadresRemota {
       urlExcelCloud = _cliente.storage.from('reportes').getPublicUrl('$nombreBase.xlsx');
       */
 
+      // Subida de Foto de Zarpe de Cámara si es archivo local
+      if (urlFotoCloud != null && !urlFotoCloud.startsWith('http')) {
+        try {
+          final file = File(urlFotoCloud);
+          if (await file.exists()) {
+            final ext = urlFotoCloud.split('.').last;
+            final nombreArchivo = '${cuadre.usuarioId}/${cuadre.id}_zarpe.$ext';
+            
+            await _cliente.storage.from('camaras-zarpes').upload(
+              nombreArchivo,
+              file,
+              fileOptions: const sb.FileOptions(upsert: true),
+            );
+            urlFotoCloud = _cliente.storage.from('camaras-zarpes').getPublicUrl(nombreArchivo);
+          }
+        } catch (e) {
+          debugPrint('Error subiendo foto de zarpe a Supabase: $e');
+        }
+      }
+
       // 2. Insertar Cabecera (Cuadre)
       final cuadreJson = cuadre.toJson();
       cuadreJson['url_pdf_cloud'] = urlPdfCloud;
       cuadreJson['url_excel_cloud'] = urlExcelCloud;
+      cuadreJson['foto_zarpe_url'] = urlFotoCloud;
       await _cliente.from('cuadres').upsert(cuadreJson);
 
       // 3. Insertar Relaciones (Compras, Gastos, Ventas)
@@ -67,6 +91,7 @@ class FuenteDatosCuadresRemota {
       return {
         'urlPdf': urlPdfCloud,
         'urlExcel': urlExcelCloud,
+        'urlFoto': urlFotoCloud,
       };
     } catch (e) {
       throw ExcepcionRed(mensaje: 'Error sincronizando cuadre con Supabase: $e');

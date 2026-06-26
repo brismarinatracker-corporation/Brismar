@@ -64,10 +64,18 @@ class CuadreEntidad {
   final String placa;
   final String? fechaZarpe;
   final String? fechaCuadre;
-  final String estado; // 'borrador', 'completo'
+  final String estado; // 'borrador', 'completo', 'zarpe'
   final String? urlPdfCloud;
   final String? urlExcelCloud;
   final bool sincronizado;
+  
+  // Campos del Zarpe de Cámara
+  final String? fotoZarpeUrl;
+  final double? pesoTotal;
+  final int? cajasLlenas;
+  final int? cajasVacias;
+  final int? tipoProducto;
+  final String? plantaDestino;
 
   final List<CompraEntidad> compras;
   final List<GastoEntidad> gastos;
@@ -83,6 +91,12 @@ class CuadreEntidad {
     this.urlPdfCloud,
     this.urlExcelCloud,
     this.sincronizado = false,
+    this.fotoZarpeUrl,
+    this.pesoTotal,
+    this.cajasLlenas,
+    this.cajasVacias,
+    this.tipoProducto,
+    this.plantaDestino,
     this.compras = const [],
     this.gastos = const [],
     this.ventas = const [],

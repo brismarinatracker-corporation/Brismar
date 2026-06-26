@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,6 +51,7 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
   // Controladores Generales
   final _placaCtrl = TextEditingController();
   final _fechaZarpeCtrl = TextEditingController();
+  final _plantaDestinoCtrl = TextEditingController();
 
   // Controladores de Gastos Operativos Establecidos
   final _facturacionCtrl = TextEditingController();
@@ -75,6 +77,7 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
       _cuadreId = widget.cuadreInicial!.id;
       _placaCtrl.text = widget.cuadreInicial!.placa;
       _fechaZarpeCtrl.text = widget.cuadreInicial!.fechaZarpe ?? '';
+      _plantaDestinoCtrl.text = widget.cuadreInicial!.plantaDestino ?? '';
       _compras.addAll(widget.cuadreInicial!.compras);
       _gastos.addAll(widget.cuadreInicial!.gastos);
       _ventas.addAll(widget.cuadreInicial!.ventas);
@@ -116,6 +119,7 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
   void dispose() {
     _placaCtrl.dispose();
     _fechaZarpeCtrl.dispose();
+    _plantaDestinoCtrl.dispose();
     _facturacionCtrl.dispose();
     _personalCtrl.dispose();
     _apoyoCtrl.dispose();
@@ -222,6 +226,12 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
       placa: _placaCtrl.text,
       fechaZarpe: _fechaZarpeCtrl.text,
       estado: estado,
+      fotoZarpeUrl: widget.cuadreInicial?.fotoZarpeUrl,
+      pesoTotal: widget.cuadreInicial?.pesoTotal,
+      cajasLlenas: widget.cuadreInicial?.cajasLlenas,
+      cajasVacias: widget.cuadreInicial?.cajasVacias,
+      tipoProducto: widget.cuadreInicial?.tipoProducto,
+      plantaDestino: _plantaDestinoCtrl.text.trim().isEmpty ? null : _plantaDestinoCtrl.text.trim(),
       compras: _compras,
       gastos: _gastos,
       ventas: _ventas,
@@ -335,6 +345,8 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth >= 600;
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
@@ -440,6 +452,10 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
                       content: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (widget.cuadreInicial?.fotoZarpeUrl != null) ...[
+                            _construirResumenZarpe(),
+                            const SizedBox(height: 16),
+                          ],
                           const Text(
                             'Información de la Cámara',
                             style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
@@ -448,11 +464,17 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
                           TextFormField(
                             controller: _placaCtrl,
                             style: const TextStyle(color: Colors.white),
+                            readOnly: widget.cuadreInicial?.fotoZarpeUrl != null,
                             textCapitalization: TextCapitalization.characters,
                             inputFormatters: [
                               _PlacaInputFormatter(),
                             ],
-                            decoration: _construirInputDecoration(labelText: 'Placa Cámara (Ej: AAA-123)'),
+                            decoration: _construirInputDecoration(
+                              labelText: 'Placa Cámara (Ej: AAA-123)',
+                              suffixIcon: widget.cuadreInicial?.fotoZarpeUrl != null
+                                  ? const Icon(Icons.lock_rounded, color: Colors.white30, size: 20)
+                                  : null,
+                            ),
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'La placa es requerida';
                               final clean = v.replaceAll('-', '');
@@ -469,7 +491,7 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
                               labelText: 'Fecha de Zarpe',
                               suffixIcon: const Icon(Icons.calendar_today_rounded, color: Color(0xFF00E5FF), size: 20),
                             ),
-                            onTap: () async {
+                            onTap: widget.cuadreInicial?.fotoZarpeUrl != null ? null : () async {
                               DateTime? selectedDate = await showDatePicker(
                                 context: context,
                                 initialDate: DateTime.now(),
@@ -661,41 +683,53 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
                             style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(child: _construirCampoGasto(labelText: 'Facturación', controller: _facturacionCtrl)),
-                              const SizedBox(width: 12),
-                              Expanded(child: _construirCampoGasto(labelText: 'Personal', controller: _personalCtrl)),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Expanded(child: _construirCampoGasto(labelText: 'Apoyo', controller: _apoyoCtrl)),
-                              const SizedBox(width: 12),
-                              Expanded(child: _construirCampoGasto(labelText: 'Agua', controller: _aguaCtrl)),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Expanded(child: _construirCampoGasto(labelText: 'Pesador', controller: _pesadorCtrl)),
-                              const SizedBox(width: 12),
-                              Expanded(child: _construirCampoGasto(labelText: 'Clorox', controller: _cloroxCtrl)),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Expanded(child: _construirCampoGasto(labelText: 'Hielo', controller: _hieloCtrl)),
-                              const SizedBox(width: 12),
-                              Expanded(child: _construirCampoGasto(labelText: 'Flete', controller: _fleteCtrl)),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Expanded(child: _construirCampoGasto(labelText: 'Otros', controller: _otrosCtrl)),
-                              const SizedBox(width: 12),
-                              const Expanded(child: SizedBox.shrink()),
-                            ],
-                          ),
+                           if (isTablet) ...[
+                             Row(
+                               children: [
+                                 Expanded(child: _construirCampoGasto(labelText: 'Facturación', controller: _facturacionCtrl)),
+                                 const SizedBox(width: 12),
+                                 Expanded(child: _construirCampoGasto(labelText: 'Personal', controller: _personalCtrl)),
+                               ],
+                             ),
+                             Row(
+                               children: [
+                                 Expanded(child: _construirCampoGasto(labelText: 'Apoyo', controller: _apoyoCtrl)),
+                                 const SizedBox(width: 12),
+                                 Expanded(child: _construirCampoGasto(labelText: 'Agua', controller: _aguaCtrl)),
+                               ],
+                             ),
+                             Row(
+                               children: [
+                                 Expanded(child: _construirCampoGasto(labelText: 'Pesador', controller: _pesadorCtrl)),
+                                 const SizedBox(width: 12),
+                                 Expanded(child: _construirCampoGasto(labelText: 'Clorox', controller: _cloroxCtrl)),
+                               ],
+                             ),
+                             Row(
+                               children: [
+                                 Expanded(child: _construirCampoGasto(labelText: 'Hielo', controller: _hieloCtrl)),
+                                 const SizedBox(width: 12),
+                                 Expanded(child: _construirCampoGasto(labelText: 'Flete', controller: _fleteCtrl)),
+                               ],
+                             ),
+                             Row(
+                               children: [
+                                 Expanded(child: _construirCampoGasto(labelText: 'Otros', controller: _otrosCtrl)),
+                                 const SizedBox(width: 12),
+                                 const Expanded(child: SizedBox.shrink()),
+                               ],
+                             ),
+                           ] else ...[
+                             _construirCampoGasto(labelText: 'Facturación', controller: _facturacionCtrl),
+                             _construirCampoGasto(labelText: 'Personal', controller: _personalCtrl),
+                             _construirCampoGasto(labelText: 'Apoyo', controller: _apoyoCtrl),
+                             _construirCampoGasto(labelText: 'Agua', controller: _aguaCtrl),
+                             _construirCampoGasto(labelText: 'Pesador', controller: _pesadorCtrl),
+                             _construirCampoGasto(labelText: 'Clorox', controller: _cloroxCtrl),
+                             _construirCampoGasto(labelText: 'Hielo', controller: _hieloCtrl),
+                             _construirCampoGasto(labelText: 'Flete', controller: _fleteCtrl),
+                             _construirCampoGasto(labelText: 'Otros', controller: _otrosCtrl),
+                           ],
                           const SizedBox(height: 16),
                           const Text(
                             'Observaciones o Notas',
@@ -924,6 +958,97 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
             ],
           );
         }
+      ),
+    );
+  }
+
+  // Métodos auxiliares para la visualización del resumen de Zarpe
+  String _obtenerNombreProducto(int? tipo) {
+    switch (tipo) {
+      case 1: return 'Pota';
+      case 2: return 'Merluza';
+      case 3: return 'Caballa';
+      case 4: return 'Jurel';
+      case 5: return 'Otros';
+      default: return 'Desconocido';
+    }
+  }
+
+  Widget _buildZarpeInfoRow(String label, String valor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+          Text(valor, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _construirFotoZarpe(String path) {
+    if (path.startsWith('http')) {
+      return Image.network(
+        path,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF)));
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return const Center(child: Icon(Icons.broken_image_rounded, color: Colors.white24, size: 40));
+        },
+      );
+    } else {
+      return Image.file(
+        File(path),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return const Center(child: Icon(Icons.broken_image_rounded, color: Colors.white24, size: 40));
+        },
+      );
+    }
+  }
+
+  Widget _construirResumenZarpe() {
+    if (widget.cuadreInicial?.fotoZarpeUrl == null) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F224A).withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.2), width: 1.2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.photo_camera_rounded, color: Color(0xFF00E5FF), size: 18),
+              SizedBox(width: 8),
+              Text(
+                'Evidencia de Zarpe de Cámara',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              height: 140,
+              width: double.infinity,
+              child: _construirFotoZarpe(widget.cuadreInicial!.fotoZarpeUrl!),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildZarpeInfoRow('Peso Total:', '${_formatearNumero(widget.cuadreInicial!.pesoTotal ?? 0)} Kg'),
+          _buildZarpeInfoRow('Cajas Llenas:', '${widget.cuadreInicial!.cajasLlenas ?? 0}'),
+          _buildZarpeInfoRow('Cajas Vacías:', '${widget.cuadreInicial!.cajasVacias ?? 0}'),
+          _buildZarpeInfoRow('Tipo Producto:', _obtenerNombreProducto(widget.cuadreInicial!.tipoProducto)),
+        ],
       ),
     );
   }

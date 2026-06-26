@@ -197,6 +197,12 @@ class CuadreModelo extends CuadreEntidad {
     super.urlPdfCloud,
     super.urlExcelCloud,
     super.sincronizado,
+    super.fotoZarpeUrl,
+    super.pesoTotal,
+    super.cajasLlenas,
+    super.cajasVacias,
+    super.tipoProducto,
+    super.plantaDestino,
     super.compras,
     super.gastos,
     super.ventas,
@@ -212,6 +218,12 @@ class CuadreModelo extends CuadreEntidad {
         urlPdfCloud: e.urlPdfCloud,
         urlExcelCloud: e.urlExcelCloud,
         sincronizado: e.sincronizado,
+        fotoZarpeUrl: e.fotoZarpeUrl,
+        pesoTotal: e.pesoTotal,
+        cajasLlenas: e.cajasLlenas,
+        cajasVacias: e.cajasVacias,
+        tipoProducto: e.tipoProducto,
+        plantaDestino: e.plantaDestino,
         compras: e.compras.map((c) => CompraModelo.fromEntidad(c)).toList(),
         gastos: e.gastos.map((g) => GastoModelo.fromEntidad(g)).toList(),
         ventas: e.ventas.map((v) => VentaModelo.fromEntidad(v)).toList(),
@@ -227,6 +239,12 @@ class CuadreModelo extends CuadreEntidad {
         urlPdfCloud: map['url_pdf_cloud'] as String?,
         urlExcelCloud: map['url_excel_cloud'] as String?,
         sincronizado: (map['sincronizado'] as int) == 1,
+        fotoZarpeUrl: map['foto_zarpe_url'] as String?,
+        pesoTotal: map['peso_total'] != null ? (map['peso_total'] as num).toDouble() : null,
+        cajasLlenas: map['cajas_llenas'] as int?,
+        cajasVacias: map['cajas_vacias'] as int?,
+        tipoProducto: map['tipo_producto'] as int?,
+        plantaDestino: map['planta_destino'] as String?,
       );
 
   Map<String, dynamic> toSqlite() => {
@@ -239,6 +257,12 @@ class CuadreModelo extends CuadreEntidad {
         'url_pdf_cloud': urlPdfCloud,
         'url_excel_cloud': urlExcelCloud,
         'sincronizado': sincronizado ? 1 : 0,
+        'foto_zarpe_url': fotoZarpeUrl,
+        'peso_total': pesoTotal,
+        'cajas_llenas': cajasLlenas,
+        'cajas_vacias': cajasVacias,
+        'tipo_producto': tipoProducto,
+        'planta_destino': plantaDestino,
       };
 
   factory CuadreModelo.fromJson(Map<String, dynamic> map) => CuadreModelo(
@@ -251,6 +275,12 @@ class CuadreModelo extends CuadreEntidad {
         urlPdfCloud: map['url_pdf_cloud'] as String?,
         urlExcelCloud: map['url_excel_cloud'] as String?,
         sincronizado: map['sincronizado'] as bool? ?? false,
+        fotoZarpeUrl: map['foto_zarpe_url'] as String?,
+        pesoTotal: map['peso_total'] != null ? (map['peso_total'] as num).toDouble() : null,
+        cajasLlenas: map['cajas_llenas'] as int?,
+        cajasVacias: map['cajas_vacias'] as int?,
+        tipoProducto: map['tipo_producto'] as int?,
+        plantaDestino: map['planta_destino'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -262,6 +292,11 @@ class CuadreModelo extends CuadreEntidad {
         'estado': estado,
         'url_pdf_cloud': urlPdfCloud,
         'url_excel_cloud': urlExcelCloud,
-        // No enviamos sincronizado a Supabase
+        'foto_zarpe_url': fotoZarpeUrl,
+        'peso_total': pesoTotal,
+        'cajas_llenas': cajasLlenas,
+        'cajas_vacias': cajasVacias,
+        'tipo_producto': tipoProducto,
+        'planta_destino': plantaDestino,
       };
 }

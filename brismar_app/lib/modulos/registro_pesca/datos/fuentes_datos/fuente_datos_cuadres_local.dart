@@ -82,6 +82,12 @@ class FuenteDatosCuadresLocal {
           urlPdfCloud: cuadre.urlPdfCloud,
           urlExcelCloud: cuadre.urlExcelCloud,
           sincronizado: cuadre.sincronizado,
+          fotoZarpeUrl: cuadre.fotoZarpeUrl,
+          pesoTotal: cuadre.pesoTotal,
+          cajasLlenas: cuadre.cajasLlenas,
+          cajasVacias: cuadre.cajasVacias,
+          tipoProducto: cuadre.tipoProducto,
+          plantaDestino: cuadre.plantaDestino,
           compras: compras,
           gastos: gastos,
           ventas: ventas,
@@ -96,7 +102,7 @@ class FuenteDatosCuadresLocal {
     }
   }
 
-  Future<void> marcarComoSincronizado(String id, String? urlPdf, String? urlExcel) async {
+  Future<void> marcarComoSincronizado(String id, String? urlPdf, String? urlExcel, String? urlFotoZarpe) async {
     try {
       final db = await _gestorBD.database;
       await db.update(
@@ -105,6 +111,7 @@ class FuenteDatosCuadresLocal {
           'sincronizado': 1,
           'url_pdf_cloud': urlPdf,
           'url_excel_cloud': urlExcel,
+          'foto_zarpe_url':? urlFotoZarpe,
         },
         where: 'id = ?',
         whereArgs: [id],

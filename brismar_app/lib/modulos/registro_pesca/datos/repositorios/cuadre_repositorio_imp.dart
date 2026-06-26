@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../dominio/entidades/cuadre_entidad.dart';
 import '../../dominio/repositorios/cuadre_repositorio.dart';
 import '../fuentes_datos/fuente_datos_cuadres_local.dart';
@@ -32,10 +33,15 @@ class CuadreRepositorioImp implements CuadreRepositorio {
     for (var cuadre in pendientes) {
       try {
         final urls = await remota.subirCuadre(cuadre);
-        await local.marcarComoSincronizado(cuadre.id, urls['urlPdf'], urls['urlExcel']);
+        await local.marcarComoSincronizado(
+          cuadre.id, 
+          urls['urlPdf'], 
+          urls['urlExcel'],
+          urls['urlFoto'],
+        );
       } catch (e) {
         // Log error, continue with next
-        print("Error sincronizando cuadre ${cuadre.id}: $e");
+        debugPrint("Error sincronizando cuadre ${cuadre.id}: $e");
       }
     }
   }
