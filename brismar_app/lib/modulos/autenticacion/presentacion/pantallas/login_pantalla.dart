@@ -5,11 +5,11 @@ import '../../../../nucleo/rutas/enrutador.dart';
 import '../controladores/controlador_autenticacion.dart';
 import '../componentes/formulario_login.dart';
 
-/// Pantalla principal para el inicio de sesión en BRISMAR APP.
+/// Pantalla principal de inicio de sesión en BRISMAR APP.
 ///
-/// Ofrece un diseño premium con degradados marinos y esferas de luz
-/// de fondo para emular el océano. Escucha los cambios del estado
-/// de autenticación a través de Riverpod.
+/// Diseño completamente responsivo: adapta el ancho del formulario
+/// según el tamaño disponible usando [LayoutBuilder].
+/// En tablets/escritorio limita el card a 480 px y lo centra.
 class LoginPantalla extends ConsumerStatefulWidget {
   /// Constructor constante para [LoginPantalla].
   const LoginPantalla({super.key});
@@ -19,6 +19,10 @@ class LoginPantalla extends ConsumerStatefulWidget {
 }
 
 class _LoginPantallaState extends ConsumerState<LoginPantalla> {
+  // ── Constantes de breakpoints ──────────────────────────────────────────────
+  static const double _anchoMaximoFormulario = 480.0;
+  static const double _breakpointTablet = 600.0;
+
   @override
   Widget build(BuildContext context) {
     ref.listen<EstadoAutenticacion>(
@@ -30,15 +34,25 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
     final estaCargando = estado is EstadoAutenticacionCargando;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           _construirFondoGradiente(),
-          _construirEsferaBrillo(top: -100, left: -50, color: const Color(0x2200E5FF)),
-          _construirEsferaBrillo(bottom: -150, right: -100, color: const Color(0x1B0D47A1)),
-          const Center(
-            child: SingleChildScrollView(
-              physics: BouncingScrollPhysics(),
-              child: FormularioLogin(),
+          _construirEsferaBrillo(
+            top: -100,
+            left: -50,
+            color: const Color(0x2200E5FF),
+          ),
+          _construirEsferaBrillo(
+            bottom: -150,
+            right: -100,
+            color: const Color(0x1B0D47A1),
+          ),
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return _construirContenidoResponsivo(constraints);
+              },
             ),
           ),
           if (estaCargando) _construirOverlayCarga(),
@@ -47,7 +61,54 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
     );
   }
 
-  /// Construye un overlay oscuro con desenfoque mientras se conecta al servidor.
+  /// Decide el layout según el ancho disponible:
+  /// - **Móvil** (< 600 px): formulario a ancho completo con padding lateral.
+  /// - **Tablet / escritorio** (≥ 600 px): card centrado de 480 px máximo.
+  Widget _construirContenidoResponsivo(BoxConstraints constraints) {
+    final esTablet = constraints.maxWidth >= _breakpointTablet;
+    final anchoFormulario = esTablet
+        ? _anchoMaximoFormulario
+        : constraints.maxWidth;
+
+    return Center(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.symmetric(
+          vertical: esTablet ? 48.0 : 24.0,
+        ),
+        child: SizedBox(
+          width: anchoFormulario,
+          child: esTablet
+              ? _envolverEnCard(child: const FormularioLogin())
+              : const FormularioLogin(),
+        ),
+      ),
+    );
+  }
+
+  /// En tablet/escritorio envuelve el formulario en un card con glassmorphism.
+  Widget _envolverEnCard({required Widget child}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF0C1D3F).withValues(alpha: 0.55),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.08),
+              width: 1,
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 8),
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  /// Overlay animado de carga con desenfoque de fondo.
   Widget _construirOverlayCarga() {
     return Positioned.fill(
       child: TweenAnimationBuilder<double>(
@@ -74,39 +135,49 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
     );
   }
 
-  /// Escucha los cambios de estado de autenticación y reacciona.
-  void _escucharEstadoAutenticacion(EstadoAutenticacion? anterior, EstadoAutenticacion siguiente) {
+  /// Escucha cambios de estado de autenticación y navega según el resultado.
+  void _escucharEstadoAutenticacion(
+    EstadoAutenticacion? anterior,
+    EstadoAutenticacion siguiente,
+  ) {
     if (siguiente is EstadoConfigurarPin) {
-      // Primer login exitoso → configurar PIN obligatorio
-      _mostrarSnack('Bienvenido: ${siguiente.usuario.nombreReal}', Colors.teal.shade600);
+      _mostrarSnack(
+        'Bienvenido: ${siguiente.usuario.nombreReal}',
+        Colors.teal.shade600,
+      );
       const ConfigurarPinRoute().go(context);
     } else if (siguiente is EstadoAutenticacionAutenticado) {
-      // Sesión existente restaurada → ir al Dashboard directamente
       const RegistroRoute().go(context);
     } else if (siguiente is EstadoAccesoRapidoRequerido) {
-      // Periodo de gracia expiró → pantalla de acceso rápido
-      AccesoRapidoRoute(preferencia: siguiente.preferencia.toStorageString()).go(context);
+      AccesoRapidoRoute(
+        preferencia: siguiente.preferencia.toStorageString(),
+      ).go(context);
     } else if (siguiente is EstadoAutenticacionError) {
       _mostrarSnack(siguiente.mensaje, Colors.redAccent.shade700);
     }
   }
 
-  /// Muestra un mensaje en un SnackBar con estilo premium.
+  /// SnackBar flotante con estilo premium.
   void _mostrarSnack(String mensaje, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           mensaje,
-          style: const TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
       ),
     );
   }
 
-  /// Construye el fondo degradado principal de la pantalla.
+  /// Fondo degradado marino principal.
   Widget _construirFondoGradiente() {
     return Container(
       decoration: const BoxDecoration(
@@ -123,7 +194,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
     );
   }
 
-  /// Genera una esfera decorativa de brillo de fondo para la interfaz premium.
+  /// Esfera de brillo decorativa posicionada en el fondo.
   Widget _construirEsferaBrillo({
     double? top,
     double? bottom,
@@ -154,4 +225,3 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
     );
   }
 }
-
