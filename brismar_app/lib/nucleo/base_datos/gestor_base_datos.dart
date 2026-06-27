@@ -23,7 +23,7 @@ class GestorBaseDatos {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -47,7 +47,8 @@ class GestorBaseDatos {
         cajas_llenas INTEGER,
         cajas_vacias INTEGER,
         tipo_producto INTEGER,
-        planta_destino TEXT
+        planta_destino TEXT,
+        pesador TEXT
       )
     ''');
 
@@ -106,6 +107,9 @@ class GestorBaseDatos {
       await db.execute('ALTER TABLE cuadres ADD COLUMN cajas_vacias INTEGER');
       await db.execute('ALTER TABLE cuadres ADD COLUMN tipo_producto INTEGER');
       await db.execute('ALTER TABLE cuadres ADD COLUMN planta_destino TEXT');
+    }
+    if (oldVersion < 6) {
+      await db.execute('ALTER TABLE cuadres ADD COLUMN pesador TEXT');
     }
   }
 

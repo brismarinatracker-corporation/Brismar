@@ -1060,6 +1060,8 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
           _buildZarpeInfoRow('Tipo Producto:', _obtenerNombreProducto(widget.cuadreInicial!.tipoProducto)),
           if (widget.cuadreInicial!.muellePartida != null && widget.cuadreInicial!.muellePartida!.isNotEmpty)
             _buildZarpeInfoRow('Muelle de Partida:', widget.cuadreInicial!.muellePartida!),
+          if (widget.cuadreInicial!.pesador != null && widget.cuadreInicial!.pesador!.isNotEmpty)
+            _buildZarpeInfoRow('Pesador de Muelle:', widget.cuadreInicial!.pesador!),
         ],
       ),
     );

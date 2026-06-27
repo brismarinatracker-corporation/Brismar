@@ -203,6 +203,7 @@ class CuadreModelo extends CuadreEntidad {
     super.cajasVacias,
     super.tipoProducto,
     super.muellePartida,
+    super.pesador,
     super.compras,
     super.gastos,
     super.ventas,
@@ -224,6 +225,7 @@ class CuadreModelo extends CuadreEntidad {
         cajasVacias: e.cajasVacias,
         tipoProducto: e.tipoProducto,
         muellePartida: e.muellePartida,
+        pesador: e.pesador,
         compras: e.compras.map((c) => CompraModelo.fromEntidad(c)).toList(),
         gastos: e.gastos.map((g) => GastoModelo.fromEntidad(g)).toList(),
         ventas: e.ventas.map((v) => VentaModelo.fromEntidad(v)).toList(),
@@ -245,6 +247,7 @@ class CuadreModelo extends CuadreEntidad {
         cajasVacias: map['cajas_vacias'] as int?,
         tipoProducto: map['tipo_producto'] as int?,
         muellePartida: map['planta_destino'] as String?,
+        pesador: map['pesador'] as String?,
       );
 
   Map<String, dynamic> toSqlite() => {
@@ -263,6 +266,7 @@ class CuadreModelo extends CuadreEntidad {
         'cajas_vacias': cajasVacias,
         'tipo_producto': tipoProducto,
         'planta_destino': muellePartida,
+        'pesador': pesador,
       };
 
   factory CuadreModelo.fromJson(Map<String, dynamic> map) => CuadreModelo(
@@ -281,6 +285,7 @@ class CuadreModelo extends CuadreEntidad {
         cajasVacias: map['cajas_vacias'] as int?,
         tipoProducto: map['tipo_producto'] as int?,
         muellePartida: map['planta_destino'] as String?,
+        pesador: map['pesador'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -298,5 +303,6 @@ class CuadreModelo extends CuadreEntidad {
         'cajas_vacias': cajasVacias,
         'tipo_producto': tipoProducto,
         'planta_destino': muellePartida,
+        'pesador': pesador,
       };
 }

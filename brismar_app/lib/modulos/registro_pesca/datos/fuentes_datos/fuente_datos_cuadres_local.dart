@@ -88,6 +88,7 @@ class FuenteDatosCuadresLocal {
           cajasVacias: cuadre.cajasVacias,
           tipoProducto: cuadre.tipoProducto,
           muellePartida: cuadre.muellePartida,
+          pesador: cuadre.pesador,
           compras: compras,
           gastos: gastos,
           ventas: ventas,

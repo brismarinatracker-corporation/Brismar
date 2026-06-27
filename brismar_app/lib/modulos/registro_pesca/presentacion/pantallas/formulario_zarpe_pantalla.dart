@@ -24,6 +24,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
   final _cajasLlenasCtrl = TextEditingController();
   final _cajasVaciasCtrl = TextEditingController();
   final _muellePartidaCtrl = TextEditingController();
+  final _pesadorCtrl = TextEditingController();
 
   int _tipoProductoSeleccionado = 1; // 1: Pota, 2: Bonito, 3: Caballa, 4: Jurel, 5: Otros
   final List<XFile> _fotosEvidencia = [];
@@ -38,6 +39,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
     _cajasLlenasCtrl.dispose();
     _cajasVaciasCtrl.dispose();
     _muellePartidaCtrl.dispose();
+    _pesadorCtrl.dispose();
     super.dispose();
   }
 
@@ -191,6 +193,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         cajasVacias: cajasVacias,
         tipoProducto: _tipoProductoSeleccionado,
         muellePartida: _muellePartidaCtrl.text.trim().isEmpty ? null : _muellePartidaCtrl.text.trim(),
+        pesador: _pesadorCtrl.text.trim().isEmpty ? null : _pesadorCtrl.text.trim(),
         sincronizado: false,
         compras: const [],
         gastos: const [],
@@ -597,6 +600,22 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                       ),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'El muelle de partida es requerido';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Pesador de Muelle
+                    TextFormField(
+                      controller: _pesadorCtrl,
+                      style: const TextStyle(color: Colors.white),
+                      textCapitalization: TextCapitalization.words,
+                      decoration: _construirInputDecoration(
+                        labelText: 'Pesador de Muelle',
+                        suffixIcon: const Icon(Icons.person_rounded, color: Color(0xFF00E5FF), size: 20),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'El nombre del pesador es requerido';
                         return null;
                       },
                     ),

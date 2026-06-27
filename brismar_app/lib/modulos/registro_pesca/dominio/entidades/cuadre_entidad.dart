@@ -76,6 +76,7 @@ class CuadreEntidad {
   final int? cajasVacias;
   final int? tipoProducto;
   final String? muellePartida;
+  final String? pesador;
 
   final List<CompraEntidad> compras;
   final List<GastoEntidad> gastos;
@@ -97,6 +98,7 @@ class CuadreEntidad {
     this.cajasVacias,
     this.tipoProducto,
     this.muellePartida,
+    this.pesador,
     this.compras = const [],
     this.gastos = const [],
     this.ventas = const [],
