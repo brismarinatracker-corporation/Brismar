@@ -586,6 +586,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                     // Muelle de Partida
                     TextFormField(
                       controller: _muellePartidaCtrl,
+                      style: const TextStyle(color: Colors.white),
                       textCapitalization: TextCapitalization.characters,
                       inputFormatters: [
                         _UpperCaseInputFormatter(),
