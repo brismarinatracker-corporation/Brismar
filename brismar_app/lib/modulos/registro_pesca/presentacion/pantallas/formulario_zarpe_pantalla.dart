@@ -193,7 +193,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         cajasVacias: cajasVacias,
         tipoProducto: _tipoProductoSeleccionado,
         muellePartida: _muellePartidaCtrl.text.trim().isEmpty ? null : _muellePartidaCtrl.text.trim(),
-        pesador: _pesadorCtrl.text.trim().isEmpty ? null : _pesadorCtrl.text.trim(),
+        pesador: _pesadorCtrl.text.trim().toUpperCase().isEmpty ? null : _pesadorCtrl.text.trim().toUpperCase(),
         sincronizado: false,
         compras: const [],
         gastos: const [],
@@ -609,7 +609,10 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                     TextFormField(
                       controller: _pesadorCtrl,
                       style: const TextStyle(color: Colors.white),
-                      textCapitalization: TextCapitalization.words,
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [
+                        _UpperCaseInputFormatter(),
+                      ],
                       decoration: _construirInputDecoration(
                         labelText: 'Pesador de Muelle',
                         suffixIcon: const Icon(Icons.person_rounded, color: Color(0xFF00E5FF), size: 20),
