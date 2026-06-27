@@ -280,6 +280,9 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
     return TextFormField(
       controller: _userController,
       enabled: !estaCargando,
+      keyboardType: TextInputType.emailAddress,
+      enableSuggestions: false,
+      autocorrect: false,
       style: TextStyle(color: Colors.white, fontSize: e.fuenteCampo),
       decoration: _disenoInput(
         hint: 'Ingresa tu usuario',
@@ -301,6 +304,8 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
       controller: _passController,
       obscureText: _passwordObscuro,
       enabled: !estaCargando,
+      enableSuggestions: false,
+      autocorrect: false,
       style: TextStyle(color: Colors.white, fontSize: e.fuenteCampo),
       decoration: _disenoInput(
         hint: '• • • • • • • •',

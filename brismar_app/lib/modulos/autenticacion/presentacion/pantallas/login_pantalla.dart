@@ -1,9 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../nucleo/rutas/enrutador.dart';
 import '../controladores/controlador_autenticacion.dart';
 import '../componentes/formulario_login.dart';
+import 'package:screen_protector/screen_protector.dart';
 
 /// Pantalla principal de inicio de sesión en BRISMAR APP.
 ///
@@ -22,6 +22,24 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
   // ── Constantes de breakpoints ──────────────────────────────────────────────
   static const double _anchoMaximoFormulario = 480.0;
   static const double _breakpointTablet = 600.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _protegerPantalla();
+  }
+
+  Future<void> _protegerPantalla() async {
+    await ScreenProtector.preventScreenshotOn();
+    await ScreenProtector.protectDataLeakageOn();
+  }
+
+  @override
+  void dispose() {
+    ScreenProtector.preventScreenshotOff();
+    ScreenProtector.protectDataLeakageOff();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,23 +153,19 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
     );
   }
 
-  /// Escucha cambios de estado de autenticación y navega según el resultado.
+  /// Escucha cambios de estado y muestra feedback visual al usuario.
+  ///
+  /// La navegación la maneja exclusivamente el [enrutadorProvider] mediante
+  /// redirect declarativo. Aquí solo mostramos snackbars informativos.
   void _escucharEstadoAutenticacion(
     EstadoAutenticacion? anterior,
     EstadoAutenticacion siguiente,
   ) {
     if (siguiente is EstadoConfigurarPin) {
       _mostrarSnack(
-        'Bienvenido: ${siguiente.usuario.nombreReal}',
+        'Bienvenido, ${siguiente.usuario.nombreReal} 👋',
         Colors.teal.shade600,
       );
-      const ConfigurarPinRoute().go(context);
-    } else if (siguiente is EstadoAutenticacionAutenticado) {
-      const RegistroRoute().go(context);
-    } else if (siguiente is EstadoAccesoRapidoRequerido) {
-      AccesoRapidoRoute(
-        preferencia: siguiente.preferencia.toStorageString(),
-      ).go(context);
     } else if (siguiente is EstadoAutenticacionError) {
       _mostrarSnack(siguiente.mensaje, Colors.redAccent.shade700);
     }

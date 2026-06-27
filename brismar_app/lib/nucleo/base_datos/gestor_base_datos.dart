@@ -23,7 +23,7 @@ class GestorBaseDatos {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -89,6 +89,19 @@ class GestorBaseDatos {
         FOREIGN KEY (cuadre_id) REFERENCES cuadres (id) ON DELETE CASCADE
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE zarpes (
+        id TEXT PRIMARY KEY,
+        placa_camara TEXT NOT NULL,
+        chofer TEXT NOT NULL,
+        muelle_partida TEXT NOT NULL,
+        foto_url_evidencia TEXT,
+        foto_local_path TEXT,
+        fecha_zarpe TEXT NOT NULL,
+        estado TEXT DEFAULT 'pendiente'
+      )
+    ''');
   }
 
   /// Migraciones incrementales.
@@ -106,6 +119,21 @@ class GestorBaseDatos {
       await db.execute('ALTER TABLE cuadres ADD COLUMN cajas_vacias INTEGER');
       await db.execute('ALTER TABLE cuadres ADD COLUMN tipo_producto INTEGER');
       await db.execute('ALTER TABLE cuadres ADD COLUMN planta_destino TEXT');
+    }
+    if (oldVersion < 6) {
+      // Agregar tabla de zarpes
+      await db.execute('''
+        CREATE TABLE zarpes (
+          id TEXT PRIMARY KEY,
+          placa_camara TEXT NOT NULL,
+          chofer TEXT NOT NULL,
+          muelle_partida TEXT NOT NULL,
+          foto_url_evidencia TEXT,
+          foto_local_path TEXT,
+          fecha_zarpe TEXT NOT NULL,
+          estado TEXT DEFAULT 'pendiente'
+        )
+      ''');
     }
   }
 

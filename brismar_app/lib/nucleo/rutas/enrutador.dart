@@ -77,22 +77,42 @@ final enrutadorProvider = Provider<GoRouter>((ref) {
     initialLocation: '/login',
     routes: $appRoutes,
     redirect: (context, state) {
-      final isLoginRoute = state.uri.path == '/login';
-      final isAccesoRapidoRoute = state.uri.path == '/acceso-rapido';
-      
-      if (authState is EstadoAutenticacionNoAutenticado) {
-        return isLoginRoute ? null : '/login';
-      }
-      
-      if (authState is EstadoAccesoRapidoRequerido) {
-        return isAccesoRapidoRoute ? null : '/acceso-rapido';
-      }
-      
-      if (authState is EstadoAutenticacionAutenticado) {
-        if (isLoginRoute || isAccesoRapidoRoute) return '/';
+      final path = state.uri.path;
+
+      // ── Mientras la sesión se evalúa, no redirigir ─────────────────────────
+      if (authState is EstadoAutenticacionInicial ||
+          authState is EstadoAutenticacionCargando) {
         return null;
       }
-      
+
+      // ── Sin sesión → siempre al login ──────────────────────────────────────
+      if (authState is EstadoAutenticacionNoAutenticado) {
+        return path == '/login' ? null : '/login';
+      }
+
+      // ── Primer login: usuario debe configurar PIN ──────────────────────────
+      if (authState is EstadoConfigurarPin) {
+        return path == '/configurar-pin' ? null : '/configurar-pin';
+      }
+
+      // ── PIN guardado: usuario puede configurar biometría ───────────────────
+      if (authState is EstadoConfigurarBiometria) {
+        return path == '/configurar-biometria' ? null : '/configurar-biometria';
+      }
+
+      // ── Periodo de gracia expiró: acceso rápido (PIN/huella) ───────────────
+      if (authState is EstadoAccesoRapidoRequerido) {
+        return path == '/acceso-rapido' ? null : '/acceso-rapido';
+      }
+
+      // ── Sesión activa: acceso al dashboard ─────────────────────────────────
+      if (authState is EstadoAutenticacionAutenticado) {
+        // Evitar que el usuario regrese al login o a pantallas de setup
+        const pantallasSetup = ['/login', '/configurar-pin', '/configurar-biometria', '/acceso-rapido'];
+        if (pantallasSetup.contains(path)) return '/';
+        return null;
+      }
+
       return null;
     },
   );
