@@ -14,6 +14,7 @@ CREDENCIALES_MAESTRAS.env
 # ── Flutter / Dart ───────────────────────────
 **/build/
 **/.dart_tool/
+**/.flutter-plugins
 **/.flutter-plugins-dependencies
 **/.pub-cache/
 **/.pub/
@@ -21,21 +22,21 @@ CREDENCIALES_MAESTRAS.env
 **/ios/Flutter/.last_build_id
 **/coverage/
 
-# ── Symbolication / Obfuscation ─────────────
-app.*.symbols
-app.*.map.json
-
 # ── Android Studio / Gradle ──────────────────
 **/android/app/debug
 **/android/app/profile
 **/android/app/release
 **/.gradle/
 **/local.properties
+**/android/key.properties
+
+# ── Symbolication / Obfuscation ─────────────
+app.*.symbols
+app.*.map.json
 
 # ── IDE ──────────────────────────────────────
 .idea/
 .vscode/
-.obsidian/
 .history/
 *.iml
 *.ipr
@@ -47,12 +48,11 @@ Thumbs.db
 *.swp
 *.swo
 
-# ── Generated / Analysis ────────────────────
-graphify-out/
-
-# ── Misc ─────────────────────────────────────
+# ── Misc / Auto-generados ────────────────────
 *.log
 *.pyc
 *.class
+graphify-out/
+
+# NOTA: NO ignoramos .obsidian para que las configuraciones del graph de Obsidian se sincronicen en el repo.
 .obsidian/
-brismar_app/INFORMACION/

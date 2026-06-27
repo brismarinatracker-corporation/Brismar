@@ -1,13 +1,43 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../controladores/controlador_autenticacion.dart';
 
-/// Componente modular que representa el formulario de inicio de sesión.
+// ── Providers reactivos (file-private) ───────────────────────────────────────
+
+/// Lee la versión real del paquete desde el sistema operativo.
 ///
-/// Adaptado exactamente al diseño de la imagen del cliente.
+/// Al ser [FutureProvider.autoDispose] se libera cuando el widget
+/// se desmonta y no produce el flash de 'v---'.
+final _versionAppProvider = FutureProvider.autoDispose<String>((ref) async {
+  final info = await PackageInfo.fromPlatform();
+  return 'v${info.version}';
+});
+
+/// Emite el estado de conectividad en tiempo real.
+///
+/// [StreamProvider.autoDispose] gestiona el ciclo de vida del stream
+/// sin requerir [StreamSubscription] ni [dispose] manuales.
+final _conectividadProvider = StreamProvider.autoDispose<bool>((ref) async* {
+  final connectivity = Connectivity();
+  final initial = await connectivity.checkConnectivity();
+  yield _esConectado(initial);
+  await for (final result in connectivity.onConnectivityChanged) {
+    yield _esConectado(result);
+  }
+});
+
+/// Devuelve `true` si al menos un resultado indica conexión activa.
+bool _esConectado(List<ConnectivityResult> result) =>
+    result.isNotEmpty && !result.contains(ConnectivityResult.none);
+
+// ── Widget principal ──────────────────────────────────────────────────────────
+
+/// Formulario de inicio de sesión modular y responsivo para BRISMAR APP.
+///
+/// Adapta tamaños de texto, campos y espaciados según el ancho disponible
+/// usando [LayoutBuilder] para cubrir móvil, tablet y escritorio.
 class FormularioLogin extends ConsumerStatefulWidget {
   /// Constructor constante para [FormularioLogin].
   const FormularioLogin({super.key});
@@ -20,51 +50,16 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
   final _formKey = GlobalKey<FormState>();
   final _userController = TextEditingController();
   final _passController = TextEditingController();
-  
-  String _appVersion = 'v---';
-  bool _hayConexion = true;
   bool _passwordObscuro = true;
-  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _initAppInfo();
-  }
-
-  /// Inicializa la información de la versión de la app y la conectividad.
-  Future<void> _initAppInfo() async {
-    final info = await PackageInfo.fromPlatform();
-    if (mounted) {
-      setState(() {
-        _appVersion = 'v${info.version}';
-      });
-    }
-    final connectivityResult = await Connectivity().checkConnectivity();
-    _actualizarEstadoConexion(connectivityResult);
-    _connectivitySubscription = Connectivity()
-        .onConnectivityChanged
-        .listen(_actualizarEstadoConexion);
-  }
-
-  /// Actualiza el estado local de conexión basándose en el resultado obtenido.
-  void _actualizarEstadoConexion(List<ConnectivityResult> result) {
-    if (mounted) {
-      setState(() {
-        _hayConexion = !result.contains(ConnectivityResult.none) && result.isNotEmpty;
-      });
-    }
-  }
 
   @override
   void dispose() {
-    _connectivitySubscription?.cancel();
     _userController.dispose();
     _passController.dispose();
     super.dispose();
   }
 
-  /// Intenta iniciar sesión leyendo los valores de los controladores.
+  /// Valida el formulario e invoca el caso de uso de autenticación.
   void _intentarLogin() {
     if (_formKey.currentState!.validate()) {
       ref
@@ -81,182 +76,218 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
     final estado = ref.watch(proveedorControladorAutenticacion);
     final estaCargando = estado is EstadoAutenticacionCargando;
 
-    return Form(
-      key: _formKey,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 28),
-        child: _construirFormularioContenido(estaCargando),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final escala = _calcularEscala(constraints.maxWidth);
+        return Form(
+          key: _formKey,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: escala.paddingH),
+            child: _construirContenido(estaCargando, escala),
+          ),
+        );
+      },
     );
   }
 
-  /// Construye los widgets internos ordenados verticalmente.
-  Widget _construirFormularioContenido(bool estaCargando) {
+  // ── Construcción del contenido ─────────────────────────────────────────────
+
+  /// Apila todos los elementos del formulario con espaciados escalados.
+  Widget _construirContenido(bool estaCargando, _Escala e) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Center(child: _construirLogo()),
-        const SizedBox(height: 24),
-        const Center(
-          child: Text(
-            'BRIS GROUP',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        const Center(
-          child: Text(
-            'SISTEMA DE REGISTRO · BAHÍA',
-            style: TextStyle(
-              color: Color(0xFF00E5FF),
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.8,
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        // Separador con el punto cyan
-        Row(
-          children: [
-            Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1), height: 1)),
-            const SizedBox(width: 8),
-            Container(
-              width: 5,
-              height: 5,
-              decoration: const BoxDecoration(
-                color: Color(0xFF00E5FF),
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1), height: 1)),
-          ],
-        ),
-        const SizedBox(height: 28),
-        // Etiqueta Usuario
-        const Text(
-          'USUARIO',
-          style: TextStyle(
-            color: Color(0xFF00E5FF),
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.5,
-          ),
-        ),
-        const SizedBox(height: 8),
-        _construirCampoUsuario(estaCargando),
-        const SizedBox(height: 20),
-        // Etiqueta Contraseña
-        const Text(
-          'CONTRASEÑA',
-          style: TextStyle(
-            color: Color(0xFF00E5FF),
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.5,
-          ),
-        ),
-        const SizedBox(height: 8),
-        _construirCampoContrasena(estaCargando),
-        const SizedBox(height: 10),
-        _construirBotonOlvido(estaCargando),
-        const SizedBox(height: 24),
-        _construirBotonLogin(estaCargando),
-        const SizedBox(height: 35),
-        _construirIndicadores(),
+        Center(child: _construirLogo(e)),
+        SizedBox(height: e.espacioMedio),
+        _construirTitulo(e),
+        SizedBox(height: e.espacioMedio),
+        _construirSeparador(),
+        SizedBox(height: e.espacioGrande),
+        _construirEtiqueta('USUARIO', e),
+        SizedBox(height: e.espacioChico),
+        _construirCampoUsuario(estaCargando, e),
+        SizedBox(height: e.espacioMedio),
+        _construirEtiqueta('CONTRASEÑA', e),
+        SizedBox(height: e.espacioChico),
+        _construirCampoContrasena(estaCargando, e),
+        SizedBox(height: e.espacioChico),
+        _construirBotonOlvido(estaCargando, e),
+        SizedBox(height: e.espacioGrande),
+        _construirBotonLogin(estaCargando, e),
+        SizedBox(height: e.espacioGrande),
+        _construirIndicadores(e),
       ],
     );
   }
 
-  /// Construye el logo con bordes redondeados exactos.
-  Widget _construirLogo() {
+  // ── Logo ───────────────────────────────────────────────────────────────────
+
+  /// Logo con tamaño escalado según el ancho disponible.
+  Widget _construirLogo(_Escala e) {
     return Container(
-      width: 140,
-      height: 80,
+      width: e.anchoLogo,
+      height: e.altoLogo,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(e.radiusLogo),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
-            blurRadius: 15,
-            spreadRadius: 2,
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.12),
+            blurRadius: 20,
+            spreadRadius: 3,
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(10.0),
+        padding: EdgeInsets.all(e.paddingLogo),
         child: Image.asset(
           'assets/logo.png',
           fit: BoxFit.contain,
-          errorBuilder: (c, e, s) => const Icon(
+          errorBuilder: (_, _, _) => Icon(
             Icons.directions_boat_rounded,
-            size: 40,
-            color: Color(0xFF0077C2),
+            size: e.anchoLogo * 0.35,
+            color: const Color(0xFF0077C2),
           ),
         ),
       ),
     );
   }
 
-  /// Crea la decoración uniforme para los campos de entrada de datos.
+  // ── Título y separador ─────────────────────────────────────────────────────
+
+  /// Título "BRIS GROUP" y subtítulo del sistema escalados.
+  Widget _construirTitulo(_Escala e) {
+    return Column(
+      children: [
+        Text(
+          'BRIS GROUP',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: e.fuenteTitulo,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.8,
+          ),
+        ),
+        SizedBox(height: e.espacioChico * 0.5),
+        Text(
+          'SISTEMA DE REGISTRO · BAHÍA',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: const Color(0xFF00E5FF),
+            fontSize: e.fuenteSubtitulo,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.0,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Divisor decorativo central con punto cyan.
+  Widget _construirSeparador() {
+    return Row(
+      children: [
+        Expanded(
+          child: Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+        ),
+        const SizedBox(width: 10),
+        Container(
+          width: 5,
+          height: 5,
+          decoration: const BoxDecoration(
+            color: Color(0xFF00E5FF),
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+        ),
+      ],
+    );
+  }
+
+  // ── Etiquetas de campo ─────────────────────────────────────────────────────
+
+  /// Etiqueta superior con color cyan escalada.
+  Widget _construirEtiqueta(String texto, _Escala e) {
+    return Text(
+      texto,
+      style: TextStyle(
+        color: const Color(0xFF00E5FF),
+        fontSize: e.fuenteEtiqueta,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 0.6,
+      ),
+    );
+  }
+
+  // ── Campos de entrada ──────────────────────────────────────────────────────
+
+  /// Decoración uniforme escalada para todos los campos de texto.
   InputDecoration _disenoInput({
     required String hint,
     required IconData icon,
+    required _Escala e,
     Widget? suffix,
   }) {
     return InputDecoration(
       hintText: hint,
       hintStyle: TextStyle(
         color: Colors.white.withValues(alpha: 0.25),
-        fontSize: 13,
+        fontSize: e.fuenteCampo,
         letterSpacing: 0.5,
       ),
       filled: true,
-      fillColor: const Color(0xFF070E22), // Fondo oscuro idéntico a la imagen
-      prefixIcon: Icon(icon, color: Colors.white38, size: 18),
+      fillColor: const Color(0xFF070E22),
+      prefixIcon: Icon(icon, color: Colors.white38, size: e.iconoCampo),
       suffixIcon: suffix,
-      contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      contentPadding: EdgeInsets.symmetric(
+        vertical: e.paddingCampoV,
+        horizontal: 16,
+      ),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFF1C2A54)), // Borde azul oscuro uniforme
+        borderRadius: BorderRadius.circular(e.radiusCampo),
+        borderSide: const BorderSide(color: Color(0xFF1C2A54)),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(e.radiusCampo),
         borderSide: const BorderSide(color: Color(0xFF1C2A54)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(e.radiusCampo),
         borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(e.radiusCampo),
         borderSide: const BorderSide(color: Colors.orangeAccent, width: 1),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(e.radiusCampo),
         borderSide: const BorderSide(color: Colors.orangeAccent, width: 1.5),
       ),
-      errorStyle: const TextStyle(color: Colors.orangeAccent, fontSize: 11),
+      errorStyle: TextStyle(
+        color: Colors.orangeAccent,
+        fontSize: e.fuenteEtiqueta,
+      ),
     );
   }
 
-  /// Construye el campo de entrada para el usuario.
-  Widget _construirCampoUsuario(bool estaCargando) {
+  /// Campo de texto para el nombre de usuario.
+  Widget _construirCampoUsuario(bool estaCargando, _Escala e) {
     return TextFormField(
       controller: _userController,
       enabled: !estaCargando,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+      keyboardType: TextInputType.emailAddress,
+      enableSuggestions: false,
+      autocorrect: false,
+      style: TextStyle(color: Colors.white, fontSize: e.fuenteCampo),
       decoration: _disenoInput(
         hint: 'Ingresa tu usuario',
         icon: Icons.person_outline_rounded,
+        e: e,
       ),
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
@@ -267,17 +298,20 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
     );
   }
 
-  /// Construye el campo de entrada para la contraseña con toggle.
-  Widget _construirCampoContrasena(bool estaCargando) {
+  /// Campo de texto para la contraseña con toggle de visibilidad.
+  Widget _construirCampoContrasena(bool estaCargando, _Escala e) {
     return TextFormField(
       controller: _passController,
       obscureText: _passwordObscuro,
       enabled: !estaCargando,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+      enableSuggestions: false,
+      autocorrect: false,
+      style: TextStyle(color: Colors.white, fontSize: e.fuenteCampo),
       decoration: _disenoInput(
-        hint: '........',
+        hint: '• • • • • • • •',
         icon: Icons.lock_outline_rounded,
-        suffix: _construirTogglePassword(),
+        e: e,
+        suffix: _construirTogglePassword(e),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -291,45 +325,51 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
     );
   }
 
-  /// Genera el botón para alternar la visibilidad de la contraseña.
-  Widget _construirTogglePassword() {
+  /// Botón de ojo para alternar visibilidad de la contraseña.
+  Widget _construirTogglePassword(_Escala e) {
     return IconButton(
       icon: Icon(
         _passwordObscuro
             ? Icons.visibility_off_outlined
             : Icons.visibility_outlined,
         color: Colors.white38,
-        size: 18,
+        size: e.iconoCampo,
       ),
       onPressed: () => setState(() => _passwordObscuro = !_passwordObscuro),
     );
   }
 
-  /// Crea el botón de recuperar contraseña.
-  Widget _construirBotonOlvido(bool estaCargando) {
+  // ── Botones ────────────────────────────────────────────────────────────────
+
+  /// Enlace "¿Olvidaste tu contraseña?" alineado a la derecha.
+  Widget _construirBotonOlvido(bool estaCargando, _Escala e) {
     return Align(
       alignment: Alignment.centerRight,
       child: InkWell(
         onTap: estaCargando ? null : () {},
-        child: const Text(
-          '¿Olvidaste tu contraseña?',
-          style: TextStyle(
-            color: Color(0xFF00E5FF),
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
+        borderRadius: BorderRadius.circular(4),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+          child: Text(
+            '¿Olvidaste tu contraseña?',
+            style: TextStyle(
+              color: const Color(0xFF00E5FF),
+              fontSize: e.fuenteEtiqueta,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),
     );
   }
 
-  /// Construye el botón premium de inicio de sesión con degradado.
-  Widget _construirBotonLogin(bool estaCargando) {
+  /// Botón principal de login con degradado y efecto de splash.
+  Widget _construirBotonLogin(bool estaCargando, _Escala e) {
     return Container(
       width: double.infinity,
-      height: 52,
+      height: e.altoBoton,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(e.radiusCampo),
         gradient: const LinearGradient(
           colors: [Color(0xFF00E5FF), Color(0xFF0077C2)],
           begin: Alignment.centerLeft,
@@ -338,33 +378,33 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF00E5FF).withValues(alpha: 0.25),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(e.radiusCampo),
         child: InkWell(
           onTap: estaCargando ? null : _intentarLogin,
           splashColor: Colors.white24,
           child: Center(
             child: estaCargando
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
+                ? SizedBox(
+                    width: e.altoBoton * 0.42,
+                    height: e.altoBoton * 0.42,
+                    child: const CircularProgressIndicator(
                       color: Colors.white,
                       strokeWidth: 2.5,
                     ),
                   )
-                : const Text(
+                : Text(
                     'INICIAR SESIÓN',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                      fontSize: 14,
+                      letterSpacing: 1.4,
+                      fontSize: e.fuenteBoton,
                     ),
                   ),
           ),
@@ -373,30 +413,41 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
     );
   }
 
-  /// Agrupa la sección inferior del indicador de red y la versión.
-  Widget _construirIndicadores() {
+  // ── Indicadores inferiores ─────────────────────────────────────────────────
+
+  /// Fila inferior con el indicador de red reactivo y la versión de la app.
+  ///
+  /// La versión se obtiene de [_versionAppProvider] y solo aparece cuando
+  /// ya está disponible — sin flash de placeholder.
+  Widget _construirIndicadores(_Escala e) {
+    final versionAsync = ref.watch(_versionAppProvider);
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _construirRadarConexion(),
-            Text(
-              _appVersion,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.3),
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+            _construirRadarConexion(e),
+            versionAsync.when(
+              data: (version) => Text(
+                version,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  fontSize: e.fuenteEtiqueta,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
+              loading: () => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
             ),
           ],
         ),
-        const SizedBox(height: 35),
+        SizedBox(height: e.espacioGrande),
         Text(
           'Sistema protegido · Brismar © 2026',
+          textAlign: TextAlign.center,
           style: TextStyle(
             color: Colors.white.withValues(alpha: 0.2),
-            fontSize: 11,
+            fontSize: e.fuenteEtiqueta * 0.9,
             letterSpacing: 0.5,
           ),
         ),
@@ -404,40 +455,170 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
     );
   }
 
-  /// Construye un LED pulsante y etiqueta para el estado de red.
-  Widget _construirRadarConexion() {
-    final colorConexion = _hayConexion
+  /// LED + etiqueta ONLINE/OFFLINE basados en [_conectividadProvider].
+  ///
+  /// Se actualiza automáticamente sin [StreamSubscription] manual.
+  Widget _construirRadarConexion(_Escala e) {
+    final conectividadAsync = ref.watch(_conectividadProvider);
+    final hayConexion = conectividadAsync.valueOrNull ?? true;
+    final color = hayConexion
         ? const Color(0xFF00E676)
         : const Color(0xFFFF1744);
 
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 8,
-          height: 8,
+          width: e.tamanoLed,
+          height: e.tamanoLed,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: colorConexion,
+            color: color,
             boxShadow: [
               BoxShadow(
-                color: colorConexion.withValues(alpha: 0.6),
-                blurRadius: 6,
+                color: color.withValues(alpha: 0.6),
+                blurRadius: 7,
                 spreadRadius: 2,
               ),
             ],
           ),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: e.espacioChico),
         Text(
-          _hayConexion ? 'ONLINE' : 'OFFLINE',
+          hayConexion ? 'ONLINE' : 'OFFLINE',
           style: TextStyle(
-            color: colorConexion,
-            fontSize: 11,
+            color: color,
+            fontSize: e.fuenteEtiqueta,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.0,
           ),
         ),
       ],
     );
+  }
+
+  // ── Escala responsiva ──────────────────────────────────────────────────────
+
+  /// Calcula todos los valores escalados en función del ancho disponible.
+  _Escala _calcularEscala(double ancho) => _Escala.desde(ancho);
+}
+
+// ── Modelo de escala ──────────────────────────────────────────────────────────
+
+/// Encapsula todos los valores de tamaño y espaciado responsivos.
+///
+/// Se calcula una sola vez por rebuild usando el ancho del [LayoutBuilder].
+final class _Escala {
+  const _Escala({
+    required this.paddingH,
+    required this.anchoLogo,
+    required this.altoLogo,
+    required this.paddingLogo,
+    required this.radiusLogo,
+    required this.fuenteTitulo,
+    required this.fuenteSubtitulo,
+    required this.fuenteEtiqueta,
+    required this.fuenteCampo,
+    required this.fuenteBoton,
+    required this.iconoCampo,
+    required this.paddingCampoV,
+    required this.radiusCampo,
+    required this.altoBoton,
+    required this.tamanoLed,
+    required this.espacioChico,
+    required this.espacioMedio,
+    required this.espacioGrande,
+  });
+
+  final double paddingH;
+  final double anchoLogo;
+  final double altoLogo;
+  final double paddingLogo;
+  final double radiusLogo;
+  final double fuenteTitulo;
+  final double fuenteSubtitulo;
+  final double fuenteEtiqueta;
+  final double fuenteCampo;
+  final double fuenteBoton;
+  final double iconoCampo;
+  final double paddingCampoV;
+  final double radiusCampo;
+  final double altoBoton;
+  final double tamanoLed;
+  final double espacioChico;
+  final double espacioMedio;
+  final double espacioGrande;
+
+  /// Factory que genera la escala correcta según el ancho de pantalla.
+  ///
+  /// Breakpoints:
+  /// - **< 360 px**: pantallas muy pequeñas (valores mínimos)
+  /// - **360–599 px**: móviles estándar
+  /// - **≥ 600 px**: tablets y escritorio
+  factory _Escala.desde(double ancho) {
+    if (ancho >= 600) {
+      return const _Escala(
+        paddingH: 36,
+        anchoLogo: 180,
+        altoLogo: 104,
+        paddingLogo: 14,
+        radiusLogo: 20,
+        fuenteTitulo: 22,
+        fuenteSubtitulo: 13,
+        fuenteEtiqueta: 12,
+        fuenteCampo: 16,
+        fuenteBoton: 16,
+        iconoCampo: 22,
+        paddingCampoV: 20,
+        radiusCampo: 14,
+        altoBoton: 60,
+        tamanoLed: 10,
+        espacioChico: 10,
+        espacioMedio: 28,
+        espacioGrande: 36,
+      );
+    } else if (ancho >= 360) {
+      return const _Escala(
+        paddingH: 28,
+        anchoLogo: 150,
+        altoLogo: 88,
+        paddingLogo: 12,
+        radiusLogo: 18,
+        fuenteTitulo: 18,
+        fuenteSubtitulo: 11,
+        fuenteEtiqueta: 11,
+        fuenteCampo: 14,
+        fuenteBoton: 14,
+        iconoCampo: 19,
+        paddingCampoV: 17,
+        radiusCampo: 12,
+        altoBoton: 54,
+        tamanoLed: 9,
+        espacioChico: 8,
+        espacioMedio: 22,
+        espacioGrande: 30,
+      );
+    } else {
+      return const _Escala(
+        paddingH: 20,
+        anchoLogo: 120,
+        altoLogo: 72,
+        paddingLogo: 10,
+        radiusLogo: 14,
+        fuenteTitulo: 16,
+        fuenteSubtitulo: 10,
+        fuenteEtiqueta: 10,
+        fuenteCampo: 13,
+        fuenteBoton: 13,
+        iconoCampo: 17,
+        paddingCampoV: 14,
+        radiusCampo: 10,
+        altoBoton: 48,
+        tamanoLed: 8,
+        espacioChico: 6,
+        espacioMedio: 18,
+        espacioGrande: 24,
+      );
+    }
   }
 }

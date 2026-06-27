@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../controladores/controlador_cuadres.dart';
 import 'formulario_cuadre_tabs.dart';
@@ -61,9 +60,11 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () async {
               Navigator.pop(ctx);
-              final router = GoRouter.of(context);
-              await ref.read(proveedorControladorAutenticacion.notifier).cerrarSesion();
-              router.go('/login');
+              // El redirect del enrutadorProvider navega a /login automáticamente
+              // cuando el estado cambia a EstadoAutenticacionNoAutenticado.
+              await ref
+                  .read(proveedorControladorAutenticacion.notifier)
+                  .cerrarSesion();
             },
             child: const Text('Salir', style: TextStyle(color: Colors.white)),
           ),
@@ -138,11 +139,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
               color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Image.asset(
-              'assets/logo.png',
-              height: 20,
-              errorBuilder: (c, e, s) => const Icon(Icons.directions_boat_rounded, color: Color(0xFF00E5FF), size: 20),
-            ),
+            child: const Icon(Icons.directions_boat_rounded, color: Color(0xFF00E5FF), size: 20),
           ),
           const SizedBox(width: 10),
           const Column(
@@ -590,14 +587,10 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
               color: Colors.transparent,
               borderRadius: BorderRadius.circular(6),
             ),
-            child: Image.asset(
-              'assets/logo.png',
-              fit: BoxFit.contain,
-              errorBuilder: (c, e, s) => const Icon(
-                Icons.directions_boat_rounded,
-                size: 24,
-                color: Color(0xFF00E5FF),
-              ),
+            child: const Icon(
+              Icons.directions_boat_rounded,
+              size: 24,
+              color: Color(0xFF00E5FF),
             ),
           ),
           const SizedBox(height: 12),

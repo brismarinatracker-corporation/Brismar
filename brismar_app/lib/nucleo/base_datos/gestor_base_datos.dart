@@ -90,6 +90,19 @@ class GestorBaseDatos {
         FOREIGN KEY (cuadre_id) REFERENCES cuadres (id) ON DELETE CASCADE
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE zarpes (
+        id TEXT PRIMARY KEY,
+        placa_camara TEXT NOT NULL,
+        chofer TEXT NOT NULL,
+        muelle_partida TEXT NOT NULL,
+        foto_url_evidencia TEXT,
+        foto_local_path TEXT,
+        fecha_zarpe TEXT NOT NULL,
+        estado TEXT DEFAULT 'pendiente'
+      )
+    ''');
   }
 
   /// Migraciones incrementales.
@@ -110,6 +123,19 @@ class GestorBaseDatos {
     }
     if (oldVersion < 6) {
       await db.execute('ALTER TABLE cuadres ADD COLUMN pesador TEXT');
+      // Agregar tabla de zarpes
+      await db.execute('''
+        CREATE TABLE zarpes (
+          id TEXT PRIMARY KEY,
+          placa_camara TEXT NOT NULL,
+          chofer TEXT NOT NULL,
+          muelle_partida TEXT NOT NULL,
+          foto_url_evidencia TEXT,
+          foto_local_path TEXT,
+          fecha_zarpe TEXT NOT NULL,
+          estado TEXT DEFAULT 'pendiente'
+        )
+      ''');
     }
   }
 
