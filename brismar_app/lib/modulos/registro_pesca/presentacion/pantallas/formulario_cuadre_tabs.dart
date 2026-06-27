@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,7 +52,7 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
   // Controladores Generales
   final _placaCtrl = TextEditingController();
   final _fechaZarpeCtrl = TextEditingController();
-  final _plantaDestinoCtrl = TextEditingController();
+  final _muellePartidaCtrl = TextEditingController();
 
   // Controladores de Gastos Operativos Establecidos
   final _facturacionCtrl = TextEditingController();
@@ -77,7 +78,7 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
       _cuadreId = widget.cuadreInicial!.id;
       _placaCtrl.text = widget.cuadreInicial!.placa;
       _fechaZarpeCtrl.text = widget.cuadreInicial!.fechaZarpe ?? '';
-      _plantaDestinoCtrl.text = widget.cuadreInicial!.plantaDestino ?? '';
+      _muellePartidaCtrl.text = widget.cuadreInicial!.muellePartida ?? '';
       _compras.addAll(widget.cuadreInicial!.compras);
       _gastos.addAll(widget.cuadreInicial!.gastos);
       _ventas.addAll(widget.cuadreInicial!.ventas);
@@ -119,7 +120,7 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
   void dispose() {
     _placaCtrl.dispose();
     _fechaZarpeCtrl.dispose();
-    _plantaDestinoCtrl.dispose();
+    _muellePartidaCtrl.dispose();
     _facturacionCtrl.dispose();
     _personalCtrl.dispose();
     _apoyoCtrl.dispose();
@@ -231,7 +232,7 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
       cajasLlenas: widget.cuadreInicial?.cajasLlenas,
       cajasVacias: widget.cuadreInicial?.cajasVacias,
       tipoProducto: widget.cuadreInicial?.tipoProducto,
-      plantaDestino: _plantaDestinoCtrl.text.trim().isEmpty ? null : _plantaDestinoCtrl.text.trim(),
+      muellePartida: _muellePartidaCtrl.text.trim().isEmpty ? null : _muellePartidaCtrl.text.trim(),
       compras: _compras,
       gastos: _gastos,
       ventas: _ventas,
@@ -966,7 +967,7 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
   String _obtenerNombreProducto(int? tipo) {
     switch (tipo) {
       case 1: return 'Pota';
-      case 2: return 'Merluza';
+      case 2: return 'Bonito';
       case 3: return 'Caballa';
       case 4: return 'Jurel';
       case 5: return 'Otros';
@@ -988,7 +989,7 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
   }
 
   Widget _construirFotoZarpe(String path) {
-    if (path.startsWith('http')) {
+    if (path.startsWith('http') || path.startsWith('blob:') || kIsWeb) {
       return Image.network(
         path,
         fit: BoxFit.cover,
@@ -1034,20 +1035,31 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: SizedBox(
-              height: 140,
-              width: double.infinity,
-              child: _construirFotoZarpe(widget.cuadreInicial!.fotoZarpeUrl!),
-            ),
+          Row(
+            children: widget.cuadreInicial!.fotoZarpeUrl!
+                .split(',')
+                .where((path) => path.trim().isNotEmpty)
+                .map((path) => Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: SizedBox(
+                            height: 140,
+                            child: _construirFotoZarpe(path.trim()),
+                          ),
+                        ),
+                      ),
+                    ))
+                .toList(),
           ),
           const SizedBox(height: 12),
           _buildZarpeInfoRow('Peso Total:', '${_formatearNumero(widget.cuadreInicial!.pesoTotal ?? 0)} Kg'),
           _buildZarpeInfoRow('Cajas Llenas:', '${widget.cuadreInicial!.cajasLlenas ?? 0}'),
           _buildZarpeInfoRow('Cajas Vacías:', '${widget.cuadreInicial!.cajasVacias ?? 0}'),
           _buildZarpeInfoRow('Tipo Producto:', _obtenerNombreProducto(widget.cuadreInicial!.tipoProducto)),
+          if (widget.cuadreInicial!.muellePartida != null && widget.cuadreInicial!.muellePartida!.isNotEmpty)
+            _buildZarpeInfoRow('Muelle de Partida:', widget.cuadreInicial!.muellePartida!),
         ],
       ),
     );

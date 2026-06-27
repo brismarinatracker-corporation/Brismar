@@ -32,24 +32,37 @@ class FuenteDatosCuadresRemota {
       urlExcelCloud = _cliente.storage.from('reportes').getPublicUrl('$nombreBase.xlsx');
       */
 
-      // Subida de Foto de Zarpe de Cámara si es archivo local
-      if (urlFotoCloud != null && !urlFotoCloud.startsWith('http')) {
-        try {
-          final file = File(urlFotoCloud);
-          if (await file.exists()) {
-            final ext = urlFotoCloud.split('.').last;
-            final nombreArchivo = '${cuadre.usuarioId}/${cuadre.id}_zarpe.$ext';
-            
-            await _cliente.storage.from('camaras-zarpes').upload(
-              nombreArchivo,
-              file,
-              fileOptions: const sb.FileOptions(upsert: true),
-            );
-            urlFotoCloud = _cliente.storage.from('camaras-zarpes').getPublicUrl(nombreArchivo);
+      // Subida de Fotos de Zarpe de Cámara si son archivos locales
+      if (urlFotoCloud != null && urlFotoCloud.isNotEmpty) {
+        final paths = urlFotoCloud.split(',');
+        final List<String> urlsSubidas = [];
+        for (int i = 0; i < paths.length; i++) {
+          final path = paths[i].trim();
+          if (path.isEmpty) continue;
+          if (path.startsWith('http')) {
+            urlsSubidas.add(path);
+          } else {
+            try {
+              final file = File(path);
+              if (await file.exists()) {
+                final ext = path.split('.').last;
+                final nombreArchivo = '${cuadre.usuarioId}/${cuadre.id}_zarpe_$i.$ext';
+                
+                await _cliente.storage.from('camaras-zarpes').upload(
+                  nombreArchivo,
+                  file,
+                  fileOptions: const sb.FileOptions(upsert: true),
+                );
+                final publicUrl = _cliente.storage.from('camaras-zarpes').getPublicUrl(nombreArchivo);
+                urlsSubidas.add(publicUrl);
+              }
+            } catch (e) {
+              debugPrint('Error subiendo foto $i de zarpe a Supabase: $e');
+              urlsSubidas.add(path); // Mantener ruta original para reintento
+            }
           }
-        } catch (e) {
-          debugPrint('Error subiendo foto de zarpe a Supabase: $e');
         }
+        urlFotoCloud = urlsSubidas.join(',');
       }
 
       // 2. Insertar Cabecera (Cuadre)

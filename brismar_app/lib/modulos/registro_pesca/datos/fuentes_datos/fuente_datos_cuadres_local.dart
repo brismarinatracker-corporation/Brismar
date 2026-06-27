@@ -87,7 +87,7 @@ class FuenteDatosCuadresLocal {
           cajasLlenas: cuadre.cajasLlenas,
           cajasVacias: cuadre.cajasVacias,
           tipoProducto: cuadre.tipoProducto,
-          plantaDestino: cuadre.plantaDestino,
+          muellePartida: cuadre.muellePartida,
           compras: compras,
           gastos: gastos,
           ventas: ventas,

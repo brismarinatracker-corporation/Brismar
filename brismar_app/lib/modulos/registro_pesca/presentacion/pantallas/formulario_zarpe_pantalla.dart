@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,10 +23,10 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
   final _pesoTotalCtrl = TextEditingController();
   final _cajasLlenasCtrl = TextEditingController();
   final _cajasVaciasCtrl = TextEditingController();
-  final _plantaDestinoCtrl = TextEditingController();
+  final _muellePartidaCtrl = TextEditingController();
 
-  int _tipoProductoSeleccionado = 1; // 1: Pota, 2: Merluza, 3: Caballa, 4: Jurel, 5: Otros
-  File? _fotoEvidencia;
+  int _tipoProductoSeleccionado = 1; // 1: Pota, 2: Bonito, 3: Caballa, 4: Jurel, 5: Otros
+  final List<XFile> _fotosEvidencia = [];
   bool _guardando = false;
 
   final _picker = ImagePicker();
@@ -36,19 +37,28 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
     _pesoTotalCtrl.dispose();
     _cajasLlenasCtrl.dispose();
     _cajasVaciasCtrl.dispose();
-    _plantaDestinoCtrl.dispose();
+    _muellePartidaCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _tomarFoto() async {
     try {
+      if (_fotosEvidencia.length >= 3) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ya has agregado el máximo de 3 fotos.'),
+            backgroundColor: Colors.amber,
+          ),
+        );
+        return;
+      }
       final foto = await _picker.pickImage(
         source: ImageSource.camera,
         imageQuality: 70, // Optimizar peso de imagen
       );
       if (foto != null) {
         setState(() {
-          _fotoEvidencia = File(foto.path);
+          _fotosEvidencia.add(foto);
         });
       }
     } catch (e) {
@@ -64,13 +74,22 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
 
   Future<void> _seleccionarFotoGaleria() async {
     try {
+      if (_fotosEvidencia.length >= 3) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ya has agregado el máximo de 3 fotos.'),
+            backgroundColor: Colors.amber,
+          ),
+        );
+        return;
+      }
       final foto = await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 70,
       );
       if (foto != null) {
         setState(() {
-          _fotoEvidencia = File(foto.path);
+          _fotosEvidencia.add(foto);
         });
       }
     } catch (e) {
@@ -82,6 +101,12 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         ),
       );
     }
+  }
+
+  void _eliminarFoto(int index) {
+    setState(() {
+      _fotosEvidencia.removeAt(index);
+    });
   }
 
   void _mostrarOpcionesImagen() {
@@ -119,10 +144,10 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
   Future<void> _guardarZarpe() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_fotoEvidencia == null) {
+    if (_fotosEvidencia.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Debe tomar una fotografía de evidencia para registrar el zarpe'),
+          content: Text('Debe tomar al menos una fotografía de evidencia para registrar el zarpe'),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -160,12 +185,12 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         placa: _placaCtrl.text.toUpperCase(),
         fechaZarpe: fechaActual,
         estado: 'zarpe', // Estado especial de zarpe de cámara
-        fotoZarpeUrl: _fotoEvidencia!.path,
+        fotoZarpeUrl: _fotosEvidencia.map((f) => f.path).join(','),
         pesoTotal: pesoTotal,
         cajasLlenas: cajasLlenas,
         cajasVacias: cajasVacias,
         tipoProducto: _tipoProductoSeleccionado,
-        plantaDestino: _plantaDestinoCtrl.text.trim().isEmpty ? null : _plantaDestinoCtrl.text.trim(),
+        muellePartida: _muellePartidaCtrl.text.trim().isEmpty ? null : _muellePartidaCtrl.text.trim(),
         sincronizado: false,
         compras: const [],
         gastos: const [],
@@ -289,56 +314,38 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Card de Fotografía de Evidencia
-                    GestureDetector(
-                      onTap: _mostrarOpcionesImagen,
-                      child: Container(
-                        height: 200,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0F224A).withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: _fotoEvidencia != null
-                                ? const Color(0xFF00E5FF).withValues(alpha: 0.5)
-                                : Colors.white.withValues(alpha: 0.15),
-                            width: 1.5,
-                          ),
+                    // Card de Fotografía de Evidencia
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Fotos de Evidencia (Máx. 3)',
+                              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '${_fotosEvidencia.length}/3',
+                              style: const TextStyle(color: Color(0xFF00E5FF), fontSize: 13, fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
-                        child: _fotoEvidencia != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(15),
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    Image.file(
-                                      _fotoEvidencia!,
-                                      fit: BoxFit.cover,
-                                    ),
-                                    Positioned(
-                                      bottom: 12,
-                                      right: 12,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withValues(alpha: 0.6),
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        child: const Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(Icons.refresh_rounded, color: Colors.white, size: 14),
-                                            SizedBox(width: 4),
-                                            Text(
-                                              'Cambiar Foto',
-                                              style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                        const SizedBox(height: 12),
+                        if (_fotosEvidencia.isEmpty)
+                          GestureDetector(
+                            onTap: _mostrarOpcionesImagen,
+                            child: Container(
+                              height: 180,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0F224A).withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                  width: 1.5,
                                 ),
-                              )
-                            : Column(
+                              ),
+                              child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Container(
@@ -356,12 +363,97 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                                   ),
                                   const SizedBox(height: 4),
                                   const Text(
-                                    '(Obligatorio para salir del muelle)',
+                                    '(Al menos 1 foto requerida para el zarpe)',
                                     style: TextStyle(color: Colors.white54, fontSize: 11),
                                   ),
                                 ],
                               ),
-                      ),
+                            ),
+                          )
+                        else
+                          SizedBox(
+                            height: 130,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _fotosEvidencia.length + (_fotosEvidencia.length < 3 ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index == _fotosEvidencia.length) {
+                                  // Botón de Añadir otra foto
+                                  return GestureDetector(
+                                    onTap: _mostrarOpcionesImagen,
+                                    child: Container(
+                                      width: 110,
+                                      margin: const EdgeInsets.only(right: 12),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF0F224A).withValues(alpha: 0.3),
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: const Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.add_a_photo_rounded, color: Color(0xFF00E5FF), size: 28),
+                                          SizedBox(height: 8),
+                                          Text(
+                                            'Añadir',
+                                            style: TextStyle(color: Color(0xFF00E5FF), fontSize: 12, fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                final foto = _fotosEvidencia[index];
+                                return Stack(
+                                  children: [
+                                    SizedBox(
+                                      width: 110,
+                                      height: 130,
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(right: 12),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(16),
+                                          child: kIsWeb
+                                              ? Image.network(
+                                                  foto.path,
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : Image.file(
+                                                  File(foto.path),
+                                                  fit: BoxFit.cover,
+                                                ),
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 4,
+                                      right: 16,
+                                      child: GestureDetector(
+                                        onTap: () => _eliminarFoto(index),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: const BoxDecoration(
+                                            color: Colors.black54,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.close_rounded,
+                                            color: Colors.redAccent,
+                                            size: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 24),
 
@@ -457,10 +549,26 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                       initialValue: _tipoProductoSeleccionado,
                       dropdownColor: const Color(0xFF0F224A),
                       style: const TextStyle(color: Colors.white),
-                      decoration: _construirInputDecoration(labelText: 'Tipo de Producto'),
+                      iconEnabledColor: const Color(0xFFFFD54F),
+                      decoration: InputDecoration(
+                        labelText: 'Tipo de Producto',
+                        labelStyle: const TextStyle(color: Colors.white70, fontSize: 13),
+                        floatingLabelStyle: const TextStyle(color: Color(0xFFFFD54F), fontWeight: FontWeight.bold),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: const Color(0xFFFFD54F).withValues(alpha: 0.35), width: 1.2),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFFFD54F), width: 1.8),
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFF0F224A).withValues(alpha: 0.5),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      ),
                       items: const [
                         DropdownMenuItem(value: 1, child: Text('Pota')),
-                        DropdownMenuItem(value: 2, child: Text('Merluza')),
+                        DropdownMenuItem(value: 2, child: Text('Bonito')),
                         DropdownMenuItem(value: 3, child: Text('Caballa')),
                         DropdownMenuItem(value: 4, child: Text('Jurel')),
                         DropdownMenuItem(value: 5, child: Text('Otros')),
@@ -475,15 +583,21 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                     ),
                     const SizedBox(height: 16),
 
-                    // Planta Destino
+                    // Muelle de Partida
                     TextFormField(
-                      controller: _plantaDestinoCtrl,
-                      style: const TextStyle(color: Colors.white),
-                      textCapitalization: TextCapitalization.words,
+                      controller: _muellePartidaCtrl,
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [
+                        _UpperCaseInputFormatter(),
+                      ],
                       decoration: _construirInputDecoration(
-                        labelText: 'Planta de Destino (Opcional)',
-                        suffixIcon: const Icon(Icons.business_rounded, color: Color(0xFF00E5FF), size: 20),
+                        labelText: 'Muelle de Partida',
+                        suffixIcon: const Icon(Icons.anchor_rounded, color: Color(0xFF00E5FF), size: 20),
                       ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'El muelle de partida es requerido';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 32),
 
@@ -542,6 +656,16 @@ class _PlacaInputFormatter extends TextInputFormatter {
     return TextEditingValue(
       text: formatted,
       selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
+
+class _UpperCaseInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
     );
   }
 }
