@@ -1,29 +1,38 @@
-# FLUJO 10: SINCRONIZACIÓN DE USUARIOS (WEB -> APP MÓVIL)
+# FLUJO 10: SINCRONIZACIÓN BIDIRECCIONAL (WEB <-> APP MÓVIL)
 
 ## Descripción General
-Este flujo define la mecánica mediante la cual un usuario creado en la Web (Supabase) viaja hacia los dispositivos móviles (`brismar_app`) para ser almacenado en sus bases de datos locales (SQLite) y permitir la operación "Offline-First".
+Este flujo define la mecánica mediante la cual los datos se sincronizan entre la App Móvil (`brismar_app`) y la Web (Supabase).
+- **Downstream (Web -> App):** Usuarios, catalogos, actualizados desde la nube a SQLite (Offline-First).
+- **Upstream (App -> Web):** Cuadres y Zarpes creados offline que viajan a Supabase cuando se recupera internet.
 
-## Estrategia de Sincronización
-La aplicación móvil no descarga toda la base de datos de Supabase. Descarga **solo** la información relevante para la sede o rol del usuario logueado en el dispositivo.
+## Estrategia de Sincronización Automática (Upstream)
+La aplicación móvil escucha activamente los cambios de red utilizando `connectivity_plus`. Cuando detecta que el internet (WiFi o Datos) ha vuelto, lanza un proceso de sincronización en segundo plano ("Auto-Sync").
 
-## Diagrama BPMN (Teórico)
+### Diagrama BPMN (Zarpes y Cuadres Offline)
 
 ```mermaid
 sequenceDiagram
+    participant OS as Sistema Operativo
+    participant App as App Móvil (Global Listener)
+    participant Local as SQLite (estado='pendiente')
     participant Supa as Supabase (Nube)
-    participant Sync as Sincronizador (App)
-    participant Local as SQLite (Local)
-    actor Operario as App Móvil (Pescador/Patrón)
 
-    Sync->>Sync: Detecta conexión a Internet
-    Sync->>Supa: GET /usuarios?sede=eq.Piura&updated_at=gt.last_sync
-    Supa-->>Sync: Retorna lista de nuevos usuarios (creados en la Web)
-    Sync->>Local: Inyecta nuevos usuarios a SQLite
-    Local-->>Sync: OK
-    Sync-->>Operario: Interfaz se actualiza (Nuevo compañero disponible)
+    OS->>App: Evento: Conexión a Internet Restablecida
+    App->>Local: Query: Obtener Zarpes y Cuadres con estado 'pendiente'
+    Local-->>App: Retorna registros pendientes
+    loop Por cada registro
+        App->>Supa: Sube fotos a Storage y registra fila en PostgreSQL
+        alt Si tiene éxito
+            Supa-->>App: HTTP 20X OK
+            App->>Local: Update: estado='sincronizado'
+        else Si hay interferencia
+            Supa-->>App: Timeout / HTTP 50X Error
+            App->>App: Retiene estado='pendiente' para próximo intento
+        end
+    end
 ```
 
 ## Reglas de Negocio (Offline-First)
-1. **Timestamp (Marcas de Tiempo):** La app móvil debe guardar la fecha de su última sincronización (`last_sync`). Al volver a tener internet, solo pedirá a Supabase los usuarios cuyo `updated_at` sea mayor a ese `last_sync`. (Evita descargar la base de datos entera repetidamente).
-2. **Conflictos:** En la entidad `Usuario`, la Web es la "Fuente de la Verdad". Si hay un conflicto, los datos de Supabase sobrescriben los de SQLite local.
-3. **Módulo Transversal:** Esta lógica debe vivir en el `nucleo/sincronizacion/` de la app móvil, y debe ser transparente para el usuario final (ocurre en background o al iniciar la app).
+1. **Inteligencia de Estados:** El filtro principal es la columna `estado`. La base de datos local nunca sube datos repetidos porque ignora los que están como `sincronizado`.
+2. **Tolerancia a Fallos:** Si la subida de un Zarpe a Supabase es interrumpida a mitad de camino, el error es atrapado en un bloque seguro. No se actualiza SQLite a menos que Supabase confirme la recepción completa, evitando pérdida de información.
+3. **Módulo Transversal:** El listener global vive en el widget raíz (`MyApp` en `main.dart`) para garantizar que la reconexión se capture sin importar en qué pantalla esté el usuario.

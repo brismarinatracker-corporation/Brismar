@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../dominio/entidades/cuadre_entidad.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../controladores/controlador_cuadres.dart';
-import 'package:go_router/go_router.dart';
+import '../controladores/controlador_zarpes.dart';
 
 class DashboardCuadresPantalla extends ConsumerStatefulWidget {
   const DashboardCuadresPantalla({super.key});
@@ -167,7 +169,10 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
       actions: [
         IconButton(
           icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-          onPressed: () => ref.read(cuadresProvider.notifier).cargarHistorial(),
+          onPressed: () {
+            ref.read(cuadresProvider.notifier).cargarHistorial();
+            ref.read(proveedorZarpes.notifier).sincronizarZarpesPendientes();
+          },
         ),
         IconButton(
           icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
@@ -177,7 +182,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
     );
   }
 
-  Widget _buildBodyContent(AsyncValue estadoCuadres) {
+  Widget _buildBodyContent(AsyncValue<List<CuadreEntidad>> estadoCuadres) {
     if (_pestanaSeleccionada == 0) {
       // Registrar
       return _buildVistaRegistrar();
@@ -306,7 +311,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
     );
   }
 
-  Widget _buildVistaHistorial(AsyncValue estadoCuadres) {
+  Widget _buildVistaHistorial(AsyncValue<List<CuadreEntidad>> estadoCuadres) {
     return estadoCuadres.when(
       data: (cuadres) {
         final query = _searchCtrl.text.toLowerCase().trim();

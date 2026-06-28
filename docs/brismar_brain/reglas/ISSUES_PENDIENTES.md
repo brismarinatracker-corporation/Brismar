@@ -14,3 +14,11 @@ Este documento registra las tareas críticas de arquitectura y negocio que deben
 - **Duda de Negocio:** ¿Deben enviarse los borradores a la nube para que sean visibles en la Web administrativa (con un flag de "estado: borrador"), o la App debe retenerlos y no enviarlos hasta que estén completos?
 - **Acción Pendiente:** Consultar con el equipo operativo la regla de negocio exacta e implementar el filtro (o el flag de estado) en la lógica del `SincronizarPendientesCasoUso`.
 - **Estado:** 🔴 Pendiente de Consulta con Operaciones.
+
+### Issue #003: Exportación de Plantilla Excel y Conexión de Campos (Web-App)
+- **Descripción:** La exportación actual en la Web genera un Excel genérico básico. Se requiere que inyecte los datos directamente en `PLANTILLA_CUADRE_BRISMAR.xlsx`.
+- **Acción Pendiente:** 
+  1. Subir `PLANTILLA_CUADRE_BRISMAR.xlsx` como un asset del proyecto.
+  2. Modificar `ControladorCuadres` (Web) para usar el paquete `excel` y rellenar las celdas exactas según la plantilla.
+  3. Asegurar que los campos reales enviados desde la App Móvil (tonelajes, hielo, muelle) coincidan y se muestren tanto en la tabla de "Tránsito" como en el reporte final.
+- **Estado:** 🟡 Pendiente de Implementación para el siguiente hito.

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -235,7 +236,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                                 child: Stack(
                                   fit: StackFit.expand,
                                   children: [
-                                    Image.file(_fotoEvidencia!, fit: BoxFit.cover),
+                                    kIsWeb ? Image.network(_fotoEvidencia!.path, fit: BoxFit.cover) : Image.file(_fotoEvidencia!, fit: BoxFit.cover),
                                     Positioned(
                                       bottom: 12, right: 12,
                                       child: Container(

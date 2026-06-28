@@ -58,4 +58,24 @@ class ControladorZarpes extends StateNotifier<AsyncValue<void>> {
       rethrow;
     }
   }
+
+  Future<void> sincronizarZarpesPendientes() async {
+    final db = await GestorBaseDatos.instance.database;
+    final pendientes = await db.query('zarpes', where: 'estado = ?', whereArgs: ['pendiente']);
+    
+    for (var row in pendientes) {
+      final modelo = ZarpeModelo.fromMap(row);
+      try {
+        await _fuenteRemota.subirZarpe(modelo);
+        await db.update(
+          'zarpes', 
+          {'estado': 'sincronizado'}, 
+          where: 'id = ?', 
+          whereArgs: [modelo.id]
+        );
+      } catch (e) {
+        debugPrint('Error auto-sincronizando Zarpe: $e');
+      }
+    }
+  }
 }
