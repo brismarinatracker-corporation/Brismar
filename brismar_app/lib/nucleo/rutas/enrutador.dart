@@ -8,7 +8,9 @@ import '../../modulos/autenticacion/presentacion/pantallas/configurar_pin_pantal
 import '../../modulos/autenticacion/presentacion/pantallas/configurar_biometria_pantalla.dart';
 import '../../modulos/autenticacion/presentacion/pantallas/acceso_rapido_pantalla.dart';
 import '../../modulos/registro_pesca/presentacion/pantallas/dashboard_cuadres.dart';
-
+import '../../modulos/registro_pesca/presentacion/pantallas/formulario_zarpe_pantalla.dart';
+import '../../modulos/registro_pesca/presentacion/pantallas/formulario_cuadre_tabs.dart';
+import '../../modulos/registro_pesca/dominio/entidades/cuadre_entidad.dart';
 part 'enrutador.g.dart';
 
 /// Ruta de la pantalla de login completo (correo + contraseña).
@@ -67,6 +69,28 @@ class RegistroRoute extends GoRouteData with $RegistroRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) =>
       const DashboardCuadresPantalla();
+}
+
+/// Ruta para registrar un nuevo Zarpe
+@TypedGoRoute<NuevoZarpeRoute>(path: '/nuevo-zarpe')
+class NuevoZarpeRoute extends GoRouteData with $NuevoZarpeRoute {
+  const NuevoZarpeRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const FormularioZarpePantalla();
+}
+
+/// Ruta para registrar o editar un Cuadre
+@TypedGoRoute<NuevoCuadreRoute>(path: '/nuevo-cuadre')
+class NuevoCuadreRoute extends GoRouteData with $NuevoCuadreRoute {
+  final CuadreEntidad? $extra;
+
+  const NuevoCuadreRoute({this.$extra});
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      FormularioCuadreTabs(cuadreInicial: $extra);
 }
 
 /// Configuración de rutas declarativas mediante GoRouter generadas y protegidas por Riverpod.

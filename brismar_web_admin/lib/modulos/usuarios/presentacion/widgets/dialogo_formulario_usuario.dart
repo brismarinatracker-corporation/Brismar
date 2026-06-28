@@ -1,0 +1,514 @@
+import 'dart:ui';
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../dominio/modelos/usuario_admin_modelo.dart';
+import '../controladores/controlador_usuarios.dart';
+import '../../infraestructura/servicios/servicio_dni.dart';
+
+class DialogoFormularioUsuario extends ConsumerStatefulWidget {
+  final UsuarioAdminModelo? usuarioAEditar;
+
+  const DialogoFormularioUsuario({super.key, this.usuarioAEditar});
+
+  @override
+  ConsumerState<DialogoFormularioUsuario> createState() => _DialogoFormularioUsuarioState();
+}
+
+class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsuario> with SingleTickerProviderStateMixin {
+  final _formKey = GlobalKey<FormState>();
+  
+  late TextEditingController _dniCtrl;
+  late TextEditingController _nombresCtrl;
+  late TextEditingController _apellidoPaternoCtrl;
+  late TextEditingController _apellidoMaternoCtrl;
+  late TextEditingController _correoCtrl;
+  late TextEditingController _passwordCtrl;
+  late TextEditingController _nombreCtrl; // Compatibilidad con widget antiguo
+  
+  late AnimationController _animController;
+  late Animation<Offset> _slideAnimation;
+
+  String _rolSeleccionado = 'operario';
+  String _sedeSeleccionada = 'Piura';
+  bool _isLoading = false;
+  bool _mostrarPassword = false;
+  String? _errorMensaje;
+
+  bool _buscandoDNI = false;
+  bool _ocultarPassword = true;
+  String? _mensajeError;
+
+  final _servicioDNI = ServicioDNI();
+
+  DateTime? _fechaNacimientoSeleccionada;
+  String? _fotoPerfilUrl;
+  dynamic _fotoBytes;
+  String? _fotoExtension;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
+    _slideAnimation = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic)
+    );
+    _animController.forward();
+
+    final u = widget.usuarioAEditar;
+    
+    _dniCtrl = TextEditingController(text: u?.dni ?? '');
+    _nombresCtrl = TextEditingController();
+    _apellidoPaternoCtrl = TextEditingController();
+    _apellidoMaternoCtrl = TextEditingController();
+    _correoCtrl = TextEditingController(text: u?.correo ?? '');
+    _passwordCtrl = TextEditingController();
+    _nombreCtrl = TextEditingController(text: u?.nombre ?? '');
+    
+    if (u != null) {
+      if (['operario', 'administrador', 'bahia'].contains(u.rol)) {
+        _rolSeleccionado = u.rol;
+      }
+      if (['Piura', 'Lambayeque'].contains(u.sede)) {
+        _sedeSeleccionada = u.sede;
+      }
+      _fechaNacimientoSeleccionada = u.fechaNacimiento;
+      _fotoPerfilUrl = u.fotoPerfil;
+      
+      if (u.nombre.isNotEmpty) {
+        final partes = u.nombre.split(' ');
+        if (partes.isNotEmpty) _nombresCtrl.text = partes.first;
+        if (partes.length > 1) _apellidoPaternoCtrl.text = partes[1];
+        if (partes.length > 2) _apellidoMaternoCtrl.text = partes.sublist(2).join(' ');
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    _nombreCtrl.dispose();
+    _dniCtrl.dispose();
+    _correoCtrl.dispose();
+    _passwordCtrl.dispose();
+    super.dispose();
+  }
+
+  void _cerrar() {
+    _animController.reverse().then((_) {
+      if (mounted) Navigator.of(context).pop();
+    });
+  }
+
+  String _quitarAcentos(String texto) {
+    const conAcento = 'áéíóúÁÉÍÓÚñÑüÜ';
+    const sinAcento = 'aeiouAEIOUnNuu';
+    for (int i = 0; i < conAcento.length; i++) {
+      texto = texto.replaceAll(conAcento[i], sinAcento[i]);
+    }
+    return texto;
+  }
+
+  void _generarCorreoCorporativo(String nombres, String apellidoPaterno, String apellidoMaterno) {
+    if (nombres.isEmpty || apellidoPaterno.isEmpty) return;
+    
+    final partesNombres = nombres.trim().split(RegExp(r'\s+'));
+    String inicialesNombres = '';
+    for (var nombre in partesNombres) {
+      if (nombre.isNotEmpty) {
+        inicialesNombres += nombre.substring(0, 1);
+      }
+    }
+    
+    final apellidoPat = apellidoPaterno.trim().split(RegExp(r'\s+')).first;
+    final inicialMat = apellidoMaterno.trim().isNotEmpty ? apellidoMaterno.trim().substring(0, 1) : '';
+    final prefijoBase = _quitarAcentos('$inicialesNombres$apellidoPat$inicialMat').toLowerCase();
+    
+    String correoFinal = '$prefijoBase@brismar.com.pe';
+    
+    final usuariosActuales = ref.read(controladorUsuariosProvider).usuarios;
+    int contador = 1;
+    while(usuariosActuales.any((u) => u.correo == correoFinal)) {
+      correoFinal = '$prefijoBase$contador@brismar.com.pe';
+      contador++;
+    }
+    
+    setState(() {
+      _correoCtrl.text = correoFinal;
+      _mensajeError = null;
+    });
+  }
+
+  void _autogenerarPassword() {
+    const chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890!@#\$%^&*';
+    Random rnd = Random();
+    String newPassword = String.fromCharCodes(Iterable.generate(12, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))));
+    setState(() {
+      _passwordCtrl.text = newPassword;
+      _ocultarPassword = false;
+      _mensajeError = null;
+    });
+  }
+
+  void _mostrarErrorInline(String mensaje) {
+    setState(() {
+      _mensajeError = mensaje;
+    });
+  }
+
+  void _guardar() async {
+    if (!_formKey.currentState!.validate()) {
+      _mostrarErrorInline('Revisa los campos requeridos marcados en rojo.');
+      return;
+    }
+
+    if (widget.usuarioAEditar == null && _passwordCtrl.text.length < 6) {
+      _mostrarErrorInline('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    if (widget.usuarioAEditar != null && _passwordCtrl.text.isNotEmpty && _passwordCtrl.text.length < 6) {
+      _mostrarErrorInline('La nueva contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    setState(() {
+      _mensajeError = null;
+    });
+
+    final usuario = UsuarioAdminModelo(
+      uid: widget.usuarioAEditar?.uid ?? '',
+      dni: _dniCtrl.text.trim(),
+      correo: _correoCtrl.text.trim(),
+      nombre: _nombreCtrl.text.trim(),
+      rol: _rolSeleccionado,
+      sede: _sedeSeleccionada,
+      activo: widget.usuarioAEditar?.activo ?? true,
+    );
+
+    final ctrl = ref.read(controladorUsuariosProvider.notifier);
+    bool exito;
+
+    if (widget.usuarioAEditar == null) {
+      exito = await ctrl.crearUsuario(usuario, _passwordCtrl.text);
+    } else {
+      exito = await ctrl.actualizarUsuario(usuario, nuevaPassword: _passwordCtrl.text.isEmpty ? null : _passwordCtrl.text);
+    }
+
+    if (!mounted) return;
+
+    if (exito) {
+      _cerrar();
+    } else {
+      String errorServer = ref.read(controladorUsuariosProvider).error ?? 'Error desconocido';
+      
+      // Traducción de errores comunes de Supabase
+      if (errorServer.contains('already been registered') || errorServer.contains('duplicate key value violates unique constraint')) {
+        errorServer = 'Este correo corporativo ya se encuentra registrado en el sistema. Intenta generar uno distinto.';
+      } else if (errorServer.contains('Invalid login credentials')) {
+        errorServer = 'Credenciales inválidas. Verifica los datos ingresados.';
+      } else if (errorServer.contains('weak_password')) {
+        errorServer = 'La contraseña es muy débil. Debe contener al menos 6 caracteres y ser más compleja.';
+      } else if (errorServer.contains('Failed to create user')) {
+        errorServer = 'Hubo un problema de conexión al registrar la cuenta. Reintente en un momento.';
+      }
+      
+      _mostrarErrorInline(errorServer);
+    }
+  }
+
+  Future<void> _buscarDNI() async {
+    final dni = _dniCtrl.text.trim();
+    if (dni.length != 8) {
+      _mostrarErrorInline('El DNI debe tener exactamente 8 dígitos.');
+      return;
+    }
+
+    setState(() {
+      _buscandoDNI = true;
+      _mensajeError = null;
+    });
+
+    try {
+      final datosDNI = await _servicioDNI.consultarDNI(dni);
+      setState(() {
+        _nombreCtrl.text = datosDNI['nombreCompleto']!;
+      });
+      _generarCorreoCorporativo(datosDNI['nombres']!, datosDNI['apellidoPaterno']!, datosDNI['apellidoMaterno']!);
+    } catch (e) {
+      _mostrarErrorInline(e.toString().replaceAll('Exception: ', ''));
+    } finally {
+      if (mounted) {
+        setState(() => _buscandoDNI = false);
+      }
+    }
+  }
+
+  Widget _construirCampoAbs({
+    required String etiqueta, 
+    required TextEditingController controller, 
+    bool esPassword = false,
+    bool requerido = true,
+    Widget? suffixIcon,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(etiqueta.toUpperCase(), style: const TextStyle(color: Colors.white38, fontSize: 10, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: controller,
+            obscureText: esPassword ? _ocultarPassword : false,
+            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color(0xFF0F121C),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFF1E2336), width: 1)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5)),
+              errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Colors.redAccent, width: 1)),
+              focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
+              suffixIcon: esPassword 
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.password, color: Color(0xFF00E5FF), size: 18),
+                          onPressed: _autogenerarPassword,
+                        ),
+                        IconButton(
+                          icon: Icon(_ocultarPassword ? Icons.visibility_off : Icons.visibility, color: Colors.white38, size: 18),
+                          onPressed: () => setState(() => _ocultarPassword = !_ocultarPassword),
+                        ),
+                      ],
+                    )
+                  : suffixIcon,
+            ),
+            validator: requerido ? (v) => v!.trim().isEmpty ? 'Requerido' : null : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _construirBannerError() {
+    if (_mensajeError == null) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.redAccent.withOpacity(0.1),
+        border: Border.all(color: Colors.redAccent.withOpacity(0.5)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
+          const SizedBox(width: 12),
+          Expanded(child: Text(_mensajeError!, style: const TextStyle(color: Colors.redAccent, fontSize: 13))),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final estado = ref.watch(controladorUsuariosProvider);
+    final esEdicion = widget.usuarioAEditar != null;
+
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: _cerrar,
+          child: Container(color: Colors.black54),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: 480,
+                height: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF070A14), // Fondo ultra oscuro
+                  border: Border(left: BorderSide(color: Color(0xFF1E2336), width: 1)),
+                ),
+                child: Column(
+                  children: [
+                    // Header
+                    Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFF1E2336), width: 1))),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(esEdicion ? 'Actualizar Perfil' : 'Nuevo Registro', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w300, letterSpacing: 0.5)),
+                          IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: _cerrar),
+                        ],
+                      ),
+                    ),
+                    
+                    // Form Content
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(32),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _construirBannerError(),
+
+                              Row(
+                                children: [
+                                  Expanded(
+                                    flex: 2,
+                                    child: _construirCampoAbs(
+                                      etiqueta: 'DNI', 
+                                      controller: _dniCtrl,
+                                      suffixIcon: IconButton(
+                                        icon: _buscandoDNI 
+                                            ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF00E5FF))) 
+                                            : const Icon(Icons.manage_search, color: Color(0xFF00E5FF), size: 20),
+                                        onPressed: _buscandoDNI ? null : _buscarDNI,
+                                      )
+                                    ),
+                                  ),
+                                  const SizedBox(width: 24),
+                                  Expanded(
+                                    flex: 3,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(bottom: 24.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text('ROL ASIGNADO', style: TextStyle(color: Colors.white38, fontSize: 10, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
+                                          const SizedBox(height: 8),
+                                          DropdownButtonFormField<String>(
+                                            value: _rolSeleccionado,
+                                            dropdownColor: const Color(0xFF0F121C),
+                                            icon: const Icon(Icons.arrow_drop_down, color: Colors.white54),
+                                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                                            decoration: InputDecoration(
+                                              filled: true,
+                                              fillColor: const Color(0xFF0F121C),
+                                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+                                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFF1E2336), width: 1)),
+                                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5)),
+                                            ),
+                                            items: ['operario', 'administrador', 'bahia'].map((rol) {
+                                              return DropdownMenuItem(value: rol, child: Text(rol.toUpperCase()));
+                                            }).toList(),
+                                            onChanged: (v) => setState(() => _rolSeleccionado = v!),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              _construirCampoAbs(etiqueta: 'Nombre Completo', controller: _nombreCtrl),
+                              _construirCampoAbs(etiqueta: 'Correo Corporativo', controller: _correoCtrl),
+                              
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _construirCampoAbs(
+                                      etiqueta: esEdicion ? 'Reemplazar Contraseña' : 'Clave de Acceso', 
+                                      controller: _passwordCtrl, 
+                                      esPassword: true, 
+                                      requerido: !esEdicion
+                                    ),
+                                  ),
+                                  const SizedBox(width: 24),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(bottom: 24.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text('SEDE DE OPERACIÓN', style: TextStyle(color: Colors.white38, fontSize: 10, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
+                                          const SizedBox(height: 8),
+                                          DropdownButtonFormField<String>(
+                                            value: _sedeSeleccionada,
+                                            dropdownColor: const Color(0xFF0F121C),
+                                            icon: const Icon(Icons.arrow_drop_down, color: Colors.white54),
+                                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                                            decoration: InputDecoration(
+                                              filled: true,
+                                              fillColor: const Color(0xFF0F121C),
+                                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+                                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFF1E2336), width: 1)),
+                                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5)),
+                                            ),
+                                            items: ['Piura', 'Lambayeque'].map((sede) {
+                                              return DropdownMenuItem(value: sede, child: Text(sede));
+                                            }).toList(),
+                                            onChanged: (v) => setState(() => _sedeSeleccionada = v!),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Footer actions
+                    Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: const BoxDecoration(border: Border(top: BorderSide(color: Color(0xFF1E2336), width: 1))),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: estado.cargando ? null : _cerrar,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 18),
+                                side: const BorderSide(color: Color(0xFF1E2336)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                              ),
+                              child: const Text('Descartar', style: TextStyle(fontWeight: FontWeight.w600)),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            flex: 2,
+                            child: ElevatedButton(
+                              onPressed: estado.cargando ? null : _guardar,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF00E5FF),
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(vertical: 18),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                              ),
+                              child: estado.cargando
+                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                                  : Text(esEdicion ? 'Confirmar Cambios' : 'Registrar Nuevo', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

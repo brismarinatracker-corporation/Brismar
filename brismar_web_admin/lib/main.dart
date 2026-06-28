@@ -3,15 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:flutter_web_plugins/url_strategy.dart';
+
 import 'nucleo/red/constantes_supabase.dart';
 import 'nucleo/enrutador/enrutador.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
 
   await Supabase.initialize(
     url: ConstantesSupabase.urlSupabase,
-    anonKey: ConstantesSupabase.llaveAnonima,
+    publishableKey: ConstantesSupabase.llaveAnonima,
   );
 
   runApp(
@@ -21,11 +24,11 @@ void main() async {
   );
 }
 
-class BrismarWebAdminApp extends StatelessWidget {
+class BrismarWebAdminApp extends ConsumerWidget {
   const BrismarWebAdminApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: 'Brismar Web Admin',
       debugShowCheckedModeBanner: false,
@@ -40,7 +43,7 @@ class BrismarWebAdminApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: const Color(0xFF070E22), 
       ),
-      routerConfig: enrutadorApp,
+      routerConfig: ref.watch(proveedorEnrutador),
     );
   }
 }

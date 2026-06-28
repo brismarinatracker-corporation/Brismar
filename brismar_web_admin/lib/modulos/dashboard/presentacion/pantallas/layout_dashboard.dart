@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../nucleo/enrutador/enrutador.dart';
+import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 
-class LayoutDashboard extends StatefulWidget {
+class LayoutDashboard extends ConsumerStatefulWidget {
   final Widget hijo;
   const LayoutDashboard({super.key, required this.hijo});
 
   @override
-  State<LayoutDashboard> createState() => _LayoutDashboardState();
+  ConsumerState<LayoutDashboard> createState() => _LayoutDashboardState();
 }
 
-class _LayoutDashboardState extends State<LayoutDashboard> {
+class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
   int _indiceSeleccionado = 0;
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(proveedorAutenticacion);
+    final esAdmin = authState.rol == 'administrador';
+
     return Scaffold(
       body: Row(
         children: [
@@ -26,7 +31,7 @@ class _LayoutDashboardState extends State<LayoutDashboard> {
               });
               if (index == 0) const RutaTransito().go(context);
               if (index == 1) const RutaCuadres().go(context);
-              if (index == 2) const RutaUsuarios().go(context);
+              if (index == 2 && esAdmin) const RutaUsuarios().go(context);
             },
             labelType: NavigationRailLabelType.all,
             leading: Padding(
@@ -43,19 +48,20 @@ class _LayoutDashboardState extends State<LayoutDashboard> {
             unselectedIconTheme: const IconThemeData(color: Colors.white54),
             selectedLabelTextStyle: const TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold),
             unselectedLabelTextStyle: const TextStyle(color: Colors.white54),
-            destinations: const [
-              NavigationRailDestination(
+            destinations: [
+              const NavigationRailDestination(
                 icon: Icon(Icons.local_shipping_rounded),
                 label: Text('Tránsito'),
               ),
-              NavigationRailDestination(
+              const NavigationRailDestination(
                 icon: Icon(Icons.table_view_rounded),
                 label: Text('Exportar'),
               ),
-              NavigationRailDestination(
-                icon: Icon(Icons.people_alt_rounded),
-                label: Text('Usuarios'),
-              ),
+              if (esAdmin)
+                const NavigationRailDestination(
+                  icon: Icon(Icons.people_alt_rounded),
+                  label: Text('Usuarios'),
+                ),
             ],
             trailing: Expanded(
               child: Align(
@@ -65,7 +71,9 @@ class _LayoutDashboardState extends State<LayoutDashboard> {
                   child: IconButton(
                     icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
                     tooltip: 'Cerrar Sesión',
-                    onPressed: () {},
+                    onPressed: () {
+                      ref.read(proveedorAutenticacion.notifier).cerrarSesion();
+                    },
                   ),
                 ),
               ),
