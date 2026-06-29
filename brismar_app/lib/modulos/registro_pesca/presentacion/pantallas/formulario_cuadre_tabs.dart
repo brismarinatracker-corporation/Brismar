@@ -1002,7 +1002,13 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
         },
       );
     } else {
-      return Image.file(
+      return kIsWeb ? Image.network(
+        path,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return const Center(child: Icon(Icons.broken_image_rounded, color: Colors.white24, size: 40));
+        },
+      ) : Image.file(
         File(path),
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {

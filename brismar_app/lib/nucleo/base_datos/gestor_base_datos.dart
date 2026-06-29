@@ -23,7 +23,7 @@ class GestorBaseDatos {
 
     return await openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -100,7 +100,8 @@ class GestorBaseDatos {
         foto_url_evidencia TEXT,
         foto_local_path TEXT,
         fecha_zarpe TEXT NOT NULL,
-        estado TEXT DEFAULT 'pendiente'
+        estado TEXT DEFAULT 'DESPACHADO_PIURA',
+        sincronizado INTEGER DEFAULT 0
       )
     ''');
   }
@@ -133,9 +134,14 @@ class GestorBaseDatos {
           foto_url_evidencia TEXT,
           foto_local_path TEXT,
           fecha_zarpe TEXT NOT NULL,
-          estado TEXT DEFAULT 'pendiente'
+          estado TEXT DEFAULT 'DESPACHADO_PIURA'
         )
       ''');
+    }
+    if (oldVersion < 7) {
+      // Separar estado de negocio del estado de sincronización en zarpes.
+      // 'sincronizado = 0' = pendiente de subir, 'sincronizado = 1' = ya en Supabase.
+      await db.execute('ALTER TABLE zarpes ADD COLUMN sincronizado INTEGER DEFAULT 0');
     }
   }
 

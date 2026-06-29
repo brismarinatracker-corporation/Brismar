@@ -6,11 +6,12 @@ part of 'enrutador.dart';
 // GoRouterGenerator
 // **************************************************************************
 
-List<RouteBase> get $appRoutes => [$rutaDashboardShell];
+List<RouteBase> get $appRoutes => [$rutaDashboardShell, $rutaLogin];
 
 RouteBase get $rutaDashboardShell => ShellRouteData.$route(
   factory: $RutaDashboardShellExtension._fromState,
   routes: [
+    GoRouteData.$route(path: '/dashboard', factory: $RutaDashboard._fromState),
     GoRouteData.$route(path: '/transito', factory: $RutaTransito._fromState),
     GoRouteData.$route(path: '/cuadres', factory: $RutaCuadres._fromState),
     GoRouteData.$route(path: '/usuarios', factory: $RutaUsuarios._fromState),
@@ -20,6 +21,26 @@ RouteBase get $rutaDashboardShell => ShellRouteData.$route(
 extension $RutaDashboardShellExtension on RutaDashboardShell {
   static RutaDashboardShell _fromState(GoRouterState state) =>
       const RutaDashboardShell();
+}
+
+mixin $RutaDashboard on GoRouteData {
+  static RutaDashboard _fromState(GoRouterState state) => const RutaDashboard();
+
+  @override
+  String get location => GoRouteData.$location('/dashboard');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
 }
 
 mixin $RutaTransito on GoRouteData {
@@ -67,6 +88,29 @@ mixin $RutaUsuarios on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/usuarios');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $rutaLogin =>
+    GoRouteData.$route(path: '/login', factory: $RutaLogin._fromState);
+
+mixin $RutaLogin on GoRouteData {
+  static RutaLogin _fromState(GoRouterState state) => const RutaLogin();
+
+  @override
+  String get location => GoRouteData.$location('/login');
 
   @override
   void go(BuildContext context) => context.go(location);

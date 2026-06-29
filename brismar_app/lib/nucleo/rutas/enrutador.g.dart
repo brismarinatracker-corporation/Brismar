@@ -12,6 +12,8 @@ List<RouteBase> get $appRoutes => [
   $configurarBiometriaRoute,
   $accesoRapidoRoute,
   $registroRoute,
+  $nuevoZarpeRoute,
+  $nuevoCuadreRoute,
 ];
 
 RouteBase get $loginRoute =>
@@ -144,4 +146,60 @@ mixin $RegistroRoute on GoRouteData {
 
   @override
   void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $nuevoZarpeRoute => GoRouteData.$route(
+  path: '/nuevo-zarpe',
+  factory: $NuevoZarpeRoute._fromState,
+);
+
+mixin $NuevoZarpeRoute on GoRouteData {
+  static NuevoZarpeRoute _fromState(GoRouterState state) =>
+      const NuevoZarpeRoute();
+
+  @override
+  String get location => GoRouteData.$location('/nuevo-zarpe');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $nuevoCuadreRoute => GoRouteData.$route(
+  path: '/nuevo-cuadre',
+  factory: $NuevoCuadreRoute._fromState,
+);
+
+mixin $NuevoCuadreRoute on GoRouteData {
+  static NuevoCuadreRoute _fromState(GoRouterState state) =>
+      NuevoCuadreRoute($extra: state.extra as CuadreEntidad?);
+
+  NuevoCuadreRoute get _self => this as NuevoCuadreRoute;
+
+  @override
+  String get location => GoRouteData.$location('/nuevo-cuadre');
+
+  @override
+  void go(BuildContext context) => context.go(location, extra: _self.$extra);
+
+  @override
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(location, extra: _self.$extra);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location, extra: _self.$extra);
+
+  @override
+  void replace(BuildContext context) =>
+      context.replace(location, extra: _self.$extra);
 }

@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controladores/controlador_autenticacion.dart';
 import '../componentes/formulario_login.dart';
@@ -26,18 +27,22 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
   @override
   void initState() {
     super.initState();
-    _protegerPantalla();
+    _initScreenProtector();
   }
 
-  Future<void> _protegerPantalla() async {
-    await ScreenProtector.preventScreenshotOn();
-    await ScreenProtector.protectDataLeakageOn();
+  Future<void> _initScreenProtector() async {
+    if (!kIsWeb) {
+      await ScreenProtector.preventScreenshotOn();
+      await ScreenProtector.protectDataLeakageOn();
+    }
   }
 
   @override
   void dispose() {
-    ScreenProtector.preventScreenshotOff();
-    ScreenProtector.protectDataLeakageOff();
+    if (!kIsWeb) {
+      ScreenProtector.preventScreenshotOff();
+      ScreenProtector.protectDataLeakageOff();
+    }
     super.dispose();
   }
 

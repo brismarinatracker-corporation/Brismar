@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../dominio/entidades/cuadre_entidad.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../controladores/controlador_cuadres.dart';
-import 'formulario_cuadre_tabs.dart';
-import 'formulario_zarpe_pantalla.dart';
+import '../controladores/controlador_zarpes.dart';
 
 class DashboardCuadresPantalla extends ConsumerStatefulWidget {
   const DashboardCuadresPantalla({super.key});
@@ -115,9 +116,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
           ? FloatingActionButton(
               backgroundColor: const Color(0xFF00E5FF),
               onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (ctx) => const FormularioCuadreTabs(),
-                ));
+                context.push('/nuevo-cuadre');
               },
               child: const Icon(Icons.add, color: Color(0xFF070E22)),
             )
@@ -170,7 +169,10 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
       actions: [
         IconButton(
           icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-          onPressed: () => ref.read(cuadresProvider.notifier).cargarHistorial(),
+          onPressed: () {
+            ref.read(cuadresProvider.notifier).cargarHistorial();
+            ref.read(proveedorZarpes.notifier).sincronizarZarpesPendientes();
+          },
         ),
         IconButton(
           icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
@@ -180,7 +182,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
     );
   }
 
-  Widget _buildBodyContent(AsyncValue estadoCuadres) {
+  Widget _buildBodyContent(AsyncValue<List<CuadreEntidad>> estadoCuadres) {
     if (_pestanaSeleccionada == 0) {
       // Registrar
       return _buildVistaRegistrar();
@@ -232,9 +234,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
               icon: Icons.local_shipping_rounded,
               color: const Color(0xFF00E5FF),
               onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (ctx) => const FormularioZarpePantalla(),
-                ));
+                context.push('/nuevo-zarpe');
               },
             ),
             const SizedBox(height: 16),
@@ -246,9 +246,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
               icon: Icons.assignment_rounded,
               color: const Color(0xFFFFD54F),
               onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (ctx) => const FormularioCuadreTabs(),
-                ));
+                context.push('/nuevo-cuadre');
               },
             ),
           ],
@@ -313,7 +311,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
     );
   }
 
-  Widget _buildVistaHistorial(AsyncValue estadoCuadres) {
+  Widget _buildVistaHistorial(AsyncValue<List<CuadreEntidad>> estadoCuadres) {
     return estadoCuadres.when(
       data: (cuadres) {
         final query = _searchCtrl.text.toLowerCase().trim();
@@ -472,9 +470,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                             ),
                             onTap: () {
                               // Editar/Completar cuadre
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (ctx) => FormularioCuadreTabs(cuadreInicial: cuadre),
-                              ));
+                              context.push('/nuevo-cuadre', extra: cuadre);
                             },
                           ),
                         );

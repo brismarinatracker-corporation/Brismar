@@ -43,4 +43,19 @@ class FuenteDatosZarpesRemota {
       throw Exception('No se pudo subir a Supabase: $e');
     }
   }
+
+  Future<List<Map<String, dynamic>>> obtenerZarpesActualizados(DateTime desde) async {
+    try {
+      final respuesta = await _cliente
+          .from('zarpes')
+          .select()
+          .gte('updated_at', desde.toIso8601String())
+          .order('updated_at', ascending: true);
+      
+      return List<Map<String, dynamic>>.from(respuesta);
+    } catch (e) {
+      debugPrint('Error obteniendo zarpes actualizados: $e');
+      return [];
+    }
+  }
 }

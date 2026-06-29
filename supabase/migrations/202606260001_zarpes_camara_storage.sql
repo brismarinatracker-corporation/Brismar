@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS public.zarpes (
     muelle_partida TEXT NOT NULL,
     foto_url_evidencia TEXT NOT NULL,
     fecha_zarpe TIMESTAMPTZ NOT NULL DEFAULT now(),
+    estado TEXT NOT NULL DEFAULT 'DESPACHADO_PIURA',
     creado_por UUID REFERENCES auth.users(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
