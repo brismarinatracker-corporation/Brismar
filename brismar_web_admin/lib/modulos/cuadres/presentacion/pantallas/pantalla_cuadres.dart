@@ -17,6 +17,12 @@ class PantallaCuadres extends ConsumerWidget {
     final estado = ref.watch(controladorCuadresWebProvider);
     final fmt = NumberFormat('#,##0.00', 'es_PE');
 
+    if (estado.cargando) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF00E5FF)),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.all(32),
       child: Column(

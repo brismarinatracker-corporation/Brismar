@@ -7,6 +7,7 @@ part of 'enrutador.dart';
 // **************************************************************************
 
 List<RouteBase> get $appRoutes => [
+  $cargandoRoute,
   $loginRoute,
   $configurarPinRoute,
   $configurarBiometriaRoute,
@@ -15,6 +16,29 @@ List<RouteBase> get $appRoutes => [
   $nuevoZarpeRoute,
   $nuevoCuadreRoute,
 ];
+
+RouteBase get $cargandoRoute =>
+    GoRouteData.$route(path: '/cargando', factory: $CargandoRoute._fromState);
+
+mixin $CargandoRoute on GoRouteData {
+  static CargandoRoute _fromState(GoRouterState state) => const CargandoRoute();
+
+  @override
+  String get location => GoRouteData.$location('/cargando');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
 
 RouteBase get $loginRoute =>
     GoRouteData.$route(path: '/login', factory: $LoginRoute._fromState);

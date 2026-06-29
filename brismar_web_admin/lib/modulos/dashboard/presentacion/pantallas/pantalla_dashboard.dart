@@ -12,6 +12,12 @@ class PantallaDashboard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(controladorDashboardProvider);
 
+    if (estado.cargando) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF00E5FF)),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -20,10 +26,7 @@ class PantallaDashboard extends ConsumerWidget {
           _encabezado(ref, estado),
           const SizedBox(height: 32),
           if (estado.error != null) _bannerError(estado.error!),
-          if (estado.cargando)
-            const Expanded(child: Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF))))
-          else
-            _gridKpis(estado),
+          _gridKpis(estado),
         ],
       ),
     );

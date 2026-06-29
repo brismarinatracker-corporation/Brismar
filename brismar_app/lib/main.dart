@@ -49,7 +49,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     _subscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> resultados) {
       if (!resultados.contains(ConnectivityResult.none)) {
         // Retrasamos un segundo para asegurar que el SO ya estableció la red
-        Future.delayed(const Duration(seconds: 2), () {
+        Future.delayed(const Duration(seconds: 1), () {
           try {
             // Se ejecuta la sincronización silenciosa (ignora si están listos)
             ref.read(cuadresProvider.notifier).cargarHistorial();

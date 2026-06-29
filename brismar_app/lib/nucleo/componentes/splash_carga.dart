@@ -38,17 +38,17 @@ class _SplashCargaState extends State<SplashCarga>
 
     _rotacion = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 1),
     )..repeat();
 
     _pulso = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 600),
     )..repeat(reverse: true);
 
     _aparecer = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 300),
     )..forward();
   }
 

@@ -48,7 +48,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
   void initState() {
     super.initState();
     
-    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
+    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 150));
     _slideAnimation = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic)
     );
@@ -234,6 +234,8 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
       // Traducción de errores comunes de Supabase
       if (errorServer.contains('already been registered') || errorServer.contains('duplicate key value violates unique constraint')) {
         errorServer = 'Este correo corporativo ya se encuentra registrado en el sistema. Intenta generar uno distinto.';
+      } else if (errorServer.contains('invalid format') || errorServer.contains('Unable to validate email address')) {
+        errorServer = 'El formato del correo electrónico proporcionado es inválido.';
       } else if (errorServer.contains('Invalid login credentials')) {
         errorServer = 'Credenciales inválidas. Verifica los datos ingresados.';
       } else if (errorServer.contains('weak_password')) {
@@ -279,6 +281,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
     bool esPassword = false,
     bool requerido = true,
     Widget? suffixIcon,
+    String? Function(String?)? validadorPersonalizado,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
@@ -315,7 +318,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                     )
                   : suffixIcon,
             ),
-            validator: requerido ? (v) => v!.trim().isEmpty ? 'Requerido' : null : null,
+            validator: validadorPersonalizado ?? (requerido ? (v) => v!.trim().isEmpty ? 'Requerido' : null : null),
           ),
         ],
       ),
@@ -475,7 +478,29 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                               ),
 
                               _construirCampoAbs(etiqueta: 'Nombre Completo', controller: _nombreCtrl),
-                              _construirCampoAbs(etiqueta: 'Correo Corporativo', controller: _correoCtrl),
+                                _construirCampoAbs(
+                                  etiqueta: 'Correo Corporativo', 
+                                  controller: _correoCtrl,
+                                  validadorPersonalizado: (v) {
+                                    if (v == null || v.trim().isEmpty) return 'Requerido';
+                                    final correo = v.trim();
+                                    
+                                    // 1. Validar formato general de correo
+                                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(correo)) {
+                                      return 'Formato de correo inválido (ej: usuario@empresa.com)';
+                                    }
+                                    
+                                    // 2. Control de Acceso: Cerrado a dominio corporativo o Abierto
+                                    const bool soloDominioCorporativo = true; // Cambiar a false si se desea permitir @gmail, @outlook, etc.
+                                    const String dominioEsperado = '@brismar.com.pe';
+                                    
+                                    if (soloDominioCorporativo && !correo.endsWith(dominioEsperado)) {
+                                      return 'Solo se permite el dominio corporativo ($dominioEsperado)';
+                                    }
+                                    
+                                    return null;
+                                  },
+                                ),
                               
                               Row(
                                 children: [

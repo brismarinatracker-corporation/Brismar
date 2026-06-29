@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shimmer/shimmer.dart';
+
 import '../controladores/controlador_usuarios.dart';
 import '../widgets/dialogo_formulario_usuario.dart';
 import '../../dominio/modelos/usuario_admin_modelo.dart';
@@ -13,6 +13,12 @@ class PantallaUsuarios extends ConsumerWidget {
     final estado = ref.watch(controladorUsuariosProvider);
     final ctrl = ref.read(controladorUsuariosProvider.notifier);
     
+    if (estado.cargando && estado.usuarios.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF00E5FF)),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.all(32.0),
       child: Column(
@@ -42,7 +48,7 @@ class PantallaUsuarios extends ConsumerWidget {
                     barrierDismissible: true,
                     barrierLabel: 'Cerrar',
                     barrierColor: Colors.black54,
-                    transitionDuration: const Duration(milliseconds: 300),
+                    transitionDuration: const Duration(milliseconds: 150),
                     pageBuilder: (context, anim1, anim2) => const DialogoFormularioUsuario(),
                     transitionBuilder: (context, anim1, anim2, child) {
                       return SlideTransition(
@@ -90,11 +96,8 @@ class PantallaUsuarios extends ConsumerWidget {
                     ),
                   ),
                   
-                  // Cuerpo de la Tabla
                   Expanded(
-                    child: estado.cargando && estado.usuarios.isEmpty
-                        ? _construirShimmerLoading()
-                        : estado.error != null && estado.usuarios.isEmpty
+                    child: estado.error != null && estado.usuarios.isEmpty
                             ? Center(child: Text('Error: ${estado.error}', style: const TextStyle(color: Colors.redAccent)))
                             : ListView.builder(
                                 itemCount: estado.usuarios.length,
@@ -112,43 +115,7 @@ class PantallaUsuarios extends ConsumerWidget {
       ),
     );
   }
-
-  Widget _construirShimmerLoading() {
-    return ListView.builder(
-      itemCount: 6,
-      itemBuilder: (context, index) {
-        return Shimmer.fromColors(
-          baseColor: Colors.white.withOpacity(0.02),
-          highlightColor: Colors.white.withOpacity(0.05),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.02))),
-            ),
-            child: Row(
-              children: [
-                Expanded(flex: 3, child: Row(children: [
-                  Container(width: 36, height: 36, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18))),
-                  const SizedBox(width: 16),
-                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Container(width: 120, height: 12, color: Colors.white),
-                    const SizedBox(height: 6),
-                    Container(width: 180, height: 10, color: Colors.white),
-                  ])
-                ])),
-                Expanded(flex: 2, child: Container(width: 80, height: 12, color: Colors.white)),
-                Expanded(flex: 2, child: Container(width: 100, height: 12, color: Colors.white)),
-                Expanded(flex: 1, child: Container(width: 60, height: 24, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)))),
-                const SizedBox(width: 100),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 }
-
 class _FilaTablaUsuario extends StatelessWidget {
   final UsuarioAdminModelo usuario;
   final ControladorUsuarios controlador;
