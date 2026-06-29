@@ -3,7 +3,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../modelos/zarpe_modelo.dart';
-import '../../../../nucleo/errores/diccionario_errores.dart';
 
 class FuenteDatosZarpesRemota {
   final sb.SupabaseClient _cliente;

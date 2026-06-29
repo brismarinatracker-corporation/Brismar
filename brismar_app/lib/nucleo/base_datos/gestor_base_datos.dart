@@ -47,7 +47,8 @@ class GestorBaseDatos {
         cajas_llenas INTEGER,
         cajas_vacias INTEGER,
         tipo_producto INTEGER,
-        planta_destino TEXT
+        planta_destino TEXT,
+        pesador TEXT
       )
     ''');
 
@@ -121,6 +122,7 @@ class GestorBaseDatos {
       await db.execute('ALTER TABLE cuadres ADD COLUMN planta_destino TEXT');
     }
     if (oldVersion < 6) {
+      await db.execute('ALTER TABLE cuadres ADD COLUMN pesador TEXT');
       // Agregar tabla de zarpes
       await db.execute('''
         CREATE TABLE zarpes (
