@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../modulos/dashboard/presentacion/pantallas/layout_dashboard.dart';
+import '../../modulos/dashboard/presentacion/pantallas/pantalla_dashboard.dart';
 import '../../modulos/transito/presentacion/pantallas/pantalla_transito.dart';
 import '../../modulos/cuadres/presentacion/pantallas/pantalla_cuadres.dart';
 import '../../modulos/usuarios/presentacion/pantallas/pantalla_usuarios.dart';
@@ -16,7 +17,7 @@ final proveedorEnrutador = Provider<GoRouter>((ref) {
   final authState = ref.watch(proveedorAutenticacion);
 
   return GoRouter(
-    initialLocation: const RutaTransito().location,
+    initialLocation: const RutaDashboard().location,
     routes: $appRoutes,
     redirect: (context, state) {
       // 1. Validar autenticación
@@ -24,7 +25,7 @@ final proveedorEnrutador = Provider<GoRouter>((ref) {
       final isLoggingIn = state.uri.path == '/login';
 
       if (!isAuth && !isLoggingIn) return const RutaLogin().location;
-      if (isAuth && isLoggingIn) return const RutaTransito().location;
+      if (isAuth && isLoggingIn) return const RutaDashboard().location;
 
       // 2. Si está cargando el perfil, no forzar redirecciones extrañas (esperar)
       if (authState.cargando) return null;
@@ -51,6 +52,7 @@ final proveedorEnrutador = Provider<GoRouter>((ref) {
 
 @TypedShellRoute<RutaDashboardShell>(
   routes: [
+    TypedGoRoute<RutaDashboard>(path: '/dashboard'),
     TypedGoRoute<RutaTransito>(path: '/transito'),
     TypedGoRoute<RutaCuadres>(path: '/cuadres'),
     TypedGoRoute<RutaUsuarios>(path: '/usuarios'),
@@ -62,6 +64,15 @@ class RutaDashboardShell extends ShellRouteData {
   @override
   Widget builder(BuildContext context, GoRouterState state, Widget navigator) {
     return LayoutDashboard(hijo: navigator);
+  }
+}
+
+class RutaDashboard extends GoRouteData with $RutaDashboard {
+  const RutaDashboard();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const PantallaDashboard();
   }
 }
 

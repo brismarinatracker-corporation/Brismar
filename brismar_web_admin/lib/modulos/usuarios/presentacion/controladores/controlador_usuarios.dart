@@ -97,6 +97,19 @@ class ControladorUsuarios extends Notifier<EstadoUsuarios> {
       return false;
     }
   }
+
+  Future<String?> subirAvatar(dynamic bytes, String extension) async {
+    state = state.copiarCon(cargando: true, limpiarError: true);
+    try {
+      final idUnico = DateTime.now().millisecondsSinceEpoch.toString();
+      final url = await _repositorio.subirAvatar(idUnico, bytes, extension);
+      state = state.copiarCon(cargando: false);
+      return url;
+    } catch (e) {
+      state = state.copiarCon(cargando: false, error: e.toString());
+      return null;
+    }
+  }
 }
 
 final controladorUsuariosProvider = NotifierProvider<ControladorUsuarios, EstadoUsuarios>(() {

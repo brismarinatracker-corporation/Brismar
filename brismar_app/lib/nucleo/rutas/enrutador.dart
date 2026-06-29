@@ -11,7 +11,18 @@ import '../../modulos/registro_pesca/presentacion/pantallas/dashboard_cuadres.da
 import '../../modulos/registro_pesca/presentacion/pantallas/formulario_zarpe_pantalla.dart';
 import '../../modulos/registro_pesca/presentacion/pantallas/formulario_cuadre_tabs.dart';
 import '../../modulos/registro_pesca/dominio/entidades/cuadre_entidad.dart';
+import '../componentes/splash_carga.dart';
 part 'enrutador.g.dart';
+
+/// Ruta de pantalla de carga global — visible durante inicialización.
+@TypedGoRoute<CargandoRoute>(path: '/cargando')
+class CargandoRoute extends GoRouteData with $CargandoRoute {
+  const CargandoRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const SplashCarga(mensaje: 'Iniciando sesión...');
+}
 
 /// Ruta de la pantalla de login completo (correo + contraseña).
 @TypedGoRoute<LoginRoute>(path: '/login')
@@ -103,10 +114,10 @@ final enrutadorProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final path = state.uri.path;
 
-      // ── Mientras la sesión se evalúa, no redirigir ─────────────────────────
+      // ── Mientras la sesión se evalúa, mostrar pantalla de carga ───────────
       if (authState is EstadoAutenticacionInicial ||
           authState is EstadoAutenticacionCargando) {
-        return null;
+        return path == '/cargando' ? null : '/cargando';
       }
 
       // ── Sin sesión → siempre al login ──────────────────────────────────────

@@ -29,9 +29,10 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
               setState(() {
                 _indiceSeleccionado = index;
               });
-              if (index == 0) const RutaTransito().go(context);
-              if (index == 1) const RutaCuadres().go(context);
-              if (index == 2 && esAdmin) const RutaUsuarios().go(context);
+              if (index == 0) const RutaDashboard().go(context);
+              if (index == 1) const RutaTransito().go(context);
+              if (index == 2) const RutaCuadres().go(context);
+              if (index == 3 && esAdmin) const RutaUsuarios().go(context);
             },
             labelType: NavigationRailLabelType.all,
             leading: Padding(
@@ -50,12 +51,16 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
             unselectedLabelTextStyle: const TextStyle(color: Colors.white54),
             destinations: [
               const NavigationRailDestination(
+                icon: Icon(Icons.dashboard_rounded),
+                label: Text('Dashboard'),
+              ),
+              const NavigationRailDestination(
                 icon: Icon(Icons.local_shipping_rounded),
                 label: Text('Tránsito'),
               ),
               const NavigationRailDestination(
                 icon: Icon(Icons.table_view_rounded),
-                label: Text('Exportar'),
+                label: Text('Cuadres'),
               ),
               if (esAdmin)
                 const NavigationRailDestination(

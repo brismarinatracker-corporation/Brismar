@@ -26,4 +26,9 @@ class RepositorioUsuariosAdminImpl implements RepositorioUsuariosAdmin {
   Future<void> alternarEstadoUsuario(String uid, bool activar) {
     return _fuenteDatos.alternarEstadoUsuario(uid, activar);
   }
+
+  @override
+  Future<String> subirAvatar(String idUnico, dynamic archivoBytes, String extension) {
+    return _fuenteDatos.subirAvatar(idUnico, archivoBytes, extension);
+  }
 }

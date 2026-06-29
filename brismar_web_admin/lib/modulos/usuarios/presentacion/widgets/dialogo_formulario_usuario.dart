@@ -1,7 +1,9 @@
 import 'dart:ui';
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../dominio/modelos/usuario_admin_modelo.dart';
 import '../controladores/controlador_usuarios.dart';
 import '../../infraestructura/servicios/servicio_dni.dart';
@@ -24,17 +26,13 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
   late TextEditingController _apellidoMaternoCtrl;
   late TextEditingController _correoCtrl;
   late TextEditingController _passwordCtrl;
-  late TextEditingController _nombreCtrl; // Compatibilidad con widget antiguo
+  late TextEditingController _nombreCtrl;
   
   late AnimationController _animController;
   late Animation<Offset> _slideAnimation;
 
-  String _rolSeleccionado = 'operario';
+  String _rolSeleccionado = 'supervisor';
   String _sedeSeleccionada = 'Piura';
-  bool _isLoading = false;
-  bool _mostrarPassword = false;
-  String? _errorMensaje;
-
   bool _buscandoDNI = false;
   bool _ocultarPassword = true;
   String? _mensajeError;
@@ -43,7 +41,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
 
   DateTime? _fechaNacimientoSeleccionada;
   String? _fotoPerfilUrl;
-  dynamic _fotoBytes;
+  Uint8List? _fotoBytes;
   String? _fotoExtension;
 
   @override
@@ -67,7 +65,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
     _nombreCtrl = TextEditingController(text: u?.nombre ?? '');
     
     if (u != null) {
-      if (['operario', 'administrador', 'bahia'].contains(u.rol)) {
+      if (['supervisor', 'administrador', 'bahia'].contains(u.rol)) {
         _rolSeleccionado = u.rol;
       }
       if (['Piura', 'Lambayeque'].contains(u.sede)) {
@@ -99,6 +97,21 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
     _animController.reverse().then((_) {
       if (mounted) Navigator.of(context).pop();
     });
+  }
+
+  Future<void> _seleccionarFoto() async {
+    final picker = ImagePicker();
+    final XFile? imagen = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    
+    if (imagen != null) {
+      final bytes = await imagen.readAsBytes();
+      final extension = imagen.name.split('.').last;
+      
+      setState(() {
+        _fotoBytes = bytes;
+        _fotoExtension = extension;
+      });
+    }
   }
 
   String _quitarAcentos(String texto) {
@@ -177,6 +190,20 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
       _mensajeError = null;
     });
 
+    final ctrl = ref.read(controladorUsuariosProvider.notifier);
+    
+    // Subir foto si existe
+    String? fotoFinalUrl = _fotoPerfilUrl;
+    if (_fotoBytes != null && _fotoExtension != null) {
+      final nuevaUrl = await ctrl.subirAvatar(_fotoBytes, _fotoExtension!);
+      if (nuevaUrl != null) {
+        fotoFinalUrl = nuevaUrl;
+      } else {
+        _mostrarErrorInline('Error al subir la foto de perfil.');
+        return;
+      }
+    }
+
     final usuario = UsuarioAdminModelo(
       uid: widget.usuarioAEditar?.uid ?? '',
       dni: _dniCtrl.text.trim(),
@@ -185,9 +212,10 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
       rol: _rolSeleccionado,
       sede: _sedeSeleccionada,
       activo: widget.usuarioAEditar?.activo ?? true,
+      fotoPerfil: fotoFinalUrl,
+      fechaNacimiento: _fechaNacimientoSeleccionada,
     );
 
-    final ctrl = ref.read(controladorUsuariosProvider.notifier);
     bool exito;
 
     if (widget.usuarioAEditar == null) {
@@ -363,6 +391,39 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _construirBannerError(),
+                              
+                              Center(
+                                child: Stack(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 40,
+                                      backgroundColor: const Color(0xFF1E2336),
+                                      backgroundImage: _fotoBytes != null 
+                                          ? MemoryImage(_fotoBytes!) 
+                                          : (_fotoPerfilUrl != null ? NetworkImage(_fotoPerfilUrl!) as ImageProvider : null),
+                                      child: (_fotoBytes == null && _fotoPerfilUrl == null)
+                                          ? const Icon(Icons.person, size: 40, color: Colors.white54)
+                                          : null,
+                                    ),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: GestureDetector(
+                                        onTap: _seleccionarFoto,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFF00E5FF),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(Icons.camera_alt, size: 16, color: Color(0xFF070E22)),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 24),
 
                               Row(
                                 children: [
@@ -401,7 +462,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFF1E2336), width: 1)),
                                               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5)),
                                             ),
-                                            items: ['operario', 'administrador', 'bahia'].map((rol) {
+                                            items: ['supervisor', 'administrador', 'bahia'].map((rol) {
                                               return DropdownMenuItem(value: rol, child: Text(rol.toUpperCase()));
                                             }).toList(),
                                             onChanged: (v) => setState(() => _rolSeleccionado = v!),

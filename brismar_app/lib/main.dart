@@ -54,6 +54,7 @@ class _MyAppState extends ConsumerState<MyApp> {
             // Se ejecuta la sincronización silenciosa (ignora si están listos)
             ref.read(cuadresProvider.notifier).cargarHistorial();
             ref.read(proveedorZarpes.notifier).sincronizarZarpesPendientes();
+            ref.read(proveedorZarpes.notifier).sincronizarZarpesDownstream();
           } catch (e) {
             debugPrint("Auto-Sync falló, se reintentará luego: $e");
           }

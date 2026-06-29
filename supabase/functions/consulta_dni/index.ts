@@ -21,14 +21,41 @@ Deno.serve(async (req) => {
       });
     }
 
-    // El servidor Deno hace la llamada (sin restricciones de CORS de navegador)
-    const response = await fetch(`https://api.apis.net.pe/v1/dni?numero=${dni}`);
-    
-    if (!response.ok) {
-      throw new Error(`Error de API: ${response.status}`);
-    }
+    // Primer filtro: API pública y gratuita (v1)
+    let response = await fetch(`https://api.apis.net.pe/v1/dni?numero=${dni}`);
+    let data = null;
 
-    const data = await response.json();
+    if (response.ok) {
+      data = await response.json();
+    } 
+    
+    // Si la v1 falla o no encuentra el DNI, intentamos el segundo filtro (v2) si hay token
+    if (!response.ok || !data || data.error) {
+      const token = Deno.env.get('DECOLECTA_TOKEN');
+      
+      if (token) {
+        response = await fetch(`https://api.decolecta.com/v1/reniec/dni?numero=${dni}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const decolectaData = await response.json();
+          // Mapeamos la respuesta de Decolecta al formato esperado (apis.net.pe)
+          data = {
+            nombre: decolectaData.full_name,
+            nombres: decolectaData.first_name,
+            apellidoPaterno: decolectaData.first_last_name,
+            apellidoMaterno: decolectaData.second_last_name
+          };
+        } else {
+          throw new Error(`Ambas APIs fallaron. Estado Decolecta: ${response.status}`);
+        }
+      } else {
+        throw new Error(`Error en API v1 (${response.status}) y no hay Token configurado para Decolecta.`);
+      }
+    }
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
