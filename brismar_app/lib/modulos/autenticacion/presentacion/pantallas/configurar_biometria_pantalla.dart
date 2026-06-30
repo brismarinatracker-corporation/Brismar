@@ -86,8 +86,6 @@ class _ConfigurarBiometriaPantallaState
           ? const Padding(
               padding: EdgeInsets.all(32.0),
               child: CargaOrbital(tamano: 80),
-                strokeWidth: 3,
-              ),
             )
           : const Icon(
               Icons.fingerprint,

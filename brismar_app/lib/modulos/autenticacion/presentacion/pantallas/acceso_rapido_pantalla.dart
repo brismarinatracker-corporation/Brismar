@@ -155,8 +155,6 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
                 ? const Padding(
                     padding: EdgeInsets.all(28.0),
                     child: CargaOrbital(tamano: 80),
-                      strokeWidth: 3,
-                    ),
                   )
                 : const Icon(
                     Icons.fingerprint,
