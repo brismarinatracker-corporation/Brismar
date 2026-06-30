@@ -27,6 +27,11 @@ Este documento registra las tareas críticas de arquitectura y negocio que deben
 - **Resolución:** Añadida `RutaDashboard` al enrutador, regenerado el archivo `.g.dart` y corregida la redirección post-login.
 - **Estado:** ✅ Resuelto el 2026-06-29.
 
+### Issue #014: Pantalla negra / Pérdida de foto por reciclaje de Actividad en Android (ZTE V60)
+- **Descripción:** Al abrir la cámara en dispositivos con poca RAM, el sistema operativo destruye la actividad principal de Flutter. Al regresar, la app se reinicia, causando una pantalla negra/reinicio y perdiendo la foto tomada.
+- **Resolución:** Se implementó `retrieveLostData()` de `image_picker` en `FormularioZarpePantalla` para recuperar y restaurar automáticamente la foto tomada al reiniciar la actividad.
+- **Estado:** ✅ Resuelto el 2026-06-30.
+
 ---
 
 ## 📝 Issues Abiertos

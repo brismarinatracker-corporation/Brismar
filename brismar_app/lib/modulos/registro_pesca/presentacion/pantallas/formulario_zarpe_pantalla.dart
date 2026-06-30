@@ -37,6 +37,28 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
   final _picker = ImagePicker();
 
   @override
+  void initState() {
+    super.initState();
+    if (!kIsWeb && Platform.isAndroid) {
+      _recuperarDatosPerdidos();
+    }
+  }
+
+  Future<void> _recuperarDatosPerdidos() async {
+    try {
+      final LostDataResponse response = await _picker.retrieveLostData();
+      if (response.isEmpty) return;
+      if (response.file != null) {
+        setState(() {
+          _fotosEvidencia.add(response.file!);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error al recuperar foto perdida: $e');
+    }
+  }
+
+  @override
   void dispose() {
     _placaCtrl.dispose();
     _choferCtrl.dispose();
