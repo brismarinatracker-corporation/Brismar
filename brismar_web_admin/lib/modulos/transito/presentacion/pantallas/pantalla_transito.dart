@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../controladores/controlador_transito.dart';
+import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 
 // Esta pantalla ahora es FRONTEND PURO. Solo Dibuja. No sabe de Supabase.
 class PantallaTransito extends ConsumerWidget {
@@ -44,7 +45,7 @@ class PantallaTransito extends ConsumerWidget {
           const SizedBox(height: 32),
           Expanded(
             child: estadoZarpes.when(
-              loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF))),
+              loading: () => const Center(child: CargaOrbital(tamano: 80)),
               error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.redAccent))),
               data: (zarpes) {
                 if (zarpes.isEmpty) {

@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../../dominio/entidades/cuadre_entidad.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
+import 'package:brismar_mobile/nucleo/componentes/carga_orbital.dart';
 
 class _UpperCaseTextFormatter extends TextInputFormatter {
   @override
@@ -987,7 +988,7 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
         fit: BoxFit.cover,
         loadingBuilder: (context, child, progress) {
           if (progress == null) return child;
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF)));
+          return const Center(child: CargaOrbital(tamano: 80));
         },
         errorBuilder: (context, error, stackTrace) {
           return const Center(child: Icon(Icons.broken_image_rounded, color: Colors.white24, size: 40));

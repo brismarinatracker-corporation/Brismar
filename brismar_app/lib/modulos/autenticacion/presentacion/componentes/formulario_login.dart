@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../controladores/controlador_autenticacion.dart';
+import 'package:brismar_mobile/nucleo/componentes/carga_orbital.dart';
 
 // ── Providers reactivos (file-private) ───────────────────────────────────────
 
@@ -36,7 +37,7 @@ bool _esConectado(List<ConnectivityResult> result) =>
 
 /// Formulario de inicio de sesión modular y responsivo para BRISMAR APP.
 ///
-/// Adapta tamaños de texto, campos y espaciados según el ancho disponible
+/// Adapta tamanos de texto, campos y espaciados según el ancho disponible
 /// usando [LayoutBuilder] para cubrir móvil, tablet y escritorio.
 class FormularioLogin extends ConsumerStatefulWidget {
   /// Constructor constante para [FormularioLogin].
@@ -123,7 +124,7 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
 
   // ── Logo ───────────────────────────────────────────────────────────────────
 
-  /// Logo con tamaño escalado según el ancho disponible.
+  /// Logo con tamano escalado según el ancho disponible.
   Widget _construirLogo(_Escala e) {
     return Container(
       width: e.anchoLogo,
@@ -393,10 +394,7 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
                 ? SizedBox(
                     width: e.altoBoton * 0.42,
                     height: e.altoBoton * 0.42,
-                    child: const CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2.5,
-                    ),
+                    child: const CargaOrbital(tamano: 80),
                   )
                 : Text(
                     'INICIAR SESIÓN',
@@ -505,7 +503,7 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
 
 // ── Modelo de escala ──────────────────────────────────────────────────────────
 
-/// Encapsula todos los valores de tamaño y espaciado responsivos.
+/// Encapsula todos los valores de tamano y espaciado responsivos.
 ///
 /// Se calcula una sola vez por rebuild usando el ancho del [LayoutBuilder].
 final class _Escala {

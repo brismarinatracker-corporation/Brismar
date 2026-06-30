@@ -5,11 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controladores/controlador_autenticacion.dart';
 import '../componentes/formulario_login.dart';
 import 'package:screen_protector/screen_protector.dart';
+import 'package:brismar_mobile/nucleo/componentes/carga_orbital.dart';
 
 /// Pantalla principal de inicio de sesión en BRISMAR APP.
 ///
 /// Diseño completamente responsivo: adapta el ancho del formulario
-/// según el tamaño disponible usando [LayoutBuilder].
+/// según el tamano disponible usando [LayoutBuilder].
 /// En tablets/escritorio limita el card a 480 px y lo centra.
 class LoginPantalla extends ConsumerStatefulWidget {
   /// Constructor constante para [LoginPantalla].
@@ -145,10 +146,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
               child: Container(
                 color: Colors.black.withValues(alpha: 0.4 * val),
                 child: const Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFF00E5FF),
-                    strokeWidth: 3,
-                  ),
+                  child: CargaOrbital(tamano: 80),
                 ),
               ),
             ),

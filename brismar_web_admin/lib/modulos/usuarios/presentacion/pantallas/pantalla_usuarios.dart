@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controladores/controlador_usuarios.dart';
 import '../widgets/dialogo_formulario_usuario.dart';
 import '../../dominio/modelos/usuario_admin_modelo.dart';
+import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 
 class PantallaUsuarios extends ConsumerWidget {
   const PantallaUsuarios({super.key});
@@ -18,7 +19,7 @@ class PantallaUsuarios extends ConsumerWidget {
         color: Color(0xFF090E17),
       ),
       child: estado.cargando && estado.usuarios.isEmpty
-        ? const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF)))
+        ? const Center(child: CargaOrbital(tamano: 80))
         : Padding(
             padding: const EdgeInsets.all(40.0),
             child: Column(

@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../dominio/modelos/usuario_admin_modelo.dart';
 import '../controladores/controlador_usuarios.dart';
 import '../../infraestructura/servicios/servicio_dni.dart';
+import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 
 class DialogoFormularioUsuario extends ConsumerStatefulWidget {
   final UsuarioAdminModelo? usuarioAEditar;
@@ -437,7 +438,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                       controller: _dniCtrl,
                                       suffixIcon: IconButton(
                                         icon: _buscandoDNI 
-                                            ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF00E5FF))) 
+                                            ? const CargaOrbital(tamano: 14) 
                                             : const Icon(Icons.manage_search, color: Color(0xFF00E5FF), size: 20),
                                         onPressed: _buscandoDNI ? null : _buscarDNI,
                                       )
@@ -581,7 +582,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                               ),
                               child: estado.cargando
-                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                                  ? const CargaOrbital(tamano: 20)
                                   : Text(esEdicion ? 'Confirmar Cambios' : 'Registrar Nuevo', style: const TextStyle(fontWeight: FontWeight.bold)),
                             ),
                           ),

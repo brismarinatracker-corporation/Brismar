@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../controladores/controlador_cuadres.dart';
 import '../../dominio/modelos/cuadre_web_modelo.dart';
+import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 
 /// Pantalla de Cuadres de Pesca — Web Admin.
 ///
@@ -19,7 +20,7 @@ class PantallaCuadres extends ConsumerWidget {
 
     if (estado.cargando) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF00E5FF)),
+        child: CargaOrbital(tamano: 80),
       );
     }
 
@@ -61,7 +62,7 @@ class _Encabezado extends ConsumerWidget {
               ? null
               : () => ref.read(controladorCuadresWebProvider.notifier).cargarCuadres(),
           icon: estado.cargando
-              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+              ? const CargaOrbital(tamano: 16)
               : const Icon(Icons.refresh_rounded),
           label: const Text('Actualizar'),
           style: ElevatedButton.styleFrom(
@@ -162,7 +163,7 @@ class _CuerpoConDetalle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (estado.cargando) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF)));
+      return const Center(child: CargaOrbital(tamano: 80));
     }
     if (estado.error != null) {
       return Center(child: Text('Error: ${estado.error}', style: const TextStyle(color: Colors.redAccent)));
@@ -363,7 +364,7 @@ class _PanelDetalle extends ConsumerWidget {
         Row(children: [
           IconButton(
             icon: estado.exportando
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF00E5FF)))
+                ? const CargaOrbital(tamano: 20)
                 : const Icon(Icons.download_rounded, color: Color(0xFF00E5FF)),
             tooltip: 'Exportar a Excel',
             onPressed: estado.exportando ? null : () => ctrl.exportarCuadreAExcel(cuadre),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../dominio/entidades/preferencia_acceso.dart';
 import '../controladores/controlador_autenticacion.dart';
+import 'package:brismar_mobile/nucleo/componentes/carga_orbital.dart';
 
 /// Pantalla para configurar la huella digital como acceso rápido (opcional).
 ///
@@ -84,8 +85,7 @@ class _ConfigurarBiometriaPantallaState
       child: _verificando
           ? const Padding(
               padding: EdgeInsets.all(32.0),
-              child: CircularProgressIndicator(
-                color: Color(0xFF00E5FF),
+              child: CargaOrbital(tamano: 80),
                 strokeWidth: 3,
               ),
             )

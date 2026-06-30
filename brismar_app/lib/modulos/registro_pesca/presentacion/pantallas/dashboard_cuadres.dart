@@ -5,6 +5,7 @@ import '../../dominio/entidades/cuadre_entidad.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../controladores/controlador_zarpes.dart';
+import 'package:brismar_mobile/nucleo/componentes/carga_orbital.dart';
 
 class DashboardCuadresPantalla extends ConsumerStatefulWidget {
   const DashboardCuadresPantalla({super.key});
@@ -480,7 +481,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
           ],
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF))),
+      loading: () => const Center(child: CargaOrbital(tamano: 80)),
       error: (err, _) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.redAccent))),
     );
   }

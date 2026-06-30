@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'dart:ui';
 
 import '../controladores/controlador_dashboard.dart';
+import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 
 /// Pantalla de KPIs del Dashboard — Web Admin.
 class PantallaDashboard extends ConsumerWidget {
@@ -26,7 +27,7 @@ class PantallaDashboard extends ConsumerWidget {
       ),
       child: estado.cargando
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF00E5FF)),
+              child: CargaOrbital(tamano: 80),
             )
           : CustomScrollView(
               slivers: [

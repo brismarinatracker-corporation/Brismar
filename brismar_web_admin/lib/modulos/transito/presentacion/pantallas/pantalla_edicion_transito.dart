@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../controladores/controlador_transito.dart';
 import '../../../cuadres/presentacion/controladores/controlador_cuadres.dart';
 import '../../../cuadres/dominio/modelos/cuadre_web_modelo.dart';
+import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 
 class PantallaEdicionTransito extends ConsumerStatefulWidget {
   final String id;
@@ -108,7 +109,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   @override
   Widget build(BuildContext context) {
     if (_cargando && _zarpeInfo == null) {
-      return const Scaffold(backgroundColor: Color(0xFF070E22), body: Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF))));
+      return const Scaffold(backgroundColor: Color(0xFF070E22), body: Center(child: CargaOrbital(tamano: 80)));
     }
     
     if (_error != null) {
@@ -138,7 +139,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         ],
       ),
       body: _cargando 
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF)))
+          ? const Center(child: CargaOrbital(tamano: 80))
           : Form(
               key: _formKey,
               child: SingleChildScrollView(

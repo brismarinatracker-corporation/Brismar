@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controladores/controlador_autenticacion.dart';
+import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 
 class PantallaLogin extends ConsumerStatefulWidget {
   const PantallaLogin({super.key});
@@ -166,14 +167,7 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                     ),
                   ),
                   child: _cargando
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFF070E22),
-                          ),
-                        )
+                      ? const CargaOrbital(tamano: 24)
                       : const Text(
                           'INICIAR SESIÓN',
                           style: TextStyle(

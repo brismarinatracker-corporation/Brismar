@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:brismar_mobile/nucleo/componentes/carga_orbital.dart';
 
 class PanelCalculoVivo extends StatelessWidget {
   final double totalKilosCompras;
@@ -105,8 +106,8 @@ class PanelCalculoVivo extends StatelessWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               onPressed: guardando ? null : onGuardar,
-              icon: guardando 
-                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Color(0xFF040B1E), strokeWidth: 3))
+              icon: guardando
+                  ? const CargaOrbital(tamano: 24, colorPrimario: Color(0xFF040B1E))
                   : const Icon(Icons.save_rounded, size: 28),
               label: Text(
                 guardando ? 'GUARDANDO...' : 'CONFIRMAR DESPACHO',

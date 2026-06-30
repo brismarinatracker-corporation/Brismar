@@ -11,6 +11,7 @@ import '../../dominio/entidades/zarpe_entidad.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../controladores/controlador_zarpes.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
+import 'package:brismar_mobile/nucleo/componentes/carga_orbital.dart';
 
 class FormularioZarpePantalla extends ConsumerStatefulWidget {
   const FormularioZarpePantalla({super.key});
@@ -674,14 +675,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                       ),
                       onPressed: _guardando ? null : _guardarZarpe,
                       child: _guardando
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Color(0xFF070E22),
-                              ),
-                            )
+                          ? const CargaOrbital(tamano: 20)
                           : const Text(
                               'REGISTRAR ZARPE DE CÁMARA',
                               style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
