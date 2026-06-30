@@ -69,7 +69,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
   final List<GastoEntidad> _gastos = [];
 
   // Constante de Negocio
-  final double TARA_OFICIAL_CAJA = 3.0;
+  final double taraOficialCaja = 3.0;
 
   @override
   void initState() {
@@ -86,15 +86,25 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
         final valor = g.total > 0 ? _formatearNumero(g.total) : '';
         if (g.concepto == 'FACTURACION') {
           _facturacionCtrl.text = valor;
-        } else if (g.concepto == 'PERSONAL') _personalCtrl.text = valor;
-        else if (g.concepto == 'APOYO') _apoyoCtrl.text = valor;
-        else if (g.concepto == 'AGUA') _aguaCtrl.text = valor;
-        else if (g.concepto == 'PESADOR') _pesadorCtrl.text = valor;
-        else if (g.concepto == 'CLOROX') _cloroxCtrl.text = valor;
-        else if (g.concepto == 'HIELO') _hieloCtrl.text = valor;
-        else if (g.concepto == 'FLETE') _fleteCtrl.text = valor;
-        else if (g.concepto == 'OTROS') _otrosCtrl.text = valor;
-        else if (g.concepto == 'OBSERVACIONES') _observacionesCtrl.text = g.tipo;
+        } else if (g.concepto == 'PERSONAL') {
+          _personalCtrl.text = valor;
+        } else if (g.concepto == 'APOYO') {
+          _apoyoCtrl.text = valor;
+        } else if (g.concepto == 'AGUA') {
+          _aguaCtrl.text = valor;
+        } else if (g.concepto == 'PESADOR') {
+          _pesadorCtrl.text = valor;
+        } else if (g.concepto == 'CLOROX') {
+          _cloroxCtrl.text = valor;
+        } else if (g.concepto == 'HIELO') {
+          _hieloCtrl.text = valor;
+        } else if (g.concepto == 'FLETE') {
+          _fleteCtrl.text = valor;
+        } else if (g.concepto == 'OTROS') {
+          _otrosCtrl.text = valor;
+        } else if (g.concepto == 'OBSERVACIONES') {
+          _observacionesCtrl.text = g.tipo;
+        }
       }
     } else {
       _cuadreId = const Uuid().v4();
@@ -272,7 +282,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
       final cajas = int.tryParse(cajasCtrl.text) ?? 0;
       final bruto = double.tryParse(kilosBrutosCtrl.text.replaceAll(',', '')) ?? 0.0;
       if (bruto > 0) {
-        final tara = cajas * TARA_OFICIAL_CAJA;
+        final tara = cajas * taraOficialCaja;
         final neto = bruto - tara;
         kilosNetosCtrl.text = neto > 0 ? neto.toStringAsFixed(2) : '0.00';
       }
