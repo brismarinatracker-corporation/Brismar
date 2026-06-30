@@ -169,21 +169,11 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.person_rounded, color: Colors.white),
-          onPressed: () {
-            context.push('/perfil');
-          },
-        ),
-        IconButton(
           icon: const Icon(Icons.refresh_rounded, color: Colors.white),
           onPressed: () {
             ref.read(cuadresProvider.notifier).cargarHistorial();
             ref.read(proveedorZarpes.notifier).sincronizarZarpesPendientes();
           },
-        ),
-        IconButton(
-          icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
-          onPressed: _mostrarConfirmacionCerrarSesion,
         ),
       ],
     );
