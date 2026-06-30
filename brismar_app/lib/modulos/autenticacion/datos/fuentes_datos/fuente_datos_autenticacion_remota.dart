@@ -35,6 +35,7 @@ class FuenteDatosAutenticacionRemota {
         nombreUsuario: user.email ?? correo,
         nombreReal: userDetails?['nombre_real'] ?? 'Usuario Brismar',
         rol: userDetails?['rol'] ?? 'bahia',
+        fotoPerfil: userDetails?['foto_perfil'],
       );
     } on ExcepcionApp {
       rethrow;
@@ -75,7 +76,7 @@ class FuenteDatosAutenticacionRemota {
   Future<Map<String, dynamic>?> _obtenerDetallesUsuario(String id) async {
     return await _client
         .from('usuarios')
-        .select('nombre_real, rol')
+        .select('nombre_real, rol, foto_perfil')
         .eq('id', id)
         .maybeSingle()
         .timeout(const Duration(seconds: 10));

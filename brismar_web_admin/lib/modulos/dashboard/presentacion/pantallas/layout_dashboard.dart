@@ -46,7 +46,12 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                   if (index == 0) const RutaDashboard().go(context);
                   if (index == 1) const RutaTransito().go(context);
                   if (index == 2) const RutaCuadres().go(context);
-                  if (index == 3 && esAdmin) const RutaUsuarios().go(context);
+                  if (esAdmin) {
+                    if (index == 3) const RutaUsuarios().go(context);
+                    if (index == 4) const RutaPerfil().go(context);
+                  } else {
+                    if (index == 3) const RutaPerfil().go(context);
+                  }
                 },
                 leading: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
@@ -113,6 +118,11 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                       selectedIcon: Icon(Icons.people_alt_rounded),
                       label: Text('Usuarios'),
                     ),
+                  const NavigationRailDestination(
+                    icon: Icon(Icons.person_outline),
+                    selectedIcon: Icon(Icons.person_rounded),
+                    label: Text('Perfil'),
+                  ),
                 ],
                 trailing: Padding(
                   padding: const EdgeInsets.only(bottom: 24, left: 12, right: 12),
@@ -132,10 +142,15 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                             children: [
                               CircleAvatar(
                                 backgroundColor: const Color(0xFF00E5FF).withOpacity(0.2),
-                                child: Text(
-                                  nombre.substring(0, 1).toUpperCase(),
-                                  style: const TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold),
-                                ),
+                                backgroundImage: authState.fotoPerfil != null && authState.fotoPerfil!.isNotEmpty 
+                                  ? NetworkImage(authState.fotoPerfil!) 
+                                  : null,
+                                child: authState.fotoPerfil == null || authState.fotoPerfil!.isEmpty
+                                  ? Text(
+                                      nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : 'U',
+                                      style: const TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold),
+                                    )
+                                  : null,
                               ),
                               const SizedBox(width: 12),
                               SizedBox(

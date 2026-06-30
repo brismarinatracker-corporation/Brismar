@@ -24,6 +24,7 @@ RouteBase get $rutaDashboardShell => ShellRouteData.$route(
     ),
     GoRouteData.$route(path: '/cuadres', factory: $RutaCuadres._fromState),
     GoRouteData.$route(path: '/usuarios', factory: $RutaUsuarios._fromState),
+    GoRouteData.$route(path: '/perfil', factory: $RutaPerfil._fromState),
   ],
 );
 
@@ -122,6 +123,26 @@ mixin $RutaUsuarios on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/usuarios');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin $RutaPerfil on GoRouteData {
+  static RutaPerfil _fromState(GoRouterState state) => const RutaPerfil();
+
+  @override
+  String get location => GoRouteData.$location('/perfil');
 
   @override
   void go(BuildContext context) => context.go(location);

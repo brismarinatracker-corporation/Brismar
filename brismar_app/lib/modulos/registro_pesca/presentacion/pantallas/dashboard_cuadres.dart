@@ -169,6 +169,12 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
       ),
       actions: [
         IconButton(
+          icon: const Icon(Icons.person_rounded, color: Colors.white),
+          onPressed: () {
+            context.push('/perfil');
+          },
+        ),
+        IconButton(
           icon: const Icon(Icons.refresh_rounded, color: Colors.white),
           onPressed: () {
             ref.read(cuadresProvider.notifier).cargarHistorial();
@@ -610,6 +616,35 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                 _buildNavItem(1, Icons.history_rounded, "Historial"),
                 const SizedBox(height: 24),
                 _buildNavItem(2, Icons.sync_rounded, "Sincronizar"),
+                const SizedBox(height: 24),
+                InkWell(
+                  onTap: () => context.push('/perfil'),
+                  borderRadius: BorderRadius.circular(16),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                    width: 64,
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.person_rounded, color: Colors.white54, size: 24),
+                        SizedBox(height: 4),
+                        Text(
+                          'Perfil',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white54,
+                            fontSize: 9,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

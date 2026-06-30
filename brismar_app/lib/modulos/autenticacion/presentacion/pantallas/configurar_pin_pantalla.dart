@@ -73,7 +73,7 @@ class _ConfigurarPinPantallaState extends ConsumerState<ConfigurarPinPantalla> {
   /// Construye el encabezado con título e instrucciones.
   Widget _construirCabecera() {
     final estado = ref.watch(proveedorControladorAutenticacion);
-    final nombre = estado is EstadoConfigurarPin ? estado.usuario.nombreReal : '';
+    final nombre = estado is EstadoConfigurarPin ? estado.usuario.nombreReal.split(' ').first : '';
 
     return Column(
       children: [

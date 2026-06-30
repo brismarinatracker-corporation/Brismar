@@ -12,12 +12,16 @@ class Usuario {
   /// Rol asignado al usuario (ej: 'bahia', 'administrador').
   final String rol;
 
+  /// URL de la foto de perfil (opcional).
+  final String? fotoPerfil;
+
   /// Constructor principal de la entidad [Usuario].
   const Usuario({
     required this.id,
     required this.nombreUsuario,
     required this.nombreReal,
     required this.rol,
+    this.fotoPerfil,
   });
 
   /// Crea un [Usuario] a partir de un mapa JSON.
@@ -27,6 +31,7 @@ class Usuario {
       nombreUsuario: json['nombreUsuario'] as String,
       nombreReal: json['nombreReal'] as String,
       rol: json['rol'] as String,
+      fotoPerfil: json['foto_perfil'] as String?,
     );
   }
 
@@ -37,6 +42,7 @@ class Usuario {
       'nombreUsuario': nombreUsuario,
       'nombreReal': nombreReal,
       'rol': rol,
+      'foto_perfil': fotoPerfil,
     };
   }
 }

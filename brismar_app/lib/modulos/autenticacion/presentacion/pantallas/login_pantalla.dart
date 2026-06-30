@@ -166,7 +166,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
   ) {
     if (siguiente is EstadoConfigurarPin) {
       _mostrarSnack(
-        'Bienvenido, ${siguiente.usuario.nombreReal} 👋',
+        'Bienvenido, ${siguiente.usuario.nombreReal.split(' ').first} 👋',
         Colors.teal.shade600,
       );
     } else if (siguiente is EstadoAutenticacionError) {

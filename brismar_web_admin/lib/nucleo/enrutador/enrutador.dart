@@ -7,6 +7,7 @@ import '../../modulos/transito/presentacion/pantallas/pantalla_transito.dart';
 import '../../modulos/transito/presentacion/pantallas/pantalla_edicion_transito.dart';
 import '../../modulos/cuadres/presentacion/pantallas/pantalla_cuadres.dart';
 import '../../modulos/usuarios/presentacion/pantallas/pantalla_usuarios.dart';
+import '../../modulos/perfil/presentacion/pantallas/pantalla_perfil.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../modulos/autenticacion/presentacion/controladores/controlador_autenticacion.dart';
@@ -62,6 +63,7 @@ final proveedorEnrutador = Provider<GoRouter>((ref) {
     ),
     TypedGoRoute<RutaCuadres>(path: '/cuadres'),
     TypedGoRoute<RutaUsuarios>(path: '/usuarios'),
+    TypedGoRoute<RutaPerfil>(path: '/perfil'),
   ],
 )
 class RutaDashboardShell extends ShellRouteData {
@@ -116,6 +118,15 @@ class RutaUsuarios extends GoRouteData with $RutaUsuarios {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const PantallaUsuarios();
+  }
+}
+
+class RutaPerfil extends GoRouteData with $RutaPerfil {
+  const RutaPerfil();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const PantallaPerfil();
   }
 }
 

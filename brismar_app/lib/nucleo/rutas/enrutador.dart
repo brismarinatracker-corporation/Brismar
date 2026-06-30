@@ -11,6 +11,7 @@ import '../../modulos/registro_pesca/presentacion/pantallas/dashboard_cuadres.da
 import '../../modulos/registro_pesca/presentacion/pantallas/formulario_zarpe_pantalla.dart';
 import '../../modulos/registro_pesca/presentacion/pantallas/formulario_registro_pesca.dart';
 import '../../modulos/registro_pesca/dominio/entidades/cuadre_entidad.dart';
+import '../../modulos/perfil/presentacion/pantallas/pantalla_perfil.dart';
 import '../componentes/splash_carga.dart';
 part 'enrutador.g.dart';
 
@@ -102,6 +103,16 @@ class NuevoCuadreRoute extends GoRouteData with $NuevoCuadreRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) =>
       FormularioRegistroPesca(cuadreInicial: $extra);
+}
+
+/// Ruta de la pantalla del perfil del usuario
+@TypedGoRoute<PerfilRoute>(path: '/perfil')
+class PerfilRoute extends GoRouteData with $PerfilRoute {
+  const PerfilRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const PantallaPerfil();
 }
 
 /// Configuración de rutas declarativas mediante GoRouter generadas y protegidas por Riverpod.

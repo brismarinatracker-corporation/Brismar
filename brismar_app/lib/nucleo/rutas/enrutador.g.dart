@@ -15,6 +15,7 @@ List<RouteBase> get $appRoutes => [
   $registroRoute,
   $nuevoZarpeRoute,
   $nuevoCuadreRoute,
+  $perfilRoute,
 ];
 
 RouteBase get $cargandoRoute =>
@@ -226,4 +227,27 @@ mixin $NuevoCuadreRoute on GoRouteData {
   @override
   void replace(BuildContext context) =>
       context.replace(location, extra: _self.$extra);
+}
+
+RouteBase get $perfilRoute =>
+    GoRouteData.$route(path: '/perfil', factory: $PerfilRoute._fromState);
+
+mixin $PerfilRoute on GoRouteData {
+  static PerfilRoute _fromState(GoRouterState state) => const PerfilRoute();
+
+  @override
+  String get location => GoRouteData.$location('/perfil');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
 }

@@ -170,17 +170,25 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
                     color: usuario.activo ? colorRol.withOpacity(0.15) : const Color(0xFF334155).withOpacity(0.5),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: usuario.activo ? colorRol.withOpacity(0.3) : Colors.transparent),
+                    image: usuario.fotoPerfil != null && usuario.fotoPerfil!.isNotEmpty
+                        ? DecorationImage(
+                            image: NetworkImage(usuario.fotoPerfil!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
                   ),
-                  child: Center(
-                    child: Text(
-                      usuario.nombre.isNotEmpty ? usuario.nombre[0].toUpperCase() : 'U',
-                      style: TextStyle(
-                        color: usuario.activo ? colorRol : const Color(0xFF94A3B8),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ),
+                  child: usuario.fotoPerfil == null || usuario.fotoPerfil!.isEmpty
+                      ? Center(
+                          child: Text(
+                            usuario.nombre.isNotEmpty ? usuario.nombre[0].toUpperCase() : 'U',
+                            style: TextStyle(
+                              color: usuario.activo ? colorRol : const Color(0xFF94A3B8),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                        )
+                      : null,
                 ),
                 const SizedBox(width: 16),
                 Expanded(
