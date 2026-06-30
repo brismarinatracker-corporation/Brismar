@@ -1034,12 +1034,13 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
               ),
             ],
           ),
-          Row(
-            children: widget.cuadreInicial!.fotoZarpeUrl!
-                .split(',')
-                .where((path) => path.trim().isNotEmpty)
-                .map((path) => Expanded(
-                      child: Padding(
+          if (widget.cuadreInicial!.fotoZarpeUrl != null && widget.cuadreInicial!.fotoZarpeUrl!.isNotEmpty)
+            Row(
+              children: widget.cuadreInicial!.fotoZarpeUrl!
+                  .split(',')
+                  .where((path) => path.trim().isNotEmpty)
+                  .map((path) => Expanded(
+                        child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4.0),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),

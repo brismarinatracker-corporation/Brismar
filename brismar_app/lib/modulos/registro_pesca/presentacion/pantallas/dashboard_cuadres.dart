@@ -84,10 +84,11 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
       backgroundColor: Colors.transparent,
       appBar: esHorizontal ? null : _buildAppBar(context),
       extendBodyBehindAppBar: true,
+      drawer: esHorizontal ? null : _buildDrawer(isPermanent: false),
       body: esHorizontal
           ? Row(
               children: [
-                _buildLateralNavigationRail(),
+                _buildDrawer(isPermanent: true),
                 Expanded(
                   child: Stack(
                     children: [
@@ -112,7 +113,6 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                 ),
               ],
             ),
-      bottomNavigationBar: esHorizontal ? null : _buildBottomNavigationBar(),
       floatingActionButton: _pestanaSeleccionada == 1 // Si estamos en historial, mostramos FAB para crear
           ? FloatingActionButton(
               backgroundColor: const Color(0xFF00E5FF),
@@ -492,78 +492,25 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
     );
   }
 
-  Widget _buildBottomNavigationBar() {
-    return Container(
-      padding: EdgeInsets.only(
-        top: 8,
-        bottom: 8 + MediaQuery.of(context).padding.bottom,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFF070E22),
-        border: Border(
-          top: BorderSide(
-            color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
-            width: 1.5,
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF00E5FF).withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildBottomNavItem(0, Icons.assignment_turned_in_rounded, "Registrar"),
-          _buildBottomNavItem(1, Icons.history_rounded, "Historial"),
-          _buildBottomNavItem(2, Icons.sync_rounded, "Sincronizar"),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNavItem(int index, IconData icon, String label) {
+  Widget _buildDrawerItem(int index, IconData icon, String label, bool isPermanent) {
     final isSelected = _pestanaSeleccionada == index;
     final color = isSelected ? const Color(0xFF00E5FF) : Colors.white54;
-    return InkWell(
-      onTap: () => _onItemTapped(index),
-      borderRadius: BorderRadius.circular(16),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF00E5FF).withValues(alpha: 0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return ListTile(
+      leading: Icon(icon, color: color),
+      title: Text(label, style: TextStyle(color: color, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      selected: isSelected,
+      selectedTileColor: const Color(0xFF00E5FF).withValues(alpha: 0.1),
+      onTap: () {
+        if (!isPermanent) Navigator.pop(context);
+        _onItemTapped(index);
+      },
     );
   }
 
-  Widget _buildLateralNavigationRail() {
+  Widget _buildDrawer({required bool isPermanent}) {
     return Container(
-      width: 96,
-      padding: EdgeInsets.only(
-        top: 20 + MediaQuery.of(context).padding.top,
-        bottom: 20 + MediaQuery.of(context).padding.bottom,
-      ),
+      width: 250,
       decoration: BoxDecoration(
         color: const Color(0xFF070E22),
         border: Border(
@@ -580,118 +527,65 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // App Logo
-          Container(
-            height: 36,
-            width: 36,
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Icon(
-              Icons.directions_boat_rounded,
-              size: 24,
-              color: Color(0xFF00E5FF),
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'BRIS GROUP',
-            style: TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.bold,
-              color: Colors.white70,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 40),
-          // Nav Items
-          Expanded(
-            child: Column(
-              children: [
-                _buildNavItem(0, Icons.assignment_turned_in_rounded, "Registrar"),
-                const SizedBox(height: 24),
-                _buildNavItem(1, Icons.history_rounded, "Historial"),
-                const SizedBox(height: 24),
-                _buildNavItem(2, Icons.sync_rounded, "Sincronizar"),
-                const SizedBox(height: 24),
-                InkWell(
-                  onTap: () => context.push('/perfil'),
-                  borderRadius: BorderRadius.circular(16),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                    width: 64,
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.person_rounded, color: Colors.white54, size: 24),
-                        SizedBox(height: 4),
-                        Text(
-                          'Perfil',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white54,
-                            fontSize: 9,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Logout Item
-          InkWell(
-            onTap: _mostrarConfirmacionCerrarSesion,
-            child: const Column(
-              children: [
-                Icon(Icons.logout_rounded, color: Colors.redAccent, size: 24),
-                SizedBox(height: 4),
-                Text('Salir', style: TextStyle(color: Colors.redAccent, fontSize: 10)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(int index, IconData icon, String label) {
-    final isSelected = _pestanaSeleccionada == index;
-    final color = isSelected ? const Color(0xFF00E5FF) : Colors.white54;
-    return InkWell(
-      onTap: () => _onItemTapped(index),
-      borderRadius: BorderRadius.circular(16),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-        width: 64,
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF00E5FF).withValues(alpha: 0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-        ),
+      child: SafeArea(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: color,
-                fontSize: 9,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            const SizedBox(height: 20),
+            // App Logo
+            Container(
+              height: 48,
+              width: 48,
+              decoration: BoxDecoration(
+                color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.directions_boat_rounded,
+                size: 28,
+                color: Color(0xFF00E5FF),
               ),
             ),
+            const SizedBox(height: 12),
+            const Text(
+              'BRIS GROUP',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 1.2,
+              ),
+            ),
+            const SizedBox(height: 40),
+            // Nav Items
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: [
+                  _buildDrawerItem(0, Icons.assignment_turned_in_rounded, "Registrar Despacho", isPermanent),
+                  const SizedBox(height: 8),
+                  _buildDrawerItem(1, Icons.history_rounded, "Historial y Registros", isPermanent),
+                  const SizedBox(height: 8),
+                  _buildDrawerItem(2, Icons.sync_rounded, "Sincronizar Datos", isPermanent),
+                  const SizedBox(height: 8),
+                  ListTile(
+                    leading: const Icon(Icons.person_rounded, color: Colors.white54),
+                    title: const Text('Mi Perfil', style: TextStyle(color: Colors.white54, fontSize: 14)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    onTap: () {
+                      if (!isPermanent) Navigator.pop(context);
+                      context.push('/perfil');
+                    },
+                  ),
+                ],
+              ),
+            ),
+            // Logout Item
+            ListTile(
+              leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+              title: const Text('Salir', style: TextStyle(color: Colors.redAccent, fontSize: 14)),
+              onTap: _mostrarConfirmacionCerrarSesion,
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),

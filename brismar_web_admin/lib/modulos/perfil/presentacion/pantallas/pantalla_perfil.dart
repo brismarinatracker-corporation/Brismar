@@ -11,7 +11,7 @@ class PantallaPerfil extends ConsumerWidget {
     final nombre = estadoAuth.nombreReal ?? 'Usuario';
     final correo = estadoAuth.usuario?.email ?? 'Sin correo';
     final rol = (estadoAuth.rol ?? 'Rol no definido').toUpperCase();
-    final sede = 'No disponible';
+    final sede = (estadoAuth.sede ?? 'Sede no definida').toUpperCase();
 
     return Container(
       decoration: const BoxDecoration(

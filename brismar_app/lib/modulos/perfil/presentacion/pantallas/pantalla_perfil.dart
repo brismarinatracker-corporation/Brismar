@@ -25,13 +25,13 @@ class PantallaPerfil extends ConsumerWidget {
     if (estadoAuth is EstadoAutenticacionAutenticado) {
        nombreReal = estadoAuth.usuario.nombreReal;
        correo = estadoAuth.usuario.nombreUsuario; 
-       sede = 'Sede registrada'; 
+       sede = estadoAuth.usuario.sede; 
        rolTexto = estadoAuth.usuario.rol;
        fotoUrl = estadoAuth.usuario.fotoPerfil;
     } else if (estadoAuth is EstadoConfigurarPin) {
        nombreReal = estadoAuth.usuario.nombreReal;
        correo = estadoAuth.usuario.nombreUsuario; 
-       sede = 'Sede registrada'; 
+       sede = estadoAuth.usuario.sede; 
        rolTexto = estadoAuth.usuario.rol;
        fotoUrl = estadoAuth.usuario.fotoPerfil;
     }

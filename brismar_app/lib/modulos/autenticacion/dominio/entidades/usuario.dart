@@ -15,12 +15,16 @@ class Usuario {
   /// URL de la foto de perfil (opcional).
   final String? fotoPerfil;
 
+  /// Sede asignada (ej: 'Piura', 'Sechura').
+  final String sede;
+
   /// Constructor principal de la entidad [Usuario].
   const Usuario({
     required this.id,
     required this.nombreUsuario,
     required this.nombreReal,
     required this.rol,
+    required this.sede,
     this.fotoPerfil,
   });
 
@@ -31,6 +35,7 @@ class Usuario {
       nombreUsuario: json['nombreUsuario'] as String,
       nombreReal: json['nombreReal'] as String,
       rol: json['rol'] as String,
+      sede: json['sede'] as String? ?? 'Piura',
       fotoPerfil: json['foto_perfil'] as String?,
     );
   }
@@ -42,6 +47,7 @@ class Usuario {
       'nombreUsuario': nombreUsuario,
       'nombreReal': nombreReal,
       'rol': rol,
+      'sede': sede,
       'foto_perfil': fotoPerfil,
     };
   }

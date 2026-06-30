@@ -6,6 +6,7 @@ class EstadoAutenticacion {
   final String? rol;
   final String? nombreReal;
   final String? fotoPerfil;
+  final String? sede;
   final bool cargando;
   final String? error;
 
@@ -14,6 +15,7 @@ class EstadoAutenticacion {
     this.rol,
     this.nombreReal,
     this.fotoPerfil,
+    this.sede,
     this.cargando = true,
     this.error,
   });
@@ -36,7 +38,7 @@ class ControladorAutenticacion extends Notifier<EstadoAutenticacion> {
       if (user != null) {
         _cargarPerfil(user);
       } else {
-        state = EstadoAutenticacion(usuario: null, rol: null, fotoPerfil: null, cargando: false);
+        state = EstadoAutenticacion(usuario: null, rol: null, fotoPerfil: null, sede: null, cargando: false);
       }
     });
 
@@ -51,19 +53,21 @@ class ControladorAutenticacion extends Notifier<EstadoAutenticacion> {
       // Consultar el rol y nombre_real en public.usuarios
       final res = await Supabase.instance.client
           .from('usuarios')
-          .select('rol, nombre_real, foto_perfil')
+          .select('rol, nombre_real, foto_perfil, sede')
           .eq('id', user.id)
           .maybeSingle();
 
       final rol = res?['rol'] as String?;
       final nombreReal = res?['nombre_real'] as String?;
       final fotoPerfil = res?['foto_perfil'] as String?;
+      final sede = res?['sede'] as String?;
       
       state = EstadoAutenticacion(
         usuario: user,
         rol: rol,
         nombreReal: nombreReal,
         fotoPerfil: fotoPerfil,
+        sede: sede,
         cargando: false,
       );
     } catch (e) {
