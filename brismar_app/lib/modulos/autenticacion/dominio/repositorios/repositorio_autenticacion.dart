@@ -51,6 +51,12 @@ abstract class RepositorioAutenticacion {
   ///
   /// Obliga al usuario a realizar un login completo nuevamente.
   Future<void> invalidarPinYToken();
+
+  /// Obtiene los datos de perfil más recientes de un usuario.
+  ///
+  /// Si está online los trae de Supabase y los persiste en local;
+  /// si está offline los lee de la caché local.
+  Future<Usuario> obtenerPerfilActualizado(String id);
 }
 
 /// Excepción lanzada cuando el token existe pero el periodo de gracia de 1 min expiró.

@@ -23,6 +23,8 @@ class FakeRepositorio extends RepositorioAutenticacion {
   Future<void> guardarPreferenciaAcceso(String preferencia) async {}
   @override
   Future<void> invalidarPinYToken() async {}
+  @override
+  Future<Usuario> obtenerPerfilActualizado(String id) async => throw UnimplementedError();
   
   @override
   Future<bool> verificarBiometria() async {

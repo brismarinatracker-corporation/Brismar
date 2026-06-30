@@ -28,7 +28,7 @@ class FuenteDatosAutenticacionRemota {
       }
 
       await _guardarVersionAppSilencioso();
-      final userDetails = await _obtenerDetallesUsuario(user.id);
+      final userDetails = await obtenerDetallesUsuario(user.id);
 
       return Usuario(
         id: user.id,
@@ -74,7 +74,7 @@ class FuenteDatosAutenticacionRemota {
   }
 
   /// Obtiene los detalles extendidos (nombre real y rol) del usuario.
-  Future<Map<String, dynamic>?> _obtenerDetallesUsuario(String id) async {
+  Future<Map<String, dynamic>?> obtenerDetallesUsuario(String id) async {
     return await _client
         .from('usuarios')
         .select('nombre_real, rol, foto_perfil, sede')

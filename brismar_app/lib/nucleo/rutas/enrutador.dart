@@ -130,7 +130,8 @@ final enrutadorProvider = Provider<GoRouter>((ref) {
 String? _evaluarRedireccion(EstadoAutenticacion authState, String path) {
   final rutaInicial = _evaluarEstadosInicialesYSinSesion(authState, path);
   if (rutaInicial != null || authState is EstadoAutenticacionInicial || 
-      authState is EstadoAutenticacionCargando || authState is EstadoAutenticacionNoAutenticado) {
+      (authState is EstadoAutenticacionCargando && path == '/cargando') || 
+      authState is EstadoAutenticacionNoAutenticado || authState is EstadoAutenticacionError) {
     return rutaInicial;
   }
   final rutaSetup = _evaluarEstadosSetup(authState, path);
@@ -145,11 +146,16 @@ String? _evaluarRedireccion(EstadoAutenticacion authState, String path) {
 
 /// Evalúa estados iniciales y sin sesión.
 String? _evaluarEstadosInicialesYSinSesion(EstadoAutenticacion authState, String path) {
-  if (authState is EstadoAutenticacionInicial || authState is EstadoAutenticacionCargando) {
+  if (authState is EstadoAutenticacionInicial || 
+      (authState is EstadoAutenticacionCargando && path == '/cargando')) {
     return path == '/cargando' ? null : '/cargando';
   }
   if (authState is EstadoAutenticacionNoAutenticado) {
     return path == '/login' ? null : '/login';
+  }
+  if (authState is EstadoAutenticacionError) {
+    if (path == '/login' || path == '/acceso-rapido') return null;
+    return '/login';
   }
   return null;
 }

@@ -51,4 +51,21 @@ class Usuario {
       'foto_perfil': fotoPerfil,
     };
   }
+
+  /// Crea una copia de este usuario con los campos especificados actualizados.
+  Usuario copyWith({
+    String? nombreReal,
+    String? rol,
+    String? sede,
+    String? fotoPerfil,
+  }) {
+    return Usuario(
+      id: id,
+      nombreUsuario: nombreUsuario,
+      nombreReal: nombreReal ?? this.nombreReal,
+      rol: rol ?? this.rol,
+      sede: sede ?? this.sede,
+      fotoPerfil: fotoPerfil ?? this.fotoPerfil,
+    );
+  }
 }

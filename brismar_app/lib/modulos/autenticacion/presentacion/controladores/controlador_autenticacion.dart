@@ -235,4 +235,17 @@ class NotificadorAutenticacion extends StateNotifier<EstadoAutenticacion> {
     final preferencia = PreferenciaAcceso.fromString(prefRaw);
     state = EstadoAccesoRapidoRequerido(preferencia);
   }
+
+  /// Obtiene los detalles actualizados del perfil de usuario de forma asíncrona.
+  Future<void> refrescarPerfil() async {
+    final estadoActual = state;
+    if (estadoActual is EstadoAutenticacionAutenticado) {
+      try {
+        final usuarioAct = await _repositorio.obtenerPerfilActualizado(estadoActual.usuario.id);
+        state = EstadoAutenticacionAutenticado(usuarioAct);
+      } catch (_) {
+        // Silencioso
+      }
+    }
+  }
 }

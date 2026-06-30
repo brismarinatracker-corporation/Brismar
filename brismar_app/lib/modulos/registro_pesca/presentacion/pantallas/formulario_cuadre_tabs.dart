@@ -485,41 +485,8 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
                               labelText: 'Fecha de Zarpe',
                               suffixIcon: const Icon(Icons.calendar_today_rounded, color: Color(0xFF00E5FF), size: 20),
                             ),
-                            onTap: widget.cuadreInicial?.fotoZarpeUrl != null ? null : () async {
-                              DateTime? selectedDate = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(2101),
-                                locale: const Locale('es', 'ES'),
-                                builder: (context, child) {
-                                  return Theme(
-                                    data: Theme.of(context).copyWith(
-                                      colorScheme: const ColorScheme.dark(
-                                        primary: Color(0xFF00E5FF),
-                                        onPrimary: Color(0xFF040B1E),
-                                        surface: Color(0xFF0F224A),
-                                        onSurface: Colors.white,
-                                      ),
-                                      textTheme: Theme.of(context).textTheme.copyWith(
-                                        bodyLarge: const TextStyle(color: Colors.white),
-                                        bodyMedium: const TextStyle(color: Colors.white70),
-                                        titleMedium: const TextStyle(color: Colors.white),
-                                      ),
-                                      // ignore: deprecated_member_use
-                                      dialogBackgroundColor: const Color(0xFF0F224A),
-                                    ),
-                                    child: child!,
-                                  );
-                                },
-                              );
-                              if (selectedDate != null) {
-                                setState(() {
-                                  _fechaZarpeCtrl.text =
-                                      "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
-                                });
-                              }
-                            },
+                            onTap: widget.cuadreInicial?.fotoZarpeUrl != null ? null : _seleccionarFecha,
+
                           ),
                         ],
                       ),
@@ -767,6 +734,52 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
       return '$enteraFormateada.$decimal';
     }
     return enteraFormateada;
+  }
+
+  Future<void> _seleccionarFecha() async {
+    final initial = _parsearFechaZarpe();
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+      locale: const Locale('es', 'ES'),
+      builder: (context, child) => _buildThemeDialog(context, child!),
+    );
+    if (selectedDate != null) {
+      setState(() {
+        _fechaZarpeCtrl.text = "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
+      });
+    }
+  }
+
+  DateTime _parsearFechaZarpe() {
+    if (_fechaZarpeCtrl.text.isEmpty) return DateTime.now();
+    final parsed = DateTime.tryParse(_fechaZarpeCtrl.text);
+    if (parsed == null) return DateTime.now();
+    final valida = parsed.isAfter(DateTime(2000)) && parsed.isBefore(DateTime(2101));
+    return valida ? parsed : DateTime.now();
+  }
+
+  Widget _buildThemeDialog(BuildContext context, Widget child) {
+    return Theme(
+      data: Theme.of(context).copyWith(
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF00E5FF),
+          onPrimary: Color(0xFF040B1E),
+          surface: Color(0xFF0F224A),
+          onSurface: Colors.white,
+        ),
+        textTheme: Theme.of(context).textTheme.copyWith(
+          bodyLarge: const TextStyle(color: Colors.white),
+          bodyMedium: const TextStyle(color: Colors.white70),
+          titleMedium: const TextStyle(color: Colors.white),
+        ),
+        // ignore: deprecated_member_use
+        dialogBackgroundColor: const Color(0xFF0F224A),
+      ),
+      child: child,
+    );
   }
 
   void _agregarCompraDialog({CompraEntidad? compraAEditar, int? indiceAEditar}) {

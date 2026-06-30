@@ -480,6 +480,27 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
     );
   }
 
+  Future<void> _seleccionarFecha() async {
+    DateTime initial = DateTime.now();
+    if (_fechaZarpeCtrl.text.isNotEmpty) {
+      final parsed = DateTime.tryParse(_fechaZarpeCtrl.text);
+      if (parsed != null && parsed.isAfter(DateTime(2000)) && parsed.isBefore(DateTime(2101))) {
+        initial = parsed;
+      }
+    }
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (selected != null) {
+      setState(() {
+        _fechaZarpeCtrl.text = "${selected.year}-${selected.month.toString().padLeft(2, '0')}-${selected.day.toString().padLeft(2, '0')}";
+      });
+    }
+  }
+
   // Vistas Parciales
   Widget _buildSeccionGeneral() {
     return Card(
@@ -511,14 +532,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
                     readOnly: true,
                     style: const TextStyle(color: Colors.white),
                     decoration: _construirInputDecoration(labelText: 'Fecha', suffixIcon: const Icon(Icons.calendar_today, color: Color(0xFF00E5FF), size: 18)),
-                    onTap: () async {
-                      DateTime? selected = await showDatePicker(
-                        context: context, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2101),
-                      );
-                      if (selected != null) {
-                        setState(() { _fechaZarpeCtrl.text = "${selected.year}-${selected.month.toString().padLeft(2, '0')}-${selected.day.toString().padLeft(2, '0')}"; });
-                      }
-                    },
+                    onTap: _seleccionarFecha,
                   ),
                 ),
               ],

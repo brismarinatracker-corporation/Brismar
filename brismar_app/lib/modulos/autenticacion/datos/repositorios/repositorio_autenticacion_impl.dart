@@ -183,4 +183,36 @@ class RepositorioAutenticacionImpl implements RepositorioAutenticacion {
     if (savedUserStr == null) return null;
     return Usuario.fromJson(jsonDecode(savedUserStr));
   }
+
+  @override
+  Future<Usuario> obtenerPerfilActualizado(String id) async {
+    final localUser = await _obtenerUsuarioLocal();
+    final tieneInternet = await VerificadorConexionImpl().hayConexion();
+    if (!tieneInternet) return localUser;
+    try {
+      final details = await _remotoDatasource.obtenerDetallesUsuario(id);
+      if (details == null) return localUser;
+      final updatedUser = localUser.copyWith(
+        nombreReal: details['nombre_real'] ?? localUser.nombreReal,
+        rol: details['rol'] ?? localUser.rol,
+        sede: details['sede'] ?? localUser.sede,
+        fotoPerfil: details['foto_perfil'] ?? localUser.fotoPerfil,
+      );
+      await _actualizarUsuarioLocal(updatedUser);
+      return updatedUser;
+    } catch (_) {
+      return localUser;
+    }
+  }
+
+  Future<Usuario> _obtenerUsuarioLocal() async {
+    final savedUserStr = await _secureStorage.obtenerDatosUsuarioOffline();
+    if (savedUserStr == null) throw const ExcepcionApp('AUTH-001', mensajeTecnico: 'Sin datos locales.');
+    return Usuario.fromJson(jsonDecode(savedUserStr));
+  }
+
+  Future<void> _actualizarUsuarioLocal(Usuario user) async {
+    final offlineHash = await _secureStorage.obtenerHashOffline() ?? '';
+    await _secureStorage.guardarCredencialesOffline(offlineHash, jsonEncode(user.toJson()));
+  }
 }
