@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../modulos/dashboard/presentacion/pantallas/layout_dashboard.dart';
 import '../../modulos/dashboard/presentacion/pantallas/pantalla_dashboard.dart';
 import '../../modulos/transito/presentacion/pantallas/pantalla_transito.dart';
+import '../../modulos/transito/presentacion/pantallas/pantalla_edicion_transito.dart';
 import '../../modulos/cuadres/presentacion/pantallas/pantalla_cuadres.dart';
 import '../../modulos/usuarios/presentacion/pantallas/pantalla_usuarios.dart';
 
@@ -40,9 +41,9 @@ final proveedorEnrutador = Provider<GoRouter>((ref) {
         return const RutaLogin().location;
       }
 
-      // Si es operario y trata de acceder a usuarios, lo devolvemos a transito
-      if (rol == 'operario' && state.uri.path.startsWith('/usuarios')) {
-        return const RutaTransito().location;
+      // Si es supervisor y trata de acceder a usuarios, lo devolvemos al dashboard
+      if (rol == 'supervisor' && state.uri.path.startsWith('/usuarios')) {
+        return const RutaDashboard().location;
       }
 
       return null;
@@ -53,7 +54,12 @@ final proveedorEnrutador = Provider<GoRouter>((ref) {
 @TypedShellRoute<RutaDashboardShell>(
   routes: [
     TypedGoRoute<RutaDashboard>(path: '/dashboard'),
-    TypedGoRoute<RutaTransito>(path: '/transito'),
+    TypedGoRoute<RutaTransito>(
+      path: '/transito',
+      routes: [
+        TypedGoRoute<RutaEdicionTransito>(path: 'editar/:id'),
+      ],
+    ),
     TypedGoRoute<RutaCuadres>(path: '/cuadres'),
     TypedGoRoute<RutaUsuarios>(path: '/usuarios'),
   ],
@@ -82,6 +88,16 @@ class RutaTransito extends GoRouteData with $RutaTransito {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const PantallaTransito();
+  }
+}
+
+class RutaEdicionTransito extends GoRouteData with $RutaEdicionTransito {
+  final String id;
+  const RutaEdicionTransito({required this.id});
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return PantallaEdicionTransito(id: id);
   }
 }
 

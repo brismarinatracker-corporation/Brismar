@@ -42,6 +42,20 @@ class FuenteDatosCuadresWeb {
     }
   }
 
+  /// Obtiene un cuadre específico por su ID junto con todas sus relaciones.
+  Future<CuadreWebModelo?> obtenerPorId(String id) async {
+    try {
+      final cuadreRaw = await _cliente.from('cuadres').select().eq('id', id).maybeSingle();
+      if (cuadreRaw == null) return null;
+
+      final relaciones = await _cargarRelaciones([id]);
+      final lista = _ensamblarCuadres([cuadreRaw], relaciones);
+      return lista.isNotEmpty ? lista.first : null;
+    } catch (e) {
+      throw Exception('FuenteDatosCuadresWeb.obtenerPorId: $e');
+    }
+  }
+
   // ─── Privados ─────────────────────────────────────────────
 
   /// Consulta la tabla `cuadres` con filtros opcionales de rango de fecha.

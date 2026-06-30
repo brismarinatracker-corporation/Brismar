@@ -12,7 +12,16 @@ RouteBase get $rutaDashboardShell => ShellRouteData.$route(
   factory: $RutaDashboardShellExtension._fromState,
   routes: [
     GoRouteData.$route(path: '/dashboard', factory: $RutaDashboard._fromState),
-    GoRouteData.$route(path: '/transito', factory: $RutaTransito._fromState),
+    GoRouteData.$route(
+      path: '/transito',
+      factory: $RutaTransito._fromState,
+      routes: [
+        GoRouteData.$route(
+          path: 'editar/:id',
+          factory: $RutaEdicionTransito._fromState,
+        ),
+      ],
+    ),
     GoRouteData.$route(path: '/cuadres', factory: $RutaCuadres._fromState),
     GoRouteData.$route(path: '/usuarios', factory: $RutaUsuarios._fromState),
   ],
@@ -48,6 +57,31 @@ mixin $RutaTransito on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/transito');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin $RutaEdicionTransito on GoRouteData {
+  static RutaEdicionTransito _fromState(GoRouterState state) =>
+      RutaEdicionTransito(id: state.pathParameters['id']!);
+
+  RutaEdicionTransito get _self => this as RutaEdicionTransito;
+
+  @override
+  String get location => GoRouteData.$location(
+    '/transito/editar/${Uri.encodeComponent(_self.id)}',
+  );
 
   @override
   void go(BuildContext context) => context.go(location);

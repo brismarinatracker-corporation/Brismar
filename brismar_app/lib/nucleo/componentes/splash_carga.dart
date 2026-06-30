@@ -104,7 +104,7 @@ class _SplashCargaState extends State<SplashCarga>
           // Anillo exterior giratorio con partículas
           AnimatedBuilder(
             animation: _rotacion,
-            builder: (_, __) => Transform.rotate(
+            builder: (_, _) => Transform.rotate(
               angle: _rotacion.value * 2 * pi,
               child: CustomPaint(
                 size: const Size(140, 140),
@@ -115,7 +115,7 @@ class _SplashCargaState extends State<SplashCarga>
           // Anillo interior en sentido contrario
           AnimatedBuilder(
             animation: _rotacion,
-            builder: (_, __) => Transform.rotate(
+            builder: (_, _) => Transform.rotate(
               angle: -_rotacion.value * 2 * pi * 0.6,
               child: CustomPaint(
                 size: const Size(100, 100),
@@ -126,7 +126,7 @@ class _SplashCargaState extends State<SplashCarga>
           // Ícono central con pulso
           AnimatedBuilder(
             animation: _pulso,
-            builder: (_, __) {
+            builder: (_, _) {
               final escala = 0.9 + _pulso.value * 0.15;
               return Transform.scale(
                 scale: escala,
@@ -194,7 +194,7 @@ class _SplashCargaState extends State<SplashCarga>
   Widget _textoCargando() {
     return AnimatedBuilder(
       animation: _pulso,
-      builder: (_, __) => Opacity(
+      builder: (_, _) => Opacity(
         opacity: 0.6 + _pulso.value * 0.4,
         child: Text(
           widget.mensaje,

@@ -202,22 +202,14 @@ class _FormularioCuadreTabsState extends ConsumerState<FormularioCuadreTabs> {
 
     // Calcular estado: si no hay ventas, es borrador. (Dado que quitamos el paso de ventas, siempre será borrador o completo según reglas)
     final estado = _ventas.isEmpty ? 'borrador' : 'completo';
-
     final authState = ref.read(proveedorControladorAutenticacion);
-    String usuarioActualId = 'local-placeholder';
-    if (authState is EstadoAutenticacionAutenticado) {
-      usuarioActualId = authState.usuario.id;
-    }
-
-    if (usuarioActualId == 'local-placeholder') {
+    if (authState is! EstadoAutenticacionAutenticado) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error de sesión: No se puede guardar como invitado local'),
-          backgroundColor: Colors.redAccent,
-        ),
+        const SnackBar(content: Text('Error de sesión: Usuario no autenticado.'), backgroundColor: Colors.redAccent),
       );
       return;
     }
+    final String usuarioActualId = authState.usuario.id;
 
     setState(() => _guardando = true);
 

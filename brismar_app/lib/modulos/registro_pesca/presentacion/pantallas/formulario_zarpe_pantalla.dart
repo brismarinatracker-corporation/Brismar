@@ -7,7 +7,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../dominio/entidades/cuadre_entidad.dart';
+import '../../dominio/entidades/zarpe_entidad.dart';
 import '../controladores/controlador_cuadres.dart';
+import '../controladores/controlador_zarpes.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 
 class FormularioZarpePantalla extends ConsumerStatefulWidget {
@@ -20,6 +22,7 @@ class FormularioZarpePantalla extends ConsumerStatefulWidget {
 class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantalla> {
   final _formKey = GlobalKey<FormState>();
   final _placaCtrl = TextEditingController();
+  final _choferCtrl = TextEditingController();
   final _pesoTotalCtrl = TextEditingController();
   final _cajasLlenasCtrl = TextEditingController();
   final _cajasVaciasCtrl = TextEditingController();
@@ -35,6 +38,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
   @override
   void dispose() {
     _placaCtrl.dispose();
+    _choferCtrl.dispose();
     _pesoTotalCtrl.dispose();
     _cajasLlenasCtrl.dispose();
     _cajasVaciasCtrl.dispose();
@@ -175,6 +179,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
     setState(() => _guardando = true);
 
     try {
+      final idZarpe = const Uuid().v4();
       final pesoTotal = double.tryParse(_pesoTotalCtrl.text) ?? 0.0;
       final cajasLlenas = int.tryParse(_cajasLlenasCtrl.text) ?? 0;
       final cajasVacias = int.tryParse(_cajasVaciasCtrl.text) ?? 0;
@@ -182,7 +187,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
       final fechaActual = DateTime.now().toIso8601String().substring(0, 10);
 
       final nuevoCuadre = CuadreEntidad(
-        id: const Uuid().v4(),
+        id: idZarpe,
         usuarioId: usuarioActualId,
         placa: _placaCtrl.text.toUpperCase(),
         fechaZarpe: fechaActual,
@@ -192,7 +197,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         cajasLlenas: cajasLlenas,
         cajasVacias: cajasVacias,
         tipoProducto: _tipoProductoSeleccionado,
-        muellePartida: _muellePartidaCtrl.text.trim().isEmpty ? null : _muellePartidaCtrl.text.trim(),
+        muellePartida: _muellePartidaCtrl.text.trim().isEmpty ? null : _muellePartidaCtrl.text.trim().toUpperCase(),
         pesador: _pesadorCtrl.text.trim().toUpperCase().isEmpty ? null : _pesadorCtrl.text.trim().toUpperCase(),
         sincronizado: false,
         compras: const [],
@@ -200,7 +205,22 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         ventas: const [],
       );
 
+      // 1. Guardar en la tabla 'cuadres' para persistir el flujo local en la app móvil
       await ref.read(cuadresProvider.notifier).guardarCuadre(nuevoCuadre);
+
+      // 2. Guardar en la tabla 'zarpes' para que se sincronice con el Radar de Tránsito de la Web Admin
+      final nuevoZarpe = ZarpeEntidad(
+        id: idZarpe,
+        placaCamara: _placaCtrl.text.toUpperCase(),
+        chofer: _choferCtrl.text.trim().toUpperCase(),
+        muellePartida: _muellePartidaCtrl.text.trim().toUpperCase(),
+        fotoUrlEvidencia: _fotosEvidencia.first.path, // Primer archivo como referencia
+        fotoLocalPath: _fotosEvidencia.first.path,
+        fechaZarpe: DateTime.now(),
+        estado: 'DESPACHADO_PIURA',
+      );
+
+      await ref.read(proveedorZarpes.notifier).registrarZarpe(nuevoZarpe);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -483,6 +503,25 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                         if (v == null || v.isEmpty) return 'La placa es requerida';
                         final clean = v.replaceAll('-', '');
                         if (clean.length != 6) return 'La placa debe tener exactamente 6 caracteres (Ej: AAA-123)';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Chofer
+                    TextFormField(
+                      controller: _choferCtrl,
+                      style: const TextStyle(color: Colors.white),
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [
+                        _UpperCaseInputFormatter(),
+                      ],
+                      decoration: _construirInputDecoration(
+                        labelText: 'Nombre del Chofer',
+                        suffixIcon: const Icon(Icons.person_outline_rounded, color: Color(0xFF00E5FF), size: 20),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'El nombre del chofer es requerido';
                         return null;
                       },
                     ),

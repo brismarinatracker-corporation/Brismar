@@ -9,7 +9,7 @@ import '../../modulos/autenticacion/presentacion/pantallas/configurar_biometria_
 import '../../modulos/autenticacion/presentacion/pantallas/acceso_rapido_pantalla.dart';
 import '../../modulos/registro_pesca/presentacion/pantallas/dashboard_cuadres.dart';
 import '../../modulos/registro_pesca/presentacion/pantallas/formulario_zarpe_pantalla.dart';
-import '../../modulos/registro_pesca/presentacion/pantallas/formulario_cuadre_tabs.dart';
+import '../../modulos/registro_pesca/presentacion/pantallas/formulario_registro_pesca.dart';
 import '../../modulos/registro_pesca/dominio/entidades/cuadre_entidad.dart';
 import '../componentes/splash_carga.dart';
 part 'enrutador.g.dart';
@@ -101,7 +101,7 @@ class NuevoCuadreRoute extends GoRouteData with $NuevoCuadreRoute {
 
   @override
   Widget build(BuildContext context, GoRouterState state) =>
-      FormularioCuadreTabs(cuadreInicial: $extra);
+      FormularioRegistroPesca(cuadreInicial: $extra);
 }
 
 /// Configuración de rutas declarativas mediante GoRouter generadas y protegidas por Riverpod.
@@ -111,44 +111,48 @@ final enrutadorProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/login',
     routes: $appRoutes,
-    redirect: (context, state) {
-      final path = state.uri.path;
-
-      // ── Mientras la sesión se evalúa, mostrar pantalla de carga ───────────
-      if (authState is EstadoAutenticacionInicial ||
-          authState is EstadoAutenticacionCargando) {
-        return path == '/cargando' ? null : '/cargando';
-      }
-
-      // ── Sin sesión → siempre al login ──────────────────────────────────────
-      if (authState is EstadoAutenticacionNoAutenticado) {
-        return path == '/login' ? null : '/login';
-      }
-
-      // ── Primer login: usuario debe configurar PIN ──────────────────────────
-      if (authState is EstadoConfigurarPin) {
-        return path == '/configurar-pin' ? null : '/configurar-pin';
-      }
-
-      // ── PIN guardado: usuario puede configurar biometría ───────────────────
-      if (authState is EstadoConfigurarBiometria) {
-        return path == '/configurar-biometria' ? null : '/configurar-biometria';
-      }
-
-      // ── Periodo de gracia expiró: acceso rápido (PIN/huella) ───────────────
-      if (authState is EstadoAccesoRapidoRequerido) {
-        return path == '/acceso-rapido' ? null : '/acceso-rapido';
-      }
-
-      // ── Sesión activa: acceso al dashboard ─────────────────────────────────
-      if (authState is EstadoAutenticacionAutenticado) {
-        // Evitar que el usuario regrese al login o a pantallas de setup
-        const pantallasSetup = ['/login', '/configurar-pin', '/configurar-biometria', '/acceso-rapido'];
-        if (pantallasSetup.contains(path)) return '/';
-        return null;
-      }
-
-      return null;
-    },
+    redirect: (context, state) => _evaluarRedireccion(authState, state.uri.path),
   );
 });
+
+/// Evalúa la redirección según el estado de autenticación actual.
+String? _evaluarRedireccion(EstadoAutenticacion authState, String path) {
+  final rutaInicial = _evaluarEstadosInicialesYSinSesion(authState, path);
+  if (rutaInicial != null || authState is EstadoAutenticacionInicial || 
+      authState is EstadoAutenticacionCargando || authState is EstadoAutenticacionNoAutenticado) {
+    return rutaInicial;
+  }
+  final rutaSetup = _evaluarEstadosSetup(authState, path);
+  if (rutaSetup != null) return rutaSetup;
+  
+  if (authState is EstadoAutenticacionAutenticado) {
+    const pantallasSetup = ['/login', '/configurar-pin', '/configurar-biometria', '/acceso-rapido'];
+    return pantallasSetup.contains(path) ? '/' : null;
+  }
+  return null;
+}
+
+/// Evalúa estados iniciales y sin sesión.
+String? _evaluarEstadosInicialesYSinSesion(EstadoAutenticacion authState, String path) {
+  if (authState is EstadoAutenticacionInicial || authState is EstadoAutenticacionCargando) {
+    return path == '/cargando' ? null : '/cargando';
+  }
+  if (authState is EstadoAutenticacionNoAutenticado) {
+    return path == '/login' ? null : '/login';
+  }
+  return null;
+}
+
+/// Evalúa los estados de configuración de seguridad adicionales.
+String? _evaluarEstadosSetup(EstadoAutenticacion authState, String path) {
+  if (authState is EstadoConfigurarPin) {
+    return path == '/configurar-pin' ? null : '/configurar-pin';
+  }
+  if (authState is EstadoConfigurarBiometria) {
+    return path == '/configurar-biometria' ? null : '/configurar-biometria';
+  }
+  if (authState is EstadoAccesoRapidoRequerido) {
+    return path == '/acceso-rapido' ? null : '/acceso-rapido';
+  }
+  return null;
+}

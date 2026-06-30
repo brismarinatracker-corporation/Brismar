@@ -9,41 +9,44 @@ class FuenteDatosZarpesRemota {
 
   FuenteDatosZarpesRemota(this._cliente);
 
+  /// Sube un zarpe de cámara a Supabase, incluyendo la subida de su foto de evidencia.
   Future<void> subirZarpe(ZarpeModelo zarpe) async {
     try {
-      String urlFotoFinal = zarpe.fotoUrlEvidencia;
+      final String urlFotoFinal = await _subirFotoZarpeSegura(zarpe);
 
-      // 1. Si la url de la foto está vacía o es una ruta local, debemos subirla a Storage
-      if (zarpe.fotoLocalPath != null && zarpe.fotoLocalPath!.isNotEmpty) {
-        final file = File(zarpe.fotoLocalPath!);
-        if (await file.exists()) {
-          final ext = zarpe.fotoLocalPath!.split('.').last;
-          final userId = _cliente.auth.currentUser?.id ?? 'desconocido';
-          final nombreArchivo = '$userId/${zarpe.id}_zarpe.$ext';
-          
-          await _cliente.storage.from('camaras-zarpes').upload(
-            nombreArchivo,
-            file,
-            fileOptions: const sb.FileOptions(upsert: true),
-          );
-          
-          urlFotoFinal = _cliente.storage.from('camaras-zarpes').getPublicUrl(nombreArchivo);
-        }
-      }
-
-      // 2. Insertar/Actualizar en base de datos PostgreSQL
       final zarpeJson = zarpe.toJsonSupabase();
       zarpeJson['foto_url_evidencia'] = urlFotoFinal;
       zarpeJson['creado_por'] = _cliente.auth.currentUser?.id;
       
       await _cliente.from('zarpes').upsert(zarpeJson);
-      
     } catch (e) {
       debugPrint('Error en FuenteDatosZarpesRemota: $e');
       throw Exception('No se pudo subir a Supabase: $e');
     }
   }
 
+  /// Sube de forma segura el archivo local de la foto de evidencia al Storage si existe.
+  Future<String> _subirFotoZarpeSegura(ZarpeModelo zarpe) async {
+    if (zarpe.fotoLocalPath != null && zarpe.fotoLocalPath!.isNotEmpty) {
+      final file = File(zarpe.fotoLocalPath!);
+      if (await file.exists()) {
+        final ext = zarpe.fotoLocalPath!.split('.').last;
+        final userId = _cliente.auth.currentUser?.id ?? 'desconocido';
+        final nombreArchivo = '$userId/${zarpe.id}_zarpe.$ext';
+        
+        await _cliente.storage.from('camaras-zarpes').upload(
+          nombreArchivo,
+          file,
+          fileOptions: const sb.FileOptions(upsert: true),
+        );
+        
+        return _cliente.storage.from('camaras-zarpes').getPublicUrl(nombreArchivo);
+      }
+    }
+    return zarpe.fotoUrlEvidencia;
+  }
+
+  /// Obtiene los zarpes que han sido actualizados en la base de datos central desde una fecha dada.
   Future<List<Map<String, dynamic>>> obtenerZarpesActualizados(DateTime desde) async {
     try {
       final respuesta = await _cliente

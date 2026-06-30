@@ -4,12 +4,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class EstadoAutenticacion {
   final User? usuario;
   final String? rol;
+  final String? nombreReal;
   final bool cargando;
   final String? error;
 
   EstadoAutenticacion({
     this.usuario,
     this.rol,
+    this.nombreReal,
     this.cargando = true,
     this.error,
   });
@@ -44,18 +46,20 @@ class ControladorAutenticacion extends Notifier<EstadoAutenticacion> {
       // Validar si el usuario sigue existiendo en Auth
       await Supabase.instance.client.auth.getUser();
 
-      // Consultar el rol en public.usuarios
+      // Consultar el rol y nombre_real en public.usuarios
       final res = await Supabase.instance.client
           .from('usuarios')
-          .select('rol')
+          .select('rol, nombre_real')
           .eq('id', user.id)
           .maybeSingle();
 
       final rol = res?['rol'] as String?;
+      final nombreReal = res?['nombre_real'] as String?;
       
       state = EstadoAutenticacion(
         usuario: user,
-        rol: rol ?? 'operario',
+        rol: rol ?? 'bahia',
+        nombreReal: nombreReal ?? 'Usuario',
         cargando: false,
       );
     } catch (e) {

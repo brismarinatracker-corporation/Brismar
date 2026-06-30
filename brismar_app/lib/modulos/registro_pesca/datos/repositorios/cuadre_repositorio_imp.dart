@@ -5,10 +5,15 @@ import '../fuentes_datos/fuente_datos_cuadres_local.dart';
 import '../fuentes_datos/fuente_datos_cuadres_remota.dart';
 import '../modelos/cuadre_modelo.dart';
 
+/// Implementación concreta de [CuadreRepositorio].
 class CuadreRepositorioImp implements CuadreRepositorio {
+  /// Fuente de datos para la persistencia local.
   final FuenteDatosCuadresLocal local;
+
+  /// Fuente de datos para el envío remoto.
   final FuenteDatosCuadresRemota remota;
 
+  /// Constructor de [CuadreRepositorioImp].
   CuadreRepositorioImp({
     required this.local,
     required this.remota,

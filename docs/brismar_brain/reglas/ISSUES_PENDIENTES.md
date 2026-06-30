@@ -59,3 +59,28 @@ Este documento registra las tareas críticas de arquitectura y negocio que deben
 - **Descripción:** El módulo de gestión de usuarios en la Web Admin no permite subir o cambiar la foto de perfil del usuario.
 - **Acción Pendiente:** Integrar `Supabase Storage` con el bucket `avatares` para subir la foto y guardar la URL en el campo `avatar_url` de la tabla `usuarios`.
 - **Estado:** 🟡 Pendiente de Implementación.
+
+### Issue #009: Tara Fija Oficial (3kg) y Preparación para Tara Dinámica
+- **Descripción:** El CEO ha confirmado que por ahora la única tara oficial y permitida es de **3kg**. No obstante, el código debe estar preparado para escalar a múltiples tipos de cajas en el futuro sin refactorizar la lógica central.
+- **Acción Pendiente:** Asegurar que los cálculos de peso neto en la App utilicen una constante de configuración (ej. `TARA_OFICIAL = 3.0`) en lugar de números mágicos. No implementar menú de selección de cajas todavía.
+- **Estado:** 🟡 Pendiente de Implementación en UI/Lógica.
+
+### Issue #010: Registro de Adelantos a Proveedores (Cash-Flow)
+- **Descripción:** El Bahía da dinero en efectivo de su "caja chica" a los pescadores artesanales (embarcaciones) como fidelización. Este dinero reduce el "Poder de Compra" del lote (compra) y debe restarse antes del prorrateo de utilidades.
+- **Acción Pendiente:** Añadir columna `adelanto` a la tabla `compras` en SQLite (`gestor_base_datos.dart`) y Supabase, o crear una tabla `adelantos_proveedor` vinculada al `compra_id`. Este monto se resta de la Utilidad Bruta.
+- **Estado:** 🔴 Pendiente de Migración SQLite/Supabase.
+
+### Issue #011: Registro de "Cortesía a Estibadores" (En Revisión)
+- **Descripción:** Frecuentemente se regala pescado en muelle. Para que el stock físico cuadre con el stock del sistema, se debe registrar esta salida sin afectar las finanzas. (Regla pendiente de confirmación oficial por el CEO).
+- **Acción Pendiente:** Planificar la posibilidad de registrar una Venta o Salida de stock etiquetada como "Cortesía/Estiba" con `precio_unitario = 0.00`.
+- **Estado:** 🟡 Pendiente de Confirmación de Negocio.
+
+### Issue #012: Estado de Bloqueo de Cámara Cargada
+- **Descripción:** Un cuadre cerrado no debe permitir ediciones posteriores para evitar "doble contabilidad" o fraude.
+- **Acción Pendiente:** Implementar un estado `CERRADO_BLOQUEADO` en `cuadres_zarpe`. Si una cámara alcanza las 500 cajas (o se marca como cerrada), las políticas RLS y la App deben rechazar cualquier INSERT/UPDATE relacionado, requiriendo autorización de `administrador`.
+- **Estado:** 🟡 Pendiente de Políticas RLS.
+
+### Issue #013: Log de Auditoría para "Precio Pactado"
+- **Descripción:** El precio de compra/venta es dinámico y se negocia. Si un operador lo cambia, el administrador debe saber quién y cuándo lo hizo.
+- **Acción Pendiente:** Crear tabla `audit_log_precios` y un trigger en `lotes_pesca` que registre el precio antiguo, el nuevo y el ID del usuario.
+- **Estado:** 🟡 Pendiente de Trigger en Supabase.

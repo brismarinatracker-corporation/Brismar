@@ -103,48 +103,27 @@ class DiccionarioErrores {
 
   /// Mapea una excepción o mensaje genérico a un [DetalleError].
   static DetalleError mapear(Object excepcion) {
-    if (excepcion is ExcepcionApp) {
-      return excepcion.detalle;
-    }
-
+    if (excepcion is ExcepcionApp) return excepcion.detalle;
     final str = excepcion.toString().toLowerCase();
-    if (str.contains('contraseña incorrecta') ||
-        str.contains('incorrectos') ||
-        str.contains('invalid login credentials') ||
-        str.contains('invalid claim')) {
-      return obtener('AUTH-001');
-    }
-    if (str.contains('sincronización') || str.contains('sync')) {
-      return obtener('NET-003');
-    }
-    if (str.contains('red') ||
-        str.contains('socketexception') ||
-        str.contains('network') ||
-        str.contains('connection')) {
-      return obtener('NET-002');
-    }
-    if (str.contains('biomet') ||
-        str.contains('notavailable') ||
-        str.contains('no registered')) {
-      return obtener('BIO-001');
-    }
-    if (str.contains('pin incorrecto')) {
-      return obtener('AUTH-002');
-    }
-    if (str.contains('sqlite') || str.contains('base de datos local')) {
-      return obtener('DB-002');
-    }
-    if (str.contains('securestorage') || str.contains('almacenamiento')) {
-      return obtener('DB-003');
-    }
-    if (str.contains('postgrest') ||
-        str.contains('row level security') ||
-        str.contains('database') ||
-        str.contains('violat')) {
-      return obtener('SRV-002');
+
+    for (final entrada in _patronesErrores.entries) {
+      if (entrada.value.any((patron) => str.contains(patron))) {
+        return obtener(entrada.key);
+      }
     }
     return obtener('GEN-001');
   }
+
+  static const Map<String, List<String>> _patronesErrores = {
+    'AUTH-001': ['contraseña incorrecta', 'incorrectos', 'invalid login credentials', 'invalid claim'],
+    'NET-003': ['sincronización', 'sync'],
+    'NET-002': ['red', 'socketexception', 'network', 'connection'],
+    'BIO-001': ['biomet', 'notavailable', 'no registered'],
+    'AUTH-002': ['pin incorrecto'],
+    'DB-002': ['sqlite', 'base de datos local'],
+    'DB-003': ['securestorage', 'almacenamiento'],
+    'SRV-002': ['postgrest', 'row level security', 'database', 'violat'],
+  };
 }
 
 /// Excepción de aplicación que conserva el código de error de dominio.

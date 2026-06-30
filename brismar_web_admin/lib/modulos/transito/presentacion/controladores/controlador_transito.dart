@@ -14,7 +14,7 @@ class ControladorTransito extends AsyncNotifier<List<Map<String, dynamic>>> {
   }
 
   Future<List<Map<String, dynamic>>> _cargarZarpes() async {
-    final datos = await _cliente.from('zarpes').select().order('fecha_zarpe', ascending: false);
+    final datos = await _cliente.from('vista_zarpes_detallados').select().order('fecha_zarpe', ascending: false);
     return List<Map<String, dynamic>>.from(datos);
   }
 
@@ -29,6 +29,14 @@ class ControladorTransito extends AsyncNotifier<List<Map<String, dynamic>>> {
       await recargar(); // Refrescar el estado después de actualizar
     } catch (e) {
       throw Exception('No se pudo actualizar el estado en Supabase: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> obtenerZarpePorId(String id) async {
+    try {
+      return await _cliente.from('vista_zarpes_detallados').select().eq('id', id).maybeSingle();
+    } catch (e) {
+      throw Exception('No se pudo obtener el zarpe: $e');
     }
   }
 }

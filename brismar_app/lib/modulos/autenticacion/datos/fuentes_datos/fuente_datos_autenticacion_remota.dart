@@ -27,24 +27,8 @@ class FuenteDatosAutenticacionRemota {
         );
       }
 
-      // Guardamos la versión actual de la app en los metadatos del usuario
-      try {
-        final info = await PackageInfo.fromPlatform();
-        await _client.auth.updateUser(sb.UserAttributes(
-          data: {'app_version': info.version},
-        ));
-      } catch (_) {
-        // Ignorar fallo de versión para no bloquear el login
-      }
-
-      // Consultamos el rol y nombre real en la tabla 'usuarios'.
-      // maybeSingle() retorna null en vez de PGRST116 si el perfil aún no existe.
-      final userDetails = await _client
-          .from('usuarios')
-          .select('nombre_real, rol')
-          .eq('id', user.id)
-          .maybeSingle()
-          .timeout(const Duration(seconds: 10));
+      await _guardarVersionAppSilencioso();
+      final userDetails = await _obtenerDetallesUsuario(user.id);
 
       return Usuario(
         id: user.id,
@@ -73,6 +57,28 @@ class FuenteDatosAutenticacionRemota {
         stackTrace: stack,
       );
     }
+  }
+
+  /// Guarda de forma silenciosa la versión de la aplicación en Supabase.
+  Future<void> _guardarVersionAppSilencioso() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      await _client.auth.updateUser(sb.UserAttributes(
+        data: {'app_version': info.version},
+      ));
+    } catch (_) {
+      // Ignorar fallo de versión para no bloquear el login
+    }
+  }
+
+  /// Obtiene los detalles extendidos (nombre real y rol) del usuario.
+  Future<Map<String, dynamic>?> _obtenerDetallesUsuario(String id) async {
+    return await _client
+        .from('usuarios')
+        .select('nombre_real, rol')
+        .eq('id', id)
+        .maybeSingle()
+        .timeout(const Duration(seconds: 10));
   }
 
   /// Cierra la sesión activa en el servidor de Supabase.

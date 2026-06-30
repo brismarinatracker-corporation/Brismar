@@ -31,16 +31,33 @@ Para que el muelle no paralice a la oficina por falta de señal:
 
 ---
 
-## 4. LÓGICA DE NEGOCIO (Automatización de la Calculadora al 50/50)
-En el video, el operador calcula a mano qué porcentaje de flete le toca a cada embarcación. Lo hemos automatizado mediante **Prorrateo por Peso Neto**.
+## 4. LÓGICA DE NEGOCIO (Automatización Matemática al 50/50)
+En el video, el operador calcula a mano qué porcentaje de flete le toca a cada embarcación y separa la utilidad de la empresa. Lo hemos automatizado mediante **Prorrateo por Peso Neto**, incorporando ahora gastos extra-oficiales del muelle.
+
+**Nuevas Reglas de Negocio Oficiales (Aprobadas por CEO):**
+1. **Tara Fija:** La única tara permitida a nivel operativo es **3 kg**. El código usará este valor por defecto (preparado arquitectónicamente para escalar después, pero sin mostrar opciones múltiples al operario ahora).
+2. **Adelantos a Proveedor (Fidelización):** El dinero que el Bahía entrega a las lanchas para combustible o víveres sale de su "caja chica". Este adelanto reduce el **Poder de Compra** total del lote y se resta directamente de la Utilidad Bruta de la operación antes del prorrateo final.
+3. **Cortesía (Pendiente de Oficialización):** Se prevé registrar pescado regalado ("cortesía") como una salida a S/. 0.00 para cuadrar inventario físico, sujeto a confirmación final.
 
 **Regla Matemática SQL:**
-Si un camión cuesta S/. 1,000 y lleva 7,000 kg de la Lancha A (70%) y 3,000 kg de la Lancha B (30%), el motor SQL le cobra S/. 700 de flete al Lote A y S/. 300 al Lote B automáticamente.
+Si un camión cuesta S/. 1,000 en flete, lleva 7,000 kg de la Lancha A (70%) y 3,000 kg de la Lancha B (30%), el motor SQL le cobra S/. 700 de flete al Lote A y S/. 300 al Lote B automáticamente.
 ```sql
-Utilidad_Neta = (Kilos Netos * Precio) - Costos_Prorrateados - Gastos_Muelle_Directos
-Liquidacion_Bahia = Utilidad_Neta * 0.50
+-- 1. Se calcula la utilidad bruta descontando el adelanto al proveedor (embarcación):
+Utilidad_Bruta = (Kilos Netos * Precio Pactado) - Adelanto_Proveedor - Comision_Muelle
+
+-- 2. Se resta el flete y hielo prorrateado:
+Utilidad_Neta = Utilidad_Bruta - Costos_Prorrateados_Camara - Gastos_Muelle_Directos
+
+-- 3. Repartición Final:
+Fondo_Empresa_Brismar = Utilidad_Neta * 0.50
+Liquidacion_Neta_Bahia = Utilidad_Neta * 0.50
 ```
-* *Resultado:* Nadie teclea calculadoras. El sistema calcula ingresos, descuenta el hielo y flete proporcional, y separa la mitad para el bahía y la mitad para Brismar al instante.
+* *Resultado:* El sistema calcula ingresos, descuenta el adelanto que salió de caja chica, asume la tara de 3kg y separa la utilidad limpia al instante. 
+
+### 4.1 Bloqueo de Cámara y Permisos (App Input vs Web Admin)
+* **App Móvil (Input Layer):** La aplicación del Bahía se considera una herramienta **principalmente de envío de datos (Input)**. Para proteger la información financiera de BRISMAR (ya que operarios y dueños cuidan sus propios intereses), la App **nunca mostrará** los márgenes de ganancia globales ni la tajada de la corporación. Solo mostrará lo necesario para operar. No se crearán nuevos roles, se usará lógica de protección de vistas.
+* **Dashboard Web (Capa Administrativa):** Manejado por BRISMAR en oficina, tiene acceso total a los datos protegidos y a la utilidad corporativa real.
+* **Estado CERRADO:** Cuando una cámara alcanza su tope, pasa a estado `CERRADO`. La base de datos bloquea cualquier intento de edición, exigiendo autorización corporativa para cambios post-cierre.
 
 ---
 
