@@ -127,7 +127,7 @@ class PantallaDashboard extends ConsumerWidget {
       crossAxisCount: columnas,
       crossAxisSpacing: 24,
       mainAxisSpacing: 24,
-      childAspectRatio: 2.2,
+      childAspectRatio: 1.8,
       children: [
         _TarjetaKpiPremium(
           icono: Icons.local_shipping_rounded,
@@ -244,7 +244,7 @@ class _TarjetaKpiPremium extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
             color: const Color(0xFF1E293B).withOpacity(0.4),
             borderRadius: BorderRadius.circular(24),
