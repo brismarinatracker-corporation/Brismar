@@ -120,6 +120,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
       backgroundColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
+      iconTheme: const IconThemeData(color: Color(0xFF00E5FF)),
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
