@@ -202,7 +202,7 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
           // Área Principal de Contenido
           Expanded(
             child: Container(
-              color: const Color(0xFF0F172A), 
+              color: const Color(0xFFF8FAFC), 
               child: widget.hijo,
             ),
           ),

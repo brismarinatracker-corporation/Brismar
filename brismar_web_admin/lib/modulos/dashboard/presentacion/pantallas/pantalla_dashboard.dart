@@ -15,16 +15,7 @@ class PantallaDashboard extends ConsumerWidget {
     final estado = ref.watch(controladorDashboardProvider);
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: RadialGradient(
-          center: Alignment.topRight,
-          radius: 1.5,
-          colors: [
-            Color(0xFF0F224A),
-            Color(0xFF070E22),
-          ],
-        ),
-      ),
+      color: const Color(0xFFF8FAFC),
       child: estado.cargando
           ? const Center(
               child: CargaOrbital(tamano: 80),
@@ -58,7 +49,7 @@ class PantallaDashboard extends ConsumerWidget {
           const Text(
             'Dashboard General',
             style: TextStyle(
-              color: Colors.white,
+              color: Color(0xFF0F172A),
               fontSize: 32,
               fontWeight: FontWeight.w800,
               letterSpacing: -0.5,
@@ -68,7 +59,7 @@ class PantallaDashboard extends ConsumerWidget {
           Text(
             'Resumen operativo — ${mesActual.toUpperCase()}',
             style: const TextStyle(
-              color: Color(0xFF94A3B8),
+              color: Color(0xFF475569),
               fontSize: 14,
               fontWeight: FontWeight.w600,
               letterSpacing: 1.2,
@@ -77,13 +68,13 @@ class PantallaDashboard extends ConsumerWidget {
         ]),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF00E5FF).withOpacity(0.1),
+            color: const Color(0xFF00ACC1).withOpacity(0.08),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.3)),
+            border: Border.all(color: const Color(0xFF00ACC1).withOpacity(0.2)),
           ),
           child: IconButton(
             onPressed: () => ref.read(controladorDashboardProvider.notifier).cargarKpis(),
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF00E5FF)),
+            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF00ACC1)),
             tooltip: 'Actualizar KPIs',
             padding: const EdgeInsets.all(12),
           ),
@@ -183,14 +174,14 @@ class PantallaDashboard extends ConsumerWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withOpacity(0.4),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF334155).withOpacity(0.5)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -200,7 +191,7 @@ class PantallaDashboard extends ConsumerWidget {
           const Text(
             'Métricas Financieras (Próximamente)',
             style: TextStyle(
-              color: Colors.white,
+              color: Color(0xFF0F172A),
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -208,19 +199,19 @@ class PantallaDashboard extends ConsumerWidget {
           const SizedBox(height: 8),
           const Text(
             'Aquí se integrarán las gráficas de rentabilidad y flujos de caja a nivel nacional.',
-            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+            style: TextStyle(color: Color(0xFF475569), fontSize: 14),
           ),
           const SizedBox(height: 32),
           Container(
             height: 200,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: const Color(0xFF0F172A).withOpacity(0.5),
+              color: const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF1E293B)),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: const Center(
-              child: Icon(Icons.bar_chart_rounded, size: 64, color: Color(0xFF334155)),
+              child: Icon(Icons.bar_chart_rounded, size: 64, color: Color(0xFFCBD5E1)),
             ),
           ),
         ],
@@ -255,14 +246,14 @@ class _TarjetaKpiPremium extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E293B).withOpacity(0.4),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFF334155).withOpacity(0.5)),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
               )
             ],
           ),
@@ -275,14 +266,14 @@ class _TarjetaKpiPremium extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      colorIcono.withOpacity(0.2),
+                      colorIcono.withOpacity(0.15),
                       colorIcono.withOpacity(0.05),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: colorIcono.withOpacity(0.3)),
+                  border: Border.all(color: colorIcono.withOpacity(0.25)),
                 ),
                 child: Icon(icono, color: colorIcono, size: 32),
               ),
@@ -297,7 +288,7 @@ class _TarjetaKpiPremium extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Color(0xFF94A3B8),
+                        color: Color(0xFF475569),
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.5,
@@ -310,7 +301,7 @@ class _TarjetaKpiPremium extends StatelessWidget {
                       child: Text(
                         valor,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: Color(0xFF0F172A),
                           fontSize: 32,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.5,
@@ -323,9 +314,9 @@ class _TarjetaKpiPremium extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: colorIcono.withOpacity(0.8),
+                        color: colorIcono.withOpacity(0.9),
                         fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
