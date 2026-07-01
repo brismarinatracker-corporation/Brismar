@@ -14,39 +14,59 @@ class PantallaTransito extends ConsumerWidget {
     // Escucha el estado del controlador
     final estadoZarpes = ref.watch(proveedorTransito);
 
-    return Padding(
-      padding: const EdgeInsets.all(32.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Dark Blue Header Banner
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          decoration: const BoxDecoration(
+            color: Color(0xFF0F2D4A), // Deep navy blue
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+          ),
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Radar de Tránsito (Cámaras Entrantes)',
-                style: TextStyle(color: Color(0xFF0F172A), fontSize: 28, fontWeight: FontWeight.bold),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Radar de tránsito (cámaras entrantes)',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Vista en tiempo real de las cámaras despachadas desde Piura.',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
               ),
-              ElevatedButton.icon(
+              OutlinedButton.icon(
                 onPressed: () => ref.read(proveedorTransito.notifier).recargar(),
-                icon: const Icon(Icons.refresh_rounded),
+                icon: const Icon(Icons.refresh_rounded, size: 18),
                 label: const Text('Actualizar'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00ACC1).withOpacity(0.08),
-                  foregroundColor: const Color(0xFF00838F),
-                  elevation: 0,
-                  side: BorderSide(color: const Color(0xFF00ACC1).withOpacity(0.2)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.white30),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-              )
+              ),
             ],
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'Vista en tiempo real de las cámaras despachadas desde Piura. Marca como recibida al llegar.',
-            style: TextStyle(color: Color(0xFF475569), fontSize: 16),
-          ),
-          const SizedBox(height: 32),
-          Expanded(
+        ),
+        // Main list container
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(32.0),
             child: estadoZarpes.when(
               loading: () => const Center(child: CargaOrbital(tamano: 80)),
               error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.redAccent))),
@@ -68,137 +88,179 @@ class PantallaTransito extends ConsumerWidget {
                     final urlFoto = z['foto_url_evidencia'] ?? '';
                     final estaRecibido = z['estado'] == 'RECIBIDO_LAMBAYEQUE';
 
-                    return Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => context.go('/transito/editar/${z['id']}'),
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
-                                blurRadius: 16,
-                                offset: const Offset(0, 4),
-                              )
-                            ],
-                          ),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          )
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: IntrinsicHeight(
                           child: Row(
                             children: [
-                              if (urlFoto.toString().isNotEmpty)
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    urlFoto,
-                                    width: 80,
-                                    height: 80,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (c, e, s) => Container(
-                                      width: 80, height: 80, color: const Color(0xFFF1F5F9),
-                                      child: const Icon(Icons.broken_image, color: Color(0xFF94A3B8)),
-                                    ),
-                                  ),
-                                )
-                              else
-                                Container(
-                                  width: 80, height: 80, 
-                                  decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(8)),
-                                  child: const Icon(Icons.camera_alt, color: Color(0xFF94A3B8)),
-                                ),
-                              const SizedBox(width: 24),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: estaRecibido ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0),
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          child: Text(
-                                            estaRecibido ? 'RECIBIDO' : 'EN TRÁNSITO', 
-                                            style: TextStyle(
-                                              color: estaRecibido ? const Color(0xFF1B5E20) : const Color(0xFFE65100), 
-                                              fontSize: 10, 
-                                              fontWeight: FontWeight.bold
-                                            )
-                                          ),
+                              // Left Status Stripe
+                              Container(
+                                width: 6,
+                                color: estaRecibido ? const Color(0xFF16A34A) : const Color(0xFF1E88E5), // Green if received, Blue if in transit
+                              ),
+                              const SizedBox(width: 20),
+                              // Image/Photo placeholder
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                child: urlFoto.toString().isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        urlFoto,
+                                        width: 72,
+                                        height: 72,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (c, e, s) => Container(
+                                          width: 72, height: 72, color: const Color(0xFFE6F0FA),
+                                          child: const Icon(Icons.broken_image, color: Color(0xFF1E88E5), size: 24),
                                         ),
-                                        const SizedBox(width: 12),
-                                        Text('Placa: ${z['placa_camara']}', style: const TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold)),
-                                      ],
+                                      ),
+                                    )
+                                  : Container(
+                                      width: 72,
+                                      height: 72,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFE6F0FA),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(Icons.camera_alt_outlined, color: Color(0xFF1E88E5), size: 24),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text('Chofer: ${z['chofer']}  |  Muelle: ${z['muelle_partida']}', style: const TextStyle(color: Color(0xFF475569), fontSize: 14)),
-                                    const SizedBox(height: 4),
-                                    Text('Carga: ${z['peso_total'] ?? 0} Kg  |  Cajas: ${z['cajas_llenas'] ?? 0}', style: const TextStyle(color: Color(0xFF475569), fontSize: 14)),
-                                    const SizedBox(height: 4),
-                                    Text('Lanchas: ${z['embarcaciones_asociadas'] ?? 'Ninguna'}', style: const TextStyle(color: Color(0xFF475569), fontSize: 14)),
-                                    const SizedBox(height: 4),
-                                    Text('Flete Total: S/. ${z['costo_flete'] ?? '0.00'}', style: const TextStyle(color: Color(0xFF2E7D32), fontSize: 14, fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 4),
-                                    Text('Despacho: $fechaFormateada', style: const TextStyle(color: Color(0xFF00838F), fontSize: 14, fontWeight: FontWeight.w600)),
-                                  ],
+                              ),
+                              const SizedBox(width: 20),
+                              // Main texts column
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: estaRecibido ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0),
+                                              borderRadius: BorderRadius.circular(20),
+                                            ),
+                                            child: Text(
+                                              estaRecibido ? 'Recibido' : 'En tránsito',
+                                              style: TextStyle(
+                                                color: estaRecibido ? const Color(0xFF1B5E20) : const Color(0xFFE65100),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Text(
+                                            'Placa: ${z['placa_camara']}',
+                                            style: const TextStyle(
+                                              color: Color(0xFF0F172A),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Chofer: ${z['chofer']}  ·  Muelle: ${z['muelle_partida']}',
+                                        style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w500),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Carga: ${z['peso_total'] ?? 0} kg  ·  Cajas: ${z['cajas_llenas'] ?? 0}  ·  Lanchas: ${(z['embarcaciones_asociadas'] ?? 'ninguna').toString().toLowerCase()}',
+                                        style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w500),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Flete total: S/. ${z['costo_flete'] ?? '0'}',
+                                            style: const TextStyle(color: Color(0xFF065F46), fontSize: 13, fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Text(
+                                            'Despacho: ${fechaFormateada.replaceAll('AM', 'a.m.').replaceAll('PM', 'p.m.')}',
+                                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                              SizedBox(
-                                width: 170,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    OutlinedButton.icon(
-                                      onPressed: () {
-                                        context.go('/transito/editar/${z['id']}');
-                                      },
-                                      icon: const Icon(Icons.edit_outlined, size: 18),
-                                      label: const Text('Ver / editar'),
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor: const Color(0xFF374151),
-                                        side: const BorderSide(color: Color(0xFFD1D5DB)),
-                                        padding: const EdgeInsets.symmetric(vertical: 14),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      ),
-                                    ),
-                                    if (!estaRecibido) ...[
-                                      const SizedBox(height: 8),
-                                      ElevatedButton.icon(
-                                        onPressed: () async {
-                                          try {
-                                            await ref.read(proveedorTransito.notifier).marcarComoRecibido(z['id']);
-                                            if (context.mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(content: Text('Cámara recibida con éxito.'), backgroundColor: Colors.green),
-                                              );
-                                            }
-                                          } catch(e) {
-                                            if (context.mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-                                              );
-                                            }
-                                          }
+                              const SizedBox(width: 20),
+                              // Action buttons
+                              Padding(
+                                padding: const EdgeInsets.only(right: 20, top: 16, bottom: 16),
+                                child: SizedBox(
+                                  width: 170,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      OutlinedButton.icon(
+                                        onPressed: () {
+                                          context.go('/transito/editar/${z['id']}');
                                         },
-                                        icon: const Icon(Icons.check_rounded, size: 18),
-                                        label: const Text('Marcar recibido'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFF00796B),
-                                          foregroundColor: Colors.white,
-                                          elevation: 0,
-                                          padding: const EdgeInsets.symmetric(vertical: 14),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        icon: const Icon(Icons.edit_outlined, size: 16),
+                                        label: const Text('Ver / editar'),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: const Color(0xFF374151),
+                                          side: const BorderSide(color: Color(0xFFD1D5DB)),
+                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                         ),
                                       ),
-                                    ]
-                                  ],
+                                      if (!estaRecibido) ...[
+                                        const SizedBox(height: 8),
+                                        ElevatedButton.icon(
+                                          onPressed: () async {
+                                            try {
+                                              await ref.read(proveedorTransito.notifier).marcarComoRecibido(z['id']);
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Cámara recibida con éxito.'), backgroundColor: Colors.green),
+                                                );
+                                              }
+                                            } catch(e) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+                                                );
+                                              }
+                                            }
+                                          },
+                                          icon: const Icon(Icons.check_rounded, size: 16),
+                                          label: const Text('Marcar recibido'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(0xFF0D5C75), // Dark teal green/blue matching mockup
+                                            foregroundColor: Colors.white,
+                                            elevation: 0,
+                                            padding: const EdgeInsets.symmetric(vertical: 10),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                          ),
+                                        ),
+                                      ]
+                                    ],
+                                  ),
                                 ),
-                              )
+                              ),
                             ],
                           ),
                         ),
@@ -209,8 +271,8 @@ class PantallaTransito extends ConsumerWidget {
               },
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
