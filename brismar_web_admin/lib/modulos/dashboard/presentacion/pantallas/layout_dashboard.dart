@@ -134,50 +134,60 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (MediaQuery.of(context).size.width >= 1200)
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1E293B).withOpacity(0.5),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xFF334155).withOpacity(0.5)),
-                            ),
-                            child: Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundColor: const Color(0xFF00E5FF).withOpacity(0.2),
-                                  backgroundImage: authState.fotoPerfil != null && authState.fotoPerfil!.isNotEmpty 
-                                    ? NetworkImage(authState.fotoPerfil!) 
-                                    : null,
-                                  child: authState.fotoPerfil == null || authState.fotoPerfil!.isEmpty
-                                    ? Text(
-                                        nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : 'U',
-                                        style: const TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold),
-                                      )
-                                    : null,
-                                ),
-                                const SizedBox(width: 12),
-                                SizedBox(
-                                  width: 130, // Ancho fijo para evitar crash de IntrinsicWidth
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        nombre,
-                                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      Text(
-                                        rolTexto,
-                                        style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.w600),
-                                      ),
-                                    ],
+                          InkWell(
+                            onTap: () {
+                              final profileIndex = esAdmin ? 4 : 3;
+                              setState(() {
+                                _indiceSeleccionado = profileIndex;
+                              });
+                              const RutaPerfil().go(context);
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E293B).withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFF334155).withOpacity(0.5)),
+                              ),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: const Color(0xFF00E5FF).withOpacity(0.2),
+                                    backgroundImage: authState.fotoPerfil != null && authState.fotoPerfil!.isNotEmpty 
+                                      ? NetworkImage(authState.fotoPerfil!) 
+                                      : null,
+                                    child: authState.fotoPerfil == null || authState.fotoPerfil!.isEmpty
+                                      ? Text(
+                                          nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : 'U',
+                                          style: const TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold),
+                                        )
+                                      : null,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 12),
+                                  SizedBox(
+                                    width: 130, // Ancho fijo para evitar crash de IntrinsicWidth
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          nombre,
+                                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          rolTexto,
+                                          style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.w600),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
+                        const SizedBox(height: 16),
                         IconButton(
                           icon: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444)),
                           tooltip: 'Cerrar Sesión',
