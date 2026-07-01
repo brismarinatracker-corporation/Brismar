@@ -140,6 +140,7 @@ class _BotoFiltroFecha extends StatelessWidget {
           initialDate: fecha ?? DateTime.now(),
           firstDate: DateTime(2024),
           lastDate: DateTime.now().add(const Duration(days: 1)),
+          locale: const Locale('es', 'ES'),
           builder: (ctx, child) => Theme(data: ThemeData.light(), child: child!),
         );
         if (seleccionada != null) onSeleccionar(seleccionada);
