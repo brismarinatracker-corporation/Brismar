@@ -697,31 +697,26 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
               );
             } else {
               // Mobile Mode: Scrollable with Accordions/Cards
-              return Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          _buildSeccionGeneral(),
-                          const SizedBox(height: 16),
-                          _buildSeccionEmbarcaciones(),
-                          const SizedBox(height: 16),
-                          _buildSeccionGastos(),
-                        ],
-                      ),
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    _buildSeccionGeneral(),
+                    const SizedBox(height: 16),
+                    _buildSeccionEmbarcaciones(),
+                    const SizedBox(height: 16),
+                    _buildSeccionGastos(),
+                    const SizedBox(height: 24),
+                    PanelCalculoVivo(
+                      totalKilosCompras: totalKilosCompras,
+                      totalCostoCompras: totalCostoCompras,
+                      totalGastosOperativos: totalGastosOperativos,
+                      totalAdelantos: totalAdelantos,
+                      guardando: _guardando,
+                      onGuardar: _guardarCuadre,
                     ),
-                  ),
-                  PanelCalculoVivo(
-                    totalKilosCompras: totalKilosCompras,
-                    totalCostoCompras: totalCostoCompras,
-                    totalGastosOperativos: totalGastosOperativos,
-                    totalAdelantos: totalAdelantos,
-                    guardando: _guardando,
-                    onGuardar: _guardarCuadre,
-                  ),
-                ],
+                  ],
+                ),
               );
             }
           },
