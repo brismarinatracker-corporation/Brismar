@@ -193,9 +193,92 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   }
 
   Widget _construirSeccionZarpe() {
+    final urlFoto = _zarpeInfo?['foto_url_evidencia'] ?? '';
+
     return _tarjeta(
       titulo: 'Datos del Zarpe (Cámara)',
       hijos: [
+        if (urlFoto.toString().isNotEmpty) ...[
+          const Text(
+            'Evidencia Fotográfica / Guía',
+            style: TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (ctx) => Dialog(
+                  backgroundColor: Colors.transparent,
+                  insetPadding: const EdgeInsets.all(40),
+                  child: Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      InteractiveViewer(
+                        panEnabled: true,
+                        boundaryMargin: const EdgeInsets.all(20),
+                        minScale: 0.5,
+                        maxScale: 4.0,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.network(urlFoto),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.black.withOpacity(0.5),
+                          child: IconButton(
+                            icon: const Icon(Icons.close_rounded, color: Colors.white),
+                            onPressed: () => Navigator.pop(ctx),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: Container(
+                  color: const Color(0xFFF1F5F9),
+                  constraints: const BoxConstraints(maxHeight: 220),
+                  width: double.infinity,
+                  child: Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      Positioned.fill(
+                        child: Image.network(
+                          urlFoto,
+                          fit: BoxFit.cover,
+                          errorBuilder: (c, e, s) => const SizedBox(
+                            height: 120,
+                            child: Center(
+                              child: Icon(Icons.broken_image_rounded, color: Color(0xFF94A3B8), size: 40),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.fullscreen_rounded, color: Colors.white, size: 20),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
         TextFormField(
           controller: _placaCtrl,
           style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600),
