@@ -25,6 +25,8 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   Map<String, dynamic>? _zarpeInfo;
   CuadreWebModelo? _cuadreInfo;
   
+  int _indiceFotoActiva = 0;
+  
   // Controladores Zarpe
   final _placaCtrl = TextEditingController();
   final _choferCtrl = TextEditingController();
@@ -193,87 +195,123 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   }
 
   Widget _construirSeccionZarpe() {
-    final urlFoto = _zarpeInfo?['foto_url_evidencia'] ?? '';
+    final String fotosString = _zarpeInfo?['foto_url_evidencia'] ?? '';
+    final List<String> urlsFotos = fotosString
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty && s.startsWith('http'))
+        .toList();
 
     return _tarjeta(
       titulo: 'Datos del Zarpe (Cámara)',
       hijos: [
-        if (urlFoto.toString().isNotEmpty) ...[
+        if (urlsFotos.isNotEmpty) ...[
           const Text(
             'Evidencia Fotográfica / Guía',
             style: TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          GestureDetector(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (ctx) => Dialog(
-                  backgroundColor: Colors.transparent,
-                  insetPadding: const EdgeInsets.all(40),
-                  child: Stack(
-                    alignment: Alignment.topRight,
-                    children: [
-                      InteractiveViewer(
-                        panEnabled: true,
-                        boundaryMargin: const EdgeInsets.all(20),
-                        minScale: 0.5,
-                        maxScale: 4.0,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.network(urlFoto),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: CircleAvatar(
-                          backgroundColor: Colors.black.withOpacity(0.5),
-                          child: IconButton(
-                            icon: const Icon(Icons.close_rounded, color: Colors.white),
-                            onPressed: () => Navigator.pop(ctx),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-            child: ClipRRect(
+          
+          // Carousel container
+          Container(
+            height: 220,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(12),
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: Container(
-                  color: const Color(0xFFF1F5F9),
-                  constraints: const BoxConstraints(maxHeight: 220),
-                  width: double.infinity,
-                  child: Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      Positioned.fill(
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(11),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Active Image
+                  Positioned.fill(
+                    child: GestureDetector(
+                      onTap: () => _abrirGaleriaLightbox(urlsFotos, _indiceFotoActiva),
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
                         child: Image.network(
-                          urlFoto,
+                          urlsFotos[_indiceFotoActiva],
                           fit: BoxFit.cover,
-                          errorBuilder: (c, e, s) => const SizedBox(
-                            height: 120,
-                            child: Center(
-                              child: Icon(Icons.broken_image_rounded, color: Color(0xFF94A3B8), size: 40),
-                            ),
+                          errorBuilder: (c, e, s) => const Center(
+                            child: Icon(Icons.broken_image_rounded, color: Color(0xFF94A3B8), size: 40),
                           ),
                         ),
                       ),
-                      Container(
-                        margin: const EdgeInsets.all(8),
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.fullscreen_rounded, color: Colors.white, size: 20),
-                      )
-                    ],
+                    ),
                   ),
-                ),
+                  
+                  // Left Arrow Button
+                  if (urlsFotos.length > 1)
+                    Positioned(
+                      left: 8,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black.withOpacity(0.5),
+                        radius: 18,
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 20),
+                          onPressed: () {
+                            setState(() {
+                              _indiceFotoActiva = (_indiceFotoActiva - 1 + urlsFotos.length) % urlsFotos.length;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+
+                  // Right Arrow Button
+                  if (urlsFotos.length > 1)
+                    Positioned(
+                      right: 8,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black.withOpacity(0.5),
+                        radius: 18,
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 20),
+                          onPressed: () {
+                            setState(() {
+                              _indiceFotoActiva = (_indiceFotoActiva + 1) % urlsFotos.length;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+
+                  // Image indicator badge (e.g. 1/3)
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${_indiceFotoActiva + 1} / ${urlsFotos.length}',
+                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  
+                  // Zoom icon
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.fullscreen_rounded, color: Colors.white, size: 16),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -305,6 +343,111 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
           style: TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.4),
         ),
       ],
+    );
+  }
+
+  void _abrirGaleriaLightbox(List<String> urls, int indiceInicial) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        int indiceLocal = indiceInicial;
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.all(40),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // The Interactive Image View
+                  InteractiveViewer(
+                    panEnabled: true,
+                    boundaryMargin: const EdgeInsets.all(20),
+                    minScale: 0.5,
+                    maxScale: 4.0,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        urls[indiceLocal],
+                        loadingBuilder: (c, child, progress) {
+                          if (progress == null) return child;
+                          return const Center(child: CargaOrbital(tamano: 60));
+                        },
+                      ),
+                    ),
+                  ),
+
+                  // Left Lightbox Arrow
+                  if (urls.length > 1)
+                    Positioned(
+                      left: 20,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black.withOpacity(0.6),
+                        radius: 28,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 24),
+                          onPressed: () {
+                            setStateDialog(() {
+                              indiceLocal = (indiceLocal - 1 + urls.length) % urls.length;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+
+                  // Right Lightbox Arrow
+                  if (urls.length > 1)
+                    Positioned(
+                      right: 20,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black.withOpacity(0.6),
+                        radius: 28,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 24),
+                          onPressed: () {
+                            setStateDialog(() {
+                              indiceLocal = (indiceLocal + 1) % urls.length;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+
+                  // Close button
+                  Positioned(
+                    top: 20,
+                    right: 20,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black.withOpacity(0.6),
+                      radius: 24,
+                      child: IconButton(
+                        icon: const Icon(Icons.close_rounded, color: Colors.white, size: 24),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ),
+                  ),
+
+                  // Image indicator text at the bottom
+                  Positioned(
+                    bottom: 20,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Foto ${indiceLocal + 1} de ${urls.length}',
+                        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+        );
+      },
     );
   }
 
