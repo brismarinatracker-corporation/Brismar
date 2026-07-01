@@ -10,9 +10,9 @@ import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 class PantallaDashboard extends ConsumerWidget {
   const PantallaDashboard({super.key});
 
-  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(controladorDashboardProvider);
+    final mesActual = DateFormat('MMMM yyyy', 'es').format(DateTime.now());
 
     return Container(
       color: const Color(0xFFF8FAFC),
@@ -20,66 +20,75 @@ class PantallaDashboard extends ConsumerWidget {
           ? const Center(
               child: CargaOrbital(tamano: 80),
             )
-          : CustomScrollView(
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.all(40),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _encabezado(ref, estado),
-                      const SizedBox(height: 40),
-                      if (estado.error != null) _bannerError(estado.error!),
-                      _gridKpis(context, estado),
-                      const SizedBox(height: 40),
-                      _seccionRentabilidadGlobal(),
-                    ]),
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Dark Blue Header Banner
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF0F2D4A), // Deep navy blue
+                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Dashboard General',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Resumen operativo — ${mesActual.toUpperCase()}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () => ref.read(controladorDashboardProvider.notifier).cargarKpis(),
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: const Text('Actualizar'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white30),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Main grid and content
+                Expanded(
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.all(40),
+                        sliver: SliverList(
+                          delegate: SliverChildListDelegate([
+                            if (estado.error != null) _bannerError(estado.error!),
+                            _gridKpis(context, estado),
+                            const SizedBox(height: 40),
+                            _seccionRentabilidadGlobal(),
+                          ]),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-    );
-  }
-
-  Widget _encabezado(WidgetRef ref, EstadoDashboard estado) {
-    final mesActual = DateFormat('MMMM yyyy', 'es').format(DateTime.now());
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text(
-            'Dashboard General',
-            style: TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Resumen operativo — ${mesActual.toUpperCase()}',
-            style: const TextStyle(
-              color: Color(0xFF475569),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.2,
-            ),
-          ),
-        ]),
-        Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF00ACC1).withOpacity(0.08),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF00ACC1).withOpacity(0.2)),
-          ),
-          child: IconButton(
-            onPressed: () => ref.read(controladorDashboardProvider.notifier).cargarKpis(),
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF00ACC1)),
-            tooltip: 'Actualizar KPIs',
-            padding: const EdgeInsets.all(12),
-          ),
-        ),
-      ],
     );
   }
 

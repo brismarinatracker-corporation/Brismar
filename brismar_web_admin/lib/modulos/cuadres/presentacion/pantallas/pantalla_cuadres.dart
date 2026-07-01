@@ -13,7 +13,6 @@ import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 class PantallaCuadres extends ConsumerWidget {
   const PantallaCuadres({super.key});
 
-  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(controladorCuadresWebProvider);
     final fmt = NumberFormat('#,##0.00', 'es_PE');
@@ -24,53 +23,72 @@ class PantallaCuadres extends ConsumerWidget {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _Encabezado(estado: estado),
-          const SizedBox(height: 16),
-          _BarraFiltros(estado: estado),
-          const SizedBox(height: 16),
-          Expanded(child: _CuerpoConDetalle(estado: estado, fmt: fmt)),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Encabezado ───────────────────────────────────────────────────────────────
-
-class _Encabezado extends ConsumerWidget {
-  const _Encabezado({required this.estado});
-  final EstadoCuadresWeb estado;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Cuadres de Pesca',
-              style: TextStyle(color: Color(0xFF0F172A), fontSize: 28, fontWeight: FontWeight.bold)),
-          Text('${estado.cuadres.length} cuadres cargados',
-              style: const TextStyle(color: Color(0xFF475569), fontSize: 14)),
-        ]),
-        ElevatedButton.icon(
-          onPressed: estado.cargando
-              ? null
-              : () => ref.read(controladorCuadresWebProvider.notifier).cargarCuadres(),
-          icon: estado.cargando
-              ? const CargaOrbital(tamano: 16)
-              : const Icon(Icons.refresh_rounded),
-          label: const Text('Actualizar'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF00ACC1).withOpacity(0.08),
-            foregroundColor: const Color(0xFF00838F),
-            elevation: 0,
-            side: BorderSide(color: const Color(0xFF00ACC1).withOpacity(0.2)),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        // Dark Blue Header Banner
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          decoration: const BoxDecoration(
+            color: Color(0xFF0F2D4A), // Deep navy blue
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Cuadres de Pesca',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${estado.cuadres.length} cuadres cargados',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+              OutlinedButton.icon(
+                onPressed: estado.cargando
+                    ? null
+                    : () => ref.read(controladorCuadresWebProvider.notifier).cargarCuadres(),
+                icon: estado.cargando
+                    ? const CargaOrbital(tamano: 16)
+                    : const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Actualizar'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  disabledForegroundColor: Colors.white30,
+                  side: const BorderSide(color: Colors.white30),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Rest of the screen
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _BarraFiltros(estado: estado),
+                const SizedBox(height: 16),
+                Expanded(child: _CuerpoConDetalle(estado: estado, fmt: fmt)),
+              ],
+            ),
           ),
         ),
       ],

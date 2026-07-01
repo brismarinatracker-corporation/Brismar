@@ -15,17 +15,21 @@ class PantallaUsuarios extends ConsumerWidget {
     final ctrl = ref.read(controladorUsuariosProvider.notifier);
     
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8FAFC),
-      ),
+      color: const Color(0xFFF8FAFC),
       child: estado.cargando && estado.usuarios.isEmpty
         ? const Center(child: CargaOrbital(tamano: 80))
-        : Padding(
-            padding: const EdgeInsets.all(40.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Dark Blue Header Banner
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF0F2D4A), // Deep navy blue
+                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+                ),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Column(
@@ -34,19 +38,17 @@ class PantallaUsuarios extends ConsumerWidget {
                         Text(
                           'Gestión de Accesos',
                           style: TextStyle(
-                            color: Color(0xFF0F172A),
-                            fontSize: 32,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                         SizedBox(height: 8),
                         Text(
                           'Administra roles, sedes y estados de las cuentas de la plataforma.',
                           style: TextStyle(
-                            color: Color(0xFF475569),
+                            color: Colors.white70,
                             fontSize: 15,
-                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -71,11 +73,11 @@ class PantallaUsuarios extends ConsumerWidget {
                       },
                       icon: const Icon(Icons.person_add_alt_1_rounded, color: Colors.white, size: 20),
                       label: const Text(
-                        'Nuevo Acceso',
+                        'Nuevo acceso',
                         style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00838F),
+                        backgroundColor: const Color(0xFF00796B), // Dark green matching mockup
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
@@ -83,8 +85,11 @@ class PantallaUsuarios extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 40),
-                Expanded(
+              ),
+              // Rest of the screen
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(40.0),
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -135,9 +140,9 @@ class PantallaUsuarios extends ConsumerWidget {
                       ],
                     ),
                   ),
-                )
-              ],
-            ),
+                ),
+              ),
+            ],
           ),
     );
   }
