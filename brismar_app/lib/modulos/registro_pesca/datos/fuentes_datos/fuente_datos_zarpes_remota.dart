@@ -28,19 +28,39 @@ class FuenteDatosZarpesRemota {
   /// Sube de forma segura el archivo local de la foto de evidencia al Storage si existe.
   Future<String> _subirFotoZarpeSegura(ZarpeModelo zarpe) async {
     if (zarpe.fotoLocalPath != null && zarpe.fotoLocalPath!.isNotEmpty) {
-      final file = File(zarpe.fotoLocalPath!);
-      if (await file.exists()) {
-        final ext = zarpe.fotoLocalPath!.split('.').last;
-        final userId = _cliente.auth.currentUser?.id ?? 'desconocido';
-        final nombreArchivo = '$userId/${zarpe.id}_zarpe.$ext';
-        
-        await _cliente.storage.from('camaras-zarpes').upload(
-          nombreArchivo,
-          file,
-          fileOptions: const sb.FileOptions(upsert: true),
-        );
-        
-        return _cliente.storage.from('camaras-zarpes').getPublicUrl(nombreArchivo);
+      final paths = zarpe.fotoLocalPath!.split(',').map((p) => p.trim()).where((p) => p.isNotEmpty).toList();
+      final List<String> urlsSubidas = [];
+
+      for (int i = 0; i < paths.length; i++) {
+        final path = paths[i];
+        final file = File(path);
+        if (await file.exists()) {
+          final ext = path.split('.').last;
+          final userId = _cliente.auth.currentUser?.id ?? 'desconocido';
+          final nombreArchivo = '$userId/${zarpe.id}_zarpe_$i.$ext';
+          
+          try {
+            await _cliente.storage.from('camaras-zarpes').upload(
+              nombreArchivo,
+              file,
+              fileOptions: const sb.FileOptions(upsert: true),
+            );
+            
+            final publicUrl = _cliente.storage.from('camaras-zarpes').getPublicUrl(nombreArchivo);
+            urlsSubidas.add(publicUrl);
+          } catch (e) {
+            debugPrint('Error subiendo foto $i: $e');
+            if (path.startsWith('http')) {
+              urlsSubidas.add(path);
+            }
+          }
+        } else if (path.startsWith('http')) {
+          urlsSubidas.add(path);
+        }
+      }
+
+      if (urlsSubidas.isNotEmpty) {
+        return urlsSubidas.join(',');
       }
     }
     return zarpe.fotoUrlEvidencia;

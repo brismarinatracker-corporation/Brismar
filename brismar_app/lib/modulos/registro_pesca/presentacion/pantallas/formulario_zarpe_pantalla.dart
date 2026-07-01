@@ -237,8 +237,8 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         placaCamara: _placaCtrl.text.toUpperCase(),
         chofer: _choferCtrl.text.trim().toUpperCase(),
         muellePartida: _muellePartidaCtrl.text.trim().toUpperCase(),
-        fotoUrlEvidencia: _fotosEvidencia.first.path, // Primer archivo como referencia
-        fotoLocalPath: _fotosEvidencia.first.path,
+        fotoUrlEvidencia: _fotosEvidencia.map((f) => f.path).join(','),
+        fotoLocalPath: _fotosEvidencia.map((f) => f.path).join(','),
         fechaZarpe: DateTime.now(),
         estado: 'DESPACHADO_PIURA',
       );
