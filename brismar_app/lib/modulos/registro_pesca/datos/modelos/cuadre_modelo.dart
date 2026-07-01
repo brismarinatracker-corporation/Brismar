@@ -1,6 +1,8 @@
 import '../../dominio/entidades/cuadre_entidad.dart';
 
+/// Modelo de datos para la entidad de compras, adaptado para serialización y persistencia.
 class CompraModelo extends CompraEntidad {
+  /// Constructor de [CompraModelo].
   const CompraModelo({
     required super.id,
     required super.cuadreId,
@@ -11,6 +13,7 @@ class CompraModelo extends CompraEntidad {
     required super.total,
   });
 
+  /// Crea un [CompraModelo] a partir de una [CompraEntidad].
   factory CompraModelo.fromEntidad(CompraEntidad e) => CompraModelo(
         id: e.id,
         cuadreId: e.cuadreId,
@@ -21,6 +24,7 @@ class CompraModelo extends CompraEntidad {
         total: e.total,
       );
 
+  /// Crea un [CompraModelo] a partir de un mapa de SQLite.
   factory CompraModelo.fromSqlite(Map<String, dynamic> map) => CompraModelo(
         id: map['id'] as String,
         cuadreId: map['cuadre_id'] as String,
@@ -31,6 +35,7 @@ class CompraModelo extends CompraEntidad {
         total: (map['total'] as num).toDouble(),
       );
 
+  /// Convierte este modelo a un mapa compatible con SQLite.
   Map<String, dynamic> toSqlite() => {
         'id': id,
         'cuadre_id': cuadreId,
@@ -41,6 +46,7 @@ class CompraModelo extends CompraEntidad {
         'total': total,
       };
 
+  /// Crea un [CompraModelo] a partir de un mapa JSON de Supabase.
   factory CompraModelo.fromJson(Map<String, dynamic> map) => CompraModelo(
         id: map['id'] as String,
         cuadreId: map['cuadre_id'] as String,
@@ -51,6 +57,7 @@ class CompraModelo extends CompraEntidad {
         total: (map['total'] as num).toDouble(),
       );
 
+  /// Convierte este modelo a un mapa JSON para Supabase.
   Map<String, dynamic> toJson() => {
         'id': id,
         'cuadre_id': cuadreId,
@@ -62,7 +69,9 @@ class CompraModelo extends CompraEntidad {
       };
 }
 
+/// Modelo de datos para la entidad de gastos, adaptado para serialización y persistencia.
 class GastoModelo extends GastoEntidad {
+  /// Constructor de [GastoModelo].
   const GastoModelo({
     required super.id,
     required super.cuadreId,
@@ -73,6 +82,7 @@ class GastoModelo extends GastoEntidad {
     required super.total,
   });
 
+  /// Crea un [GastoModelo] a partir de una [GastoEntidad].
   factory GastoModelo.fromEntidad(GastoEntidad e) => GastoModelo(
         id: e.id,
         cuadreId: e.cuadreId,
@@ -83,6 +93,7 @@ class GastoModelo extends GastoEntidad {
         total: e.total,
       );
 
+  /// Crea un [GastoModelo] a partir de un mapa de SQLite.
   factory GastoModelo.fromSqlite(Map<String, dynamic> map) => GastoModelo(
         id: map['id'] as String,
         cuadreId: map['cuadre_id'] as String,
@@ -93,6 +104,7 @@ class GastoModelo extends GastoEntidad {
         total: (map['total'] as num).toDouble(),
       );
 
+  /// Convierte este modelo a un mapa compatible con SQLite.
   Map<String, dynamic> toSqlite() => {
         'id': id,
         'cuadre_id': cuadreId,
@@ -103,6 +115,7 @@ class GastoModelo extends GastoEntidad {
         'total': total,
       };
 
+  /// Crea un [GastoModelo] a partir de un mapa JSON de Supabase.
   factory GastoModelo.fromJson(Map<String, dynamic> map) => GastoModelo(
         id: map['id'] as String,
         cuadreId: map['cuadre_id'] as String,
@@ -113,6 +126,7 @@ class GastoModelo extends GastoEntidad {
         total: (map['total'] as num).toDouble(),
       );
 
+  /// Convierte este modelo a un mapa JSON para Supabase.
   Map<String, dynamic> toJson() => {
         'id': id,
         'cuadre_id': cuadreId,
@@ -124,7 +138,9 @@ class GastoModelo extends GastoEntidad {
       };
 }
 
+/// Modelo de datos para la entidad de ventas, adaptado para serialización y persistencia.
 class VentaModelo extends VentaEntidad {
+  /// Constructor de [VentaModelo].
   const VentaModelo({
     required super.id,
     required super.cuadreId,
@@ -135,6 +151,7 @@ class VentaModelo extends VentaEntidad {
     required super.total,
   });
 
+  /// Crea un [VentaModelo] a partir de una [VentaEntidad].
   factory VentaModelo.fromEntidad(VentaEntidad e) => VentaModelo(
         id: e.id,
         cuadreId: e.cuadreId,
@@ -145,6 +162,7 @@ class VentaModelo extends VentaEntidad {
         total: e.total,
       );
 
+  /// Crea un [VentaModelo] a partir de un mapa de SQLite.
   factory VentaModelo.fromSqlite(Map<String, dynamic> map) => VentaModelo(
         id: map['id'] as String,
         cuadreId: map['cuadre_id'] as String,
@@ -155,6 +173,7 @@ class VentaModelo extends VentaEntidad {
         total: (map['total'] as num).toDouble(),
       );
 
+  /// Convierte este modelo a un mapa compatible con SQLite.
   Map<String, dynamic> toSqlite() => {
         'id': id,
         'cuadre_id': cuadreId,
@@ -165,6 +184,7 @@ class VentaModelo extends VentaEntidad {
         'total': total,
       };
 
+  /// Crea un [VentaModelo] a partir de un mapa JSON de Supabase.
   factory VentaModelo.fromJson(Map<String, dynamic> map) => VentaModelo(
         id: map['id'] as String,
         cuadreId: map['cuadre_id'] as String,
@@ -175,6 +195,7 @@ class VentaModelo extends VentaEntidad {
         total: (map['total'] as num).toDouble(),
       );
 
+  /// Convierte este modelo a un mapa JSON para Supabase.
   Map<String, dynamic> toJson() => {
         'id': id,
         'cuadre_id': cuadreId,
@@ -186,7 +207,9 @@ class VentaModelo extends VentaEntidad {
       };
 }
 
+/// Modelo de datos para la entidad de cuadres, adaptado para serialización y persistencia.
 class CuadreModelo extends CuadreEntidad {
+  /// Constructor de [CuadreModelo].
   const CuadreModelo({
     required super.id,
     required super.usuarioId,
@@ -197,11 +220,19 @@ class CuadreModelo extends CuadreEntidad {
     super.urlPdfCloud,
     super.urlExcelCloud,
     super.sincronizado,
+    super.fotoZarpeUrl,
+    super.pesoTotal,
+    super.cajasLlenas,
+    super.cajasVacias,
+    super.tipoProducto,
+    super.muellePartida,
+    super.pesador,
     super.compras,
     super.gastos,
     super.ventas,
   });
 
+  /// Crea un [CuadreModelo] a partir de una [CuadreEntidad].
   factory CuadreModelo.fromEntidad(CuadreEntidad e) => CuadreModelo(
         id: e.id,
         usuarioId: e.usuarioId,
@@ -212,11 +243,19 @@ class CuadreModelo extends CuadreEntidad {
         urlPdfCloud: e.urlPdfCloud,
         urlExcelCloud: e.urlExcelCloud,
         sincronizado: e.sincronizado,
+        fotoZarpeUrl: e.fotoZarpeUrl,
+        pesoTotal: e.pesoTotal,
+        cajasLlenas: e.cajasLlenas,
+        cajasVacias: e.cajasVacias,
+        tipoProducto: e.tipoProducto,
+        muellePartida: e.muellePartida,
+        pesador: e.pesador,
         compras: e.compras.map((c) => CompraModelo.fromEntidad(c)).toList(),
         gastos: e.gastos.map((g) => GastoModelo.fromEntidad(g)).toList(),
         ventas: e.ventas.map((v) => VentaModelo.fromEntidad(v)).toList(),
       );
 
+  /// Crea un [CuadreModelo] a partir de un mapa de SQLite.
   factory CuadreModelo.fromSqlite(Map<String, dynamic> map) => CuadreModelo(
         id: map['id'] as String,
         usuarioId: map['usuario_id'] as String,
@@ -227,8 +266,16 @@ class CuadreModelo extends CuadreEntidad {
         urlPdfCloud: map['url_pdf_cloud'] as String?,
         urlExcelCloud: map['url_excel_cloud'] as String?,
         sincronizado: (map['sincronizado'] as int) == 1,
+        fotoZarpeUrl: map['foto_zarpe_url'] as String?,
+        pesoTotal: map['peso_total'] != null ? (map['peso_total'] as num).toDouble() : null,
+        cajasLlenas: map['cajas_llenas'] as int?,
+        cajasVacias: map['cajas_vacias'] as int?,
+        tipoProducto: map['tipo_producto'] as int?,
+        muellePartida: map['planta_destino'] as String?,
+        pesador: map['pesador'] as String?,
       );
 
+  /// Convierte este modelo a un mapa compatible con SQLite.
   Map<String, dynamic> toSqlite() => {
         'id': id,
         'usuario_id': usuarioId,
@@ -239,8 +286,16 @@ class CuadreModelo extends CuadreEntidad {
         'url_pdf_cloud': urlPdfCloud,
         'url_excel_cloud': urlExcelCloud,
         'sincronizado': sincronizado ? 1 : 0,
+        'foto_zarpe_url': fotoZarpeUrl,
+        'peso_total': pesoTotal,
+        'cajas_llenas': cajasLlenas,
+        'cajas_vacias': cajasVacias,
+        'tipo_producto': tipoProducto,
+        'planta_destino': muellePartida,
+        'pesador': pesador,
       };
 
+  /// Crea un [CuadreModelo] a partir de un mapa JSON de Supabase.
   factory CuadreModelo.fromJson(Map<String, dynamic> map) => CuadreModelo(
         id: map['id'] as String,
         usuarioId: map['usuario_id'] as String,
@@ -251,8 +306,16 @@ class CuadreModelo extends CuadreEntidad {
         urlPdfCloud: map['url_pdf_cloud'] as String?,
         urlExcelCloud: map['url_excel_cloud'] as String?,
         sincronizado: map['sincronizado'] as bool? ?? false,
+        fotoZarpeUrl: map['foto_zarpe_url'] as String?,
+        pesoTotal: map['peso_total'] != null ? (map['peso_total'] as num).toDouble() : null,
+        cajasLlenas: map['cajas_llenas'] as int?,
+        cajasVacias: map['cajas_vacias'] as int?,
+        tipoProducto: map['tipo_producto'] as int?,
+        muellePartida: map['planta_destino'] as String?,
+        pesador: map['pesador'] as String?,
       );
 
+  /// Convierte este modelo a un mapa JSON para Supabase.
   Map<String, dynamic> toJson() => {
         'id': id,
         'usuario_id': usuarioId,
@@ -262,6 +325,13 @@ class CuadreModelo extends CuadreEntidad {
         'estado': estado,
         'url_pdf_cloud': urlPdfCloud,
         'url_excel_cloud': urlExcelCloud,
-        // No enviamos sincronizado a Supabase
+        'foto_zarpe_url': fotoZarpeUrl,
+        'peso_total': pesoTotal,
+        'cajas_llenas': cajasLlenas,
+        'cajas_vacias': cajasVacias,
+        'tipo_producto': tipoProducto,
+        'planta_destino': muellePartida,
+        'pesador': pesador,
       };
 }
+

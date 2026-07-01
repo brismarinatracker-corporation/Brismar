@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controladores/controlador_autenticacion.dart';
-import '../../../../nucleo/rutas/enrutador.dart';
 
 /// Pantalla para configurar el PIN de acceso rápido (obligatorio).
 ///
@@ -73,10 +72,23 @@ class _ConfigurarPinPantallaState extends ConsumerState<ConfigurarPinPantalla> {
 
   /// Construye el encabezado con título e instrucciones.
   Widget _construirCabecera() {
+    final estado = ref.watch(proveedorControladorAutenticacion);
+    final nombre = estado is EstadoConfigurarPin ? estado.usuario.nombreReal.split(' ').first : '';
+
     return Column(
       children: [
         const Icon(Icons.lock_outline, color: Color(0xFF00E5FF), size: 48),
         const SizedBox(height: 16),
+        if (nombre.isNotEmpty && !_confirmando)
+          Text(
+            'Bienvenido, $nombre 👋',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        const SizedBox(height: 4),
         Text(
           _confirmando ? 'Confirma tu PIN' : 'Crea tu PIN de acceso',
           style: const TextStyle(
@@ -147,7 +159,7 @@ class _ConfigurarPinPantallaState extends ConsumerState<ConfigurarPinPantalla> {
       ['1', '2', '3'],
       ['4', '5', '6'],
       ['7', '8', '9'],
-      ['', '0', '⌫'],
+      ['✓', '0', '⌫'],
     ];
 
     return Padding(
@@ -178,8 +190,13 @@ class _ConfigurarPinPantallaState extends ConsumerState<ConfigurarPinPantalla> {
   /// Construye una tecla individual del teclado numérico.
   Widget _construirTecla(String valor) {
     if (valor.isEmpty) return const SizedBox();
+    
+    final esAccion = valor == '✓' || valor == '⌫';
+    final colorFondo = valor == '✓' ? const Color(0xFF00E5FF).withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.08);
+    final colorTexto = valor == '✓' ? const Color(0xFF00E5FF) : Colors.white;
+
     return Material(
-      color: Colors.white.withValues(alpha: 0.08),
+      color: colorFondo,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -187,10 +204,10 @@ class _ConfigurarPinPantallaState extends ConsumerState<ConfigurarPinPantalla> {
         child: Center(
           child: Text(
             valor,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w500,
+            style: TextStyle(
+              color: colorTexto,
+              fontSize: esAccion ? 28 : 24,
+              fontWeight: esAccion ? FontWeight.bold : FontWeight.w500,
             ),
           ),
         ),
@@ -204,10 +221,28 @@ class _ConfigurarPinPantallaState extends ConsumerState<ConfigurarPinPantalla> {
       _error = null;
       if (valor == '⌫') {
         _borrarUltimo();
+      } else if (valor == '✓') {
+        _procesarConfirmacion();
       } else {
         _agregarDigito(valor);
       }
     });
+  }
+
+  void _procesarConfirmacion() {
+    if (_confirmando) {
+      if (_pinConfirmacion.length == _longitudPin) {
+        _validarYGuardarPin();
+      } else {
+        _error = 'Debes ingresar 4 dígitos para confirmar.';
+      }
+    } else {
+      if (_pinIngresado.length == _longitudPin) {
+        _solicitarConfirmacion();
+      } else {
+        _error = 'Debes ingresar 4 dígitos.';
+      }
+    }
   }
 
   /// Borra el último dígito del campo activo.
@@ -219,17 +254,15 @@ class _ConfigurarPinPantallaState extends ConsumerState<ConfigurarPinPantalla> {
     }
   }
 
-  /// Agrega un dígito y avanza al siguiente estado cuando se completan 4 dígitos.
+  /// Agrega un dígito sin avanzar de estado automáticamente.
   void _agregarDigito(String digito) {
     if (_confirmando) {
       if (_pinConfirmacion.length < _longitudPin) {
         _pinConfirmacion += digito;
-        if (_pinConfirmacion.length == _longitudPin) _validarYGuardarPin();
       }
     } else {
       if (_pinIngresado.length < _longitudPin) {
         _pinIngresado += digito;
-        if (_pinIngresado.length == _longitudPin) _solicitarConfirmacion();
       }
     }
   }
@@ -255,11 +288,12 @@ class _ConfigurarPinPantallaState extends ConsumerState<ConfigurarPinPantalla> {
         .configurarPin(_pinIngresado);
   }
 
-  /// Escucha los cambios de estado para navegar a la pantalla de biometría.
+  /// Escucha los cambios de estado y muestra feedback visual al usuario.
+  ///
+  /// La navegación a [ConfigurarBiometriaPantalla] la maneja exclusivamente
+  /// el [enrutadorProvider] mediante redirect declarativo.
   void _escucharEstado(EstadoAutenticacion? _, EstadoAutenticacion siguiente) {
-    if (siguiente is EstadoConfigurarBiometria) {
-      ConfigurarBiometriaRoute().go(context);
-    } else if (siguiente is EstadoAutenticacionError) {
+    if (siguiente is EstadoAutenticacionError) {
       setState(() {
         _error = siguiente.mensaje;
         _pinIngresado = '';

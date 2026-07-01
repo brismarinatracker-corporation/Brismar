@@ -46,7 +46,8 @@ class CuadresNotifier extends StateNotifier<AsyncValue<List<CuadreEntidad>>> {
       
       // Auto-sincronizar si hay internet
       // Sincronizar en la nube si hay red
-      if (await VerificadorConexion.hayConexion()) {
+      final verificador = VerificadorConexionImpl();
+    if (await verificador.hayConexion()) {
         await _repositorio.sincronizarPendientes(_usuarioId);
         final actualizados = await _repositorio.obtenerHistorial(_usuarioId);
         state = AsyncValue.data(actualizados);

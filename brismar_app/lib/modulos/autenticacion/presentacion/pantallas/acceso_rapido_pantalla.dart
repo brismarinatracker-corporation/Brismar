@@ -4,6 +4,7 @@ import 'package:vibration/vibration.dart';
 import '../../dominio/entidades/preferencia_acceso.dart';
 import '../controladores/controlador_autenticacion.dart';
 import '../../../../nucleo/rutas/enrutador.dart';
+import 'package:brismar_mobile/nucleo/componentes/carga_orbital.dart';
 
 /// Pantalla de acceso rápido diario cuando el periodo de gracia de 12h expiró.
 ///
@@ -153,10 +154,7 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
             child: cargando
                 ? const Padding(
                     padding: EdgeInsets.all(28.0),
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF00E5FF),
-                      strokeWidth: 3,
-                    ),
+                    child: CargaOrbital(tamano: 80),
                   )
                 : const Icon(
                     Icons.fingerprint,

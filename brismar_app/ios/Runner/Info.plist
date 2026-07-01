@@ -4,12 +4,16 @@
 <dict>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Requerido para iniciar sesión de forma rápida y segura.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Requerido para tomar fotos de evidencia de los zarpes de cámara.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Requerido para seleccionar fotos de evidencia de la galería.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Brismar Mobile</string>
+	<string>BrisTracker</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -17,7 +21,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>brismar_mobile</string>
+	<string>BrisTracker</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

@@ -127,12 +127,12 @@ class GestorAlmacenamientoSeguro {
     }
   }
 
-  /// Verifica si el periodo de gracia (1 minuto para pruebas) sigue vigente.
+  /// Verifica si el periodo de gracia (12 horas) sigue vigente.
   Future<bool> esPeriodoGraciaVigente() async {
     final ultima = await obtenerTimestamp();
     if (ultima == null) return false;
     final diferencia = DateTime.now().difference(ultima);
-    return diferencia.inMinutes < 1;
+    return diferencia.inHours < 12;
   }
 
   // ─── Preferencia de Acceso Rápido ────────────────────────────────────────

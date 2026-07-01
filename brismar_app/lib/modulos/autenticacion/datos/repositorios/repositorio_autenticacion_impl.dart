@@ -38,7 +38,7 @@ class RepositorioAutenticacionImpl implements RepositorioAutenticacion {
     required String password,
   }) async {
     final correoNormalized = _normalizarCorreo(usuario);
-    final tieneInternet = await VerificadorConexion.hayConexion();
+    final tieneInternet = await VerificadorConexionImpl().hayConexion();
 
     if (tieneInternet) {
       return _iniciarSesionOnline(correoNormalized, password);
@@ -55,7 +55,7 @@ class RepositorioAutenticacionImpl implements RepositorioAutenticacion {
     if (pinConfigurado == null) return null;
 
     // Verificar en línea si el token fue revocado o usuario eliminado
-    final tieneInternet = await VerificadorConexion.hayConexion();
+    final tieneInternet = await VerificadorConexionImpl().hayConexion();
     if (tieneInternet) {
       if (!_remotoDatasource.esSesionValida) {
         await cerrarSesion(); // Borra la bóveda
