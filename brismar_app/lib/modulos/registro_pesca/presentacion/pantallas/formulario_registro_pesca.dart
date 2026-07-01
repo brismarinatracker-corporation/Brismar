@@ -642,6 +642,68 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
     );
   }
 
+  Widget _buildTabletLayout() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 6,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                _buildSeccionGeneral(),
+                const SizedBox(height: 16),
+                _buildSeccionEmbarcaciones(),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 4,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                _buildSeccionGastos(),
+                const SizedBox(height: 16),
+                _buildPanelCalculo(),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobileLayout() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          _buildSeccionGeneral(),
+          const SizedBox(height: 16),
+          _buildSeccionEmbarcaciones(),
+          const SizedBox(height: 16),
+          _buildSeccionGastos(),
+          const SizedBox(height: 16),
+          _buildPanelCalculo(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPanelCalculo() {
+    return PanelCalculoVivo(
+      totalKilosCompras: totalKilosCompras,
+      totalCostoCompras: totalCostoCompras,
+      totalGastosOperativos: totalGastosOperativos,
+      totalAdelantos: totalAdelantos,
+      guardando: _guardando,
+      onGuardar: _guardarCuadre,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -656,76 +718,10 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
         key: _formKey,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // Responsive logic
             if (constraints.maxWidth > 800) {
-              // Tablet / Landscape Mode: Split View
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 6,
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          _buildSeccionGeneral(),
-                          const SizedBox(height: 16),
-                          _buildSeccionEmbarcaciones(),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 4,
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(16.0),
-                            child: _buildSeccionGastos(),
-                          ),
-                        ),
-                        PanelCalculoVivo(
-                          totalKilosCompras: totalKilosCompras,
-                          totalCostoCompras: totalCostoCompras,
-                          totalGastosOperativos: totalGastosOperativos,
-                          totalAdelantos: totalAdelantos,
-                          guardando: _guardando,
-                          onGuardar: _guardarCuadre,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
+              return _buildTabletLayout();
             } else {
-              // Mobile Mode: Scrollable with Accordions/Cards
-              return Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          _buildSeccionGeneral(),
-                          const SizedBox(height: 16),
-                          _buildSeccionEmbarcaciones(),
-                          const SizedBox(height: 16),
-                          _buildSeccionGastos(),
-                        ],
-                      ),
-                    ),
-                  ),
-                  PanelCalculoVivo(
-                    totalKilosCompras: totalKilosCompras,
-                    totalCostoCompras: totalCostoCompras,
-                    totalGastosOperativos: totalGastosOperativos,
-                    totalAdelantos: totalAdelantos,
-                    guardando: _guardando,
-                    onGuardar: _guardarCuadre,
-                  ),
-                ],
-              );
+              return _buildMobileLayout();
             }
           },
         ),
