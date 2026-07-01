@@ -114,58 +114,67 @@ class PantallaDashboard extends ConsumerWidget {
   Widget _gridKpis(BuildContext context, EstadoDashboard estado) {
     final fmt = NumberFormat('#,##0.0', 'es_PE');
     final kpis = estado.kpis;
-    final width = MediaQuery.of(context).size.width;
     
-    int columnas = 4;
-    if (width < 1400) columnas = 3;
-    if (width < 1000) columnas = 2;
-    if (width < 600) columnas = 1;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+        int columnas = 4;
+        if (availableWidth < 1200) columnas = 3;
+        if (availableWidth < 800) columnas = 2;
+        if (availableWidth < 500) columnas = 1;
 
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: columnas,
-      crossAxisSpacing: 24,
-      mainAxisSpacing: 24,
-      childAspectRatio: 1.8,
-      children: [
-        _TarjetaKpiPremium(
-          icono: Icons.local_shipping_rounded,
-          titulo: 'Zarpes del Mes',
-          valor: kpis.totalZarpesMes.toString(),
-          colorIcono: const Color(0xFF3B82F6),
-          subtitulo: 'Cámaras despachadas',
-        ),
-        _TarjetaKpiPremium(
-          icono: Icons.scale_rounded,
-          titulo: 'Volumen Total',
-          valor: '${fmt.format(kpis.totalKilosMes)} kg',
-          colorIcono: const Color(0xFF00E5FF),
-          subtitulo: 'Peso registrado',
-        ),
-        _TarjetaKpiPremium(
-          icono: Icons.hourglass_top_rounded,
-          titulo: 'En Tránsito',
-          valor: kpis.zarpesPendientes.toString(),
-          colorIcono: const Color(0xFFF59E0B),
-          subtitulo: 'Pendientes de recibir',
-        ),
-        _TarjetaKpiPremium(
-          icono: Icons.check_circle_rounded,
-          titulo: 'Recibidos',
-          valor: kpis.zarpesRecibidos.toString(),
-          colorIcono: const Color(0xFF10B981),
-          subtitulo: 'Confirmados en Lambayeque',
-        ),
-        if (columnas > 2)
-          _TarjetaKpiPremium(
-            icono: Icons.people_alt_rounded,
-            titulo: 'Cuentas Activas',
-            valor: kpis.usuariosActivos.toString(),
-            colorIcono: const Color(0xFF8B5CF6),
-            subtitulo: 'Bahías y Operadores',
-          ),
-      ],
+        // Calcula el aspect ratio dinámicamente para fijar la altura de las tarjetas a 130px
+        double anchoTarjeta = (availableWidth - (columnas - 1) * 24) / columnas;
+        double childAspectRatio = anchoTarjeta / 130;
+        if (childAspectRatio < 1.0) childAspectRatio = 1.0;
+
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: columnas,
+          crossAxisSpacing: 24,
+          mainAxisSpacing: 24,
+          childAspectRatio: childAspectRatio,
+          children: [
+            _TarjetaKpiPremium(
+              icono: Icons.local_shipping_rounded,
+              titulo: 'Zarpes del Mes',
+              valor: kpis.totalZarpesMes.toString(),
+              colorIcono: const Color(0xFF3B82F6),
+              subtitulo: 'Cámaras despachadas',
+            ),
+            _TarjetaKpiPremium(
+              icono: Icons.scale_rounded,
+              titulo: 'Volumen Total',
+              valor: '${fmt.format(kpis.totalKilosMes)} kg',
+              colorIcono: const Color(0xFF00E5FF),
+              subtitulo: 'Peso registrado',
+            ),
+            _TarjetaKpiPremium(
+              icono: Icons.hourglass_top_rounded,
+              titulo: 'En Tránsito',
+              valor: kpis.zarpesPendientes.toString(),
+              colorIcono: const Color(0xFFF59E0B),
+              subtitulo: 'Pendientes de recibir',
+            ),
+            _TarjetaKpiPremium(
+              icono: Icons.check_circle_rounded,
+              titulo: 'Recibidos',
+              valor: kpis.zarpesRecibidos.toString(),
+              colorIcono: const Color(0xFF10B981),
+              subtitulo: 'Confirmados en Lambayeque',
+            ),
+            if (columnas > 2)
+              _TarjetaKpiPremium(
+                icono: Icons.people_alt_rounded,
+                titulo: 'Cuentas Activas',
+                valor: kpis.usuariosActivos.toString(),
+                colorIcono: const Color(0xFF8B5CF6),
+                subtitulo: 'Bahías y Operadores',
+              ),
+          ],
+        );
+      },
     );
   }
 
