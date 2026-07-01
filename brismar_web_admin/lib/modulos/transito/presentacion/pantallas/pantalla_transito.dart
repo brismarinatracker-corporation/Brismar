@@ -148,49 +148,56 @@ class PantallaTransito extends ConsumerWidget {
                                   ],
                                 ),
                               ),
-                              Column(
-                                children: [
-                                  ElevatedButton.icon(
-                                    onPressed: () {
-                                      context.go('/transito/editar/${z['id']}');
-                                    },
-                                    icon: const Icon(Icons.edit_document),
-                                    label: const Text('Ver / Editar'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFF1F5F9),
-                                      foregroundColor: const Color(0xFF475569),
-                                      elevation: 0,
-                                    ),
-                                  ),
-                                  if (!estaRecibido) ...[
-                                    const SizedBox(height: 8),
-                                    ElevatedButton.icon(
-                                      onPressed: () async {
-                                        try {
-                                          await ref.read(proveedorTransito.notifier).marcarComoRecibido(z['id']);
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(content: Text('Cámara recibida con éxito.'), backgroundColor: Colors.green),
-                                            );
-                                          }
-                                        } catch(e) {
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-                                            );
-                                          }
-                                        }
+                              SizedBox(
+                                width: 170,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    OutlinedButton.icon(
+                                      onPressed: () {
+                                        context.go('/transito/editar/${z['id']}');
                                       },
-                                      icon: const Icon(Icons.check_circle_outline),
-                                      label: const Text('Marcar Recibido'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF00838F),
-                                        foregroundColor: Colors.white,
-                                        elevation: 0,
+                                      icon: const Icon(Icons.edit_outlined, size: 18),
+                                      label: const Text('Ver / editar'),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: const Color(0xFF374151),
+                                        side: const BorderSide(color: Color(0xFFD1D5DB)),
+                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                       ),
                                     ),
-                                  ]
-                                ],
+                                    if (!estaRecibido) ...[
+                                      const SizedBox(height: 8),
+                                      ElevatedButton.icon(
+                                        onPressed: () async {
+                                          try {
+                                            await ref.read(proveedorTransito.notifier).marcarComoRecibido(z['id']);
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text('Cámara recibida con éxito.'), backgroundColor: Colors.green),
+                                              );
+                                            }
+                                          } catch(e) {
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+                                              );
+                                            }
+                                          }
+                                        },
+                                        icon: const Icon(Icons.check_rounded, size: 18),
+                                        label: const Text('Marcar recibido'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF00796B),
+                                          foregroundColor: Colors.white,
+                                          elevation: 0,
+                                          padding: const EdgeInsets.symmetric(vertical: 14),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        ),
+                                      ),
+                                    ]
+                                  ],
+                                ),
                               )
                             ],
                           ),
