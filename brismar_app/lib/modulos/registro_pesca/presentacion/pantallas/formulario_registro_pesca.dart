@@ -7,6 +7,7 @@ import '../../dominio/entidades/cuadre_entidad.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../widgets/panel_calculo_vivo.dart';
+import '../../../../nucleo/base_datos/gestor_base_datos.dart';
 
 class _UpperCaseTextFormatter extends TextInputFormatter {
   @override
@@ -501,6 +502,101 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
     }
   }
 
+  Future<List<Map<String, dynamic>>> _obtenerZarpesDisponibles() async {
+    final db = await GestorBaseDatos.instance.database;
+    return await db.query('zarpes', orderBy: 'fecha_zarpe DESC');
+  }
+
+  Future<void> _mostrarSelectorZarpes() async {
+    final zarpes = await _obtenerZarpesDisponibles();
+    if (!mounted) return;
+    if (zarpes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay zarpes registrados para seleccionar.'),
+          backgroundColor: Colors.orangeAccent,
+        ),
+      );
+      return;
+    }
+    _mostrarModalZarpes(zarpes);
+  }
+
+  void _mostrarModalZarpes(List<Map<String, dynamic>> zarpes) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F224A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => _buildModalSheetContent(zarpes),
+    );
+  }
+
+  Widget _buildModalSheetContent(List<Map<String, dynamic>> zarpes) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildModalHeader(),
+          const SizedBox(height: 16),
+          Flexible(
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: zarpes.length,
+              itemBuilder: (context, idx) => _buildZarpeItem(zarpes[idx]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModalHeader() {
+    return const Text(
+      'SELECCIONAR ZARPE ACTIVO',
+      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1),
+    );
+  }
+
+  Widget _buildZarpeItem(Map<String, dynamic> z) {
+    final placa = z['placa_camara'] ?? '';
+    final info = 'Chofer: ${z['chofer'] ?? ''}\nMuelle: ${z['muelle_partida'] ?? ''}\nFecha: ${z['fecha_zarpe'] ?? ''}';
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: ListTile(
+        leading: _buildZarpeLeading(),
+        title: Text('Placa: $placa', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        subtitle: Text(info, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+        isThreeLine: true,
+        trailing: const Icon(Icons.chevron_right, color: Color(0xFF00E5FF)),
+        onTap: () => _onZarpeSelected(placa, z['fecha_zarpe'] ?? ''),
+      ),
+    );
+  }
+
+  Widget _buildZarpeLeading() {
+    return const CircleAvatar(
+      backgroundColor: Color(0xFF00E5FF),
+      child: Icon(Icons.local_shipping, color: Color(0xFF040B1E)),
+    );
+  }
+
+  void _onZarpeSelected(String placa, String fecha) {
+    setState(() {
+      _placaCtrl.text = placa;
+      _fechaZarpeCtrl.text = fecha;
+    });
+    Navigator.pop(context);
+  }
+
   // Vistas Parciales
   Widget _buildSeccionGeneral() {
     return Card(
@@ -521,7 +617,13 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
                     style: const TextStyle(color: Colors.white),
                     textCapitalization: TextCapitalization.characters,
                     inputFormatters: [_PlacaInputFormatter()],
-                    decoration: _construirInputDecoration(labelText: 'Placa (Ej: AAA-123)'),
+                    decoration: _construirInputDecoration(
+                      labelText: 'Placa (Ej: AAA-123)',
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.search_rounded, color: Color(0xFF00E5FF)),
+                        onPressed: _mostrarSelectorZarpes,
+                      ),
+                    ),
                     validator: (v) => (v == null || v.isEmpty) ? 'Requerido' : null,
                   ),
                 ),
