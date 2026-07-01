@@ -240,10 +240,10 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
       labelText: labelText,
       labelStyle: const TextStyle(color: Colors.white70, fontSize: 13),
       filled: true,
-      fillColor: const Color(0xFF0F224A).withOpacity(0.6),
+      fillColor: const Color(0xFF0F224A).withValues(alpha: 0.6),
       suffixIcon: suffixIcon,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.12), width: 1.2)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12), width: 1.2)),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5)),
       errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.2)),
       focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
@@ -294,7 +294,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
         builder: (context, setStateDialog) {
           return Dialog(
             backgroundColor: const Color(0xFF0F224A),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.white.withOpacity(0.1), width: 1.2)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1.2)),
             insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800), // Ancho POS tablet
@@ -354,7 +354,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: Colors.white12),
                           ),
@@ -504,8 +504,8 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
   // Vistas Parciales
   Widget _buildSeccionGeneral() {
     return Card(
-      color: const Color(0xFF0F224A).withOpacity(0.7),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.white.withOpacity(0.05))),
+      color: const Color(0xFF0F224A).withValues(alpha: 0.7),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -545,8 +545,8 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
 
   Widget _buildSeccionEmbarcaciones() {
     return Card(
-      color: const Color(0xFF0F224A).withOpacity(0.7),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.white.withOpacity(0.05))),
+      color: const Color(0xFF0F224A).withValues(alpha: 0.7),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -580,7 +580,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
                   final c = _compras[i];
                   return Container(
                     margin: const EdgeInsets.only(bottom: 8),
-                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.2), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.white12)),
+                    decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.white12)),
                     child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       title: Text(c.embarcacion, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -612,8 +612,8 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
 
   Widget _buildSeccionGastos() {
     return Card(
-      color: const Color(0xFF0F224A).withOpacity(0.7),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.white.withOpacity(0.05))),
+      color: const Color(0xFF0F224A).withValues(alpha: 0.7),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
