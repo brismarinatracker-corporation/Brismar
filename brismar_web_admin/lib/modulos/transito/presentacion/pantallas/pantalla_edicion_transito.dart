@@ -24,7 +24,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   
   Map<String, dynamic>? _zarpeInfo;
   CuadreWebModelo? _cuadreInfo;
-
+  
   // Controladores Zarpe
   final _placaCtrl = TextEditingController();
   final _choferCtrl = TextEditingController();
@@ -88,10 +88,6 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         await cliente.from('cuadres').update({
           'placa': _placaCtrl.text.trim(), // mantener sincronizados
         }).eq('id', widget.id);
-        
-        // Aquí idealmente sincronizaríamos las listas de compras y gastos con Supabase.
-        // Por simplicidad de esta demostración asíncrona, si _compras o _gastos cambiaran, 
-        // haríamos un upsert o delete+insert.
       }
       
       if (mounted) {
@@ -109,52 +105,89 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   @override
   Widget build(BuildContext context) {
     if (_cargando && _zarpeInfo == null) {
-      return const Scaffold(backgroundColor: Color(0xFF070E22), body: Center(child: CargaOrbital(tamano: 80)));
+      return const Scaffold(
+        backgroundColor: Color(0xFFF8FAFC),
+        body: Center(child: CargaOrbital(tamano: 80)),
+      );
     }
     
     if (_error != null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF070E22),
+        backgroundColor: const Color(0xFFF8FAFC),
         body: Center(child: Text('Error: $_error', style: const TextStyle(color: Colors.redAccent))),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF070E22),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0D255F),
-        title: const Text('Editor de Viaje / Cuadre', style: TextStyle(color: Colors.white)),
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => context.pop()),
-        actions: [
-          if (!_cargando)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: ElevatedButton.icon(
-                onPressed: _guardarCambios,
-                icon: const Icon(Icons.save),
-                label: const Text('Guardar'),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00E5FF), foregroundColor: const Color(0xFF070E22)),
-              ),
-            )
-        ],
-      ),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: _cargando 
           ? const Center(child: CargaOrbital(tamano: 80))
-          : Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(32),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(flex: 1, child: _construirSeccionZarpe()),
-                    const SizedBox(width: 32),
-                    Expanded(flex: 1, child: _construirSeccionLanchas()),
-                    const SizedBox(width: 32),
-                    Expanded(flex: 1, child: _construirSeccionFlete()),
-                  ],
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Dark Blue Header Banner
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF0F2D4A), // Deep navy blue
+                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 24),
+                            onPressed: () => context.pop(),
+                            tooltip: 'Volver',
+                          ),
+                          const SizedBox(width: 16),
+                          const Text(
+                            'Editor de Viaje / Cuadre',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: _guardarCambios,
+                        icon: const Icon(Icons.save_rounded, color: Colors.white, size: 18),
+                        label: const Text('Guardar', style: TextStyle(color: Colors.white)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white30),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                // Form body
+                Expanded(
+                  child: Form(
+                    key: _formKey,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(32),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(flex: 1, child: _construirSeccionZarpe()),
+                          const SizedBox(width: 32),
+                          Expanded(flex: 1, child: _construirSeccionEmbarcaciones()),
+                          const SizedBox(width: 32),
+                          Expanded(flex: 1, child: _construirSeccionFlete()),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
     );
   }
@@ -165,48 +198,68 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
       hijos: [
         TextFormField(
           controller: _placaCtrl,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600),
           decoration: _decoracion('Placa Cámara'),
           validator: (v) => v!.isEmpty ? 'Requerido' : null,
         ),
         const SizedBox(height: 16),
         TextFormField(
           controller: _choferCtrl,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600),
           decoration: _decoracion('Chofer'),
           validator: (v) => v!.isEmpty ? 'Requerido' : null,
         ),
         const SizedBox(height: 16),
         TextFormField(
           controller: _muelleCtrl,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600),
           decoration: _decoracion('Muelle Partida'),
           validator: (v) => v!.isEmpty ? 'Requerido' : null,
         ),
-        const SizedBox(height: 16),
-        const Text('Nota: Estos datos actualizan tanto el Zarpe como el Cuadre.', style: TextStyle(color: Colors.white54, fontSize: 12)),
+        const SizedBox(height: 20),
+        const Text(
+          'Nota: Estos datos actualizan tanto el Zarpe como el Cuadre.', 
+          style: TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.4),
+        ),
       ],
     );
   }
 
-  Widget _construirSeccionLanchas() {
+  Widget _construirSeccionEmbarcaciones() {
     return _tarjeta(
-      titulo: 'Lanchas Asociadas (Compras)',
+      titulo: 'Embarcaciones Asociadas (Compras)',
       hijos: [
-        if (_compras.isEmpty) const Text('No hay lanchas registradas.', style: TextStyle(color: Colors.white54)),
-        ..._compras.map((c) => ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text('${c.embarcacion} - ${c.producto}', style: const TextStyle(color: Colors.white)),
-          subtitle: Text('${c.kilos}kg @ S/ ${c.precioUnitario}', style: const TextStyle(color: Colors.white70)),
-          trailing: Text('S/ ${c.total.toStringAsFixed(2)}', style: const TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
+        if (_compras.isEmpty) 
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Text('No hay embarcaciones registradas.', style: TextStyle(color: Color(0xFF64748B), fontSize: 14)),
+          ),
+        ..._compras.map((c) => Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            title: Text('${c.embarcacion} - ${c.producto}', style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
+            subtitle: Text('${c.kilos}kg @ S/ ${c.precioUnitario}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+            trailing: Text('S/ ${c.total.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFF16A34A), fontWeight: FontWeight.w800, fontSize: 15)),
+          ),
         )),
         const SizedBox(height: 16),
         OutlinedButton.icon(
           onPressed: () {
-            // Lógica para añadir nueva lancha
+            // Lógica para añadir nueva embarcación
           },
-          icon: const Icon(Icons.add, color: Color(0xFF00E5FF)),
-          label: const Text('Añadir Lancha', style: TextStyle(color: Color(0xFF00E5FF))),
+          icon: const Icon(Icons.add_rounded, color: Color(0xFF00796B), size: 18),
+          label: const Text('Añadir embarcación', style: TextStyle(color: Color(0xFF00796B), fontWeight: FontWeight.bold)),
+          style: OutlinedButton.styleFrom(
+            side: const BorderSide(color: Color(0xFF00796B)),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
         )
       ]
     );
@@ -216,20 +269,37 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
     return _tarjeta(
       titulo: 'Gastos (Flete y Otros)',
       hijos: [
-        if (_gastos.isEmpty) const Text('No hay gastos registrados.', style: TextStyle(color: Colors.white54)),
-        ..._gastos.map((g) => ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text('${g.tipo} - ${g.concepto}', style: const TextStyle(color: Colors.white)),
-          subtitle: Text('Cant: ${g.cantidad} @ S/ ${g.costoUnitario}', style: const TextStyle(color: Colors.white70)),
-          trailing: Text('S/ ${g.total.toStringAsFixed(2)}', style: const TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold)),
+        if (_gastos.isEmpty) 
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Text('No hay gastos registrados.', style: TextStyle(color: Color(0xFF64748B), fontSize: 14)),
+          ),
+        ..._gastos.map((g) => Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            title: Text('${g.tipo} - ${g.concepto}', style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
+            subtitle: Text('Cant: ${g.cantidad} @ S/ ${g.costoUnitario}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+            trailing: Text('S/ ${g.total.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.w800, fontSize: 15)),
+          ),
         )),
         const SizedBox(height: 16),
         OutlinedButton.icon(
           onPressed: () {
             // Lógica para añadir nuevo gasto
           },
-          icon: const Icon(Icons.add, color: Colors.orangeAccent),
-          label: const Text('Añadir Gasto', style: TextStyle(color: Colors.orangeAccent)),
+          icon: const Icon(Icons.add_rounded, color: Color(0xFFEA580C), size: 18),
+          label: const Text('Añadir gasto', style: TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.bold)),
+          style: OutlinedButton.styleFrom(
+            side: const BorderSide(color: Color(0xFFEA580C)),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
         )
       ]
     );
@@ -239,15 +309,22 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F224A).withValues(alpha: 0.5),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(titulo, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-          const Divider(color: Colors.white12, height: 32),
+          Text(titulo, style: const TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold)),
+          const Divider(color: Color(0xFFF1F5F9), height: 32),
           ...hijos,
         ],
       ),
@@ -257,12 +334,14 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   InputDecoration _decoracion(String label) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: Colors.white54),
+      labelStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
       filled: true,
-      fillColor: Colors.black26,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.white12)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF00E5FF))),
+      fillColor: const Color(0xFFF8FAFC),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.2)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF00796B), width: 1.5)),
+      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.2)),
+      focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
     );
   }
 }
