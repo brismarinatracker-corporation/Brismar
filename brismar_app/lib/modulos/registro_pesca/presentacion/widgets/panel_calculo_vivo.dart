@@ -88,7 +88,7 @@ class PanelCalculoVivo extends StatelessWidget {
               ],
             ),
           ),
-          const Spacer(),
+          const SizedBox(height: 24),
           const Text(
             '⚠️ Al guardar, el lote quedará en estado "Borrador" hasta el pesaje en planta.',
             style: TextStyle(color: Colors.white54, fontSize: 12),
