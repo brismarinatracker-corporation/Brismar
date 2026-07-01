@@ -114,10 +114,9 @@ class PantallaDashboard extends ConsumerWidget {
         if (availableWidth < 800) columnas = 2;
         if (availableWidth < 500) columnas = 1;
 
-        // Calcula el aspect ratio dinámicamente para fijar la altura de las tarjetas a 130px
+        // Calcula el aspect ratio dinámicamente para fijar la altura de las tarjetas a 165px
         double anchoTarjeta = (availableWidth - (columnas - 1) * 24) / columnas;
-        double childAspectRatio = anchoTarjeta / 130;
-        if (childAspectRatio < 1.0) childAspectRatio = 1.0;
+        double childAspectRatio = anchoTarjeta / 165;
 
         return GridView.count(
           shrinkWrap: true,
@@ -128,41 +127,40 @@ class PantallaDashboard extends ConsumerWidget {
           childAspectRatio: childAspectRatio,
           children: [
             _TarjetaKpiPremium(
-              icono: Icons.local_shipping_rounded,
-              titulo: 'Zarpes del Mes',
+              icono: Icons.local_shipping_outlined,
+              titulo: 'Zarpes del mes',
               valor: kpis.totalZarpesMes.toString(),
-              colorIcono: const Color(0xFF3B82F6),
-              subtitulo: 'Cámaras despachadas',
+              colorIcono: const Color(0xFF00796B),
+              subtitulo: '',
             ),
             _TarjetaKpiPremium(
-              icono: Icons.scale_rounded,
-              titulo: 'Volumen Total',
+              icono: Icons.balance_outlined,
+              titulo: 'Volumen total',
               valor: '${fmt.format(kpis.totalKilosMes)} kg',
-              colorIcono: const Color(0xFF00E5FF),
-              subtitulo: 'Peso registrado',
+              colorIcono: const Color(0xFF2E7D32),
+              subtitulo: '',
             ),
             _TarjetaKpiPremium(
-              icono: Icons.hourglass_top_rounded,
-              titulo: 'En Tránsito',
+              icono: Icons.access_time_rounded,
+              titulo: 'En tránsito',
               valor: kpis.zarpesPendientes.toString(),
-              colorIcono: const Color(0xFFF59E0B),
-              subtitulo: 'Pendientes de recibir',
+              colorIcono: const Color(0xFFB45309),
+              subtitulo: '',
             ),
             _TarjetaKpiPremium(
-              icono: Icons.check_circle_rounded,
+              icono: Icons.check_circle_outline_rounded,
               titulo: 'Recibidos',
               valor: kpis.zarpesRecibidos.toString(),
-              colorIcono: const Color(0xFF10B981),
-              subtitulo: 'Confirmados en Lambayeque',
+              colorIcono: const Color(0xFF16A34A),
+              subtitulo: '',
             ),
-            if (columnas > 2)
-              _TarjetaKpiPremium(
-                icono: Icons.people_alt_rounded,
-                titulo: 'Cuentas Activas',
-                valor: kpis.usuariosActivos.toString(),
-                colorIcono: const Color(0xFF8B5CF6),
-                subtitulo: 'Bahías y Operadores',
-              ),
+            _TarjetaKpiPremium(
+              icono: Icons.person_outline_rounded,
+              titulo: 'Cuentas activas',
+              valor: kpis.usuariosActivos.toString(),
+              colorIcono: const Color(0xFF475569),
+              subtitulo: '',
+            ),
           ],
         );
       },
@@ -237,94 +235,58 @@ class _TarjetaKpiPremium extends StatelessWidget {
   final Color colorIcono;
   final String subtitulo;
 
-  @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              )
-            ],
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: colorIcono.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icono, color: colorIcono, size: 20),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      colorIcono.withOpacity(0.15),
-                      colorIcono.withOpacity(0.05),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: colorIcono.withOpacity(0.25)),
-                ),
-                child: Icon(icono, color: colorIcono, size: 32),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      titulo,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF475569),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        valor,
-                        style: const TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitulo,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: colorIcono.withOpacity(0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          const Spacer(),
+          Text(
+            titulo,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              valor,
+              style: const TextStyle(
+                color: Color(0xFF1E293B),
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

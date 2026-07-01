@@ -64,41 +64,40 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF00E5FF).withOpacity(0.1),
+                                color: const Color(0xFF10B981).withOpacity(0.12),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(Icons.anchor_rounded, color: Color(0xFF00E5FF), size: 32),
+                              child: const Icon(Icons.anchor_rounded, color: Color(0xFF10B981), size: 32),
                             ),
                             if (MediaQuery.of(context).size.width >= 1200) ...[
                               const SizedBox(width: 12),
                               const Text(
-                                'BRISMAR',
+                                'Brismar',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 22,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.5,
                                 ),
                               ),
                             ],
                           ],
                         ),
                       ),
-                      selectedIconTheme: const IconThemeData(color: Color(0xFF00E5FF), size: 28),
+                      selectedIconTheme: const IconThemeData(color: Color(0xFF10B981), size: 24),
                       unselectedIconTheme: const IconThemeData(color: Color(0xFF94A3B8), size: 24),
                       selectedLabelTextStyle: const TextStyle(
-                        color: Color(0xFF00E5FF),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
                       ),
                       unselectedLabelTextStyle: const TextStyle(
                         color: Color(0xFF94A3B8),
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                       useIndicator: true,
-                      indicatorColor: const Color(0xFF00E5FF).withOpacity(0.15),
-                      indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      indicatorColor: const Color(0xFF10B981).withOpacity(0.12),
+                      indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       destinations: [
                         const NavigationRailDestination(
                           icon: Icon(Icons.dashboard_outlined),
