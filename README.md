@@ -54,3 +54,17 @@ Hemos eliminado los archivos de texto `.md` manuales para gestionar versiones. T
 
 ---
 *Este manifiesto consolida todo el conocimiento técnico de Brismar. ¡A programar!* 🚀
+
+---
+
+## 📝 Historial de Cambios (IAs y Desarrolladores)
+
+* **Fecha/Hora:** 2026-07-02 03:42 (Local)
+* **Autor:** Antigravity (AI Agent)
+* **Qué se cambió:**
+  * Resolución de conflictos de fusión entre `develop` (local) y `origin/develop` (remoto).
+  * Fusión de `panel_calculo_vivo.dart` para mantener la modularización SRP implementada por Jhonatan.
+  * Fusión de `formulario_registro_pesca.dart` integrando la localización en español (`Locale('es', 'ES')`) en la función modular `_seleccionarFecha` y preservando el diseño móvil responsivo de Jhonatan.
+  * Corrección de regresión en `acceso_rapido_pantalla_test.dart` adaptando la aserción de carga para buscar `CargaOrbital` en lugar de `CircularProgressIndicator`.
+* **Qué se eliminó:** Conflictos de Git y aserciones de prueba obsoletas.
+* **Migraciones:** Ninguna.
