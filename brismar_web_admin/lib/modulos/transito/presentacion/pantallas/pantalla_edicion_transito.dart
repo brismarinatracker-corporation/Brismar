@@ -112,6 +112,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
           'kilos': c.kilos,
           'precio_unitario': c.precioUnitario,
           'total': c.total,
+          'adelanto': c.adelanto ?? 0.0,
         }).toList();
         await cliente.from('compras').insert(comprasJson);
       }
@@ -641,181 +642,221 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   void _mostrarDialogoCompra([CompraWebModelo? compra]) {
     final esNuevo = compra == null;
     final embarcacionCtrl = TextEditingController(text: compra?.embarcacion ?? '');
-    final productoCtrl = TextEditingController(text: compra?.producto ?? 'POTA');
+    String productoSeleccionado = compra?.producto ?? 'POTA';
     final kilosCtrl = TextEditingController(text: compra?.kilos.toString() ?? '');
     final precioCtrl = TextEditingController(text: compra?.precioUnitario.toString() ?? '');
+    final adelantoCtrl = TextEditingController(text: compra?.adelanto?.toString() ?? '0.0');
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: Text(esNuevo ? 'Añadir Embarcación' : 'Editar Embarcación', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: embarcacionCtrl,
-                decoration: _decoracion('Nombre de la Embarcación'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: productoCtrl,
-                decoration: _decoracion('Producto'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: kilosCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: _decoracion('Kilos'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: precioCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: _decoracion('Precio Unitario'),
-              ),
-            ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setStateDialog) => AlertDialog(
+          backgroundColor: Colors.white,
+          title: Text(esNuevo ? 'Añadir Embarcación' : 'Editar Embarcación', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: embarcacionCtrl,
+                  style: const TextStyle(color: Color(0xFF0F172A)),
+                  decoration: _decoracion('Nombre de la Embarcación'),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: productoSeleccionado,
+                  dropdownColor: Colors.white,
+                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
+                  decoration: _decoracion('Especie'),
+                  items: ["POTA", "JUREL", "BONITO", "CABALLA", "PERICO"].map((String value) => DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      )).toList(),
+                  onChanged: (val) { if (val != null) setStateDialog(() => productoSeleccionado = val); },
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: kilosCtrl,
+                  style: const TextStyle(color: Color(0xFF0F172A)),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: _decoracion('Kilos'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: precioCtrl,
+                  style: const TextStyle(color: Color(0xFF0F172A)),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: _decoracion('Precio Unitario'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: adelantoCtrl,
+                  style: const TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.bold),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: _decoracion('S/ Adelanto Efectivo'),
+                ),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar', style: TextStyle(color: Color(0xFF64748B))),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final kilos = double.tryParse(kilosCtrl.text) ?? 0.0;
-              final precio = double.tryParse(precioCtrl.text) ?? 0.0;
-              if (embarcacionCtrl.text.trim().isEmpty || productoCtrl.text.trim().isEmpty) return;
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar', style: TextStyle(color: Color(0xFF64748B))),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final kilos = double.tryParse(kilosCtrl.text) ?? 0.0;
+                final precio = double.tryParse(precioCtrl.text) ?? 0.0;
+                final adelanto = double.tryParse(adelantoCtrl.text) ?? 0.0;
+                if (embarcacionCtrl.text.trim().isEmpty) return;
 
-              setState(() {
-                if (esNuevo) {
-                  _compras.add(CompraWebModelo(
-                    id: const Uuid().v4(),
-                    cuadreId: widget.id,
-                    embarcacion: embarcacionCtrl.text.trim().toUpperCase(),
-                    producto: productoCtrl.text.trim().toUpperCase(),
-                    kilos: kilos,
-                    precioUnitario: precio,
-                    total: kilos * precio,
-                  ));
-                } else {
-                  final index = _compras.indexWhere((c) => c.id == compra.id);
-                  if (index != -1) {
-                    _compras[index] = CompraWebModelo(
-                      id: compra.id,
+                setState(() {
+                  if (esNuevo) {
+                    _compras.add(CompraWebModelo(
+                      id: const Uuid().v4(),
                       cuadreId: widget.id,
                       embarcacion: embarcacionCtrl.text.trim().toUpperCase(),
-                      producto: productoCtrl.text.trim().toUpperCase(),
+                      producto: productoSeleccionado,
                       kilos: kilos,
                       precioUnitario: precio,
                       total: kilos * precio,
-                    );
+                      adelanto: adelanto,
+                    ));
+                  } else {
+                    final index = _compras.indexWhere((c) => c.id == compra.id);
+                    if (index != -1) {
+                      _compras[index] = CompraWebModelo(
+                        id: compra.id,
+                        cuadreId: widget.id,
+                        embarcacion: embarcacionCtrl.text.trim().toUpperCase(),
+                        producto: productoSeleccionado,
+                        kilos: kilos,
+                        precioUnitario: precio,
+                        total: kilos * precio,
+                        adelanto: adelanto,
+                      );
+                    }
                   }
-                }
-              });
-              Navigator.pop(ctx);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00796B),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                });
+                Navigator.pop(ctx);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00796B),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Guardar'),
             ),
-            child: const Text('Guardar'),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   void _mostrarDialogoGasto([GastoWebModelo? gasto]) {
     final esNuevo = gasto == null;
-    final tipoCtrl = TextEditingController(text: gasto?.tipo ?? 'FLETE');
-    final conceptoCtrl = TextEditingController(text: gasto?.concepto ?? '');
+    String tipoSeleccionado = ['MUELLE', 'FLETE', 'OTROS'].contains(gasto?.tipo) ? gasto!.tipo : 'MUELLE';
+    String conceptoSeleccionado = ['FACTURACION', 'PERSONAL', 'APOYO', 'AGUA', 'PESADOR', 'CLOROX', 'HIELO', 'FLETE', 'OTROS'].contains(gasto?.concepto) ? gasto!.concepto : 'HIELO';
     final cantidadCtrl = TextEditingController(text: gasto?.cantidad.toString() ?? '1');
     final precioCtrl = TextEditingController(text: gasto?.costoUnitario.toString() ?? '');
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: Text(esNuevo ? 'Añadir Gasto' : 'Editar Gasto', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: tipoCtrl,
-                decoration: _decoracion('Tipo de Gasto (ej: FLETE, HIELO)'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: conceptoCtrl,
-                decoration: _decoracion('Concepto / Detalle'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: cantidadCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: _decoracion('Cantidad'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: precioCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: _decoracion('Costo Unitario'),
-              ),
-            ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setStateDialog) => AlertDialog(
+          backgroundColor: Colors.white,
+          title: Text(esNuevo ? 'Añadir Gasto' : 'Editar Gasto', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<String>(
+                  value: tipoSeleccionado,
+                  dropdownColor: Colors.white,
+                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15),
+                  decoration: _decoracion('Tipo de Gasto'),
+                  items: ['MUELLE', 'FLETE', 'OTROS'].map((String value) => DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      )).toList(),
+                  onChanged: (val) { if (val != null) setStateDialog(() => tipoSeleccionado = val); },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: conceptoSeleccionado,
+                  dropdownColor: Colors.white,
+                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15),
+                  decoration: _decoracion('Concepto / Detalle'),
+                  items: ['FACTURACION', 'PERSONAL', 'APOYO', 'AGUA', 'PESADOR', 'CLOROX', 'HIELO', 'FLETE', 'OTROS'].map((String value) => DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      )).toList(),
+                  onChanged: (val) { if (val != null) setStateDialog(() => conceptoSeleccionado = val); },
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: cantidadCtrl,
+                  style: const TextStyle(color: Color(0xFF0F172A)),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: _decoracion('Cantidad'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: precioCtrl,
+                  style: const TextStyle(color: Color(0xFF0F172A)),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: _decoracion('Costo Unitario'),
+                ),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar', style: TextStyle(color: Color(0xFF64748B))),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final cant = double.tryParse(cantidadCtrl.text) ?? 1.0;
-              final precio = double.tryParse(precioCtrl.text) ?? 0.0;
-              if (conceptoCtrl.text.trim().isEmpty) return;
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar', style: TextStyle(color: Color(0xFF64748B))),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final cant = double.tryParse(cantidadCtrl.text) ?? 1.0;
+                final precio = double.tryParse(precioCtrl.text) ?? 0.0;
 
-              setState(() {
-                if (esNuevo) {
-                  _gastos.add(GastoWebModelo(
-                    id: const Uuid().v4(),
-                    cuadreId: widget.id,
-                    tipo: tipoCtrl.text.trim().toUpperCase(),
-                    concepto: conceptoCtrl.text.trim().toUpperCase(),
-                    cantidad: cant,
-                    costoUnitario: precio,
-                    total: cant * precio,
-                  ));
-                } else {
-                  final index = _gastos.indexWhere((g) => g.id == gasto.id);
-                  if (index != -1) {
-                    _gastos[index] = GastoWebModelo(
-                      id: gasto.id,
+                setState(() {
+                  if (esNuevo) {
+                    _gastos.add(GastoWebModelo(
+                      id: const Uuid().v4(),
                       cuadreId: widget.id,
-                      tipo: tipoCtrl.text.trim().toUpperCase(),
-                      concepto: conceptoCtrl.text.trim().toUpperCase(),
+                      tipo: tipoSeleccionado,
+                      concepto: conceptoSeleccionado,
                       cantidad: cant,
                       costoUnitario: precio,
                       total: cant * precio,
-                    );
+                    ));
+                  } else {
+                    final index = _gastos.indexWhere((g) => g.id == gasto.id);
+                    if (index != -1) {
+                      _gastos[index] = GastoWebModelo(
+                        id: gasto.id,
+                        cuadreId: widget.id,
+                        tipo: tipoSeleccionado,
+                        concepto: conceptoSeleccionado,
+                        cantidad: cant,
+                        costoUnitario: precio,
+                        total: cant * precio,
+                      );
+                    }
                   }
-                }
-              });
-              Navigator.pop(ctx);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEA580C),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                });
+                Navigator.pop(ctx);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEA580C),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Guardar'),
             ),
-            child: const Text('Guardar'),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
