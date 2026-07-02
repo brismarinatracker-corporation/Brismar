@@ -582,7 +582,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
         subtitle: Text(info, style: const TextStyle(color: Colors.white70, fontSize: 13)),
         isThreeLine: true,
         trailing: const Icon(Icons.chevron_right, color: Color(0xFF00E5FF)),
-        onTap: () => _onZarpeSelected(placa, z['fecha_zarpe'] ?? ''),
+        onTap: () => _onZarpeSelected(z['id'] ?? '', placa, z['fecha_zarpe'] ?? ''),
       ),
     );
   }
@@ -594,8 +594,9 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
     );
   }
 
-  void _onZarpeSelected(String placa, String fecha) {
+  void _onZarpeSelected(String id, String placa, String fecha) {
     setState(() {
+      _cuadreId = id;
       _placaCtrl.text = placa;
       _fechaZarpeCtrl.text = fecha;
     });
