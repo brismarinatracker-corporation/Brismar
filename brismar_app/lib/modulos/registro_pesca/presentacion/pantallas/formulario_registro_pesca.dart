@@ -494,6 +494,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
       initialDate: initial,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
+      locale: const Locale('es', 'ES'),
     );
     if (selected != null) {
       setState(() {
@@ -657,16 +658,23 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Lotes / Embarcaciones', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                const Expanded(
+                  child: Text(
+                    'Lotes / Embarcaciones', 
+                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00E5FF),
                     foregroundColor: const Color(0xFF040B1E),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                   onPressed: () => _agregarCompraDialog(),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Ingreso Rápido', style: TextStyle(fontWeight: FontWeight.bold)),
+                  icon: const Icon(Icons.add, size: 16),
+                  label: const Text('Ingreso Rápido', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                 ),
               ],
             ),
