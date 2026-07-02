@@ -505,7 +505,11 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
 
   Future<List<Map<String, dynamic>>> _obtenerZarpesDisponibles() async {
     final db = await GestorBaseDatos.instance.database;
-    return await db.query('zarpes', orderBy: 'fecha_zarpe DESC');
+    return await db.query(
+      'zarpes',
+      where: "estado != 'RECIBIDO_LAMBAYEQUE'",
+      orderBy: 'fecha_zarpe DESC',
+    );
   }
 
   Future<void> _mostrarSelectorZarpes() async {
