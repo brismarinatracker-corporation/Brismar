@@ -383,7 +383,7 @@ class PantallaTransito extends ConsumerWidget {
               children: [
                 _construirEtiquetaDialogo('Planta de Destino (Procesadora)'),
                 DropdownButtonFormField<String>(
-                  value: plantaSeleccionada,
+                  initialValue: plantaSeleccionada,
                   dropdownColor: const Color(0xFF1E201E),
                   iconEnabledColor: Colors.white70,
                   style: const TextStyle(color: Colors.white, fontSize: 14),
@@ -413,7 +413,7 @@ class PantallaTransito extends ConsumerWidget {
                 ],
                 _construirEtiquetaDialogo('Especie comercializada'),
                 DropdownButtonFormField<String>(
-                  value: especieSeleccionada,
+                  initialValue: especieSeleccionada,
                   dropdownColor: const Color(0xFF1E201E),
                   iconEnabledColor: Colors.white70,
                   style: const TextStyle(color: Colors.white, fontSize: 14),
@@ -600,151 +600,7 @@ class _FiltroChip extends StatelessWidget {
     );
   }
 
-  void _mostrarLightbox(BuildContext context, List<String> urls) {
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        int indexActual = 0;
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            return Dialog(
-              backgroundColor: Colors.transparent,
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 800, maxHeight: 600),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF070E22),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    InteractiveViewer(
-                      child: Padding(
-                        padding: const EdgeInsets.all(40),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            urls[indexActual],
-                            fit: BoxFit.contain,
-                            errorBuilder: (c, e, s) => const Center(
-                              child: Icon(Icons.broken_image, color: Colors.white54, size: 64),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 16,
-                      right: 16,
-                      child: IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ),
-                    if (urls.length > 1 && indexActual > 0)
-                      Positioned(
-                        left: 16,
-                        child: CircleAvatar(
-                          backgroundColor: Colors.black45,
-                          child: IconButton(
-                            icon: const Icon(Icons.chevron_left, color: Colors.white),
-                            onPressed: () {
-                              setStateDialog(() => indexActual--);
-                            },
-                          ),
-                        ),
-                      ),
-                    if (urls.length > 1 && indexActual < urls.length - 1)
-                      Positioned(
-                        right: 16,
-                        child: CircleAvatar(
-                          backgroundColor: Colors.black45,
-                          child: IconButton(
-                            icon: const Icon(Icons.chevron_right, color: Colors.white),
-                            onPressed: () {
-                              setStateDialog(() => indexActual++);
-                            },
-                          ),
-                        ),
-                      ),
-                    Positioned(
-                      bottom: 16,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${indexActual + 1} / ${urls.length}',
-                          style: const TextStyle(color: Colors.white70, fontSize: 13),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
 
-  Widget _construirEvidenciaFotos(BuildContext context, String urlFoto) {
-    final urls = urlFoto.split(',').map((u) => u.trim()).where((u) => u.isNotEmpty).toList();
-    if (urls.isEmpty) {
-      return Container(
-        width: 80,
-        height: 80,
-        decoration: BoxDecoration(
-          color: Colors.black26,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(Icons.camera_alt, color: Colors.white54),
-      );
-    }
-
-    return InkWell(
-      onTap: () => _mostrarLightbox(context, urls),
-      child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              urls[0],
-              width: 80,
-              height: 80,
-              fit: BoxFit.cover,
-              errorBuilder: (c, e, s) => Container(
-                width: 80,
-                height: 80,
-                color: Colors.black26,
-                child: const Icon(Icons.broken_image, color: Colors.white54),
-              ),
-            ),
-          ),
-          if (urls.length > 1)
-            Positioned(
-              right: 4,
-              bottom: 4,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.black87,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  '+${urls.length - 1}',
-                  style: const TextStyle(color: Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
 }
 
 class UpperCaseTextFormatter extends TextInputFormatter {

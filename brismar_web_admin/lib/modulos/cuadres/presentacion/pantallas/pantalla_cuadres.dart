@@ -13,6 +13,7 @@ import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 class PantallaCuadres extends ConsumerWidget {
   const PantallaCuadres({super.key});
 
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(controladorCuadresWebProvider);
     final fmt = NumberFormat('#,##0.00', 'es_PE');
@@ -149,6 +150,7 @@ class _BotoFiltroFecha extends StatelessWidget {
   final ValueChanged<DateTime> onSeleccionar;
   final VoidCallback onLimpiar;
 
+  @override
   Widget build(BuildContext context) {
     final texto = fecha != null ? DateFormat('dd/MM/yyyy').format(fecha!) : label;
     return OutlinedButton.icon(
@@ -233,7 +235,7 @@ class _TablaCuadres extends ConsumerWidget {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -279,7 +281,7 @@ class _TablaCuadres extends ConsumerWidget {
     final color = _colorEstado(c.estado);
     return TableRow(
       decoration: BoxDecoration(
-        color: esSeleccionado ? const Color(0xFF00838F).withOpacity(0.06) : Colors.transparent,
+        color: esSeleccionado ? const Color(0xFF00838F).withValues(alpha: 0.06) : Colors.transparent,
       ),
       children: [
         _celda(c.placa, bold: true),
@@ -310,7 +312,7 @@ class _TablaCuadres extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
         child: Text(estado.toUpperCase(), style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
       ),
     );
@@ -359,7 +361,7 @@ class _PanelDetalle extends ConsumerWidget {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -504,9 +506,9 @@ class _PanelDetalle extends ConsumerWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.18)),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
       child: Column(children: [
         Text('UTILIDAD NETA', style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),

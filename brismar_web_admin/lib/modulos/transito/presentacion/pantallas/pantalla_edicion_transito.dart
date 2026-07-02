@@ -746,7 +746,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                 ),
                 _construirEtiquetaDialogo('Especie'),
                 DropdownButtonFormField<String>(
-                  value: productoSeleccionado,
+                  initialValue: productoSeleccionado,
                   dropdownColor: const Color(0xFF1E201E),
                   iconEnabledColor: Colors.white70,
                   style: const TextStyle(color: Colors.white, fontSize: 14),
@@ -915,7 +915,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
               children: [
                 _construirEtiquetaDialogo('Tipo de gasto'),
                 DropdownButtonFormField<String>(
-                  value: tipoSeleccionado,
+                  initialValue: tipoSeleccionado,
                   dropdownColor: const Color(0xFF1E201E),
                   iconEnabledColor: Colors.white70,
                   style: const TextStyle(color: Colors.white, fontSize: 14),
@@ -936,7 +936,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                 ),
                 _construirEtiquetaDialogo('Concepto / Detalle'),
                 DropdownButtonFormField<String>(
-                  value: conceptoSeleccionado,
+                  initialValue: conceptoSeleccionado,
                   dropdownColor: const Color(0xFF1E201E),
                   iconEnabledColor: Colors.white70,
                   style: const TextStyle(color: Colors.white, fontSize: 14),

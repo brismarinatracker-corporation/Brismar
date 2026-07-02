@@ -28,7 +28,8 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
     super.dispose();
   }
 
-  Future<void> _subirNuevaFoto(BuildContext context, String userId) async {
+  Future<void> _subirNuevaFoto(String userId) async {
+    final messenger = ScaffoldMessenger.of(context);
     setState(() => _subiendoFoto = true);
     try {
       final picker = ImagePicker();
@@ -51,14 +52,14 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
         await ref.read(proveedorAutenticacion.notifier).actualizarPerfil(fotoPerfil: urlConCacheBuster);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             const SnackBar(content: Text('Foto de perfil actualizada con éxito'), backgroundColor: Colors.green),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(content: Text('Error al subir la foto: $e'), backgroundColor: Colors.redAccent),
         );
       }
@@ -69,6 +70,7 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
 
   Future<void> _guardarNombre() async {
     if (_nombreCtrl.text.trim().isEmpty) return;
+    final messenger = ScaffoldMessenger.of(context);
 
     setState(() => _subiendoFoto = true);
     try {
@@ -77,13 +79,13 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
         _editando = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(content: Text('Nombre actualizado con éxito'), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(content: Text('Error al guardar: $e'), backgroundColor: Colors.redAccent),
         );
       }
@@ -203,7 +205,7 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
                                     shape: const CircleBorder(),
                                     elevation: 4,
                                     child: InkWell(
-                                      onTap: _subiendoFoto ? null : () => _subirNuevaFoto(context, estadoAuth.usuario!.id),
+                                      onTap: _subiendoFoto ? null : () => _subirNuevaFoto(estadoAuth.usuario!.id),
                                       customBorder: const CircleBorder(),
                                       child: const Padding(
                                         padding: EdgeInsets.all(10.0),
