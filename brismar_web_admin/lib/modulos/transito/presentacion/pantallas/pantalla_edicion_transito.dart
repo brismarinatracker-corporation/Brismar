@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import '../controladores/controlador_transito.dart';
 import '../../../cuadres/presentacion/controladores/controlador_cuadres.dart';
@@ -85,11 +86,49 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         'muelle_partida': _muelleCtrl.text.trim(),
       }).eq('id', widget.id);
 
-      // Si existe Cuadre, actualizarlo
+      // Si existe Cuadre, actualizarlo; si no, crear uno básico
       if (_cuadreInfo != null) {
         await cliente.from('cuadres').update({
           'placa': _placaCtrl.text.trim(), // mantener sincronizados
         }).eq('id', widget.id);
+      } else {
+        await cliente.from('cuadres').insert({
+          'id': widget.id,
+          'usuario_id': cliente.auth.currentUser?.id ?? '',
+          'placa': _placaCtrl.text.trim(),
+          'fecha_zarpe': DateTime.now().toIso8601String().substring(0, 10),
+          'estado': 'borrador',
+        });
+      }
+
+      // Guardar Relaciones: Compras (Embarcaciones)
+      await cliente.from('compras').delete().eq('cuadre_id', widget.id);
+      if (_compras.isNotEmpty) {
+        final comprasJson = _compras.map((c) => {
+          'id': c.id,
+          'cuadre_id': widget.id,
+          'embarcacion': c.embarcacion,
+          'producto': c.producto,
+          'kilos': c.kilos,
+          'precio_unitario': c.precioUnitario,
+          'total': c.total,
+        }).toList();
+        await cliente.from('compras').insert(comprasJson);
+      }
+
+      // Guardar Relaciones: Gastos
+      await cliente.from('gastos').delete().eq('cuadre_id', widget.id);
+      if (_gastos.isNotEmpty) {
+        final gastosJson = _gastos.map((g) => {
+          'id': g.id,
+          'cuadre_id': widget.id,
+          'tipo': g.tipo,
+          'concepto': g.concepto,
+          'cantidad': g.cantidad,
+          'costo_unitario': g.costoUnitario,
+          'total': g.total,
+        }).toList();
+        await cliente.from('gastos').insert(gastosJson);
       }
       
       if (mounted) {
@@ -471,14 +510,28 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             title: Text('${c.embarcacion} - ${c.producto}', style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
             subtitle: Text('${c.kilos}kg @ S/ ${c.precioUnitario}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
-            trailing: Text('S/ ${c.total.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFF16A34A), fontWeight: FontWeight.w800, fontSize: 15)),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('S/ ${c.total.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFF16A34A), fontWeight: FontWeight.w800, fontSize: 15)),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, color: Color(0xFF00796B), size: 20),
+                  onPressed: () => _mostrarDialogoCompra(c),
+                  tooltip: 'Editar embarcación',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                  onPressed: () => setState(() => _compras.removeWhere((item) => item.id == c.id)),
+                  tooltip: 'Eliminar embarcación',
+                ),
+              ],
+            ),
           ),
         )),
         const SizedBox(height: 16),
         OutlinedButton.icon(
-          onPressed: () {
-            // Lógica para añadir nueva embarcación
-          },
+          onPressed: () => _mostrarDialogoCompra(),
           icon: const Icon(Icons.add_rounded, color: Color(0xFF00796B), size: 18),
           label: const Text('Añadir embarcación', style: TextStyle(color: Color(0xFF00796B), fontWeight: FontWeight.bold)),
           style: OutlinedButton.styleFrom(
@@ -511,14 +564,28 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             title: Text('${g.tipo} - ${g.concepto}', style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
             subtitle: Text('Cant: ${g.cantidad} @ S/ ${g.costoUnitario}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
-            trailing: Text('S/ ${g.total.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.w800, fontSize: 15)),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('S/ ${g.total.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.w800, fontSize: 15)),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, color: Color(0xFFEA580C), size: 20),
+                  onPressed: () => _mostrarDialogoGasto(g),
+                  tooltip: 'Editar gasto',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                  onPressed: () => setState(() => _gastos.removeWhere((item) => item.id == g.id)),
+                  tooltip: 'Eliminar gasto',
+                ),
+              ],
+            ),
           ),
         )),
         const SizedBox(height: 16),
         OutlinedButton.icon(
-          onPressed: () {
-            // Lógica para añadir nuevo gasto
-          },
+          onPressed: () => _mostrarDialogoGasto(),
           icon: const Icon(Icons.add_rounded, color: Color(0xFFEA580C), size: 18),
           label: const Text('Añadir gasto', style: TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.bold)),
           style: OutlinedButton.styleFrom(
@@ -568,6 +635,188 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF00796B), width: 1.5)),
       errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.2)),
       focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
+    );
+  }
+
+  void _mostrarDialogoCompra([CompraWebModelo? compra]) {
+    final esNuevo = compra == null;
+    final embarcacionCtrl = TextEditingController(text: compra?.embarcacion ?? '');
+    final productoCtrl = TextEditingController(text: compra?.producto ?? 'POTA');
+    final kilosCtrl = TextEditingController(text: compra?.kilos.toString() ?? '');
+    final precioCtrl = TextEditingController(text: compra?.precioUnitario.toString() ?? '');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text(esNuevo ? 'Añadir Embarcación' : 'Editar Embarcación', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: embarcacionCtrl,
+                decoration: _decoracion('Nombre de la Embarcación'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: productoCtrl,
+                decoration: _decoracion('Producto'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: kilosCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: _decoracion('Kilos'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: precioCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: _decoracion('Precio Unitario'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar', style: TextStyle(color: Color(0xFF64748B))),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final kilos = double.tryParse(kilosCtrl.text) ?? 0.0;
+              final precio = double.tryParse(precioCtrl.text) ?? 0.0;
+              if (embarcacionCtrl.text.trim().isEmpty || productoCtrl.text.trim().isEmpty) return;
+
+              setState(() {
+                if (esNuevo) {
+                  _compras.add(CompraWebModelo(
+                    id: const Uuid().v4(),
+                    cuadreId: widget.id,
+                    embarcacion: embarcacionCtrl.text.trim().toUpperCase(),
+                    producto: productoCtrl.text.trim().toUpperCase(),
+                    kilos: kilos,
+                    precioUnitario: precio,
+                    total: kilos * precio,
+                  ));
+                } else {
+                  final index = _compras.indexWhere((c) => c.id == compra.id);
+                  if (index != -1) {
+                    _compras[index] = CompraWebModelo(
+                      id: compra.id,
+                      cuadreId: widget.id,
+                      embarcacion: embarcacionCtrl.text.trim().toUpperCase(),
+                      producto: productoCtrl.text.trim().toUpperCase(),
+                      kilos: kilos,
+                      precioUnitario: precio,
+                      total: kilos * precio,
+                    );
+                  }
+                }
+              });
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF00796B),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _mostrarDialogoGasto([GastoWebModelo? gasto]) {
+    final esNuevo = gasto == null;
+    final tipoCtrl = TextEditingController(text: gasto?.tipo ?? 'FLETE');
+    final conceptoCtrl = TextEditingController(text: gasto?.concepto ?? '');
+    final cantidadCtrl = TextEditingController(text: gasto?.cantidad.toString() ?? '1');
+    final precioCtrl = TextEditingController(text: gasto?.costoUnitario.toString() ?? '');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text(esNuevo ? 'Añadir Gasto' : 'Editar Gasto', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: tipoCtrl,
+                decoration: _decoracion('Tipo de Gasto (ej: FLETE, HIELO)'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: conceptoCtrl,
+                decoration: _decoracion('Concepto / Detalle'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: cantidadCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: _decoracion('Cantidad'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: precioCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: _decoracion('Costo Unitario'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar', style: TextStyle(color: Color(0xFF64748B))),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final cant = double.tryParse(cantidadCtrl.text) ?? 1.0;
+              final precio = double.tryParse(precioCtrl.text) ?? 0.0;
+              if (conceptoCtrl.text.trim().isEmpty) return;
+
+              setState(() {
+                if (esNuevo) {
+                  _gastos.add(GastoWebModelo(
+                    id: const Uuid().v4(),
+                    cuadreId: widget.id,
+                    tipo: tipoCtrl.text.trim().toUpperCase(),
+                    concepto: conceptoCtrl.text.trim().toUpperCase(),
+                    cantidad: cant,
+                    costoUnitario: precio,
+                    total: cant * precio,
+                  ));
+                } else {
+                  final index = _gastos.indexWhere((g) => g.id == gasto.id);
+                  if (index != -1) {
+                    _gastos[index] = GastoWebModelo(
+                      id: gasto.id,
+                      cuadreId: widget.id,
+                      tipo: tipoCtrl.text.trim().toUpperCase(),
+                      concepto: conceptoCtrl.text.trim().toUpperCase(),
+                      cantidad: cant,
+                      costoUnitario: precio,
+                      total: cant * precio,
+                    );
+                  }
+                }
+              });
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEA580C),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
     );
   }
 }
