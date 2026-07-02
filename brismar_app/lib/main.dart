@@ -76,6 +76,11 @@ class _MyAppState extends ConsumerState<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'BRISMAR APP',
       theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF00E5FF),
+          brightness: Brightness.dark,
+        ),
         scaffoldBackgroundColor: const Color(0xFF0D255F),
         primaryColor: const Color(0xFF0D255F),
       ),

@@ -47,8 +47,13 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
       final ctrlTransito = ref.read(proveedorTransito.notifier);
       final fuenteCuadres = ref.read(fuenteCuadresWebProvider);
 
-      final zarpe = await ctrlTransito.obtenerZarpePorId(widget.id);
-      final cuadre = await fuenteCuadres.obtenerPorId(widget.id);
+      final resultados = await Future.wait([
+        ctrlTransito.obtenerZarpePorId(widget.id),
+        fuenteCuadres.obtenerPorId(widget.id),
+      ]);
+
+      final zarpe = resultados[0] as Map<String, dynamic>?;
+      final cuadre = resultados[1] as CuadreWebModelo?;
 
       if (zarpe == null) throw Exception('No se encontró el zarpe con ID ${widget.id}');
       
@@ -76,38 +81,41 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
     setState(() => _cargando = true);
     try {
       final cliente = Supabase.instance.client;
-      
-      // 1. Actualizar Zarpe
-      await cliente.from('zarpes').update({
-        'placa_camara': _placaCtrl.text.trim(),
-        'chofer': _choferCtrl.text.trim(),
-        'muelle_partida': _muelleCtrl.text.trim(),
-      }).eq('id', widget.id);
-
       final double nuevoPesoTotal = _compras.fold(0.0, (s, c) => s + c.kilos);
 
-      // 2. Si existe Cuadre, actualizarlo; de lo contrario, crearlo si hay lanchas/gastos
-      if (_cuadreInfo != null) {
-        await cliente.from('cuadres').update({
-          'placa': _placaCtrl.text.trim(),
-          'peso_total': nuevoPesoTotal,
-        }).eq('id', widget.id);
-      } else if (_compras.isNotEmpty || _gastos.isNotEmpty) {
-        final userId = cliente.auth.currentUser?.id ?? 'desconocido';
-        await cliente.from('cuadres').insert({
-          'id': widget.id,
-          'usuario_id': userId,
-          'placa': _placaCtrl.text.trim(),
-          'peso_total': nuevoPesoTotal,
-          'estado': 'borrador',
-          'fecha_zarpe': _zarpeInfo?['fecha_zarpe'],
-        });
-      }
+      // Fase 1: Guardar Zarpe, Cuadre, y eliminar compras y gastos anteriores de forma paralela
+      await Future.wait([
+        cliente.from('zarpes').update({
+          'placa_camara': _placaCtrl.text.trim(),
+          'chofer': _choferCtrl.text.trim(),
+          'muelle_partida': _muelleCtrl.text.trim(),
+        }).eq('id', widget.id),
 
-      // 3. Sincronizar lanchas (compras)
-      await cliente.from('compras').delete().eq('cuadre_id', widget.id);
+        _cuadreInfo != null
+            ? cliente.from('cuadres').update({
+                'placa': _placaCtrl.text.trim(),
+                'peso_total': nuevoPesoTotal,
+              }).eq('id', widget.id)
+            : (_compras.isNotEmpty || _gastos.isNotEmpty)
+                ? cliente.from('cuadres').insert({
+                    'id': widget.id,
+                    'usuario_id': cliente.auth.currentUser?.id ?? 'desconocido',
+                    'placa': _placaCtrl.text.trim(),
+                    'peso_total': nuevoPesoTotal,
+                    'estado': 'borrador',
+                    'fecha_zarpe': _zarpeInfo?['fecha_zarpe'],
+                  })
+                : Future.value(null),
+
+        cliente.from('compras').delete().eq('cuadre_id', widget.id),
+        cliente.from('gastos').delete().eq('cuadre_id', widget.id),
+      ]);
+
+      // Fase 2: Insertar nuevos registros en lote de forma paralela
+      final inserciones = <Future>[];
+
       if (_compras.isNotEmpty) {
-        await cliente.from('compras').insert(_compras.map((c) => {
+        inserciones.add(cliente.from('compras').insert(_compras.map((c) => {
           'id': c.id,
           'cuadre_id': widget.id,
           'embarcacion': c.embarcacion,
@@ -115,13 +123,11 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
           'kilos': c.kilos,
           'precio_unitario': c.precioUnitario,
           'total': c.total,
-        }).toList());
+        }).toList()));
       }
 
-      // 4. Sincronizar gastos
-      await cliente.from('gastos').delete().eq('cuadre_id', widget.id);
       if (_gastos.isNotEmpty) {
-        await cliente.from('gastos').insert(_gastos.map((g) => {
+        inserciones.add(cliente.from('gastos').insert(_gastos.map((g) => {
           'id': g.id,
           'cuadre_id': widget.id,
           'tipo': g.tipo,
@@ -129,7 +135,11 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
           'cantidad': g.cantidad,
           'costo_unitario': g.costoUnitario,
           'total': g.total,
-        }).toList());
+        }).toList()));
+      }
+
+      if (inserciones.isNotEmpty) {
+        await Future.wait(inserciones);
       }
       
       if (mounted) {
@@ -180,18 +190,39 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
           ? const Center(child: CargaOrbital(tamano: 80))
           : Form(
               key: _formKey,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(32),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(flex: 1, child: _construirSeccionZarpe()),
-                    const SizedBox(width: 32),
-                    Expanded(flex: 1, child: _construirSeccionLanchas()),
-                    const SizedBox(width: 32),
-                    Expanded(flex: 1, child: _construirSeccionFlete()),
-                  ],
-                ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final esPantallaPequena = constraints.maxWidth <= 1100;
+                  if (esPantallaPequena) {
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _construirSeccionZarpe(),
+                          const SizedBox(height: 24),
+                          _construirSeccionLanchas(),
+                          const SizedBox(height: 24),
+                          _construirSeccionFlete(),
+                        ],
+                      ),
+                    );
+                  } else {
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(32),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(flex: 1, child: _construirSeccionZarpe()),
+                          const SizedBox(width: 32),
+                          Expanded(flex: 1, child: _construirSeccionLanchas()),
+                          const SizedBox(width: 32),
+                          Expanded(flex: 1, child: _construirSeccionFlete()),
+                        ],
+                      ),
+                    );
+                  }
+                },
               ),
             ),
     );

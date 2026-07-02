@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,6 +48,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
   final _formKey = GlobalKey<FormState>();
   late String _cuadreId;
   bool _guardando = false;
+  Map<String, dynamic>? _zarpeSeleccionado;
 
   // Controladores Generales
   final _placaCtrl = TextEditingController();
@@ -82,6 +84,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
       _muellePartidaCtrl.text = widget.cuadreInicial!.muellePartida ?? '';
       _compras.addAll(widget.cuadreInicial!.compras);
       _gastos.addAll(widget.cuadreInicial!.gastos);
+      _cargarZarpeAsociado(widget.cuadreInicial!.id);
 
       for (final g in widget.cuadreInicial!.gastos) {
         final valor = g.total > 0 ? _formatearNumero(g.total) : '';
@@ -389,6 +392,37 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 12),
+                              const Text('Ajuste rápido de Kilos Brutos:', style: TextStyle(color: Colors.white38, fontSize: 12)),
+                              const SizedBox(height: 6),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [100, 500, 1000, 5000].map((kg) {
+                                  return Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.white.withValues(alpha: 0.05),
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                            side: const BorderSide(color: Colors.white10),
+                                          ),
+                                        ),
+                                        onPressed: () {
+                                          final actual = double.tryParse(kilosBrutosCtrl.text.replaceAll(',', '')) ?? 0.0;
+                                          kilosBrutosCtrl.text = (actual + kg).toStringAsFixed(0);
+                                          calcularNeto();
+                                          setStateDialog(() {});
+                                        },
+                                        child: Text('+$kg kg', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
                               const SizedBox(height: 16),
                               TextFormField(
                                 controller: kilosNetosCtrl,
@@ -582,7 +616,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
         subtitle: Text(info, style: const TextStyle(color: Colors.white70, fontSize: 13)),
         isThreeLine: true,
         trailing: const Icon(Icons.chevron_right, color: Color(0xFF00E5FF)),
-        onTap: () => _onZarpeSelected(z['id'] ?? '', placa, z['fecha_zarpe'] ?? ''),
+        onTap: () => _onZarpeSelected(z),
       ),
     );
   }
@@ -594,11 +628,12 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
     );
   }
 
-  void _onZarpeSelected(String id, String placa, String fecha) {
+  void _onZarpeSelected(Map<String, dynamic> z) {
     setState(() {
-      _cuadreId = id;
-      _placaCtrl.text = placa;
-      _fechaZarpeCtrl.text = fecha;
+      _zarpeSeleccionado = z;
+      _cuadreId = z['id'] ?? '';
+      _placaCtrl.text = z['placa_camara'] ?? '';
+      _fechaZarpeCtrl.text = z['fecha_zarpe'] ?? '';
     });
     Navigator.pop(context);
   }
@@ -645,6 +680,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
                 ),
               ],
             ),
+            _buildFotosZarpeEvidencia(),
           ],
         ),
       ),
@@ -841,6 +877,111 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
           },
         ),
       ),
+    );
+  }
+
+  Future<void> _cargarZarpeAsociado(String id) async {
+    final db = await GestorBaseDatos.instance.database;
+    final zarpes = await db.query('zarpes', where: 'id = ?', whereArgs: [id]);
+    if (zarpes.isNotEmpty && mounted) {
+      setState(() {
+        _zarpeSeleccionado = zarpes.first;
+      });
+    }
+  }
+
+  void _verFotoGrande(String path, bool esUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: const EdgeInsets.all(10),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            InteractiveViewer(
+              child: esUrl ? Image.network(path) : Image.file(File(path)),
+            ),
+            Positioned(
+              top: 10,
+              right: 10,
+              child: CircleAvatar(
+                backgroundColor: Colors.black54,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFotosZarpeEvidencia() {
+    if (_zarpeSeleccionado == null) return const SizedBox.shrink();
+
+    final localPath = _zarpeSeleccionado!['foto_local_path'] as String?;
+    final urlEvidencia = _zarpeSeleccionado!['foto_url_evidencia'] as String?;
+
+    final List<String> fotos = [];
+    if (localPath != null && localPath.isNotEmpty) {
+      fotos.addAll(localPath.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty));
+    }
+    if (urlEvidencia != null && urlEvidencia.isNotEmpty) {
+      fotos.addAll(urlEvidencia.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty));
+    }
+
+    if (fotos.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        const Text(
+          'Fotos de Evidencia del Zarpe:',
+          style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 80,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: fotos.length,
+            itemBuilder: (context, index) {
+              final path = fotos[index];
+              final esUrl = path.startsWith('http');
+              return GestureDetector(
+                onTap: () => _verFotoGrande(path, esUrl),
+                child: Container(
+                  margin: const EdgeInsets.only(right: 12),
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: esUrl
+                        ? Image.network(
+                            path,
+                            fit: BoxFit.cover,
+                            errorBuilder: (c, e, s) => const Icon(Icons.broken_image, color: Colors.white24),
+                          )
+                        : Image.file(
+                            File(path),
+                            fit: BoxFit.cover,
+                            errorBuilder: (c, e, s) => const Icon(Icons.broken_image, color: Colors.white24),
+                          ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
