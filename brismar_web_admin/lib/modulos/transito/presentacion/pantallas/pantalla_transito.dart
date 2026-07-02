@@ -5,14 +5,17 @@ import 'package:intl/intl.dart';
 import '../controladores/controlador_transito.dart';
 import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 
+final proveedorFiltroTransito = StateProvider<String>((ref) => 'todos');
+
 // Esta pantalla ahora es FRONTEND PURO. Solo Dibuja. No sabe de Supabase.
 class PantallaTransito extends ConsumerWidget {
   const PantallaTransito({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Escucha el estado del controlador
+    // Escucha el estado del controlador y del filtro
     final estadoZarpes = ref.watch(proveedorTransito);
+    final filtro = ref.watch(proveedorFiltroTransito);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,25 +66,90 @@ class PantallaTransito extends ConsumerWidget {
             ],
           ),
         ),
+        
+        // Filter bar
+        Padding(
+          padding: const EdgeInsets.only(left: 32, right: 32, top: 24),
+          child: Row(
+            children: [
+              const Icon(Icons.filter_alt_outlined, color: Color(0xFF64748B), size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Filtrar por fecha:',
+                style: TextStyle(
+                  color: Color(0xFF475569),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 16),
+              _FiltroChip(
+                label: 'Todos',
+                activo: filtro == 'todos',
+                onTap: () => ref.read(proveedorFiltroTransito.notifier).state = 'todos',
+              ),
+              const SizedBox(width: 8),
+              _FiltroChip(
+                label: 'Esta Semana',
+                activo: filtro == 'semana',
+                onTap: () => ref.read(proveedorFiltroTransito.notifier).state = 'semana',
+              ),
+              const SizedBox(width: 8),
+              _FiltroChip(
+                label: 'Este Mes',
+                activo: filtro == 'mes',
+                onTap: () => ref.read(proveedorFiltroTransito.notifier).state = 'mes',
+              ),
+              const SizedBox(width: 8),
+              _FiltroChip(
+                label: 'Este Año',
+                activo: filtro == 'anio',
+                onTap: () => ref.read(proveedorFiltroTransito.notifier).state = 'anio',
+              ),
+            ],
+          ),
+        ),
+
         // Main list container
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.all(32.0),
+            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
             child: estadoZarpes.when(
               loading: () => const Center(child: CargaOrbital(tamano: 80)),
               error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.redAccent))),
               data: (zarpes) {
-                if (zarpes.isEmpty) {
+                // Filter the zarpes in-memory
+                final zarpesFiltrados = zarpes.where((z) {
+                  if (filtro == 'todos') return true;
+                  final fechaStr = z['fecha_zarpe'];
+                  if (fechaStr == null) return false;
+                  final fecha = DateTime.tryParse(fechaStr);
+                  if (fecha == null) return false;
+
+                  final ahora = DateTime.now();
+                  if (filtro == 'semana') {
+                    final haceUnaSemana = ahora.subtract(const Duration(days: 7));
+                    return fecha.isAfter(haceUnaSemana);
+                  } else if (filtro == 'mes') {
+                    final haceUnMes = ahora.subtract(const Duration(days: 30));
+                    return fecha.isAfter(haceUnMes);
+                  } else if (filtro == 'anio') {
+                    return fecha.year == ahora.year;
+                  }
+                  return true;
+                }).toList();
+
+                if (zarpesFiltrados.isEmpty) {
                   return const Center(
-                    child: Text('No hay tránsitos activos desde Piura.', style: TextStyle(color: Color(0xFF64748B))),
+                    child: Text('No hay tránsitos que coincidan con el filtro seleccionado.', style: TextStyle(color: Color(0xFF64748B), fontSize: 16)),
                   );
                 }
 
                 return ListView.separated(
-                  itemCount: zarpes.length,
+                  itemCount: zarpesFiltrados.length,
                   separatorBuilder: (ctx, i) => const SizedBox(height: 16),
                   itemBuilder: (ctx, i) {
-                    final z = zarpes[i];
+                    final z = zarpesFiltrados[i];
                     final fechaStr = z['fecha_zarpe'];
                     final fecha = fechaStr != null ? DateTime.tryParse(fechaStr) : null;
                     final fechaFormateada = fecha != null ? DateFormat('dd/MM/yyyy hh:mm a').format(fecha) : 'Fecha Desconocida';
@@ -273,6 +341,54 @@ class PantallaTransito extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _FiltroChip extends StatelessWidget {
+  final String label;
+  final bool activo;
+  final VoidCallback onTap;
+
+  const _FiltroChip({
+    required this.label,
+    required this.activo,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorPrimario = const Color(0xFF0D5C75);
+    
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: activo ? colorPrimario : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: activo ? colorPrimario : const Color(0xFFCBD5E1),
+            width: 1.5,
+          ),
+          boxShadow: activo ? [
+            BoxShadow(
+              color: colorPrimario.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            )
+          ] : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: activo ? Colors.white : const Color(0xFF475569),
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
+        ),
+      ),
     );
   }
 }
