@@ -342,58 +342,6 @@ class PantallaTransito extends ConsumerWidget {
             ),
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _FiltroChip extends StatelessWidget {
-  final String label;
-  final bool activo;
-  final VoidCallback onTap;
-
-  const _FiltroChip({
-    required this.label,
-    required this.activo,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorPrimario = const Color(0xFF0D5C75);
-    
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: activo ? colorPrimario : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: activo ? colorPrimario : const Color(0xFFCBD5E1),
-            width: 1.5,
-          ),
-          boxShadow: activo ? [
-            BoxShadow(
-              color: colorPrimario.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            )
-          ] : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: activo ? Colors.white : const Color(0xFF475569),
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-          ),
-        ),
-      ),
-    );
-  }
-
   void _mostrarDialogoRecepcion(BuildContext context, WidgetRef ref, String id, String embarcaciones, double pesoInicial) {
     String plantaSeleccionada = 'DEXIM';
     String especieSeleccionada = 'POTA';
@@ -592,6 +540,54 @@ class _FiltroChip extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.white12)),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.white38)),
+    );
+  }
+}
+
+class _FiltroChip extends StatelessWidget {
+  final String label;
+  final bool activo;
+  final VoidCallback onTap;
+
+  const _FiltroChip({
+    required this.label,
+    required this.activo,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorPrimario = const Color(0xFF0D5C75);
+    
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: activo ? colorPrimario : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: activo ? colorPrimario : const Color(0xFFCBD5E1),
+            width: 1.5,
+          ),
+          boxShadow: activo ? [
+            BoxShadow(
+              color: colorPrimario.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            )
+          ] : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: activo ? Colors.white : const Color(0xFF475569),
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
+        ),
+      ),
     );
   }
 }
