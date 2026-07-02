@@ -309,32 +309,23 @@ class PantallaTransito extends ConsumerWidget {
                                       if (!estaRecibido) ...[
                                         const SizedBox(height: 8),
                                         ElevatedButton.icon(
-                                          onPressed: () async {
-                                            try {
-                                              await ref.read(proveedorTransito.notifier).marcarComoRecibido(z['id']);
-                                              if (context.mounted) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  const SnackBar(content: Text('Cámara recibida con éxito.'), backgroundColor: Colors.green),
-                                                );
-                                              }
-                                            } catch(e) {
-                                              if (context.mounted) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-                                                );
-                                              }
-                                            }
-                                          },
-                                          icon: const Icon(Icons.check_rounded, size: 16),
-                                          label: const Text('Marcar recibido'),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFF0D5C75), // Dark teal green/blue matching mockup
-                                            foregroundColor: Colors.white,
-                                            elevation: 0,
-                                            padding: const EdgeInsets.symmetric(vertical: 10),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                          ),
-                                        ),
+                                           onPressed: () => _mostrarDialogoRecepcion(
+                                             context,
+                                             ref,
+                                             z['id'],
+                                             (z['embarcaciones_asociadas'] ?? '').toString(),
+                                             (z['peso_total'] as num?)?.toDouble() ?? 0.0,
+                                           ),
+                                           icon: const Icon(Icons.check_rounded, size: 16),
+                                           label: const Text('Marcar recibido'),
+                                           style: ElevatedButton.styleFrom(
+                                             backgroundColor: const Color(0xFF0D5C75), // Dark teal green/blue matching mockup
+                                             foregroundColor: Colors.white,
+                                             elevation: 0,
+                                             padding: const EdgeInsets.symmetric(vertical: 10),
+                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                           ),
+                                         ),
                                       ]
                                     ],
                                   ),
@@ -400,6 +391,207 @@ class _FiltroChip extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _mostrarDialogoRecepcion(BuildContext context, WidgetRef ref, String id, String embarcaciones, double pesoInicial) {
+    String plantaSeleccionada = 'DEXIM';
+    String especieSeleccionada = 'POTA';
+    final kilosCtrl = TextEditingController(text: pesoInicial > 0 ? pesoInicial.toString() : '');
+    final precioCtrl = TextEditingController();
+    final otraPlantaCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setStateDialog) => AlertDialog(
+          backgroundColor: const Color(0xFF1E201E),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          title: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Registrar Recepción en Planta',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 22),
+              ),
+              SizedBox(height: 4),
+              Text(
+                'Completa los datos de venta finales de esta cámara.',
+                style: TextStyle(color: Color(0xFF9E9E9E), fontSize: 13),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _construirEtiquetaDialogo('Planta de Destino (Procesadora)'),
+                DropdownButtonFormField<String>(
+                  value: plantaSeleccionada,
+                  dropdownColor: const Color(0xFF1E201E),
+                  iconEnabledColor: Colors.white70,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: _decoracionDialogo('Selecciona planta'),
+                  items: ['DEXIM', 'SEAFROST', 'ALTAMAR', 'PERUPEZ', 'TRANSMARINA', 'OTROS'].map((String value) => DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                      )).toList(),
+                  selectedItemBuilder: (BuildContext context) {
+                    return ['DEXIM', 'SEAFROST', 'ALTAMAR', 'PERUPEZ', 'TRANSMARINA', 'OTROS'].map<Widget>((String value) {
+                      return Text(value, style: const TextStyle(color: Colors.white, fontSize: 14));
+                    }).toList();
+                  },
+                  onChanged: (val) {
+                    if (val != null) setStateDialog(() => plantaSeleccionada = val);
+                  },
+                ),
+                if (plantaSeleccionada == 'OTROS') ...[
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: otraPlantaCtrl,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    decoration: _decoracionDialogo('Nombre de la planta procesadora'),
+                  ),
+                ],
+                _construirEtiquetaDialogo('Especie comercializada'),
+                DropdownButtonFormField<String>(
+                  value: especieSeleccionada,
+                  dropdownColor: const Color(0xFF1E201E),
+                  iconEnabledColor: Colors.white70,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: _decoracionDialogo('Selecciona especie'),
+                  items: ["POTA", "JUREL", "BONITO", "CABALLA", "PERICO"].map((String value) => DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                      )).toList(),
+                  selectedItemBuilder: (BuildContext context) {
+                    return ["POTA", "JUREL", "BONITO", "CABALLA", "PERICO"].map<Widget>((String value) {
+                      return Text(value, style: const TextStyle(color: Colors.white, fontSize: 14));
+                    }).toList();
+                  },
+                  onChanged: (val) {
+                    if (val != null) setStateDialog(() => especieSeleccionada = val);
+                  },
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _construirEtiquetaDialogo('Kilos Finales'),
+                          TextField(
+                            controller: kilosCtrl,
+                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            decoration: _decoracionDialogo('0'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _construirEtiquetaDialogo('Precio Venta (x Kg)'),
+                          TextField(
+                            controller: precioCtrl,
+                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            decoration: _decoracionDialogo('S/ 0.00'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.white38),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  ),
+                  child: const Text('Cancelar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    final kilos = double.tryParse(kilosCtrl.text) ?? 0.0;
+                    final precio = double.tryParse(precioCtrl.text) ?? 0.0;
+                    final planta = plantaSeleccionada == 'OTROS' ? otraPlantaCtrl.text.trim().toUpperCase() : plantaSeleccionada;
+                    if (planta.isEmpty || kilos <= 0 || precio <= 0) return;
+
+                    Navigator.pop(ctx);
+
+                    try {
+                      await ref.read(proveedorTransito.notifier).registrarRecepcionEnPlanta(
+                        id: id,
+                        planta: planta,
+                        especie: especieSeleccionada,
+                        kilos: kilos,
+                        precio: precio,
+                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Recepción registrada con éxito en planta $planta.'), backgroundColor: Colors.green),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.check, size: 18, color: Colors.white),
+                  label: const Text('Confirmar Recepción', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00C853),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _construirEtiquetaDialogo(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6, top: 12),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
+      ),
+    );
+  }
+
+  InputDecoration _decoracionDialogo(String hintText) {
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: const TextStyle(color: Colors.white30, fontSize: 14),
+      filled: true,
+      fillColor: const Color(0xFF2D302D),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.white12)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.white38)),
     );
   }
 }
