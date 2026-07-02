@@ -165,7 +165,7 @@ class PantallaTransito extends ConsumerWidget {
                     final fecha = fechaStr != null ? DateTime.tryParse(fechaStr) : null;
                     final fechaFormateada = fecha != null ? DateFormat('dd/MM/yyyy hh:mm a').format(fecha) : 'Fecha Desconocida';
                     final urlFoto = z['foto_url_evidencia'] ?? '';
-                    final estaRecibido = z['estado'] == 'RECIBIDO_LAMBAYEQUE';
+                    final estaRecibido = z['estado_transito'] == 'RECIBIDO_LAMBAYEQUE';
 
                     return Container(
                       decoration: BoxDecoration(
