@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -700,7 +701,9 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                 TextField(
                   controller: embarcacionCtrl,
                   style: const TextStyle(color: Colors.white, fontSize: 14),
-                  decoration: _decoracionDialogo('Ej. Don Lucho II'),
+                  textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [UpperCaseTextFormatter()],
+                  decoration: _decoracionDialogo('Ej. DON LUCHO II'),
                 ),
                 _construirEtiquetaDialogo('Especie'),
                 DropdownButtonFormField<String>(
@@ -735,6 +738,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                             controller: kilosCtrl,
                             style: const TextStyle(color: Colors.white, fontSize: 14),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
                             decoration: _decoracionDialogo('0'),
                           ),
                         ],
@@ -750,6 +754,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                             controller: precioCtrl,
                             style: const TextStyle(color: Colors.white, fontSize: 14),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
                             decoration: _decoracionDialogo('S/ 0.00'),
                           ),
                         ],
@@ -762,6 +767,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                   controller: adelantoCtrl,
                   style: const TextStyle(color: Colors.white, fontSize: 14),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
                   decoration: _decoracionDialogo('S/ 0.00'),
                 ),
               ],
@@ -922,6 +928,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                             controller: cantidadCtrl,
                             style: const TextStyle(color: Colors.white, fontSize: 14),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
                             decoration: _decoracionDialogo('1'),
                           ),
                         ],
@@ -937,6 +944,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                             controller: precioCtrl,
                             style: const TextStyle(color: Colors.white, fontSize: 14),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
                             decoration: _decoracionDialogo('S/ 0.00'),
                           ),
                         ],
@@ -1008,5 +1016,12 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         ),
       ),
     );
+  }
+}
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    return newValue.copyWith(text: newValue.text.toUpperCase());
   }
 }
