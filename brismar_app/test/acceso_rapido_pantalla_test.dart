@@ -6,6 +6,7 @@ import 'package:brismar_mobile/modulos/autenticacion/presentacion/controladores/
 import 'package:brismar_mobile/modulos/autenticacion/dominio/entidades/preferencia_acceso.dart';
 import 'package:brismar_mobile/modulos/autenticacion/dominio/repositorios/repositorio_autenticacion.dart';
 import 'package:brismar_mobile/modulos/autenticacion/dominio/entidades/usuario.dart';
+import 'package:brismar_mobile/nucleo/componentes/carga_orbital.dart';
 
 // Fake Repositorio
 class FakeRepositorio extends RepositorioAutenticacion {
@@ -69,8 +70,8 @@ void main() {
     // Pump animation ticks
     await tester.pump(const Duration(milliseconds: 200));
 
-    // En estado de carga, el ícono sigue ahí, PERO AHORA TAMBIÉN debe haber un CircularProgressIndicator 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    // En estado de carga, el ícono sigue ahí, PERO AHORA TAMBIÉN debe haber un CargaOrbital 
+    expect(find.byType(CargaOrbital), findsOneWidget);
     expect(find.byIcon(Icons.fingerprint), findsNothing);
     
     // Verificamos que no hubo ninguna excepción de Flutter (como overflow o errores de layout)
