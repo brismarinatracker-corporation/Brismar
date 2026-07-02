@@ -101,6 +101,25 @@ class ControladorAutenticacion extends Notifier<EstadoAutenticacion> {
     await Supabase.instance.client.auth.signOut();
     state = EstadoAutenticacion(usuario: null, rol: null, cargando: false, error: mensaje);
   }
+
+  Future<void> actualizarPerfil({String? nombreReal, String? fotoPerfil}) async {
+    final user = state.usuario;
+    if (user == null) return;
+    
+    final Map<String, dynamic> updates = {};
+    if (nombreReal != null) updates['nombre_real'] = nombreReal;
+    if (fotoPerfil != null) updates['foto_perfil'] = fotoPerfil;
+    
+    if (updates.isEmpty) return;
+    
+    await Supabase.instance.client
+        .from('usuarios')
+        .update(updates)
+        .eq('id', user.id);
+        
+    // Recargar perfil
+    await _cargarPerfil(user);
+  }
 }
 
 final proveedorAutenticacion = NotifierProvider<ControladorAutenticacion, EstadoAutenticacion>(() {

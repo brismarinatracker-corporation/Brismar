@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 import 'nucleo/red/constantes_supabase.dart';
 import 'nucleo/enrutador/enrutador.dart';
 
@@ -76,6 +78,15 @@ class BrismarWebAdminApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Brismar Web Admin',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('es', 'ES'),
+        Locale('es'),
+      ],
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(

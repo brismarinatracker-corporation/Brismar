@@ -120,6 +120,7 @@ class CompraWebModelo {
   final double kilos;
   final double precioUnitario;
   final double total;
+  final double? adelanto;
 
   const CompraWebModelo({
     required this.id,
@@ -129,6 +130,7 @@ class CompraWebModelo {
     required this.kilos,
     required this.precioUnitario,
     required this.total,
+    this.adelanto,
   });
 
   /// Construye desde un [Map] de Supabase.
@@ -141,6 +143,7 @@ class CompraWebModelo {
       kilos: (json['kilos'] as num?)?.toDouble() ?? 0,
       precioUnitario: (json['precio_unitario'] as num?)?.toDouble() ?? 0,
       total: (json['total'] as num?)?.toDouble() ?? 0,
+      adelanto: (json['adelanto'] as num?)?.toDouble(),
     );
   }
 }

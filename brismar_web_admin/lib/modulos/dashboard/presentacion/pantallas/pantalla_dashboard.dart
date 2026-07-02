@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'dart:ui';
-
 import '../controladores/controlador_dashboard.dart';
 import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 
@@ -14,81 +12,80 @@ class PantallaDashboard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(controladorDashboardProvider);
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: RadialGradient(
-          center: Alignment.topRight,
-          radius: 1.5,
-          colors: [
-            Color(0xFF0F224A),
-            Color(0xFF070E22),
-          ],
-        ),
-      ),
-      child: estado.cargando
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: estado.cargando
           ? const Center(
               child: CargaOrbital(tamano: 80),
             )
-          : CustomScrollView(
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.all(40),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _encabezado(ref, estado),
-                      const SizedBox(height: 40),
-                      if (estado.error != null) _bannerError(estado.error!),
-                      _gridKpis(context, estado),
-                      const SizedBox(height: 40),
-                      _seccionRentabilidadGlobal(),
-                    ]),
+          : Column(
+              children: [
+                // Banner superior de diseño azul marino
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF0F2D4A), // Color azul marino premium para cabeceras
+                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Dashboard General',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Resumen operativo — ${DateFormat('MMMM yyyy', 'es').format(DateTime.now()).toUpperCase()}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () => ref.read(controladorDashboardProvider.notifier).cargarKpis(),
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: const Text('Actualizar'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white30),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Main grid and content
+                Expanded(
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.all(40),
+                        sliver: SliverList(
+                          delegate: SliverChildListDelegate([
+                            if (estado.error != null) _bannerError(estado.error!),
+                            _gridKpis(context, estado),
+                            const SizedBox(height: 40),
+                            _seccionRentabilidadGlobal(),
+                          ]),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-    );
-  }
-
-  Widget _encabezado(WidgetRef ref, EstadoDashboard estado) {
-    final mesActual = DateFormat('MMMM yyyy', 'es').format(DateTime.now());
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text(
-            'Dashboard General',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Resumen operativo — ${mesActual.toUpperCase()}',
-            style: const TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.2,
-            ),
-          ),
-        ]),
-        Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3)),
-          ),
-          child: IconButton(
-            onPressed: () => ref.read(controladorDashboardProvider.notifier).cargarKpis(),
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF00E5FF)),
-            tooltip: 'Actualizar KPIs',
-            padding: const EdgeInsets.all(12),
-          ),
-        ),
-      ],
     );
   }
 
@@ -114,58 +111,65 @@ class PantallaDashboard extends ConsumerWidget {
   Widget _gridKpis(BuildContext context, EstadoDashboard estado) {
     final fmt = NumberFormat('#,##0.0', 'es_PE');
     final kpis = estado.kpis;
-    final width = MediaQuery.of(context).size.width;
-    
-    int columnas = 4;
-    if (width < 1400) columnas = 3;
-    if (width < 1000) columnas = 2;
-    if (width < 600) columnas = 1;
 
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: columnas,
-      crossAxisSpacing: 24,
-      mainAxisSpacing: 24,
-      childAspectRatio: 2.2,
-      children: [
-        _TarjetaKpiPremium(
-          icono: Icons.local_shipping_rounded,
-          titulo: 'Zarpes del Mes',
-          valor: kpis.totalZarpesMes.toString(),
-          colorIcono: const Color(0xFF3B82F6),
-          subtitulo: 'Cámaras despachadas',
-        ),
-        _TarjetaKpiPremium(
-          icono: Icons.scale_rounded,
-          titulo: 'Volumen Total',
-          valor: '${fmt.format(kpis.totalKilosMes)} kg',
-          colorIcono: const Color(0xFF00E5FF),
-          subtitulo: 'Peso registrado',
-        ),
-        _TarjetaKpiPremium(
-          icono: Icons.hourglass_top_rounded,
-          titulo: 'En Tránsito',
-          valor: kpis.zarpesPendientes.toString(),
-          colorIcono: const Color(0xFFF59E0B),
-          subtitulo: 'Pendientes de recibir',
-        ),
-        _TarjetaKpiPremium(
-          icono: Icons.check_circle_rounded,
-          titulo: 'Recibidos',
-          valor: kpis.zarpesRecibidos.toString(),
-          colorIcono: const Color(0xFF10B981),
-          subtitulo: 'Confirmados en Lambayeque',
-        ),
-        if (columnas > 2)
-          _TarjetaKpiPremium(
-            icono: Icons.people_alt_rounded,
-            titulo: 'Cuentas Activas',
-            valor: kpis.usuariosActivos.toString(),
-            colorIcono: const Color(0xFF8B5CF6),
-            subtitulo: 'Bahías y Operadores',
-          ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+        int columnas = 4;
+        if (availableWidth < 1200) columnas = 3;
+        if (availableWidth < 800) columnas = 2;
+        if (availableWidth < 500) columnas = 1;
+
+        // Calcula el aspect ratio dinámicamente para fijar la altura de las tarjetas a 165px
+        double anchoTarjeta = (availableWidth - (columnas - 1) * 24) / columnas;
+        double childAspectRatio = anchoTarjeta / 165;
+
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: columnas,
+          crossAxisSpacing: 24,
+          mainAxisSpacing: 24,
+          childAspectRatio: childAspectRatio,
+          children: [
+            _TarjetaKpiPremium(
+              icono: Icons.local_shipping_outlined,
+              titulo: 'Zarpes del mes',
+              valor: kpis.totalZarpesMes.toString(),
+              colorIcono: const Color(0xFF00796B),
+              subtitulo: '',
+            ),
+            _TarjetaKpiPremium(
+              icono: Icons.balance_outlined,
+              titulo: 'Volumen total',
+              valor: '${fmt.format(kpis.totalKilosMes)} kg',
+              colorIcono: const Color(0xFF2E7D32),
+              subtitulo: '',
+            ),
+            _TarjetaKpiPremium(
+              icono: Icons.access_time_rounded,
+              titulo: 'En tránsito',
+              valor: kpis.zarpesPendientes.toString(),
+              colorIcono: const Color(0xFFB45309),
+              subtitulo: '',
+            ),
+            _TarjetaKpiPremium(
+              icono: Icons.check_circle_outline_rounded,
+              titulo: 'Recibidos',
+              valor: kpis.zarpesRecibidos.toString(),
+              colorIcono: const Color(0xFF16A34A),
+              subtitulo: '',
+            ),
+            _TarjetaKpiPremium(
+              icono: Icons.person_outline_rounded,
+              titulo: 'Cuentas activas',
+              valor: kpis.usuariosActivos.toString(),
+              colorIcono: const Color(0xFF475569),
+              subtitulo: '',
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -174,14 +178,14 @@ class PantallaDashboard extends ConsumerWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withValues(alpha: 0.4),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF334155).withValues(alpha: 0.5)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -191,7 +195,7 @@ class PantallaDashboard extends ConsumerWidget {
           const Text(
             'Métricas Financieras (Próximamente)',
             style: TextStyle(
-              color: Colors.white,
+              color: Color(0xFF0F172A),
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -199,19 +203,19 @@ class PantallaDashboard extends ConsumerWidget {
           const SizedBox(height: 8),
           const Text(
             'Aquí se integrarán las gráficas de rentabilidad y flujos de caja a nivel nacional.',
-            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+            style: TextStyle(color: Color(0xFF475569), fontSize: 14),
           ),
           const SizedBox(height: 32),
           Container(
             height: 200,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: const Color(0xFF0F172A).withValues(alpha: 0.5),
+              color: const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF1E293B)),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: const Center(
-              child: Icon(Icons.bar_chart_rounded, size: 64, color: Color(0xFF334155)),
+              child: Icon(Icons.bar_chart_rounded, size: 64, color: Color(0xFFCBD5E1)),
             ),
           ),
         ],
@@ -220,7 +224,7 @@ class PantallaDashboard extends ConsumerWidget {
   }
 }
 
-// ─── Tarjeta KPI Premium ──────────────────────────────────────────────────────────────
+// ─── Tarjeta KPI Premium ─────────────────────────────────────────────────────────────
 
 class _TarjetaKpiPremium extends StatelessWidget {
   const _TarjetaKpiPremium({
@@ -239,94 +243,57 @@ class _TarjetaKpiPremium extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFF334155).withValues(alpha: 0.5)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              )
-            ],
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.015),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: colorIcono.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icono, color: colorIcono, size: 20),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      colorIcono.withValues(alpha: 0.2),
-                      colorIcono.withValues(alpha: 0.05),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: colorIcono.withValues(alpha: 0.3)),
-                ),
-                child: Icon(icono, color: colorIcono, size: 24),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      titulo,
-                      style: const TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Flexible(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          valor,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitulo,
-                      style: TextStyle(
-                        color: colorIcono.withValues(alpha: 0.8),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          const Spacer(),
+          Text(
+            titulo,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              valor,
+              style: const TextStyle(
+                color: Color(0xFF1E293B),
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

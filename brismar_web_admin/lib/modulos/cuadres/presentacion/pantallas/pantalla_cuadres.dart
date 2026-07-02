@@ -13,7 +13,6 @@ import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 class PantallaCuadres extends ConsumerWidget {
   const PantallaCuadres({super.key});
 
-  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(controladorCuadresWebProvider);
     final fmt = NumberFormat('#,##0.00', 'es_PE');
@@ -24,50 +23,72 @@ class PantallaCuadres extends ConsumerWidget {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _Encabezado(estado: estado),
-          const SizedBox(height: 16),
-          _BarraFiltros(estado: estado),
-          const SizedBox(height: 16),
-          Expanded(child: _CuerpoConDetalle(estado: estado, fmt: fmt)),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Encabezado ───────────────────────────────────────────────────────────────
-
-class _Encabezado extends ConsumerWidget {
-  const _Encabezado({required this.estado});
-  final EstadoCuadresWeb estado;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Cuadres de Pesca',
-              style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
-          Text('${estado.cuadres.length} cuadres cargados',
-              style: const TextStyle(color: Colors.white54, fontSize: 14)),
-        ]),
-        ElevatedButton.icon(
-          onPressed: estado.cargando
-              ? null
-              : () => ref.read(controladorCuadresWebProvider.notifier).cargarCuadres(),
-          icon: estado.cargando
-              ? const CargaOrbital(tamano: 16)
-              : const Icon(Icons.refresh_rounded),
-          label: const Text('Actualizar'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF00E5FF),
-            foregroundColor: const Color(0xFF070E22),
+        // Dark Blue Header Banner
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          decoration: const BoxDecoration(
+            color: Color(0xFF0F2D4A), // Deep navy blue
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Cuadres de Pesca',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${estado.cuadres.length} cuadres cargados',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+              OutlinedButton.icon(
+                onPressed: estado.cargando
+                    ? null
+                    : () => ref.read(controladorCuadresWebProvider.notifier).cargarCuadres(),
+                icon: estado.cargando
+                    ? const CargaOrbital(tamano: 16)
+                    : const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Actualizar'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  disabledForegroundColor: Colors.white30,
+                  side: const BorderSide(color: Colors.white30),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Rest of the screen
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _BarraFiltros(estado: estado),
+                const SizedBox(height: 16),
+                Expanded(child: _CuerpoConDetalle(estado: estado, fmt: fmt)),
+              ],
+            ),
           ),
         ),
       ],
@@ -128,7 +149,6 @@ class _BotoFiltroFecha extends StatelessWidget {
   final ValueChanged<DateTime> onSeleccionar;
   final VoidCallback onLimpiar;
 
-  @override
   Widget build(BuildContext context) {
     final texto = fecha != null ? DateFormat('dd/MM/yyyy').format(fecha!) : label;
     return OutlinedButton.icon(
@@ -138,17 +158,21 @@ class _BotoFiltroFecha extends StatelessWidget {
           initialDate: fecha ?? DateTime.now(),
           firstDate: DateTime(2024),
           lastDate: DateTime.now().add(const Duration(days: 1)),
-          builder: (ctx, child) => Theme(data: ThemeData.dark(), child: child!),
+          locale: const Locale('es', 'ES'),
+          builder: (ctx, child) => Theme(data: ThemeData.light(), child: child!),
         );
         if (seleccionada != null) onSeleccionar(seleccionada);
       },
       icon: Icon(
         fecha != null ? Icons.event_available : Icons.calendar_today,
         size: 16,
-        color: fecha != null ? const Color(0xFF00E5FF) : Colors.white54,
+        color: fecha != null ? const Color(0xFF00838F) : const Color(0xFF64748B),
       ),
-      label: Text(texto, style: TextStyle(color: fecha != null ? const Color(0xFF00E5FF) : Colors.white54)),
-      style: OutlinedButton.styleFrom(side: BorderSide(color: fecha != null ? const Color(0xFF00E5FF) : Colors.white24)),
+      label: Text(texto, style: TextStyle(color: fecha != null ? const Color(0xFF00838F) : const Color(0xFF475569))),
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: fecha != null ? const Color(0xFF00838F) : const Color(0xFFE2E8F0)),
+        foregroundColor: fecha != null ? const Color(0xFF00838F) : const Color(0xFF475569),
+      ),
     );
   }
 }
@@ -171,9 +195,9 @@ class _CuerpoConDetalle extends StatelessWidget {
     if (estado.cuadres.isEmpty) {
       return const Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.inbox_rounded, size: 80, color: Colors.white12),
+          Icon(Icons.inbox_rounded, size: 80, color: Color(0xFFCBD5E1)),
           SizedBox(height: 16),
-          Text('No hay cuadres registrados.', style: TextStyle(color: Colors.white54, fontSize: 16)),
+          Text('No hay cuadres registrados.', style: TextStyle(color: Color(0xFF64748B), fontSize: 16)),
         ]),
       );
     }
@@ -204,14 +228,24 @@ class _TablaCuadres extends ConsumerWidget {
     final ctrl = ref.read(controladorCuadresWebProvider.notifier);
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0F224A).withValues(alpha: 0.5),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: SingleChildScrollView(
           child: Table(
+            border: const TableBorder(
+              horizontalInside: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+            ),
             columnWidths: const {
               0: FlexColumnWidth(2),
               1: FlexColumnWidth(2),
@@ -232,10 +266,10 @@ class _TablaCuadres extends ConsumerWidget {
 
   TableRow _filaTitulo(List<String> titulos) {
     return TableRow(
-      decoration: const BoxDecoration(color: Color(0xFF0D255F)),
+      decoration: const BoxDecoration(color: Color(0xFFF1F5F9)),
       children: titulos.map((t) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Text(t, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
+        child: Text(t, style: const TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold)),
       )).toList(),
     );
   }
@@ -245,7 +279,7 @@ class _TablaCuadres extends ConsumerWidget {
     final color = _colorEstado(c.estado);
     return TableRow(
       decoration: BoxDecoration(
-        color: esSeleccionado ? const Color(0xFF00E5FF).withValues(alpha: 0.08) : Colors.transparent,
+        color: esSeleccionado ? const Color(0xFF00838F).withOpacity(0.06) : Colors.transparent,
       ),
       children: [
         _celda(c.placa, bold: true),
@@ -253,7 +287,7 @@ class _TablaCuadres extends ConsumerWidget {
         _celdaEstado(c.estado, color),
         _celda('S/ ${fmt.format(c.totalVentas)}'),
         _celda('S/ ${fmt.format(c.utilidadNeta)}',
-            color: c.utilidadNeta >= 0 ? Colors.greenAccent : Colors.redAccent),
+            color: c.utilidadNeta >= 0 ? const Color(0xFF2E7D32) : const Color(0xFFC62828)),
         _celdaAccion(c, ctrl),
       ],
     );
@@ -264,7 +298,7 @@ class _TablaCuadres extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Text(texto,
           style: TextStyle(
-            color: color ?? Colors.white70,
+            color: color ?? (bold ? const Color(0xFF0F172A) : const Color(0xFF475569)),
             fontSize: 13,
             fontWeight: bold ? FontWeight.bold : FontWeight.normal,
           )),
@@ -276,7 +310,7 @@ class _TablaCuadres extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
         child: Text(estado.toUpperCase(), style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
       ),
     );
@@ -288,7 +322,7 @@ class _TablaCuadres extends ConsumerWidget {
       child: Consumer(builder: (ctx, ref, _) => IconButton(
         icon: Icon(
           c.id == seleccionadoId ? Icons.close_rounded : Icons.chevron_right_rounded,
-          color: const Color(0xFF00E5FF),
+          color: const Color(0xFF00838F),
         ),
         onPressed: () => ctrl.seleccionarCuadre(c.id),
         tooltip: c.id == seleccionadoId ? 'Cerrar detalle' : 'Ver detalle',
@@ -298,8 +332,8 @@ class _TablaCuadres extends ConsumerWidget {
 
   Color _colorEstado(String estado) {
     switch (estado.toLowerCase()) {
-      case 'completo': return Colors.greenAccent;
-      case 'borrador': return Colors.orangeAccent;
+      case 'completo': return const Color(0xFF2E7D32);
+      case 'borrador': return const Color(0xFFE65100);
       default: return Colors.blueAccent;
     }
   }
@@ -320,9 +354,16 @@ class _PanelDetalle extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F224A).withValues(alpha: 0.5),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: SingleChildScrollView(
         child: Column(
@@ -332,17 +373,38 @@ class _PanelDetalle extends ConsumerWidget {
             const SizedBox(height: 20),
             _seccionResumen(),
             const SizedBox(height: 16),
-            _seccionRelacion('🐟 Compras', cuadre.compras.map((c) =>
-              '${c.embarcacion} — ${c.producto}: ${c.kilos}kg @ S/${fmt.format(c.precioUnitario)} = S/${fmt.format(c.total)}'
-            ).toList(), cuadre.totalCompras, fmt),
+            _seccionRelacion(
+              icono: Icons.sailing_outlined,
+              colorIcono: const Color(0xFF00796B),
+              titulo: 'Compras (Embarcaciones)',
+              items: cuadre.compras.map((c) =>
+                '${c.embarcacion} — ${c.producto}: ${c.kilos}kg @ S/${fmt.format(c.precioUnitario)} = S/${fmt.format(c.total)}'
+              ).toList(),
+              total: cuadre.totalCompras,
+              fmt: fmt,
+            ),
             const SizedBox(height: 12),
-            _seccionRelacion('💸 Gastos', cuadre.gastos.map((g) =>
-              '${g.tipo} — ${g.concepto}: ${g.cantidad} @ S/${fmt.format(g.costoUnitario)} = S/${fmt.format(g.total)}'
-            ).toList(), cuadre.totalGastos, fmt),
+            _seccionRelacion(
+              icono: Icons.trending_down_rounded,
+              colorIcono: const Color(0xFFEA580C),
+              titulo: 'Gastos',
+              items: cuadre.gastos.map((g) =>
+                '${g.tipo} — ${g.concepto}: ${g.cantidad} @ S/${fmt.format(g.costoUnitario)} = S/${fmt.format(g.total)}'
+              ).toList(),
+              total: cuadre.totalGastos,
+              fmt: fmt,
+            ),
             const SizedBox(height: 12),
-            _seccionRelacion('💰 Ventas', cuadre.ventas.map((v) =>
-              '${v.lugar} — ${v.producto}: ${v.kilos}kg @ S/${fmt.format(v.precioUnitario)} = S/${fmt.format(v.total)}'
-            ).toList(), cuadre.totalVentas, fmt),
+            _seccionRelacion(
+              icono: Icons.trending_up_rounded,
+              colorIcono: const Color(0xFF16A34A),
+              titulo: 'Ventas (Planta)',
+              items: cuadre.ventas.map((v) =>
+                '${v.lugar} — ${v.producto}: ${v.kilos}kg @ S/${fmt.format(v.precioUnitario)} = S/${fmt.format(v.total)}'
+              ).toList(),
+              total: cuadre.totalVentas,
+              fmt: fmt,
+            ),
             const SizedBox(height: 16),
             _utilidadNeta(),
           ],
@@ -357,20 +419,20 @@ class _PanelDetalle extends ConsumerWidget {
       children: [
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('Placa: ${cuadre.placa}',
-              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              style: const TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold)),
           Text(cuadre.estado.toUpperCase(),
-              style: const TextStyle(color: Color(0xFF00E5FF), fontSize: 12)),
+              style: const TextStyle(color: Color(0xFF00838F), fontSize: 12, fontWeight: FontWeight.bold)),
         ]),
         Row(children: [
           IconButton(
             icon: estado.exportando
                 ? const CargaOrbital(tamano: 20)
-                : const Icon(Icons.download_rounded, color: Color(0xFF00E5FF)),
+                : const Icon(Icons.download_rounded, color: Color(0xFF00838F)),
             tooltip: 'Exportar a Excel',
             onPressed: estado.exportando ? null : () => ctrl.exportarCuadreAExcel(cuadre),
           ),
           IconButton(
-            icon: const Icon(Icons.close, color: Colors.white54),
+            icon: const Icon(Icons.close, color: Color(0xFF64748B)),
             onPressed: () => ctrl.seleccionarCuadre(null),
           ),
         ]),
@@ -380,8 +442,8 @@ class _PanelDetalle extends ConsumerWidget {
 
   Widget _seccionResumen() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Text('Resumen', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
-      const Divider(color: Colors.white12),
+      const Text('Resumen', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
+      const Divider(color: Color(0xFFE2E8F0)),
       _itemInfo('Fecha Zarpe', cuadre.fechaZarpe ?? '-'),
       _itemInfo('Planta Destino', cuadre.plantaDestino ?? '-'),
       _itemInfo('Peso Total', cuadre.pesoTotal != null ? '${cuadre.pesoTotal} kg' : '-'),
@@ -396,42 +458,55 @@ class _PanelDetalle extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 12)),
-          Text(valor, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(label, style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+          Text(valor, style: const TextStyle(color: Color(0xFF0F172A), fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
   }
 
-  Widget _seccionRelacion(String titulo, List<String> items, double total, NumberFormat fmt) {
+  Widget _seccionRelacion({
+    required IconData icono,
+    required Color colorIcono,
+    required String titulo,
+    required List<String> items,
+    required double total,
+    required NumberFormat fmt,
+  }) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(titulo, style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 13)),
-      const Divider(color: Colors.white12),
+      Row(
+        children: [
+          Icon(icono, color: colorIcono, size: 16),
+          const SizedBox(width: 6),
+          Text(titulo, style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 13)),
+        ],
+      ),
+      const Divider(color: Color(0xFFE2E8F0)),
       if (items.isEmpty)
-        const Text('Sin registros', style: TextStyle(color: Colors.white38, fontSize: 12))
+        const Text('Sin registros', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12))
       else
         ...items.map((i) => Padding(
           padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Text(i, style: const TextStyle(color: Colors.white60, fontSize: 11)),
+          child: Text(i, style: const TextStyle(color: Color(0xFF475569), fontSize: 11)),
         )),
       const SizedBox(height: 4),
       Align(
         alignment: Alignment.centerRight,
         child: Text('Total: S/ ${fmt.format(total)}',
-            style: const TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold, fontSize: 12)),
+            style: const TextStyle(color: Color(0xFF00838F), fontWeight: FontWeight.bold, fontSize: 12)),
       ),
     ]);
   }
 
   Widget _utilidadNeta() {
-    final color = cuadre.utilidadNeta >= 0 ? Colors.greenAccent : Colors.redAccent;
+    final color = cuadre.utilidadNeta >= 0 ? const Color(0xFF1B5E20) : const Color(0xFFB71C1C);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: color.withOpacity(0.18)),
       ),
       child: Column(children: [
         Text('UTILIDAD NETA', style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),

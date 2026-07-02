@@ -302,11 +302,11 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
             insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800), // Ancho POS tablet
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Form(
-                  key: formKeyDialog,
-                  child: SingleChildScrollView(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Form(
+                    key: formKeyDialog,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
