@@ -665,12 +665,13 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: productoSeleccionado,
-                  dropdownColor: Colors.white,
+                  dropdownColor: const Color(0xFF0F224A),
+                  iconEnabledColor: const Color(0xFF00796B),
                   style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
                   decoration: _decoracion('Especie'),
                   items: ["POTA", "JUREL", "BONITO", "CABALLA", "PERICO"].map((String value) => DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value),
+                        child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                       )).toList(),
                   onChanged: (val) { if (val != null) setStateDialog(() => productoSeleccionado = val); },
                 ),
@@ -772,24 +773,26 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
               children: [
                 DropdownButtonFormField<String>(
                   value: tipoSeleccionado,
-                  dropdownColor: Colors.white,
-                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15),
+                  dropdownColor: const Color(0xFF0F224A),
+                  iconEnabledColor: const Color(0xFFEA580C),
+                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
                   decoration: _decoracion('Tipo de Gasto'),
                   items: ['MUELLE', 'FLETE', 'OTROS'].map((String value) => DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value),
+                        child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                       )).toList(),
                   onChanged: (val) { if (val != null) setStateDialog(() => tipoSeleccionado = val); },
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: conceptoSeleccionado,
-                  dropdownColor: Colors.white,
-                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15),
+                  dropdownColor: const Color(0xFF0F224A),
+                  iconEnabledColor: const Color(0xFFEA580C),
+                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
                   decoration: _decoracion('Concepto / Detalle'),
                   items: ['FACTURACION', 'PERSONAL', 'APOYO', 'AGUA', 'PESADOR', 'CLOROX', 'HIELO', 'FLETE', 'OTROS'].map((String value) => DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value),
+                        child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                       )).toList(),
                   onChanged: (val) { if (val != null) setStateDialog(() => conceptoSeleccionado = val); },
                 ),
