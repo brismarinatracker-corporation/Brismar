@@ -44,9 +44,9 @@ class PantallaPerfil extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E293B).withOpacity(0.3),
+                color: const Color(0xFF1E293B).withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFF334155).withOpacity(0.5)),
+                border: Border.all(color: const Color(0xFF334155).withValues(alpha: 0.5)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,9 +55,9 @@ class PantallaPerfil extends ConsumerWidget {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF00E5FF).withOpacity(0.2),
+                      color: const Color(0xFF00E5FF).withValues(alpha: 0.2),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.5), width: 2),
+                      border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.5), width: 2),
                       image: estadoAuth.fotoPerfil != null && estadoAuth.fotoPerfil!.isNotEmpty
                           ? DecorationImage(
                               image: NetworkImage(estadoAuth.fotoPerfil!),
@@ -132,9 +132,9 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withOpacity(0.5),
+        color: const Color(0xFF0F172A).withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF334155).withOpacity(0.5)),
+        border: Border.all(color: const Color(0xFF334155).withValues(alpha: 0.5)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

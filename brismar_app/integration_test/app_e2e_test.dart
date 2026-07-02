@@ -24,7 +24,7 @@ void main() {
       // y renderice al menos la estructura principal
       expect(find.byType(Scaffold), findsWidgets);
 
-      // TODO: Añadir la inyección de datos de prueba cuando se proporcione un entorno de staging
+      // Nota: Añadir la inyección de datos de prueba cuando se proporcione un entorno de staging
       // o limpiar los datos con el prefijo TEST_
     });
   });

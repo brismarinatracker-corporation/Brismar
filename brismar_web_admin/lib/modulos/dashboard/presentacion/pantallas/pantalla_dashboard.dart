@@ -77,9 +77,9 @@ class PantallaDashboard extends ConsumerWidget {
         ]),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF00E5FF).withOpacity(0.1),
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.3)),
+            border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3)),
           ),
           child: IconButton(
             onPressed: () => ref.read(controladorDashboardProvider.notifier).cargarKpis(),
@@ -97,9 +97,9 @@ class PantallaDashboard extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFEF4444).withOpacity(0.1),
+        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -174,12 +174,12 @@ class PantallaDashboard extends ConsumerWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withOpacity(0.4),
+        color: const Color(0xFF1E293B).withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF334155).withOpacity(0.5)),
+        border: Border.all(color: const Color(0xFF334155).withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -206,7 +206,7 @@ class PantallaDashboard extends ConsumerWidget {
             height: 200,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: const Color(0xFF0F172A).withOpacity(0.5),
+              color: const Color(0xFF0F172A).withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFF1E293B)),
             ),
@@ -244,14 +244,14 @@ class _TarjetaKpiPremium extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E293B).withOpacity(0.4),
+            color: const Color(0xFF1E293B).withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFF334155).withOpacity(0.5)),
+            border: Border.all(color: const Color(0xFF334155).withValues(alpha: 0.5)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               )
@@ -261,23 +261,23 @@ class _TarjetaKpiPremium extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                width: 64,
-                height: 64,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      colorIcono.withOpacity(0.2),
-                      colorIcono.withOpacity(0.05),
+                      colorIcono.withValues(alpha: 0.2),
+                      colorIcono.withValues(alpha: 0.05),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: colorIcono.withOpacity(0.3)),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: colorIcono.withValues(alpha: 0.3)),
                 ),
-                child: Icon(icono, color: colorIcono, size: 32),
+                child: Icon(icono, color: colorIcono, size: 24),
               ),
-              const SizedBox(width: 24),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,29 +287,39 @@ class _TarjetaKpiPremium extends StatelessWidget {
                       titulo,
                       style: const TextStyle(
                         color: Color(0xFF94A3B8),
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.5,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      valor,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          valor,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
                     Text(
                       subtitulo,
                       style: TextStyle(
-                        color: colorIcono.withOpacity(0.8),
-                        fontSize: 12,
+                        color: colorIcono.withValues(alpha: 0.8),
+                        fontSize: 10,
                         fontWeight: FontWeight.w500,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),

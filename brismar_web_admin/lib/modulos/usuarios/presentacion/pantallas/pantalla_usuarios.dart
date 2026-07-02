@@ -57,7 +57,7 @@ class PantallaUsuarios extends ConsumerWidget {
                           context: context,
                           barrierDismissible: true,
                           barrierLabel: 'Cerrar',
-                          barrierColor: Colors.black.withOpacity(0.6),
+                          barrierColor: Colors.black.withValues(alpha: 0.6),
                           transitionDuration: const Duration(milliseconds: 250),
                           pageBuilder: (context, anim1, anim2) => const DialogoFormularioUsuario(),
                           transitionBuilder: (context, anim1, anim2, child) {
@@ -87,12 +87,12 @@ class PantallaUsuarios extends ConsumerWidget {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B).withOpacity(0.3),
+                      color: const Color(0xFF1E293B).withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: const Color(0xFF334155).withOpacity(0.5)),
+                      border: Border.all(color: const Color(0xFF334155).withValues(alpha: 0.5)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 30,
                           offset: const Offset(0, 10),
                         ),
@@ -104,9 +104,9 @@ class PantallaUsuarios extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0F172A).withOpacity(0.5),
+                            color: const Color(0xFF0F172A).withValues(alpha: 0.5),
                             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                            border: Border(bottom: BorderSide(color: const Color(0xFF334155).withOpacity(0.5))),
+                            border: Border(bottom: BorderSide(color: const Color(0xFF334155).withValues(alpha: 0.5))),
                           ),
                           child: const Row(
                             children: [
@@ -125,7 +125,7 @@ class PantallaUsuarios extends ConsumerWidget {
                                   : ListView.separated(
                                       padding: const EdgeInsets.symmetric(vertical: 8),
                                       itemCount: estado.usuarios.length,
-                                      separatorBuilder: (context, index) => Divider(color: const Color(0xFF334155).withOpacity(0.5), height: 1),
+                                      separatorBuilder: (context, index) => Divider(color: const Color(0xFF334155).withValues(alpha: 0.5), height: 1),
                                       itemBuilder: (context, index) {
                                         final u = estado.usuarios[index];
                                         return _FilaTablaUsuarioPremium(usuario: u, controlador: ctrl);
@@ -167,9 +167,9 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: usuario.activo ? colorRol.withOpacity(0.15) : const Color(0xFF334155).withOpacity(0.5),
+                    color: usuario.activo ? colorRol.withValues(alpha: 0.15) : const Color(0xFF334155).withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: usuario.activo ? colorRol.withOpacity(0.3) : Colors.transparent),
+                    border: Border.all(color: usuario.activo ? colorRol.withValues(alpha: 0.3) : Colors.transparent),
                     image: usuario.fotoPerfil != null && usuario.fotoPerfil!.isNotEmpty
                         ? DecorationImage(
                             image: NetworkImage(usuario.fotoPerfil!),
@@ -226,7 +226,7 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.location_on_rounded, color: const Color(0xFF00E5FF).withOpacity(0.8), size: 14),
+                    Icon(Icons.location_on_rounded, color: const Color(0xFF00E5FF).withValues(alpha: 0.8), size: 14),
                     const SizedBox(width: 4),
                     Text(usuario.sede, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                   ],
@@ -235,9 +235,9 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: colorRol.withOpacity(0.1),
+                    color: colorRol.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: colorRol.withOpacity(0.2)),
+                    border: Border.all(color: colorRol.withValues(alpha: 0.2)),
                   ),
                   child: Text(
                     usuario.rol.toUpperCase(), 
@@ -255,9 +255,9 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: usuario.activo ? const Color(0xFF10B981).withOpacity(0.15) : const Color(0xFFEF4444).withOpacity(0.15),
+                  color: usuario.activo ? const Color(0xFF10B981).withValues(alpha: 0.15) : const Color(0xFFEF4444).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: usuario.activo ? const Color(0xFF10B981).withOpacity(0.3) : const Color(0xFFEF4444).withOpacity(0.3)),
+                  border: Border.all(color: usuario.activo ? const Color(0xFF10B981).withValues(alpha: 0.3) : const Color(0xFFEF4444).withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -293,13 +293,13 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.edit_rounded, color: Color(0xFF94A3B8), size: 22),
                   tooltip: 'Editar Perfil',
-                  hoverColor: const Color(0xFF3B82F6).withOpacity(0.1),
+                  hoverColor: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                   onPressed: () {
                     showGeneralDialog(
                       context: context,
                       barrierDismissible: true,
                       barrierLabel: 'Cerrar',
-                      barrierColor: Colors.black.withOpacity(0.6),
+                      barrierColor: Colors.black.withValues(alpha: 0.6),
                       transitionDuration: const Duration(milliseconds: 250),
                       pageBuilder: (context, anim1, anim2) => DialogoFormularioUsuario(usuarioAEditar: usuario),
                       transitionBuilder: (context, anim1, anim2, child) {
@@ -318,7 +318,7 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
                     size: 22
                   ),
                   tooltip: usuario.activo ? 'Suspender Acceso' : 'Reactivar Acceso',
-                  hoverColor: usuario.activo ? const Color(0xFFEF4444).withOpacity(0.1) : const Color(0xFF10B981).withOpacity(0.1),
+                  hoverColor: usuario.activo ? const Color(0xFFEF4444).withValues(alpha: 0.1) : const Color(0xFF10B981).withValues(alpha: 0.1),
                   onPressed: () {
                     controlador.alternarEstadoUsuario(usuario.uid, !usuario.activo);
                   },

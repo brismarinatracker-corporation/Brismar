@@ -74,9 +74,8 @@ class ServicioExportacion {
 
     if (fileBytes != null) {
       await FileSaver.instance.saveFile(
-        name: fileName,
+        name: '$fileName.xlsx',
         bytes: Uint8List.fromList(fileBytes),
-        ext: 'xlsx',
         mimeType: MimeType.microsoftExcel,
       );
     }

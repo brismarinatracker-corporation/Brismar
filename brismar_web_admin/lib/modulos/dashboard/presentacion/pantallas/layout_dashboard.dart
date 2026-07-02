@@ -61,7 +61,7 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF00E5FF).withOpacity(0.1),
+                          color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(Icons.anchor_rounded, color: Color(0xFF00E5FF), size: 32),
@@ -94,7 +94,7 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                   fontWeight: FontWeight.w500,
                 ),
                 useIndicator: true,
-                indicatorColor: const Color(0xFF00E5FF).withOpacity(0.15),
+                indicatorColor: const Color(0xFF00E5FF).withValues(alpha: 0.15),
                 indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 destinations: [
                   const NavigationRailDestination(
@@ -134,14 +134,14 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                           padding: const EdgeInsets.all(16),
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B).withOpacity(0.5),
+                            color: const Color(0xFF1E293B).withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFF334155).withOpacity(0.5)),
+                            border: Border.all(color: const Color(0xFF334155).withValues(alpha: 0.5)),
                           ),
                           child: Row(
                             children: [
                               CircleAvatar(
-                                backgroundColor: const Color(0xFF00E5FF).withOpacity(0.2),
+                                backgroundColor: const Color(0xFF00E5FF).withValues(alpha: 0.2),
                                 backgroundImage: authState.fotoPerfil != null && authState.fotoPerfil!.isNotEmpty 
                                   ? NetworkImage(authState.fotoPerfil!) 
                                   : null,
@@ -178,7 +178,7 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                         icon: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444)),
                         tooltip: 'Cerrar Sesión',
                         style: IconButton.styleFrom(
-                          backgroundColor: const Color(0xFFEF4444).withOpacity(0.1),
+                          backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.1),
                           padding: const EdgeInsets.all(12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),

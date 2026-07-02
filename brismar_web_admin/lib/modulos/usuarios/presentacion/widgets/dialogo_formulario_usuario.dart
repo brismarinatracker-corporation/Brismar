@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -332,8 +331,8 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.redAccent.withOpacity(0.1),
-        border: Border.all(color: Colors.redAccent.withOpacity(0.5)),
+        color: Colors.redAccent.withValues(alpha: 0.1),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
@@ -455,7 +454,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                           const Text('ROL ASIGNADO', style: TextStyle(color: Colors.white38, fontSize: 10, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
                                           const SizedBox(height: 8),
                                           DropdownButtonFormField<String>(
-                                            value: _rolSeleccionado,
+                                            initialValue: _rolSeleccionado,
                                             dropdownColor: const Color(0xFF0F121C),
                                             icon: const Icon(Icons.arrow_drop_down, color: Colors.white54),
                                             style: const TextStyle(color: Colors.white, fontSize: 14),
@@ -523,7 +522,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                           const Text('SEDE DE OPERACIÓN', style: TextStyle(color: Colors.white38, fontSize: 10, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
                                           const SizedBox(height: 8),
                                           DropdownButtonFormField<String>(
-                                            value: _sedeSeleccionada,
+                                            initialValue: _sedeSeleccionada,
                                             dropdownColor: const Color(0xFF0F121C),
                                             icon: const Icon(Icons.arrow_drop_down, color: Colors.white54),
                                             style: const TextStyle(color: Colors.white, fontSize: 14),
