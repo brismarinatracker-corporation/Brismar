@@ -59,6 +59,14 @@ Hemos eliminado los archivos de texto `.md` manuales para gestionar versiones. T
 
 ## 📝 Historial de Cambios (IAs y Desarrolladores)
 
+* **Fecha/Hora:** 2026-07-02 03:51 (Local)
+* **Autor:** Antigravity (AI Agent)
+* **Qué se cambió:**
+  * Corrección de la vinculación de ID único entre Zarpes y Cuadres en la App móvil (`formulario_registro_pesca.dart`), asignando el ID del zarpe seleccionado al `_cuadreId`.
+  * Eliminación de la clase/pantalla huérfana no utilizada `formulario_cuadre_tabs.dart`.
+* **Qué se eliminó:** 1084 líneas de código muerto en la App móvil (`formulario_cuadre_tabs.dart`).
+* **Migraciones:** Ninguna.
+
 * **Fecha/Hora:** 2026-07-02 03:46 (Local)
 * **Autor:** Antigravity (AI Agent)
 * **Qué se cambió:**
