@@ -673,6 +673,14 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                         value: value,
                         child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                       )).toList(),
+                  selectedItemBuilder: (BuildContext context) {
+                    return ["POTA", "JUREL", "BONITO", "CABALLA", "PERICO"].map<Widget>((String value) {
+                      return Text(
+                        value,
+                        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
+                      );
+                    }).toList();
+                  },
                   onChanged: (val) { if (val != null) setStateDialog(() => productoSeleccionado = val); },
                 ),
                 const SizedBox(height: 12),
@@ -781,6 +789,14 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                         value: value,
                         child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                       )).toList(),
+                  selectedItemBuilder: (BuildContext context) {
+                    return ['MUELLE', 'FLETE', 'OTROS'].map<Widget>((String value) {
+                      return Text(
+                        value,
+                        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
+                      );
+                    }).toList();
+                  },
                   onChanged: (val) { if (val != null) setStateDialog(() => tipoSeleccionado = val); },
                 ),
                 const SizedBox(height: 12),
@@ -794,6 +810,14 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                         value: value,
                         child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                       )).toList(),
+                  selectedItemBuilder: (BuildContext context) {
+                    return ['FACTURACION', 'PERSONAL', 'APOYO', 'AGUA', 'PESADOR', 'CLOROX', 'HIELO', 'FLETE', 'OTROS'].map<Widget>((String value) {
+                      return Text(
+                        value,
+                        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
+                      );
+                    }).toList();
+                  },
                   onChanged: (val) { if (val != null) setStateDialog(() => conceptoSeleccionado = val); },
                 ),
                 const SizedBox(height: 12),
