@@ -59,6 +59,17 @@ Hemos eliminado los archivos de texto `.md` manuales para gestionar versiones. T
 
 ## 📝 Historial de Cambios (IAs y Desarrolladores)
 
+* **Fecha/Hora:** 2026-07-02 03:46 (Local)
+* **Autor:** Antigravity (AI Agent)
+* **Qué se cambió:**
+  * Corrección en el radar de tránsito de la Web (`pantalla_transito.dart`) para mapear `estado_transito` expuesto por la vista SQL de Supabase.
+  * Implementación de formularios de diálogo interactivos para añadir y eliminar lanchas/gastos en el editor de viajes de la Web (`pantalla_edicion_transito.dart`).
+  * Sincronización completa con Supabase de compras (lanchas) y gastos asociados al guardar cambios en la Web, recalculando y persistiendo el `peso_total` en `cuadres`.
+  * Filtro local en la App móvil (`formulario_registro_pesca.dart`) para excluir zarpes marcados como recibidos (`RECIBIDO_LAMBAYEQUE`).
+  * Actualización de la documentación técnica de flujos en `FLUJO_08_ZARPE_CAMARA.md`.
+* **Qué se eliminó:** Lógica estática/demostrativa en el editor web y selección de zarpes cerrados en la App móvil.
+* **Migraciones:** Ninguna.
+
 * **Fecha/Hora:** 2026-07-02 03:42 (Local)
 * **Autor:** Antigravity (AI Agent)
 * **Qué se cambió:**
