@@ -342,6 +342,10 @@ class PantallaTransito extends ConsumerWidget {
             ),
           ),
         ),
+      ],
+    );
+  }
+
   void _mostrarDialogoRecepcion(BuildContext context, WidgetRef ref, String id, String embarcaciones, double pesoInicial) {
     String plantaSeleccionada = 'DEXIM';
     String especieSeleccionada = 'POTA';
