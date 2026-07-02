@@ -639,122 +639,194 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
     );
   }
 
+  Widget _construirEtiquetaDialogo(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6, top: 12),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
+      ),
+    );
+  }
+
+  InputDecoration _decoracionDialogo(String hintText) {
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: const TextStyle(color: Colors.white30, fontSize: 14),
+      filled: true,
+      fillColor: const Color(0xFF2D302D),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.white12)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.white38)),
+    );
+  }
+
   void _mostrarDialogoCompra([CompraWebModelo? compra]) {
     final esNuevo = compra == null;
     final embarcacionCtrl = TextEditingController(text: compra?.embarcacion ?? '');
     String productoSeleccionado = compra?.producto ?? 'POTA';
     final kilosCtrl = TextEditingController(text: compra?.kilos.toString() ?? '');
     final precioCtrl = TextEditingController(text: compra?.precioUnitario.toString() ?? '');
-    final adelantoCtrl = TextEditingController(text: compra?.adelanto?.toString() ?? '0.0');
+    final adelantoCtrl = TextEditingController(text: compra?.adelanto?.toString() ?? '0.00');
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setStateDialog) => AlertDialog(
-          backgroundColor: Colors.white,
-          title: Text(esNuevo ? 'Añadir Embarcación' : 'Editar Embarcación', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+          backgroundColor: const Color(0xFF1E201E),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                esNuevo ? 'Añadir embarcación' : 'Editar embarcación',
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 24),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Completa los datos de la compra registrada.',
+                style: TextStyle(color: Color(0xFF9E9E9E), fontSize: 14),
+              ),
+            ],
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                _construirEtiquetaDialogo('Nombre de la embarcación'),
                 TextField(
                   controller: embarcacionCtrl,
-                  style: const TextStyle(color: Color(0xFF0F172A)),
-                  decoration: _decoracion('Nombre de la Embarcación'),
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: _decoracionDialogo('Ej. Don Lucho II'),
                 ),
-                const SizedBox(height: 12),
+                _construirEtiquetaDialogo('Especie'),
                 DropdownButtonFormField<String>(
                   value: productoSeleccionado,
-                  dropdownColor: const Color(0xFF0F224A),
-                  iconEnabledColor: const Color(0xFF00796B),
-                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
-                  decoration: _decoracion('Especie'),
+                  dropdownColor: const Color(0xFF1E201E),
+                  iconEnabledColor: Colors.white70,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: _decoracionDialogo('Selecciona especie'),
                   items: ["POTA", "JUREL", "BONITO", "CABALLA", "PERICO"].map((String value) => DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                        child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14)),
                       )).toList(),
                   selectedItemBuilder: (BuildContext context) {
                     return ["POTA", "JUREL", "BONITO", "CABALLA", "PERICO"].map<Widget>((String value) {
                       return Text(
                         value,
-                        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
                       );
                     }).toList();
                   },
                   onChanged: (val) { if (val != null) setStateDialog(() => productoSeleccionado = val); },
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: kilosCtrl,
-                  style: const TextStyle(color: Color(0xFF0F172A)),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: _decoracion('Kilos'),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _construirEtiquetaDialogo('Kilos'),
+                          TextField(
+                            controller: kilosCtrl,
+                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            decoration: _decoracionDialogo('0'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _construirEtiquetaDialogo('Precio unitario'),
+                          TextField(
+                            controller: precioCtrl,
+                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            decoration: _decoracionDialogo('S/ 0.00'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: precioCtrl,
-                  style: const TextStyle(color: Color(0xFF0F172A)),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: _decoracion('Precio Unitario'),
-                ),
-                const SizedBox(height: 12),
+                _construirEtiquetaDialogo('Adelanto en efectivo'),
                 TextField(
                   controller: adelantoCtrl,
-                  style: const TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: _decoracion('S/ Adelanto Efectivo'),
+                  decoration: _decoracionDialogo('S/ 0.00'),
                 ),
               ],
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar', style: TextStyle(color: Color(0xFF64748B))),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final kilos = double.tryParse(kilosCtrl.text) ?? 0.0;
-                final precio = double.tryParse(precioCtrl.text) ?? 0.0;
-                final adelanto = double.tryParse(adelantoCtrl.text) ?? 0.0;
-                if (embarcacionCtrl.text.trim().isEmpty) return;
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.white38),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  ),
+                  child: const Text('Cancelar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    final kilos = double.tryParse(kilosCtrl.text) ?? 0.0;
+                    final precio = double.tryParse(precioCtrl.text) ?? 0.0;
+                    final adelanto = double.tryParse(adelantoCtrl.text) ?? 0.0;
+                    if (embarcacionCtrl.text.trim().isEmpty) return;
 
-                setState(() {
-                  if (esNuevo) {
-                    _compras.add(CompraWebModelo(
-                      id: const Uuid().v4(),
-                      cuadreId: widget.id,
-                      embarcacion: embarcacionCtrl.text.trim().toUpperCase(),
-                      producto: productoSeleccionado,
-                      kilos: kilos,
-                      precioUnitario: precio,
-                      total: kilos * precio,
-                      adelanto: adelanto,
-                    ));
-                  } else {
-                    final index = _compras.indexWhere((c) => c.id == compra.id);
-                    if (index != -1) {
-                      _compras[index] = CompraWebModelo(
-                        id: compra.id,
-                        cuadreId: widget.id,
-                        embarcacion: embarcacionCtrl.text.trim().toUpperCase(),
-                        producto: productoSeleccionado,
-                        kilos: kilos,
-                        precioUnitario: precio,
-                        total: kilos * precio,
-                        adelanto: adelanto,
-                      );
-                    }
-                  }
-                });
-                Navigator.pop(ctx);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00796B),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: const Text('Guardar'),
+                    setState(() {
+                      if (esNuevo) {
+                        _compras.add(CompraWebModelo(
+                          id: const Uuid().v4(),
+                          cuadreId: widget.id,
+                          embarcacion: embarcacionCtrl.text.trim().toUpperCase(),
+                          producto: productoSeleccionado,
+                          kilos: kilos,
+                          precioUnitario: precio,
+                          total: kilos * precio,
+                          adelanto: adelanto,
+                        ));
+                      } else {
+                        final index = _compras.indexWhere((c) => c.id == compra.id);
+                        if (index != -1) {
+                          _compras[index] = CompraWebModelo(
+                            id: compra.id,
+                            cuadreId: widget.id,
+                            embarcacion: embarcacionCtrl.text.trim().toUpperCase(),
+                            producto: productoSeleccionado,
+                            kilos: kilos,
+                            precioUnitario: precio,
+                            total: kilos * precio,
+                            adelanto: adelanto,
+                          );
+                        }
+                      }
+                    });
+                    Navigator.pop(ctx);
+                  },
+                  icon: const Icon(Icons.check, size: 18, color: Colors.white),
+                  label: const Text('Guardar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00C853), // Green
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -773,114 +845,164 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setStateDialog) => AlertDialog(
-          backgroundColor: Colors.white,
-          title: Text(esNuevo ? 'Añadir Gasto' : 'Editar Gasto', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+          backgroundColor: const Color(0xFF1E201E),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                esNuevo ? 'Añadir gasto' : 'Editar gasto',
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 24),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Completa los datos del gasto registrado.',
+                style: TextStyle(color: Color(0xFF9E9E9E), fontSize: 14),
+              ),
+            ],
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                _construirEtiquetaDialogo('Tipo de gasto'),
                 DropdownButtonFormField<String>(
                   value: tipoSeleccionado,
-                  dropdownColor: const Color(0xFF0F224A),
-                  iconEnabledColor: const Color(0xFFEA580C),
-                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
-                  decoration: _decoracion('Tipo de Gasto'),
+                  dropdownColor: const Color(0xFF1E201E),
+                  iconEnabledColor: Colors.white70,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: _decoracionDialogo('Selecciona tipo'),
                   items: ['MUELLE', 'FLETE', 'OTROS'].map((String value) => DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                        child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14)),
                       )).toList(),
                   selectedItemBuilder: (BuildContext context) {
                     return ['MUELLE', 'FLETE', 'OTROS'].map<Widget>((String value) {
                       return Text(
                         value,
-                        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
                       );
                     }).toList();
                   },
                   onChanged: (val) { if (val != null) setStateDialog(() => tipoSeleccionado = val); },
                 ),
-                const SizedBox(height: 12),
+                _construirEtiquetaDialogo('Concepto / Detalle'),
                 DropdownButtonFormField<String>(
                   value: conceptoSeleccionado,
-                  dropdownColor: const Color(0xFF0F224A),
-                  iconEnabledColor: const Color(0xFFEA580C),
-                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
-                  decoration: _decoracion('Concepto / Detalle'),
+                  dropdownColor: const Color(0xFF1E201E),
+                  iconEnabledColor: Colors.white70,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: _decoracionDialogo('Selecciona concepto'),
                   items: ['FACTURACION', 'PERSONAL', 'APOYO', 'AGUA', 'PESADOR', 'CLOROX', 'HIELO', 'FLETE', 'OTROS'].map((String value) => DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                        child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14)),
                       )).toList(),
                   selectedItemBuilder: (BuildContext context) {
                     return ['FACTURACION', 'PERSONAL', 'APOYO', 'AGUA', 'PESADOR', 'CLOROX', 'HIELO', 'FLETE', 'OTROS'].map<Widget>((String value) {
                       return Text(
                         value,
-                        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
                       );
                     }).toList();
                   },
                   onChanged: (val) { if (val != null) setStateDialog(() => conceptoSeleccionado = val); },
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: cantidadCtrl,
-                  style: const TextStyle(color: Color(0xFF0F172A)),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: _decoracion('Cantidad'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: precioCtrl,
-                  style: const TextStyle(color: Color(0xFF0F172A)),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: _decoracion('Costo Unitario'),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _construirEtiquetaDialogo('Cantidad'),
+                          TextField(
+                            controller: cantidadCtrl,
+                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            decoration: _decoracionDialogo('1'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _construirEtiquetaDialogo('Costo unitario'),
+                          TextField(
+                            controller: precioCtrl,
+                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            decoration: _decoracionDialogo('S/ 0.00'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar', style: TextStyle(color: Color(0xFF64748B))),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final cant = double.tryParse(cantidadCtrl.text) ?? 1.0;
-                final precio = double.tryParse(precioCtrl.text) ?? 0.0;
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.white38),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  ),
+                  child: const Text('Cancelar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    final cant = double.tryParse(cantidadCtrl.text) ?? 1.0;
+                    final precio = double.tryParse(precioCtrl.text) ?? 0.0;
 
-                setState(() {
-                  if (esNuevo) {
-                    _gastos.add(GastoWebModelo(
-                      id: const Uuid().v4(),
-                      cuadreId: widget.id,
-                      tipo: tipoSeleccionado,
-                      concepto: conceptoSeleccionado,
-                      cantidad: cant,
-                      costoUnitario: precio,
-                      total: cant * precio,
-                    ));
-                  } else {
-                    final index = _gastos.indexWhere((g) => g.id == gasto.id);
-                    if (index != -1) {
-                      _gastos[index] = GastoWebModelo(
-                        id: gasto.id,
-                        cuadreId: widget.id,
-                        tipo: tipoSeleccionado,
-                        concepto: conceptoSeleccionado,
-                        cantidad: cant,
-                        costoUnitario: precio,
-                        total: cant * precio,
-                      );
-                    }
-                  }
-                });
-                Navigator.pop(ctx);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEA580C),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: const Text('Guardar'),
+                    setState(() {
+                      if (esNuevo) {
+                        _gastos.add(GastoWebModelo(
+                          id: const Uuid().v4(),
+                          cuadreId: widget.id,
+                          tipo: tipoSeleccionado,
+                          concepto: conceptoSeleccionado,
+                          cantidad: cant,
+                          costoUnitario: precio,
+                          total: cant * precio,
+                        ));
+                      } else {
+                        final index = _gastos.indexWhere((g) => g.id == gasto.id);
+                        if (index != -1) {
+                          _gastos[index] = GastoWebModelo(
+                            id: gasto.id,
+                            cuadreId: widget.id,
+                            tipo: tipoSeleccionado,
+                            concepto: conceptoSeleccionado,
+                            cantidad: cant,
+                            costoUnitario: precio,
+                            total: cant * precio,
+                          );
+                        }
+                      }
+                    });
+                    Navigator.pop(ctx);
+                  },
+                  icon: const Icon(Icons.check, size: 18, color: Colors.white),
+                  label: const Text('Guardar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00C853), // Green
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
