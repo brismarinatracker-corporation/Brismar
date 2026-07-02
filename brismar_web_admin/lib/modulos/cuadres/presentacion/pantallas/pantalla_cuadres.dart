@@ -373,17 +373,38 @@ class _PanelDetalle extends ConsumerWidget {
             const SizedBox(height: 20),
             _seccionResumen(),
             const SizedBox(height: 16),
-            _seccionRelacion('🐟 Compras', cuadre.compras.map((c) =>
-              '${c.embarcacion} — ${c.producto}: ${c.kilos}kg @ S/${fmt.format(c.precioUnitario)} = S/${fmt.format(c.total)}'
-            ).toList(), cuadre.totalCompras, fmt),
+            _seccionRelacion(
+              icono: Icons.sailing_outlined,
+              colorIcono: const Color(0xFF00796B),
+              titulo: 'Compras (Embarcaciones)',
+              items: cuadre.compras.map((c) =>
+                '${c.embarcacion} — ${c.producto}: ${c.kilos}kg @ S/${fmt.format(c.precioUnitario)} = S/${fmt.format(c.total)}'
+              ).toList(),
+              total: cuadre.totalCompras,
+              fmt: fmt,
+            ),
             const SizedBox(height: 12),
-            _seccionRelacion('💸 Gastos', cuadre.gastos.map((g) =>
-              '${g.tipo} — ${g.concepto}: ${g.cantidad} @ S/${fmt.format(g.costoUnitario)} = S/${fmt.format(g.total)}'
-            ).toList(), cuadre.totalGastos, fmt),
+            _seccionRelacion(
+              icono: Icons.trending_down_rounded,
+              colorIcono: const Color(0xFFEA580C),
+              titulo: 'Gastos',
+              items: cuadre.gastos.map((g) =>
+                '${g.tipo} — ${g.concepto}: ${g.cantidad} @ S/${fmt.format(g.costoUnitario)} = S/${fmt.format(g.total)}'
+              ).toList(),
+              total: cuadre.totalGastos,
+              fmt: fmt,
+            ),
             const SizedBox(height: 12),
-            _seccionRelacion('💰 Ventas', cuadre.ventas.map((v) =>
-              '${v.lugar} — ${v.producto}: ${v.kilos}kg @ S/${fmt.format(v.precioUnitario)} = S/${fmt.format(v.total)}'
-            ).toList(), cuadre.totalVentas, fmt),
+            _seccionRelacion(
+              icono: Icons.trending_up_rounded,
+              colorIcono: const Color(0xFF16A34A),
+              titulo: 'Ventas (Planta)',
+              items: cuadre.ventas.map((v) =>
+                '${v.lugar} — ${v.producto}: ${v.kilos}kg @ S/${fmt.format(v.precioUnitario)} = S/${fmt.format(v.total)}'
+              ).toList(),
+              total: cuadre.totalVentas,
+              fmt: fmt,
+            ),
             const SizedBox(height: 16),
             _utilidadNeta(),
           ],
@@ -444,9 +465,22 @@ class _PanelDetalle extends ConsumerWidget {
     );
   }
 
-  Widget _seccionRelacion(String titulo, List<String> items, double total, NumberFormat fmt) {
+  Widget _seccionRelacion({
+    required IconData icono,
+    required Color colorIcono,
+    required String titulo,
+    required List<String> items,
+    required double total,
+    required NumberFormat fmt,
+  }) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(titulo, style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 13)),
+      Row(
+        children: [
+          Icon(icono, color: colorIcono, size: 16),
+          const SizedBox(width: 6),
+          Text(titulo, style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 13)),
+        ],
+      ),
       const Divider(color: Color(0xFFE2E8F0)),
       if (items.isEmpty)
         const Text('Sin registros', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12))
