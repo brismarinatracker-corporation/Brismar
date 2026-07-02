@@ -59,6 +59,18 @@ Hemos eliminado los archivos de texto `.md` manuales para gestionar versiones. T
 
 ## 📝 Historial de Cambios (IAs y Desarrolladores)
 
+* **Fecha/Hora:** 2026-07-02 03:57 (Local)
+* **Autor:** Antigravity (AI Agent)
+* **Qué se cambió:**
+  * Implementación del visor de fotos múltiples (carrusel) y lightbox interactivo con zoom en la Web admin (`pantalla_transito.dart`).
+  * Optimización de rendimiento de red mediante paralelización con `Future.wait()` en la carga y el guardado de datos en la Web (`pantalla_edicion_transito.dart`).
+  * Adaptación responsiva (LayoutBuilder y Column/Row fluidos) en el formulario de edición web para evitar desbordamientos horizontales.
+  * Configuración del tema nativo oscuro (`brightness: Brightness.dark` y `useMaterial3: true`) en la App móvil (`main.dart`) para solucionar textos oscuros invisibles en los selectores de fecha nativos.
+  * Visualizador de fotos de evidencia integradas en la ficha "Información de Cámara" de la App móvil (`formulario_registro_pesca.dart`) y visor a pantalla completa.
+  * Agregados botones rápidos de incremento de kilos (+100, +500, +1000, +5000) en el modal de compras móviles para agilizar la entrada.
+* **Qué se eliminó:** Layouts no responsivos fijos y flujos secuenciales de red lentos.
+* **Migraciones:** Ninguna.
+
 * **Fecha/Hora:** 2026-07-02 03:51 (Local)
 * **Autor:** Antigravity (AI Agent)
 * **Qué se cambió:**
