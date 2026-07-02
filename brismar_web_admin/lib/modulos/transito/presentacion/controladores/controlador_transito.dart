@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../datos/fuente_datos_transito.dart';
+import '../pantallas/pantalla_transito.dart';
 
 final proveedorFuenteDatosTransito = Provider<FuenteDatosTransito>((ref) {
   return FuenteDatosTransito(Supabase.instance.client);
@@ -16,12 +17,14 @@ class ControladorTransito extends AsyncNotifier<List<Map<String, dynamic>>> {
   @override
   Future<List<Map<String, dynamic>>> build() async {
     _fuente = ref.watch(proveedorFuenteDatosTransito);
-    return _fuente.obtenerZarpes();
+    final filtro = ref.watch(proveedorFiltroTransito);
+    return _fuente.obtenerZarpes(filtro: filtro);
   }
 
   Future<void> recargar() async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(_fuente.obtenerZarpes);
+    final filtro = ref.read(proveedorFiltroTransito);
+    state = await AsyncValue.guard(() => _fuente.obtenerZarpes(filtro: filtro));
   }
 
   Future<void> registrarRecepcionEnPlanta({

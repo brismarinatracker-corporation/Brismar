@@ -7,12 +7,26 @@ class FuenteDatosTransito {
 
   FuenteDatosTransito(this._cliente);
 
-  /// Obtiene todos los zarpes ordenados por fecha.
-  Future<List<Map<String, dynamic>>> obtenerZarpes() async {
-    final datos = await _cliente
-        .from('vista_zarpes_detallados')
-        .select()
-        .order('fecha_zarpe', ascending: false);
+  /// Obtiene zarpes ordenados por fecha aplicando filtros de fecha y límite (max 30) en base de datos.
+  Future<List<Map<String, dynamic>>> obtenerZarpes({String filtro = 'todos'}) async {
+    var query = _cliente.from('vista_zarpes_detallados').select();
+    
+    final ahora = DateTime.now();
+    if (filtro == 'semana') {
+      final haceUnaSemana = ahora.subtract(const Duration(days: 7)).toIso8601String().substring(0, 10);
+      query = query.gte('fecha_zarpe', haceUnaSemana);
+    } else if (filtro == 'mes') {
+      final haceUnMes = ahora.subtract(const Duration(days: 30)).toIso8601String().substring(0, 10);
+      query = query.gte('fecha_zarpe', haceUnMes);
+    } else if (filtro == 'anio') {
+      final inicioAnio = '${ahora.year}-01-01';
+      query = query.gte('fecha_zarpe', inicioAnio);
+    }
+
+    final datos = await query
+        .order('fecha_zarpe', ascending: false)
+        .limit(30);
+        
     return List<Map<String, dynamic>>.from(datos);
   }
 

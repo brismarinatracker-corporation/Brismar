@@ -130,26 +130,7 @@ class PantallaTransito extends ConsumerWidget {
               loading: () => const Center(child: CargaOrbital(tamano: 80)),
               error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.redAccent))),
               data: (zarpes) {
-                // Filter the zarpes in-memory
-                final zarpesFiltrados = zarpes.where((z) {
-                  if (filtro == 'todos') return true;
-                  final fechaStr = z['fecha_zarpe'];
-                  if (fechaStr == null) return false;
-                  final fecha = DateTime.tryParse(fechaStr);
-                  if (fecha == null) return false;
-
-                  final ahora = DateTime.now();
-                  if (filtro == 'semana') {
-                    final haceUnaSemana = ahora.subtract(const Duration(days: 7));
-                    return fecha.isAfter(haceUnaSemana);
-                  } else if (filtro == 'mes') {
-                    final haceUnMes = ahora.subtract(const Duration(days: 30));
-                    return fecha.isAfter(haceUnMes);
-                  } else if (filtro == 'anio') {
-                    return fecha.year == ahora.year;
-                  }
-                  return true;
-                }).toList();
+                final zarpesFiltrados = zarpes;
 
                 if (zarpesFiltrados.isEmpty) {
                   return const Center(
