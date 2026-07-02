@@ -5,7 +5,18 @@ import 'package:intl/intl.dart';
 import '../controladores/controlador_transito.dart';
 import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 
-final proveedorFiltroTransito = StateProvider<String>((ref) => 'todos');
+class FiltroTransitoNotifier extends Notifier<String> {
+  @override
+  String build() => 'todos';
+
+  void establecerFiltro(String nuevoFiltro) {
+    state = nuevoFiltro;
+  }
+}
+
+final proveedorFiltroTransito = NotifierProvider<FiltroTransitoNotifier, String>(() {
+  return FiltroTransitoNotifier();
+});
 
 // Esta pantalla ahora es FRONTEND PURO. Solo Dibuja. No sabe de Supabase.
 class PantallaTransito extends ConsumerWidget {
@@ -86,25 +97,25 @@ class PantallaTransito extends ConsumerWidget {
               _FiltroChip(
                 label: 'Todos',
                 activo: filtro == 'todos',
-                onTap: () => ref.read(proveedorFiltroTransito.notifier).state = 'todos',
+                onTap: () => ref.read(proveedorFiltroTransito.notifier).establecerFiltro('todos'),
               ),
               const SizedBox(width: 8),
               _FiltroChip(
                 label: 'Esta Semana',
                 activo: filtro == 'semana',
-                onTap: () => ref.read(proveedorFiltroTransito.notifier).state = 'semana',
+                onTap: () => ref.read(proveedorFiltroTransito.notifier).establecerFiltro('semana'),
               ),
               const SizedBox(width: 8),
               _FiltroChip(
                 label: 'Este Mes',
                 activo: filtro == 'mes',
-                onTap: () => ref.read(proveedorFiltroTransito.notifier).state = 'mes',
+                onTap: () => ref.read(proveedorFiltroTransito.notifier).establecerFiltro('mes'),
               ),
               const SizedBox(width: 8),
               _FiltroChip(
                 label: 'Este Año',
                 activo: filtro == 'anio',
-                onTap: () => ref.read(proveedorFiltroTransito.notifier).state = 'anio',
+                onTap: () => ref.read(proveedorFiltroTransito.notifier).establecerFiltro('anio'),
               ),
             ],
           ),
