@@ -162,7 +162,7 @@ class GestorAlmacenamientoSeguro {
   /// Decisión de negocio: si el usuario olvidó el PIN, necesita hacer login
   /// completo con internet. Al re-autenticarse, el hash offline se regenera
   /// automáticamente. No tiene sentido conservar datos obsoletos.
-  /// Borra TODO: token, PIN, hash offline, timestamp y preferencia.
+  /// Borra todos los datos: token, PIN, hash offline, timestamp y preferencia.
   Future<void> invalidarAccesoRapido() async {
     try {
       await _storage.deleteAll();
@@ -173,7 +173,7 @@ class GestorAlmacenamientoSeguro {
 
   /// Invalida la bóveda completa (logout explícito del usuario).
   ///
-  /// Borra TODO: token, PIN, hash de contraseña, timestamp y preferencia.
+  /// Borra todos los datos: token, PIN, hash de contraseña, timestamp y preferencia.
   /// Se ejecuta cuando el usuario cierra sesión de forma voluntaria.
   Future<void> invalidarBoveda() async {
     try {
