@@ -1,0 +1,279 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class PantallaPerfil extends ConsumerStatefulWidget {
+  const PantallaPerfil({super.key});
+
+  @override
+  ConsumerState<PantallaPerfil> createState() => _PantallaPerfilState();
+}
+
+class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
+  bool _subiendoFoto = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Re-cargar dinámicamente los datos de perfil desde Supabase al entrar en la pantalla
+    Future.microtask(() => ref.read(proveedorAutenticacion.notifier).recargarPerfil());
+  }
+
+  Future<void> _subirNuevaFoto(String userId) async {
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _subiendoFoto = true);
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+        final ext = image.name.split('.').last;
+        final ruta = 'avatar_$userId.$ext';
+
+        await Supabase.instance.client.storage.from('avatars').uploadBinary(
+          ruta,
+          bytes,
+          fileOptions: const FileOptions(upsert: true),
+        );
+
+        final urlPublica = Supabase.instance.client.storage.from('avatars').getPublicUrl(ruta);
+        final urlConCacheBuster = '$urlPublica?t=${DateTime.now().millisecondsSinceEpoch}';
+
+        await ref.read(proveedorAutenticacion.notifier).actualizarPerfil(fotoPerfil: urlConCacheBuster);
+
+        if (mounted) {
+          messenger.showSnackBar(
+            const SnackBar(content: Text('Foto de perfil actualizada con éxito'), backgroundColor: Colors.green),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('Error al subir la foto: $e'), backgroundColor: Colors.redAccent),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _subiendoFoto = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final estadoAuth = ref.watch(proveedorAutenticacion);
+    final nombre = estadoAuth.nombreReal ?? 'Usuario';
+    final correo = estadoAuth.usuario?.email ?? 'Sin correo';
+    final rol = (estadoAuth.rol ?? 'Rol no definido').toUpperCase();
+    final sede = (estadoAuth.sede ?? 'Sede no definida').toUpperCase();
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Dark Blue Header Banner
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F2D4A), // Deep navy blue
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Mi Perfil',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Información de tu cuenta y sesión activa.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Main profile card
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(40.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.015),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          )
+                        ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Stack(
+                            children: [
+                              Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF00796B).withValues(alpha: 0.12),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: const Color(0xFF00796B), width: 2),
+                                  image: estadoAuth.fotoPerfil != null && estadoAuth.fotoPerfil!.isNotEmpty
+                                      ? DecorationImage(
+                                          image: NetworkImage(estadoAuth.fotoPerfil!),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : null,
+                                ),
+                                child: estadoAuth.fotoPerfil == null || estadoAuth.fotoPerfil!.isEmpty
+                                    ? Center(
+                                        child: Text(
+                                          nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : 'U',
+                                          style: const TextStyle(
+                                            color: Color(0xFF00796B),
+                                            fontSize: 40,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Tooltip(
+                                  message: 'Cambiar foto de perfil',
+                                  child: Material(
+                                    color: const Color(0xFF00796B),
+                                    shape: const CircleBorder(),
+                                    elevation: 4,
+                                    child: InkWell(
+                                      onTap: _subiendoFoto ? null : () => _subirNuevaFoto(estadoAuth.usuario!.id),
+                                      customBorder: const CircleBorder(),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(10.0),
+                                        child: Icon(Icons.camera_alt_rounded, color: Colors.white, size: 20),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 32),
+
+                          // Details Section - Read-Only
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  nombre,
+                                  style: const TextStyle(
+                                    color: Color(0xFF0F172A),
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  correo,
+                                  style: const TextStyle(
+                                    color: Color(0xFF475569),
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                Row(
+                                  children: [
+                                    _InfoChip(icono: Icons.admin_panel_settings_rounded, titulo: 'Rol', valor: rol),
+                                    const SizedBox(width: 16),
+                                    _InfoChip(icono: Icons.location_on_rounded, titulo: 'Sede', valor: sede),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  final IconData icono;
+  final String titulo;
+  final String valor;
+
+  const _InfoChip({required this.icono, required this.titulo, required this.valor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icono, color: const Color(0xFF00796B), size: 20),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                titulo.toUpperCase(),
+                style: const TextStyle(
+                  color: Color(0xFF475569),
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                valor,
+                style: const TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

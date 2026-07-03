@@ -9,8 +9,9 @@ Este archivo es la puerta de entrada para entender la estructura técnica y de c
 
 ## 📁 Arquitectura del Monorepo
 
-* 📱 [**brismar_app**](./brismar_app/) — Código fuente de la aplicación móvil (Flutter). Implementa una robusta arquitectura *Offline-First* enfocada en seguridad. (Actualmente: **Fase 1 Autenticación COMPLETADA**, transitando a Fase 2 Registro). Revisa el detalle en `ESTADO_PROYECTO.md`. (Encargados: **Jhonatan y Belén**).
-* ⚙️ [**brismar_web**](./brismar_web/) — Código fuente del backend y dashboard administrativo (migrado a Supabase PostgreSQL como base de datos única). (Encargado: **Yisus**).
+* 📱 [**bris_tracker**](./bris_tracker/) — Código fuente de la aplicación móvil (Flutter) para bahía/muelle. Implementa una robusta arquitectura *Offline-First* enfocada en seguridad. (Actualmente: **Fase 1 Autenticación COMPLETADA**, transitando a Fase 2 Registro). Revisa el detalle en `ESTADO_PROYECTO.md`. (Encargados: **Jhonatan y Belén**).
+* ⚙️ [**bris_web**](./bris_web/) — Código fuente del backend y dashboard logístico web para Brismar (Logística Central). (Encargado: **Yisus**).
+* 👔 [**bris_admin**](./bris_admin/) — App ejecutiva móvil planificada a futuro para gerencia.
 * 🗄️ [**supabase**](./supabase/) — Definiciones de tablas y migraciones de la base de datos PostgreSQL compartida.
 
 ---
