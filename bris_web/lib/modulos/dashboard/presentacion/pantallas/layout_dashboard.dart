@@ -1,290 +1,356 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../nucleo/enrutador/enrutador.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 
-/// Layout principal del Dashboard con NavRail persistente.
-///
-/// El índice activo del [NavigationRail] se deriva directamente de la URL
-/// actual del router para evitar desincronizaciones al navegar por código
-/// o por URL directa.
-class LayoutDashboard extends ConsumerWidget {
-  /// Widget hijo inyectado por el ShellRoute (la pantalla activa).
+class LayoutDashboard extends ConsumerStatefulWidget {
   final Widget hijo;
-
   const LayoutDashboard({super.key, required this.hijo});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Escucha solo los campos necesarios para evitar rebuilds extras.
-    final authState = ref.watch(
-      proveedorAutenticacion.select((s) => (
-        rol: s.rol,
-        nombreReal: s.nombreReal,
-        fotoPerfil: s.fotoPerfil,
-        isAuthenticated: s.isAuthenticated,
-      )),
-    );
+  ConsumerState<LayoutDashboard> createState() => _LayoutDashboardState();
+}
 
+class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
+  int _indiceSeleccionado = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = ref.watch(proveedorAutenticacion);
     final esAdmin = authState.rol == 'administrador';
     final nombre = authState.nombreReal ?? 'Usuario';
     final rolTexto = (authState.rol ?? '').toUpperCase();
-    final rutaActual = GoRouterState.of(context).uri.path;
-    final indiceActivo = _calcularIndice(rutaActual, esAdmin);
+    final esExtendido = MediaQuery.of(context).size.width >= 1200;
+    final anchoSidebar = esExtendido ? 260.0 : 80.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       body: Row(
         children: [
-          _construirNavRail(context, ref, esAdmin, nombre, rolTexto, indiceActivo, authState.fotoPerfil),
-          // Área principal sin animaciones de transición, cambio instantáneo.
-          // Cada pantalla maneja su propio estado de carga (ej. Shimmer).
-          Expanded(
-            child: Container(
-              color: const Color(0xFFF8FAFC),
-              child: hijo,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-
-  /// Calcula el índice correcto del [NavigationRail] a partir de la ruta.
-  ///
-  /// Considera si el usuario es admin para ajustar las posiciones.
-  int _calcularIndice(String path, bool esAdmin) {
-    if (path.startsWith('/dashboard')) return 0;
-    if (path.startsWith('/transito')) return 1;
-    if (path.startsWith('/cuadres')) return 2;
-    if (esAdmin && path.startsWith('/usuarios')) return 3;
-    if (esAdmin && path.startsWith('/perfil')) return 4;
-    if (!esAdmin && path.startsWith('/perfil')) return 3;
-    return 0;
-  }
-
-  /// Navega a la ruta correspondiente al índice seleccionado.
-  void _navegarAlIndice(BuildContext context, int index, bool esAdmin) {
-    switch (index) {
-      case 0: const RutaDashboard().go(context);
-      case 1: const RutaTransito().go(context);
-      case 2: const RutaCuadres().go(context);
-      case 3: esAdmin ? const RutaUsuarios().go(context) : const RutaPerfil().go(context);
-      case 4: if (esAdmin) const RutaPerfil().go(context);
-    }
-  }
-
-  /// Construye el panel de navegación lateral completo.
-  Widget _construirNavRail(
-    BuildContext context,
-    WidgetRef ref,
-    bool esAdmin,
-    String nombre,
-    String rolTexto,
-    int indiceActivo,
-    String? fotoPerfil,
-  ) {
-    final esExtendido = MediaQuery.of(context).size.width >= 1200;
-
-    return Container(
-      height: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xFF090E17),
-        border: Border(right: BorderSide(color: Color(0xFF1E293B), width: 1)),
-      ),
-      child: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: NavigationRail(
-                backgroundColor: Colors.transparent,
-                extended: esExtendido,
-                minExtendedWidth: 260,
-                selectedIndex: indiceActivo,
-                onDestinationSelected: (index) => _navegarAlIndice(context, index, esAdmin),
-                leading: _construirEncabezadoNav(esExtendido),
-                selectedIconTheme: const IconThemeData(color: Color(0xFF10B981), size: 24),
-                unselectedIconTheme: const IconThemeData(color: Color(0xFF94A3B8), size: 24),
-                selectedLabelTextStyle: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
-                unselectedLabelTextStyle: const TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-                useIndicator: true,
-                indicatorColor: const Color(0xFF10B981).withValues(alpha: 0.12),
-                indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                destinations: _construirDestinos(esAdmin),
+          // Sidebar Navy Premium (Mismo gradiente/marca unificada)
+          Container(
+            width: anchoSidebar,
+            height: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF0A2440), // Navy profundo
+                  Color(0xFF123A5C), // Navy medio
+                ],
+              ),
+              border: Border(
+                right: BorderSide(color: Color(0xFF1E293B), width: 1),
               ),
             ),
-            _construirPieNav(context, ref, esExtendido, nombre, rolTexto, fotoPerfil, esAdmin),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Construye el logo/encabezado superior del NavigationRail.
-  Widget _construirEncabezadoNav(bool esExtendido) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.anchor_rounded, color: Color(0xFF10B981), size: 32),
-          ),
-          if (esExtendido) ...[
-            const SizedBox(width: 12),
-            const Text(
-              'Brismar',
-              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  /// Construye la lista de destinos del NavigationRail según el rol.
-  List<NavigationRailDestination> _construirDestinos(bool esAdmin) {
-    return [
-      const NavigationRailDestination(
-        icon: Icon(Icons.dashboard_outlined),
-        selectedIcon: Icon(Icons.dashboard_rounded),
-        label: Text('Dashboard'),
-      ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.local_shipping_outlined),
-        selectedIcon: Icon(Icons.local_shipping_rounded),
-        label: Text('Tránsito'),
-      ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.table_view_outlined),
-        selectedIcon: Icon(Icons.table_view_rounded),
-        label: Text('Cuadres'),
-      ),
-      if (esAdmin)
-        const NavigationRailDestination(
-          icon: Icon(Icons.people_alt_outlined),
-          selectedIcon: Icon(Icons.people_alt_rounded),
-          label: Text('Usuarios'),
-        ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.person_outline),
-        selectedIcon: Icon(Icons.person_rounded),
-        label: Text('Perfil'),
-      ),
-    ];
-  }
-
-  /// Construye el pie del NavigationRail con avatar, nombre y botón de logout.
-  Widget _construirPieNav(
-    BuildContext context,
-    WidgetRef ref,
-    bool esExtendido,
-    String nombre,
-    String rolTexto,
-    String? fotoPerfil,
-    bool esAdmin,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24, left: 12, right: 12),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (esExtendido) _construirTarjetaUsuario(context, esAdmin, nombre, rolTexto, fotoPerfil),
-          const SizedBox(height: 16),
-          _construirBotonLogout(ref),
-        ],
-      ),
-    );
-  }
-
-  /// Tarjeta inferior del usuario autenticado (solo visible con rail extendido).
-  Widget _construirTarjetaUsuario(
-    BuildContext context,
-    bool esAdmin,
-    String nombre,
-    String rolTexto,
-    String? fotoPerfil,
-  ) {
-    return InkWell(
-      onTap: () => const RutaPerfil().go(context),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E293B).withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF334155).withValues(alpha: 0.5)),
-        ),
-        child: Row(
-          children: [
-            _construirAvatar(nombre, fotoPerfil),
-            const SizedBox(width: 12),
-            SizedBox(
-              width: 130,
+            child: SafeArea(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    nombre,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  // Logo / Cabecera Brismar (Fraunces)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: esExtendido ? MainAxisAlignment.start : MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF59E0B).withValues(alpha: 0.12), // Amber tint
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.anchor_rounded, color: Color(0xFFF59E0B), size: 28),
+                        ),
+                        if (esExtendido) ...[
+                          const SizedBox(width: 12),
+                          Text(
+                            'Brismar',
+                            style: GoogleFonts.fraunces(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                  Text(
-                    rolTexto,
-                    style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.w600),
+
+                  const SizedBox(height: 16),
+
+                  // Lista de navegación personalizada
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      children: [
+                        _itemMenu(
+                          index: 0,
+                          icono: Icons.dashboard_outlined,
+                          iconoSeleccionado: Icons.dashboard_rounded,
+                          etiqueta: 'Dashboard',
+                          esExtendido: esExtendido,
+                          onTap: () {
+                            setState(() => _indiceSeleccionado = 0);
+                            const RutaDashboard().go(context);
+                          },
+                        ),
+                        _itemMenu(
+                          index: 1,
+                          icono: Icons.local_shipping_outlined,
+                          iconoSeleccionado: Icons.local_shipping_rounded,
+                          etiqueta: 'Tránsito',
+                          esExtendido: esExtendido,
+                          onTap: () {
+                            setState(() => _indiceSeleccionado = 1);
+                            const RutaTransito().go(context);
+                          },
+                        ),
+                        _itemMenu(
+                          index: 2,
+                          icono: Icons.table_view_outlined,
+                          iconoSeleccionado: Icons.table_view_rounded,
+                          etiqueta: 'Cuadres',
+                          esExtendido: esExtendido,
+                          onTap: () {
+                            setState(() => _indiceSeleccionado = 2);
+                            const RutaCuadres().go(context);
+                          },
+                        ),
+                        if (esAdmin)
+                          _itemMenu(
+                            index: 3,
+                            icono: Icons.people_alt_outlined,
+                            iconoSeleccionado: Icons.people_alt_rounded,
+                            etiqueta: 'Usuarios',
+                            esExtendido: esExtendido,
+                            onTap: () {
+                              setState(() => _indiceSeleccionado = 3);
+                              const RutaUsuarios().go(context);
+                            },
+                          ),
+                        _itemMenu(
+                          index: esAdmin ? 4 : 3,
+                          icono: Icons.person_outline,
+                          iconoSeleccionado: Icons.person_rounded,
+                          etiqueta: 'Perfil',
+                          esExtendido: esExtendido,
+                          onTap: () {
+                            setState(() => _indiceSeleccionado = esAdmin ? 4 : 3);
+                            const RutaPerfil().go(context);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Sección inferior de usuario
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (esExtendido)
+                          InkWell(
+                            onTap: () {
+                              setState(() => _indiceSeleccionado = esAdmin ? 4 : 3);
+                              const RutaPerfil().go(context);
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E293B).withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFF334155).withValues(alpha: 0.3)),
+                              ),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 18,
+                                    backgroundColor: const Color(0xFF14B8A6).withValues(alpha: 0.2), // Sea green
+                                    backgroundImage: authState.fotoPerfil != null && authState.fotoPerfil!.isNotEmpty 
+                                      ? NetworkImage(authState.fotoPerfil!) 
+                                      : null,
+                                    child: authState.fotoPerfil == null || authState.fotoPerfil!.isEmpty
+                                      ? Text(
+                                          nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : 'U',
+                                          style: GoogleFonts.inter(color: const Color(0xFF14B8A6), fontWeight: FontWeight.bold),
+                                        )
+                                      : null,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          nombre,
+                                          style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          rolTexto,
+                                          style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 11, fontWeight: FontWeight.w600),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        else
+                          CircleAvatar(
+                            radius: 18,
+                            backgroundColor: const Color(0xFF14B8A6).withValues(alpha: 0.2),
+                            backgroundImage: authState.fotoPerfil != null && authState.fotoPerfil!.isNotEmpty 
+                              ? NetworkImage(authState.fotoPerfil!) 
+                              : null,
+                            child: authState.fotoPerfil == null || authState.fotoPerfil!.isEmpty
+                              ? Text(
+                                  nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : 'U',
+                                  style: GoogleFonts.inter(color: const Color(0xFF14B8A6), fontWeight: FontWeight.bold),
+                                )
+                              : null,
+                          ),
+                        const SizedBox(height: 12),
+                        
+                        // Botón de Cerrar Sesión (Ámbar / Rojo suave)
+                        IconButton(
+                          icon: const Icon(Icons.logout_rounded, color: Color(0xFFF59E0B)), // Amber logout
+                          tooltip: 'Cerrar Sesión',
+                          style: IconButton.styleFrom(
+                            backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.08),
+                            padding: const EdgeInsets.all(10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () {
+                            ref.read(proveedorAutenticacion.notifier).cerrarSesion();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
+          ),
+
+          // Área Principal de Contenido
+          Expanded(
+            child: Container(
+              color: const Color(0xFFEEF3F1),
+              child: widget.hijo,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Widget para construir los ítems del menú con estilo personalizado y animación Hover
+  Widget _itemMenu({
+    required int index,
+    required IconData icono,
+    required IconData iconoSeleccionado,
+    required String etiqueta,
+    required bool esExtendido,
+    required VoidCallback onTap,
+  }) {
+    final esActivo = _indiceSeleccionado == index;
+
+    return _ItemMenuHover(
+      esActivo: esActivo,
+      icono: icono,
+      iconoSeleccionado: iconoSeleccionado,
+      etiqueta: etiqueta,
+      esExtendido: esExtendido,
+      onTap: onTap,
+    );
+  }
+}
+
+// Widget Stateful privado para manejar el estado y la animación de Hover en cada botón del menú
+class _ItemMenuHover extends StatefulWidget {
+  const _ItemMenuHover({
+    required this.esActivo,
+    required this.icono,
+    required this.iconoSeleccionado,
+    required this.etiqueta,
+    required this.esExtendido,
+    required this.onTap,
+  });
+
+  final bool esActivo;
+  final IconData icono;
+  final IconData iconoSeleccionado;
+  final String etiqueta;
+  final bool esExtendido;
+  final VoidCallback onTap;
+
+  @override
+  State<_ItemMenuHover> createState() => _ItemMenuHoverState();
+}
+
+class _ItemMenuHoverState extends State<_ItemMenuHover> {
+  bool _estaCerniendo = false; // Is hovering
+
+  @override
+  Widget build(BuildContext context) {
+    // Definimos el color del texto/ícono según el estado activo o hover
+    final colorResaltado = widget.esActivo
+        ? const Color(0xFFF59E0B) // Amber
+        : (_estaCerniendo ? Colors.white : const Color(0xFF94A3B8));
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _estaCerniendo = true),
+      onExit: (_) => setState(() => _estaCerniendo = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        decoration: BoxDecoration(
+          color: widget.esActivo
+              ? const Color(0xFF1E293B).withValues(alpha: 0.3)
+              : (_estaCerniendo ? Colors.white.withValues(alpha: 0.05) : Colors.transparent),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: widget.esActivo
+                ? const Color(0xFFF59E0B)
+                : (_estaCerniendo ? Colors.white.withValues(alpha: 0.15) : Colors.transparent),
+            width: 1.5,
+          ),
+        ),
+        child: ListTile(
+          onTap: widget.onTap,
+          dense: true,
+          hoverColor: Colors.transparent, // Desactivamos el hover por defecto para usar la animación del Container
+          mouseCursor: SystemMouseCursors.click,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: widget.esExtendido ? 16 : 0, 
+            vertical: 2
+          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          title: widget.esExtendido
+              ? Text(
+                  widget.etiqueta,
+                  style: GoogleFonts.inter(
+                    color: colorResaltado,
+                    fontWeight: widget.esActivo ? FontWeight.bold : FontWeight.w500,
+                    fontSize: 14,
+                  ),
+                )
+              : null,
+          leading: SizedBox(
+            width: widget.esExtendido ? null : double.infinity,
+            child: Icon(
+              widget.esActivo ? widget.iconoSeleccionado : widget.icono,
+              color: colorResaltado,
+              size: 20,
+            ),
+          ),
         ),
       ),
-    );
-  }
-
-  /// Avatar circular del usuario con fallback a inicial del nombre.
-  Widget _construirAvatar(String nombre, String? fotoPerfil) {
-    final tieneFoto = fotoPerfil != null && fotoPerfil.isNotEmpty;
-    return CircleAvatar(
-      backgroundColor: const Color(0xFF00E5FF).withValues(alpha: 0.2),
-      backgroundImage: tieneFoto ? NetworkImage(fotoPerfil) : null,
-      child: tieneFoto
-          ? null
-          : Text(
-              nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : 'U',
-              style: const TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold),
-            ),
-    );
-  }
-
-  /// Botón de cierre de sesión.
-  Widget _construirBotonLogout(WidgetRef ref) {
-    return IconButton(
-      icon: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444)),
-      tooltip: 'Cerrar Sesión',
-      style: IconButton.styleFrom(
-        backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.1),
-        padding: const EdgeInsets.all(12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      onPressed: () => ref.read(proveedorAutenticacion.notifier).cerrarSesion(),
     );
   }
 }

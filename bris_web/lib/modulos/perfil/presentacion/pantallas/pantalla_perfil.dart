@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class PantallaPerfil extends ConsumerStatefulWidget {
   const PantallaPerfil({super.key});
@@ -12,48 +13,79 @@ class PantallaPerfil extends ConsumerStatefulWidget {
 }
 
 class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
+  bool _editando = false;
   bool _subiendoFoto = false;
+  late TextEditingController _nombreCtrl;
 
   @override
   void initState() {
     super.initState();
-    // Re-cargar dinámicamente los datos de perfil desde Supabase al entrar en la pantalla
-    Future.microtask(() => ref.read(proveedorAutenticacion.notifier).recargarPerfil());
+    _nombreCtrl = TextEditingController();
   }
 
-  Future<void> _subirNuevaFoto(String userId) async {
-    final messenger = ScaffoldMessenger.of(context);
+  @override
+  void dispose() {
+    _nombreCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _subirNuevaFoto(BuildContext context, String userId) async {
     setState(() => _subiendoFoto = true);
     try {
       final picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
-
+      
       if (image != null) {
         final bytes = await image.readAsBytes();
         final ext = image.name.split('.').last;
         final ruta = 'avatar_$userId.$ext';
-
+        
         await Supabase.instance.client.storage.from('avatars').uploadBinary(
           ruta,
           bytes,
           fileOptions: const FileOptions(upsert: true),
         );
-
+        
         final urlPublica = Supabase.instance.client.storage.from('avatars').getPublicUrl(ruta);
         final urlConCacheBuster = '$urlPublica?t=${DateTime.now().millisecondsSinceEpoch}';
-
+        
         await ref.read(proveedorAutenticacion.notifier).actualizarPerfil(fotoPerfil: urlConCacheBuster);
-
+        
         if (mounted) {
-          messenger.showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Foto de perfil actualizada con éxito'), backgroundColor: Colors.green),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        messenger.showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al subir la foto: $e'), backgroundColor: Colors.redAccent),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _subiendoFoto = false);
+    }
+  }
+
+  Future<void> _guardarNombre() async {
+    if (_nombreCtrl.text.trim().isEmpty) return;
+    
+    setState(() => _subiendoFoto = true);
+    try {
+      await ref.read(proveedorAutenticacion.notifier).actualizarPerfil(nombreReal: _nombreCtrl.text.trim());
+      setState(() {
+        _editando = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nombre actualizado con éxito'), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al guardar: $e'), backgroundColor: Colors.redAccent),
         );
       }
     } finally {
@@ -69,9 +101,13 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
     final rol = (estadoAuth.rol ?? 'Rol no definido').toUpperCase();
     final sede = (estadoAuth.sede ?? 'Sede no definida').toUpperCase();
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: Column(
+    if (!_editando) {
+      _nombreCtrl.text = nombre;
+    }
+
+    return Container(
+      color: const Color(0xFFEEF3F1),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Dark Blue Header Banner
@@ -79,15 +115,22 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
             decoration: const BoxDecoration(
-              color: Color(0xFF0F2D4A), // Deep navy blue
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  Color(0xFF0A2440),
+                  Color(0xFF123A5C),
+                ],
+              ),
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
             ),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Mi Perfil',
-                  style: TextStyle(
+                  style: GoogleFonts.fraunces(
                     color: Colors.white,
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
@@ -120,24 +163,25 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
                         border: Border.all(color: const Color(0xFFE2E8F0)),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.015),
-                            blurRadius: 8,
+                            color: Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 10,
                             offset: const Offset(0, 4),
-                          )
+                          ),
                         ],
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Avatar Stack with Hover Camera Icon
                           Stack(
                             children: [
                               Container(
-                                width: 100,
-                                height: 100,
+                                width: 120,
+                                height: 120,
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF00796B).withValues(alpha: 0.12),
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: const Color(0xFF00796B), width: 2),
+                                  border: Border.all(color: const Color(0xFF00796B).withValues(alpha: 0.3), width: 2),
                                   image: estadoAuth.fotoPerfil != null && estadoAuth.fotoPerfil!.isNotEmpty
                                       ? DecorationImage(
                                           image: NetworkImage(estadoAuth.fotoPerfil!),
@@ -151,13 +195,25 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
                                           nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : 'U',
                                           style: const TextStyle(
                                             color: Color(0xFF00796B),
-                                            fontSize: 40,
+                                            fontSize: 48,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                       )
                                     : null,
                               ),
+                              if (_subiendoFoto)
+                                Positioned.fill(
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      color: Colors.black38,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Center(
+                                      child: CircularProgressIndicator(color: Color(0xFF00796B)),
+                                    ),
+                                  ),
+                                ),
                               Positioned(
                                 bottom: 0,
                                 right: 0,
@@ -168,7 +224,7 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
                                     shape: const CircleBorder(),
                                     elevation: 4,
                                     child: InkWell(
-                                      onTap: _subiendoFoto ? null : () => _subirNuevaFoto(estadoAuth.usuario!.id),
+                                      onTap: _subiendoFoto ? null : () => _subirNuevaFoto(context, estadoAuth.usuario!.id),
                                       customBorder: const CircleBorder(),
                                       child: const Padding(
                                         padding: EdgeInsets.all(10.0),
@@ -181,19 +237,70 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
                             ],
                           ),
                           const SizedBox(width: 32),
-
-                          // Details Section - Read-Only
+                          
+                          // Details Section
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  nombre,
-                                  style: const TextStyle(
-                                    color: Color(0xFF0F172A),
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: _editando
+                                          ? TextFormField(
+                                              controller: _nombreCtrl,
+                                              style: const TextStyle(color: Color(0xFF0F172A), fontSize: 22, fontWeight: FontWeight.bold),
+                                              decoration: InputDecoration(
+                                                hintText: 'Tu nombre',
+                                                filled: true,
+                                                fillColor: const Color(0xFFF8FAFC),
+                                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF00796B))),
+                                              ),
+                                            )
+                                          : Text(
+                                              nombre,
+                                              style: const TextStyle(
+                                                color: Color(0xFF0F172A),
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    if (!_editando)
+                                      OutlinedButton.icon(
+                                        onPressed: () => setState(() => _editando = true),
+                                        icon: const Icon(Icons.edit_rounded, size: 16),
+                                        label: const Text('Editar'),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: const Color(0xFF00796B),
+                                          side: const BorderSide(color: Color(0xFF00796B)),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        ),
+                                      )
+                                    else
+                                      Row(
+                                        children: [
+                                          TextButton(
+                                            onPressed: () => setState(() => _editando = false),
+                                            child: const Text('Cancelar', style: TextStyle(color: Color(0xFF64748B))),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          ElevatedButton(
+                                            onPressed: _guardarNombre,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(0xFF00796B),
+                                              foregroundColor: Colors.white,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            ),
+                                            child: const Text('Guardar'),
+                                          ),
+                                        ],
+                                      ),
+                                  ],
                                 ),
                                 const SizedBox(height: 8),
                                 Text(

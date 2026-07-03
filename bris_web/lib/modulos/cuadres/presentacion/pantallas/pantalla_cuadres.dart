@@ -4,9 +4,8 @@ import 'package:intl/intl.dart';
 
 import '../controladores/controlador_cuadres.dart';
 import '../../dominio/modelos/cuadre_web_modelo.dart';
-import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:bris_web/nucleo/componentes/carga_orbital.dart';
-import '../../../../compartido/widgets/shimmer_carga.dart';
 
 /// Pantalla de Cuadres de Pesca — Web Admin.
 ///
@@ -15,12 +14,15 @@ import '../../../../compartido/widgets/shimmer_carga.dart';
 class PantallaCuadres extends ConsumerWidget {
   const PantallaCuadres({super.key});
 
-  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(controladorCuadresWebProvider);
     final fmt = NumberFormat('#,##0.00', 'es_PE');
 
-    // La pantalla construye su cabecera y delega la carga al cuerpo
+    if (estado.cargando) {
+      return const Center(
+        child: CargaOrbital(tamano: 80),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -30,7 +32,14 @@ class PantallaCuadres extends ConsumerWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
           decoration: const BoxDecoration(
-            color: Color(0xFF0F2D4A), // Deep navy blue
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                Color(0xFF0A2440),
+                Color(0xFF123A5C),
+              ],
+            ),
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
           ),
           child: Row(
@@ -39,9 +48,9 @@ class PantallaCuadres extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Cuadres de Pesca',
-                    style: TextStyle(
+                    style: GoogleFonts.fraunces(
                       color: Colors.white,
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -148,7 +157,6 @@ class _BotoFiltroFecha extends StatelessWidget {
   final ValueChanged<DateTime> onSeleccionar;
   final VoidCallback onLimpiar;
 
-  @override
   Widget build(BuildContext context) {
     final texto = fecha != null ? DateFormat('dd/MM/yyyy').format(fecha!) : label;
     return OutlinedButton.icon(
@@ -186,8 +194,8 @@ class _CuerpoConDetalle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (estado.cargando && estado.cuadres.isEmpty) {
-      return const ShimmerTablaCarga(oscuro: false, filas: 8);
+    if (estado.cargando) {
+      return const Center(child: CargaOrbital(tamano: 80));
     }
     if (estado.error != null) {
       return Center(child: Text('Error: ${estado.error}', style: const TextStyle(color: Colors.redAccent)));
@@ -205,7 +213,7 @@ class _CuerpoConDetalle extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(flex: 3, child: _TablaCuadres(estado: estado, fmt: fmt)),
+        Expanded(flex: 3, child: _TablaCuadres(cuadres: estado.cuadres, fmt: fmt, seleccionadoId: estado.cuadreSeleccionadoId)),
         if (estado.cuadreSeleccionado != null) ...[
           const SizedBox(width: 24),
           SizedBox(width: 380, child: _PanelDetalle(cuadre: estado.cuadreSeleccionado!, fmt: fmt)),
@@ -217,39 +225,15 @@ class _CuerpoConDetalle extends StatelessWidget {
 
 // ─── Tabla de Cuadres ─────────────────────────────────────────────────────────
 
-class _TablaCuadres extends ConsumerStatefulWidget {
-  const _TablaCuadres({required this.estado, required this.fmt});
-  final EstadoCuadresWeb estado;
+class _TablaCuadres extends ConsumerWidget {
+  const _TablaCuadres({required this.cuadres, required this.fmt, required this.seleccionadoId});
+  final List<CuadreWebModelo> cuadres;
   final NumberFormat fmt;
+  final String? seleccionadoId;
 
   @override
-  ConsumerState<_TablaCuadres> createState() => _TablaCuadresState();
-}
-
-class _TablaCuadresState extends ConsumerState<_TablaCuadres> {
-  int _paginaActual = 0;
-  static const int _elementosPorPagina = 6;
-
-  @override
-  void didUpdateWidget(covariant _TablaCuadres oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.estado.cuadres.length != oldWidget.estado.cuadres.length) {
-       _paginaActual = 0; // Reset page when items change
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ctrl = ref.read(controladorCuadresWebProvider.notifier);
-    final estado = widget.estado;
-    
-    final startIndex = _paginaActual * _elementosPorPagina;
-    final endIndex = (startIndex + _elementosPorPagina > estado.cuadres.length)
-        ? estado.cuadres.length
-        : startIndex + _elementosPorPagina;
-    
-    final cuadresPaginados = estado.cuadres.sublist(startIndex, endIndex);
-    final totalPaginas = (estado.cuadres.length / _elementosPorPagina).ceil();
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -266,67 +250,21 @@ class _TablaCuadresState extends ConsumerState<_TablaCuadres> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: SingleChildScrollView(
-          child: Column(
+          child: Table(
+            border: const TableBorder(
+              horizontalInside: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+            ),
+            columnWidths: const {
+              0: FlexColumnWidth(2),
+              1: FlexColumnWidth(2),
+              2: FlexColumnWidth(1.5),
+              3: FlexColumnWidth(1.2),
+              4: FlexColumnWidth(1.2),
+              5: FlexColumnWidth(1),
+            },
             children: [
-              Table(
-                border: const TableBorder(
-                  horizontalInside: BorderSide(color: Color(0xFFE2E8F0), width: 1),
-                ),
-                columnWidths: const {
-                  0: FlexColumnWidth(2),
-                  1: FlexColumnWidth(2),
-                  2: FlexColumnWidth(1.5),
-                  3: FlexColumnWidth(1.2),
-                  4: FlexColumnWidth(1.2),
-                  5: FlexColumnWidth(1),
-                },
-                children: [
-                  _filaTitulo(['Placa', 'Fecha Zarpe', 'Estado', if (ref.watch(proveedorAutenticacion).rol == 'admin') 'Ventas', if (ref.watch(proveedorAutenticacion).rol == 'admin') 'Utilidad', '']),
-                  ...cuadresPaginados.map((c) => _filaData(c, ctrl, estado.cuadreSeleccionadoId, ref.watch(proveedorAutenticacion).rol == 'admin')),
-                ],
-              ),
-              if (estado.hayMasPaginas)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Center(
-                    child: OutlinedButton.icon(
-                      onPressed: estado.cargando
-                          ? null
-                          : () => ctrl.cargarCuadres(esCargaMas: true),
-                      icon: estado.cargando
-                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.arrow_downward_rounded, size: 16),
-                      label: const Text('Cargar más'),
-                    ),
-                  ),
-                ),
-              if (totalPaginas > 1)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.chevron_left),
-                        onPressed: _paginaActual > 0
-                            ? () => setState(() => _paginaActual--)
-                            : null,
-                      ),
-                      const SizedBox(width: 16),
-                      Text(
-                        'Página ${_paginaActual + 1} de $totalPaginas',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569)),
-                      ),
-                      const SizedBox(width: 16),
-                      IconButton(
-                        icon: const Icon(Icons.chevron_right),
-                        onPressed: _paginaActual < totalPaginas - 1
-                            ? () => setState(() => _paginaActual++)
-                            : null,
-                      ),
-                    ],
-                  ),
-                ),
+              _filaTitulo(['Placa', 'Fecha Zarpe', 'Estado', 'Ventas', 'Utilidad', '']),
+              ...cuadres.map((c) => _filaData(c, ctrl)),
             ],
           ),
         ),
@@ -344,7 +282,7 @@ class _TablaCuadresState extends ConsumerState<_TablaCuadres> {
     );
   }
 
-  TableRow _filaData(CuadreWebModelo c, ControladorCuadresWeb ctrl, String? seleccionadoId, bool esAdmin) {
+  TableRow _filaData(CuadreWebModelo c, ControladorCuadresWeb ctrl) {
     final esSeleccionado = c.id == seleccionadoId;
     final color = _colorEstado(c.estado);
     return TableRow(
@@ -355,10 +293,10 @@ class _TablaCuadresState extends ConsumerState<_TablaCuadres> {
         _celda(c.placa, bold: true),
         _celda(c.fechaZarpe != null ? DateFormat('dd/MM/yyyy').format(DateTime.tryParse(c.fechaZarpe!)!) : '-'),
         _celdaEstado(c.estado, color),
-        if (esAdmin) _celda('S/ ${widget.fmt.format(c.totalVentas)}'),
-        if (esAdmin) _celda('S/ ${widget.fmt.format(c.utilidadNeta)}',
+        _celda('S/ ${fmt.format(c.totalVentas)}'),
+        _celda('S/ ${fmt.format(c.utilidadNeta)}',
             color: c.utilidadNeta >= 0 ? const Color(0xFF2E7D32) : const Color(0xFFC62828)),
-        _celdaAccion(c, ctrl, seleccionadoId),
+        _celdaAccion(c, ctrl),
       ],
     );
   }
@@ -386,7 +324,7 @@ class _TablaCuadresState extends ConsumerState<_TablaCuadres> {
     );
   }
 
-  Widget _celdaAccion(CuadreWebModelo c, ControladorCuadresWeb ctrl, String? seleccionadoId) {
+  Widget _celdaAccion(CuadreWebModelo c, ControladorCuadresWeb ctrl) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: Consumer(builder: (ctx, ref, _) => IconButton(
@@ -464,21 +402,19 @@ class _PanelDetalle extends ConsumerWidget {
               total: cuadre.totalGastos,
               fmt: fmt,
             ),
-            if (ref.watch(proveedorAutenticacion).rol == 'admin') ...[
-              const SizedBox(height: 12),
-              _seccionRelacion(
-                icono: Icons.trending_up_rounded,
-                colorIcono: const Color(0xFF16A34A),
-                titulo: 'Ventas (Planta)',
-                items: cuadre.ventas.map((v) =>
-                  '${v.lugar} — ${v.producto}: ${v.kilos}kg @ S/${fmt.format(v.precioUnitario)} = S/${fmt.format(v.total)}'
-                ).toList(),
-                total: cuadre.totalVentas,
-                fmt: fmt,
-              ),
-              const SizedBox(height: 16),
-              _utilidadNeta(),
-            ],
+            const SizedBox(height: 12),
+            _seccionRelacion(
+              icono: Icons.trending_up_rounded,
+              colorIcono: const Color(0xFF16A34A),
+              titulo: 'Ventas (Planta)',
+              items: cuadre.ventas.map((v) =>
+                '${v.lugar} — ${v.producto}: ${v.kilos}kg @ S/${fmt.format(v.precioUnitario)} = S/${fmt.format(v.total)}'
+              ).toList(),
+              total: cuadre.totalVentas,
+              fmt: fmt,
+            ),
+            const SizedBox(height: 16),
+            _utilidadNeta(),
           ],
         ),
       ),
