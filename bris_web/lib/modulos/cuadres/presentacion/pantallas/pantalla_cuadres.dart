@@ -242,7 +242,6 @@ class _TablaCuadresState extends ConsumerState<_TablaCuadres> {
   Widget build(BuildContext context) {
     final ctrl = ref.read(controladorCuadresWebProvider.notifier);
     final estado = widget.estado;
-    final fmt = widget.fmt;
     
     final startIndex = _paginaActual * _elementosPorPagina;
     final endIndex = (startIndex + _elementosPorPagina > estado.cuadres.length)

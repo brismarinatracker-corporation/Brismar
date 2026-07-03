@@ -24,4 +24,4 @@ plugins {
 }
 
 include(":app")
-rootProject.name = "brismar_app"
+rootProject.name = "brismar_tracker"
