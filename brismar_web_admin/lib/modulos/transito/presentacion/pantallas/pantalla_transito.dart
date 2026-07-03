@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../controladores/controlador_transito.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 
 class FiltroTransitoNotifier extends Notifier<String> {
@@ -37,7 +38,14 @@ class PantallaTransito extends ConsumerWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
           decoration: const BoxDecoration(
-            color: Color(0xFF0F2D4A), // Deep navy blue
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                Color(0xFF0A2440),
+                Color(0xFF123A5C),
+              ],
+            ),
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
           ),
           child: Row(
@@ -46,9 +54,9 @@ class PantallaTransito extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Radar de tránsito (cámaras entrantes)',
-                    style: TextStyle(
+                    style: GoogleFonts.fraunces(
                       color: Colors.white,
                       fontSize: 26,
                       fontWeight: FontWeight.bold,

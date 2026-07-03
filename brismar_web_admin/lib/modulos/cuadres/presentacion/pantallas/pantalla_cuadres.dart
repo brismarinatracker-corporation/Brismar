@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../controladores/controlador_cuadres.dart';
 import '../../dominio/modelos/cuadre_web_modelo.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 
 /// Pantalla de Cuadres de Pesca — Web Admin.
@@ -31,7 +32,14 @@ class PantallaCuadres extends ConsumerWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
           decoration: const BoxDecoration(
-            color: Color(0xFF0F2D4A), // Deep navy blue
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                Color(0xFF0A2440),
+                Color(0xFF123A5C),
+              ],
+            ),
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
           ),
           child: Row(
@@ -40,9 +48,9 @@ class PantallaCuadres extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Cuadres de Pesca',
-                    style: TextStyle(
+                    style: GoogleFonts.fraunces(
                       color: Colors.white,
                       fontSize: 26,
                       fontWeight: FontWeight.bold,

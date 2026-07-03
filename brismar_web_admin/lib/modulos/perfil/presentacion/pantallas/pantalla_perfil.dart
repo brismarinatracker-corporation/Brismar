@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class PantallaPerfil extends ConsumerStatefulWidget {
   const PantallaPerfil({super.key});
@@ -105,7 +106,7 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
     }
 
     return Container(
-      color: const Color(0xFFF8FAFC),
+      color: const Color(0xFFEEF3F1),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -114,15 +115,22 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
             decoration: const BoxDecoration(
-              color: Color(0xFF0F2D4A), // Deep navy blue
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  Color(0xFF0A2440),
+                  Color(0xFF123A5C),
+                ],
+              ),
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
             ),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Mi Perfil',
-                  style: TextStyle(
+                  style: GoogleFonts.fraunces(
                     color: Colors.white,
                     fontSize: 26,
                     fontWeight: FontWeight.bold,

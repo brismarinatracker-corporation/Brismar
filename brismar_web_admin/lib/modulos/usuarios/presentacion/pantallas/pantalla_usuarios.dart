@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controladores/controlador_usuarios.dart';
 import '../widgets/dialogo_formulario_usuario.dart';
 import '../../dominio/modelos/usuario_admin_modelo.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:brismar_web_admin/nucleo/componentes/carga_orbital.dart';
 
 class PantallaUsuarios extends ConsumerWidget {
@@ -15,7 +16,7 @@ class PantallaUsuarios extends ConsumerWidget {
     final ctrl = ref.read(controladorUsuariosProvider.notifier);
     
     return Container(
-      color: const Color(0xFFF8FAFC),
+      color: const Color(0xFFEEF3F1),
       child: estado.cargando && estado.usuarios.isEmpty
         ? const Center(child: CargaOrbital(tamano: 80))
         : Column(
@@ -26,18 +27,25 @@ class PantallaUsuarios extends ConsumerWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
                 decoration: const BoxDecoration(
-                  color: Color(0xFF0F2D4A), // Deep navy blue
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Color(0xFF0A2440),
+                      Color(0xFF123A5C),
+                    ],
+                  ),
                   borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Gestión de Accesos',
-                          style: TextStyle(
+                          style: GoogleFonts.fraunces(
                             color: Colors.white,
                             fontSize: 26,
                             fontWeight: FontWeight.bold,
