@@ -79,8 +79,10 @@ class RutaDashboard extends GoRouteData with $RutaDashboard {
   const RutaDashboard();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) {
-    return const PantallaDashboard();
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return const NoTransitionPage<void>(
+      child: PantallaDashboard(),
+    );
   }
 }
 
@@ -88,8 +90,10 @@ class RutaTransito extends GoRouteData with $RutaTransito {
   const RutaTransito();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) {
-    return const PantallaTransito();
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return const NoTransitionPage<void>(
+      child: PantallaTransito(),
+    );
   }
 }
 
@@ -98,8 +102,10 @@ class RutaEdicionTransito extends GoRouteData with $RutaEdicionTransito {
   const RutaEdicionTransito({required this.id});
 
   @override
-  Widget build(BuildContext context, GoRouterState state) {
-    return PantallaEdicionTransito(id: id);
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return NoTransitionPage<void>(
+      child: PantallaEdicionTransito(id: id),
+    );
   }
 }
 
@@ -107,8 +113,10 @@ class RutaCuadres extends GoRouteData with $RutaCuadres {
   const RutaCuadres();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) {
-    return const PantallaCuadres();
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return const NoTransitionPage<void>(
+      child: PantallaCuadres(),
+    );
   }
 }
 
@@ -116,8 +124,10 @@ class RutaUsuarios extends GoRouteData with $RutaUsuarios {
   const RutaUsuarios();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) {
-    return const PantallaUsuarios();
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return const NoTransitionPage<void>(
+      child: PantallaUsuarios(),
+    );
   }
 }
 
@@ -125,8 +135,10 @@ class RutaPerfil extends GoRouteData with $RutaPerfil {
   const RutaPerfil();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) {
-    return const PantallaPerfil();
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return const NoTransitionPage<void>(
+      child: PantallaPerfil(),
+    );
   }
 }
 
@@ -135,7 +147,9 @@ class RutaLogin extends GoRouteData with $RutaLogin {
   const RutaLogin();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) {
-    return const PantallaLogin();
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return const NoTransitionPage<void>(
+      child: PantallaLogin(),
+    );
   }
 }
