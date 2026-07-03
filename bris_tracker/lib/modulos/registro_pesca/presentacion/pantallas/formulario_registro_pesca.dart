@@ -55,16 +55,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
   final _fechaZarpeCtrl = TextEditingController();
   final _muellePartidaCtrl = TextEditingController();
 
-  // Controladores de Gastos Operativos Establecidos
-  final _facturacionCtrl = TextEditingController();
-  final _personalCtrl = TextEditingController();
-  final _apoyoCtrl = TextEditingController();
-  final _aguaCtrl = TextEditingController();
-  final _pesadorCtrl = TextEditingController();
-  final _cloroxCtrl = TextEditingController();
-  final _hieloCtrl = TextEditingController();
-  final _fleteCtrl = TextEditingController();
-  final _otrosCtrl = TextEditingController();
+  // Controladores de Observaciones
   final _observacionesCtrl = TextEditingController();
 
   // Listas de items en memoria antes de guardar
@@ -87,26 +78,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
       _cargarZarpeAsociado(widget.cuadreInicial!.id);
 
       for (final g in widget.cuadreInicial!.gastos) {
-        final valor = g.total > 0 ? _formatearNumero(g.total) : '';
-        if (g.concepto == 'FACTURACION') {
-          _facturacionCtrl.text = valor;
-        } else if (g.concepto == 'PERSONAL') {
-          _personalCtrl.text = valor;
-        } else if (g.concepto == 'APOYO') {
-          _apoyoCtrl.text = valor;
-        } else if (g.concepto == 'AGUA') {
-          _aguaCtrl.text = valor;
-        } else if (g.concepto == 'PESADOR') {
-          _pesadorCtrl.text = valor;
-        } else if (g.concepto == 'CLOROX') {
-          _cloroxCtrl.text = valor;
-        } else if (g.concepto == 'HIELO') {
-          _hieloCtrl.text = valor;
-        } else if (g.concepto == 'FLETE') {
-          _fleteCtrl.text = valor;
-        } else if (g.concepto == 'OTROS') {
-          _otrosCtrl.text = valor;
-        } else if (g.concepto == 'OBSERVACIONES') {
+        if (g.concepto == 'OBSERVACIONES') {
           _observacionesCtrl.text = g.tipo;
         }
       }
@@ -122,15 +94,6 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
     _placaCtrl.dispose();
     _fechaZarpeCtrl.dispose();
     _muellePartidaCtrl.dispose();
-    _facturacionCtrl.dispose();
-    _personalCtrl.dispose();
-    _apoyoCtrl.dispose();
-    _aguaCtrl.dispose();
-    _pesadorCtrl.dispose();
-    _cloroxCtrl.dispose();
-    _hieloCtrl.dispose();
-    _fleteCtrl.dispose();
-    _otrosCtrl.dispose();
     _observacionesCtrl.dispose();
     super.dispose();
   }
@@ -140,12 +103,7 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
   double get totalAdelantos => _compras.fold(0.0, (sum, c) => sum + c.adelanto);
   
   double get totalGastosOperativos {
-    double sum = 0.0;
-    final ctrls = [_facturacionCtrl, _personalCtrl, _apoyoCtrl, _aguaCtrl, _pesadorCtrl, _cloroxCtrl, _hieloCtrl, _fleteCtrl, _otrosCtrl];
-    for (var c in ctrls) {
-      final val = double.tryParse(c.text.replaceAll(',', '').trim()) ?? 0.0;
-      sum += val;
-    }
+    double sum = _gastos.where((g) => g.concepto != 'OBSERVACIONES').fold(0.0, (acc, g) => acc + g.total);
     return sum;
   }
 
@@ -159,31 +117,8 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
       return;
     }
 
-    _gastos.clear();
-    final Map<String, TextEditingController> mapeoGastos = {
-      'FACTURACION': _facturacionCtrl,
-      'PERSONAL': _personalCtrl,
-      'APOYO': _apoyoCtrl,
-      'AGUA': _aguaCtrl,
-      'PESADOR': _pesadorCtrl,
-      'CLOROX': _cloroxCtrl,
-      'HIELO': _hieloCtrl,
-      'FLETE': _fleteCtrl,
-      'OTROS': _otrosCtrl,
-    };
-
-    mapeoGastos.forEach((concepto, ctrl) {
-      final texto = ctrl.text.replaceAll(',', '').trim();
-      if (texto.isNotEmpty) {
-        final valor = double.tryParse(texto) ?? 0.0;
-        if (valor > 0) {
-          _gastos.add(GastoEntidad(
-            id: const Uuid().v4(), cuadreId: _cuadreId, tipo: 'Muelle', concepto: concepto, cantidad: 1, costoUnitario: valor, total: valor,
-          ));
-        }
-      }
-    });
-
+    // Remover observación previa si existe antes de agregar la nueva
+    _gastos.removeWhere((g) => g.concepto == 'OBSERVACIONES');
     if (_observacionesCtrl.text.trim().isNotEmpty) {
       _gastos.add(GastoEntidad(
         id: const Uuid().v4(), cuadreId: _cuadreId, tipo: _observacionesCtrl.text.trim(), concepto: 'OBSERVACIONES', cantidad: 1, costoUnitario: 0, total: 0,
@@ -254,20 +189,135 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
     );
   }
 
-  Widget _construirCampoGasto({required String labelText, required TextEditingController controller}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        controller: controller,
-        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-        decoration: _construirInputDecoration(labelText: labelText).copyWith(
-          prefixText: 'S/ ',
-          prefixStyle: const TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold, fontSize: 20),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18), // Más alto para POS
-        ),
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
-        onChanged: (val) => setState((){}), // Trigger rebuild for total summary
+  void _agregarGastoDialog({GastoEntidad? gastoAEditar, int? indiceAEditar}) {
+    final formKeyDialog = GlobalKey<FormState>();
+    String tipoSeleccionado = gastoAEditar?.tipo ?? 'Petróleo';
+    final conceptoCtrl = TextEditingController(text: gastoAEditar?.concepto ?? '');
+    final cantidadCtrl = TextEditingController(text: gastoAEditar != null ? gastoAEditar.cantidad.toString() : '1');
+    final costoUnitarioCtrl = TextEditingController(text: gastoAEditar != null ? gastoAEditar.costoUnitario.toString() : '');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return Dialog(
+            backgroundColor: const Color(0xFF0F224A),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1.2)),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Form(
+                    key: formKeyDialog,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.attach_money_rounded, color: Colors.orangeAccent, size: 32),
+                            const SizedBox(width: 12),
+                            Text(gastoAEditar != null ? 'EDITAR GASTO' : 'REGISTRAR GASTO', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+                            const Spacer(),
+                            IconButton(
+                              icon: const Icon(Icons.close, color: Colors.white54, size: 32),
+                              onPressed: () => Navigator.pop(ctx),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        DropdownButtonFormField<String>(
+                          value: tipoSeleccionado,
+                          dropdownColor: const Color(0xFF0F224A),
+                          style: const TextStyle(color: Colors.white, fontSize: 18),
+                          decoration: _construirInputDecoration(labelText: 'Categoría').copyWith(contentPadding: const EdgeInsets.all(16)),
+                          items: ['Petróleo', 'Hielo', 'Víveres', 'Muelle', 'Mantenimiento', 'Otros'].map((String tipo) {
+                            return DropdownMenuItem<String>(
+                              value: tipo,
+                              child: Text(tipo),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            if (newValue != null) setStateDialog(() => tipoSeleccionado = newValue);
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: conceptoCtrl,
+                          style: const TextStyle(color: Colors.white, fontSize: 18),
+                          decoration: _construirInputDecoration(labelText: 'Concepto / Detalle').copyWith(contentPadding: const EdgeInsets.all(16)),
+                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Requerido' : null,
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: cantidadCtrl,
+                                style: const TextStyle(color: Colors.white, fontSize: 18),
+                                decoration: _construirInputDecoration(labelText: 'Cantidad').copyWith(contentPadding: const EdgeInsets.all(16)),
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                validator: (v) => (v == null || double.tryParse(v) == null) ? 'Inválido' : null,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: TextFormField(
+                                controller: costoUnitarioCtrl,
+                                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                                decoration: _construirInputDecoration(labelText: 'Costo Unit. (S/)').copyWith(contentPadding: const EdgeInsets.all(16)),
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                validator: (v) => (v == null || double.tryParse(v) == null) ? 'Inválido' : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 32),
+                        SizedBox(
+                          height: 56,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orangeAccent,
+                              foregroundColor: const Color(0xFF040B1E),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            ),
+                            icon: const Icon(Icons.check, size: 28),
+                            label: const Text('GUARDAR GASTO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                            onPressed: () {
+                              if (!formKeyDialog.currentState!.validate()) return;
+                              final c = double.parse(cantidadCtrl.text.replaceAll(',', ''));
+                              final cu = double.parse(costoUnitarioCtrl.text.replaceAll(',', ''));
+                              
+                              setState(() {
+                                final item = GastoEntidad(
+                                  id: gastoAEditar?.id ?? const Uuid().v4(),
+                                  cuadreId: _cuadreId,
+                                  tipo: tipoSeleccionado,
+                                  concepto: conceptoCtrl.text.trim(),
+                                  cantidad: c,
+                                  costoUnitario: cu,
+                                  total: c * cu,
+                                );
+                                if (gastoAEditar != null && indiceAEditar != null) {
+                                  _gastos[indiceAEditar] = item;
+                                } else {
+                                  _gastos.add(item);
+                                }
+                              });
+                              Navigator.pop(ctx);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
       ),
     );
   }
@@ -762,6 +812,8 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
   }
 
   Widget _buildSeccionGastos() {
+    final gastosVisibles = _gastos.where((g) => g.concepto != 'OBSERVACIONES').toList();
+    
     return Card(
       color: const Color(0xFF0F224A).withValues(alpha: 0.7),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
@@ -770,22 +822,65 @@ class _FormularioRegistroPescaState extends ConsumerState<FormularioRegistroPesc
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Gastos Operativos Muelle', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Gastos Operativos', 
+                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orangeAccent,
+                    foregroundColor: const Color(0xFF040B1E),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  onPressed: () => _agregarGastoDialog(),
+                  icon: const Icon(Icons.add, size: 16),
+                  label: const Text('Registrar Gasto', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
-            _construirCampoGasto(labelText: 'Facturación', controller: _facturacionCtrl),
-            _construirCampoGasto(labelText: 'Personal', controller: _personalCtrl),
-            _construirCampoGasto(labelText: 'Hielo', controller: _hieloCtrl),
-            _construirCampoGasto(labelText: 'Flete', controller: _fleteCtrl),
-            _construirCampoGasto(labelText: 'Apoyo', controller: _apoyoCtrl),
-            _construirCampoGasto(labelText: 'Agua', controller: _aguaCtrl),
-            _construirCampoGasto(labelText: 'Pesador', controller: _pesadorCtrl),
-            _construirCampoGasto(labelText: 'Clorox', controller: _cloroxCtrl),
-            _construirCampoGasto(labelText: 'Otros', controller: _otrosCtrl),
-            const SizedBox(height: 8),
+            if (gastosVisibles.isEmpty)
+              const Center(child: Padding(padding: EdgeInsets.all(20.0), child: Text('No hay gastos registrados.', style: TextStyle(color: Colors.white54))))
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: gastosVisibles.length,
+                itemBuilder: (ctx, i) {
+                  final g = gastosVisibles[i];
+                  final indexGlobal = _gastos.indexOf(g);
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.white12)),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      leading: const CircleAvatar(backgroundColor: Colors.orangeAccent, child: Icon(Icons.attach_money, color: Colors.white, size: 20)),
+                      title: Text(g.concepto, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      subtitle: Text('${g.tipo} • ${g.cantidad} x S/ ${_formatearNumero(g.costoUnitario)}', style: const TextStyle(color: Colors.white70)),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('S/ ${_formatearNumero(g.total)}', style: const TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold, fontSize: 15)),
+                          IconButton(icon: const Icon(Icons.edit, color: Colors.white54, size: 20), onPressed: () => _agregarGastoDialog(gastoAEditar: g, indiceAEditar: indexGlobal)),
+                          IconButton(icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20), onPressed: () => setState(() => _gastos.removeAt(indexGlobal))),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _observacionesCtrl,
               style: const TextStyle(color: Colors.white),
-              decoration: _construirInputDecoration(labelText: 'Observaciones / Notas'),
+              decoration: _construirInputDecoration(labelText: 'Observaciones / Notas (Opcional)'),
             ),
           ],
         ),

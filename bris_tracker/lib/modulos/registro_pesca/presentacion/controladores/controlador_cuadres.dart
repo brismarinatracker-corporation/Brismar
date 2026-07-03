@@ -6,6 +6,7 @@ import '../../../../nucleo/red/verificador_conexion.dart';
 import '../../datos/fuentes_datos/fuente_datos_cuadres_local.dart';
 import '../../datos/fuentes_datos/fuente_datos_cuadres_remota.dart';
 import '../../datos/repositorios/cuadre_repositorio_imp.dart';
+import '../../datos/modelos/cuadre_modelo.dart';
 import '../../dominio/entidades/cuadre_entidad.dart';
 
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
@@ -63,6 +64,41 @@ class CuadresNotifier extends StateNotifier<AsyncValue<List<CuadreEntidad>>> {
       await cargarHistorial(); // Refrescar UI
     } catch (e) {
       rethrow;
+    }
+  }
+
+  Future<void> agregarGasto(String cuadreId, GastoEntidad nuevoGasto) async {
+    if (state is AsyncData) {
+      final cuadres = state.value!;
+      final idx = cuadres.indexWhere((c) => c.id == cuadreId);
+      if (idx != -1) {
+        final cuadre = cuadres[idx];
+        final nuevosGastos = List<GastoEntidad>.from(cuadre.gastos)..add(nuevoGasto);
+        
+        final cuadreActualizado = CuadreModelo(
+          id: cuadre.id,
+          usuarioId: cuadre.usuarioId,
+          placa: cuadre.placa,
+          fechaZarpe: cuadre.fechaZarpe,
+          fechaCuadre: cuadre.fechaCuadre,
+          estado: cuadre.estado,
+          urlPdfCloud: cuadre.urlPdfCloud,
+          urlExcelCloud: cuadre.urlExcelCloud,
+          sincronizado: false, // Forzar sync
+          fotoZarpeUrl: cuadre.fotoZarpeUrl,
+          pesoTotal: cuadre.pesoTotal,
+          cajasLlenas: cuadre.cajasLlenas,
+          cajasVacias: cuadre.cajasVacias,
+          tipoProducto: cuadre.tipoProducto,
+          muellePartida: cuadre.muellePartida,
+          pesador: cuadre.pesador,
+          compras: cuadre.compras,
+          gastos: nuevosGastos,
+          ventas: cuadre.ventas,
+        );
+        
+        await guardarCuadre(cuadreActualizado);
+      }
     }
   }
 }
