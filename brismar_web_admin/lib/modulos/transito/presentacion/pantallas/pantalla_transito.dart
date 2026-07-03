@@ -561,7 +561,7 @@ class PantallaTransito extends ConsumerWidget {
   }
 }
 
-class _FiltroChip extends StatelessWidget {
+class _FiltroChip extends StatefulWidget {
   final String label;
   final bool activo;
   final VoidCallback onTap;
@@ -573,35 +573,56 @@ class _FiltroChip extends StatelessWidget {
   });
 
   @override
+  State<_FiltroChip> createState() => _FiltroChipState();
+}
+
+class _FiltroChipState extends State<_FiltroChip> {
+  bool _estaCerniendo = false;
+
+  @override
   Widget build(BuildContext context) {
-    final colorPrimario = const Color(0xFF0D5C75);
+    const colorPrimario = Color(0xFF0F766E); // Sea green
     
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: activo ? colorPrimario : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: activo ? colorPrimario : const Color(0xFFCBD5E1),
-            width: 1.5,
+    // Cambiamos colores dinámicamente según el estado activo y hover
+    final colorFondo = widget.activo
+        ? colorPrimario
+        : (_estaCerniendo ? const Color(0xFFE2E8F0) : Colors.white);
+
+    final colorBorde = widget.activo
+        ? colorPrimario
+        : (_estaCerniendo ? const Color(0xFF94A3B8) : const Color(0xFFCBD5E1));
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _estaCerniendo = true),
+      onExit: (_) => setState(() => _estaCerniendo = false),
+      child: InkWell(
+        onTap: widget.onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: colorFondo,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: colorBorde,
+              width: 1.5,
+            ),
+            boxShadow: widget.activo ? [
+              BoxShadow(
+                color: colorPrimario.withOpacity(0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              )
+            ] : null,
           ),
-          boxShadow: activo ? [
-            BoxShadow(
-              color: colorPrimario.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            )
-          ] : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: activo ? Colors.white : const Color(0xFF475569),
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
+          child: Text(
+            widget.label,
+            style: GoogleFonts.inter(
+              color: widget.activo ? Colors.white : const Color(0xFF475569),
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
           ),
         ),
       ),
