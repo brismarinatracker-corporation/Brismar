@@ -249,7 +249,7 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
     );
   }
 
-  // Widget para construir los ítems del menú con estilo personalizado
+  // Widget para construir los ítems del menú con estilo personalizado y animación Hover
   Widget _itemMenu({
     required int index,
     required IconData icono,
@@ -260,37 +260,94 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
   }) {
     final esActivo = _indiceSeleccionado == index;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: esActivo ? const Color(0xFF1E293B).withOpacity(0.3) : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: esActivo ? const Color(0xFFF59E0B) : Colors.transparent, // Borde ámbar en item activo
-          width: 1.5,
+    return _ItemMenuHover(
+      esActivo: esActivo,
+      icono: icono,
+      iconoSeleccionado: iconoSeleccionado,
+      etiqueta: etiqueta,
+      esExtendido: esExtendido,
+      onTap: onTap,
+    );
+  }
+}
+
+// Widget Stateful privado para manejar el estado y la animación de Hover en cada botón del menú
+class _ItemMenuHover extends StatefulWidget {
+  const _ItemMenuHover({
+    required this.esActivo,
+    required this.icono,
+    required this.iconoSeleccionado,
+    required this.etiqueta,
+    required this.esExtendido,
+    required this.onTap,
+  });
+
+  final bool esActivo;
+  final IconData icono;
+  final IconData iconoSeleccionado;
+  final String etiqueta;
+  final bool esExtendido;
+  final VoidCallback onTap;
+
+  @override
+  State<_ItemMenuHover> createState() => _ItemMenuHoverState();
+}
+
+class _ItemMenuHoverState extends State<_ItemMenuHover> {
+  bool _estaCerniendo = false; // Is hovering
+
+  @override
+  Widget build(BuildContext context) {
+    // Definimos el color del texto/ícono según el estado activo o hover
+    final colorResaltado = widget.esActivo
+        ? const Color(0xFFF59E0B) // Amber
+        : (_estaCerniendo ? Colors.white : const Color(0xFF94A3B8));
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _estaCerniendo = true),
+      onExit: (_) => setState(() => _estaCerniendo = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        decoration: BoxDecoration(
+          color: widget.esActivo
+              ? const Color(0xFF1E293B).withOpacity(0.3)
+              : (_estaCerniendo ? Colors.white.withOpacity(0.05) : Colors.transparent),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: widget.esActivo
+                ? const Color(0xFFF59E0B)
+                : (_estaCerniendo ? Colors.white.withOpacity(0.15) : Colors.transparent),
+            width: 1.5,
+          ),
         ),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        dense: true,
-        contentPadding: EdgeInsets.symmetric(horizontal: esExtendido ? 16 : 0, vertical: 2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        title: esExtendido
-            ? Text(
-                etiqueta,
-                style: GoogleFonts.inter(
-                  color: esActivo ? const Color(0xFFF59E0B) : const Color(0xFF94A3B8),
-                  fontWeight: esActivo ? FontWeight.bold : FontWeight.w500,
-                  fontSize: 14,
-                ),
-              )
-            : null,
-        leading: SizedBox(
-          width: esExtendido ? null : double.infinity,
-          child: Icon(
-            esActivo ? iconoSeleccionado : icono,
-            color: esActivo ? const Color(0xFFF59E0B) : const Color(0xFF94A3B8),
-            size: 20,
+        child: ListTile(
+          onTap: widget.onTap,
+          dense: true,
+          hoverColor: Colors.transparent, // Desactivamos el hover por defecto para usar la animación del Container
+          mouseCursor: SystemMouseCursors.click,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: widget.esExtendido ? 16 : 0, 
+            vertical: 2
+          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          title: widget.esExtendido
+              ? Text(
+                  widget.etiqueta,
+                  style: GoogleFonts.inter(
+                    color: colorResaltado,
+                    fontWeight: widget.esActivo ? FontWeight.bold : FontWeight.w500,
+                    fontSize: 14,
+                  ),
+                )
+              : null,
+          leading: SizedBox(
+            width: widget.esExtendido ? null : double.infinity,
+            child: Icon(
+              widget.esActivo ? widget.iconoSeleccionado : widget.icono,
+              color: colorResaltado,
+              size: 20,
+            ),
           ),
         ),
       ),
