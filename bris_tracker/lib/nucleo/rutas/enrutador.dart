@@ -10,7 +10,7 @@ import '../../modulos/autenticacion/presentacion/pantallas/acceso_rapido_pantall
 import '../../modulos/registro_pesca/presentacion/pantallas/dashboard_cuadres.dart';
 import '../../modulos/registro_pesca/presentacion/pantallas/formulario_zarpe_pantalla.dart';
 import '../../modulos/registro_pesca/presentacion/pantallas/formulario_registro_pesca.dart';
-import '../../modulos/registro_pesca/presentacion/pantallas/pantalla_gastos.dart';
+// import '../../modulos/registro_pesca/presentacion/pantallas/pantalla_gastos.dart';
 import '../../modulos/registro_pesca/dominio/entidades/cuadre_entidad.dart';
 import '../../modulos/perfil/presentacion/pantallas/pantalla_perfil.dart';
 import '../componentes/splash_carga.dart';
@@ -106,16 +106,16 @@ class NuevoCuadreRoute extends GoRouteData with $NuevoCuadreRoute {
       FormularioRegistroPesca(cuadreInicial: $extra);
 }
 
-/// Ruta para la pantalla de Gastos de un Cuadre
-@TypedGoRoute<GastosRoute>(path: '/gastos/:cuadreId')
-class GastosRoute extends GoRouteData with $GastosRoute {
-  final String cuadreId;
-  const GastosRoute({required this.cuadreId});
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) =>
-      PantallaGastos(cuadreId: cuadreId);
-}
+// /// Ruta para la pantalla de Gastos de un Cuadre
+// @TypedGoRoute<GastosRoute>(path: '/gastos/:cuadreId')
+// class GastosRoute extends GoRouteData with $GastosRoute {
+//   final String cuadreId;
+//   const GastosRoute({required this.cuadreId});
+// 
+//   @override
+//   Widget build(BuildContext context, GoRouterState state) =>
+//       PantallaGastos(cuadreId: cuadreId);
+// }
 
 /// Ruta de la pantalla del perfil del usuario
 @TypedGoRoute<PerfilRoute>(path: '/perfil')
