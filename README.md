@@ -9,8 +9,9 @@ Este archivo es la puerta de entrada para entender la estructura técnica y de c
 
 ## 📁 Arquitectura del Monorepo
 
-* 📱 [**brismar_app**](./brismar_app/) — Código fuente de la aplicación móvil (Flutter). Implementa una robusta arquitectura *Offline-First* enfocada en seguridad. (Actualmente: **Fase 1 Autenticación COMPLETADA**, transitando a Fase 2 Registro). Revisa el detalle en `ESTADO_PROYECTO.md`. (Encargados: **Jhonatan y Belén**).
-* ⚙️ [**brismar_web**](./brismar_web/) — Código fuente del backend y dashboard administrativo (migrado a Supabase PostgreSQL como base de datos única). (Encargado: **Yisus**).
+* 📱 [**bris_tracker**](./bris_tracker/) — Código fuente de la aplicación móvil (Flutter) para bahía/muelle. Implementa una robusta arquitectura *Offline-First* enfocada en seguridad. (Actualmente: **Fase 1 Autenticación COMPLETADA**, transitando a Fase 2 Registro). Revisa el detalle en `ESTADO_PROYECTO.md`. (Encargados: **Jhonatan y Belén**).
+* ⚙️ [**bris_web**](./bris_web/) — Código fuente del backend y dashboard logístico web para Brismar (Logística Central). (Encargado: **Yisus**).
+* 👔 [**bris_admin**](./bris_admin/) — App ejecutiva móvil planificada a futuro para gerencia.
 * 🗄️ [**supabase**](./supabase/) — Definiciones de tablas y migraciones de la base de datos PostgreSQL compartida.
 
 ---
@@ -54,3 +55,48 @@ Hemos eliminado los archivos de texto `.md` manuales para gestionar versiones. T
 
 ---
 *Este manifiesto consolida todo el conocimiento técnico de Brismar. ¡A programar!* 🚀
+
+---
+
+## 📝 Historial de Cambios (IAs y Desarrolladores)
+
+* **Fecha/Hora:** 2026-07-02 03:57 (Local)
+* **Autor:** Antigravity (AI Agent)
+* **Qué se cambió:**
+  * Implementación del visor de fotos múltiples (carrusel) y lightbox interactivo con zoom en la Web admin (`pantalla_transito.dart`).
+  * Optimización de rendimiento de red mediante paralelización con `Future.wait()` en la carga y el guardado de datos en la Web (`pantalla_edicion_transito.dart`).
+  * Adaptación responsiva (LayoutBuilder y Column/Row fluidos) en el formulario de edición web para evitar desbordamientos horizontales.
+  * Configuración del tema nativo oscuro (`brightness: Brightness.dark` y `useMaterial3: true`) en la App móvil (`main.dart`) para solucionar textos oscuros invisibles en los selectores de fecha nativos.
+  * Visualizador de fotos de evidencia integradas en la ficha "Información de Cámara" de la App móvil (`formulario_registro_pesca.dart`) y visor a pantalla completa.
+  * Agregados botones rápidos de incremento de kilos (+100, +500, +1000, +5000) en el modal de compras móviles para agilizar la entrada.
+* **Qué se eliminó:** Layouts no responsivos fijos y flujos secuenciales de red lentos.
+* **Migraciones:** Ninguna.
+
+* **Fecha/Hora:** 2026-07-02 03:51 (Local)
+* **Autor:** Antigravity (AI Agent)
+* **Qué se cambió:**
+  * Corrección de la vinculación de ID único entre Zarpes y Cuadres en la App móvil (`formulario_registro_pesca.dart`), asignando el ID del zarpe seleccionado al `_cuadreId`.
+  * Eliminación de la clase/pantalla huérfana no utilizada `formulario_cuadre_tabs.dart`.
+* **Qué se eliminó:** 1084 líneas de código muerto en la App móvil (`formulario_cuadre_tabs.dart`).
+* **Migraciones:** Ninguna.
+
+* **Fecha/Hora:** 2026-07-02 03:46 (Local)
+* **Autor:** Antigravity (AI Agent)
+* **Qué se cambió:**
+  * Corrección en el radar de tránsito de la Web (`pantalla_transito.dart`) para mapear `estado_transito` expuesto por la vista SQL de Supabase.
+  * Implementación de formularios de diálogo interactivos para añadir y eliminar lanchas/gastos en el editor de viajes de la Web (`pantalla_edicion_transito.dart`).
+  * Sincronización completa con Supabase de compras (lanchas) y gastos asociados al guardar cambios en la Web, recalculando y persistiendo el `peso_total` en `cuadres`.
+  * Filtro local en la App móvil (`formulario_registro_pesca.dart`) para excluir zarpes marcados como recibidos (`RECIBIDO_LAMBAYEQUE`).
+  * Actualización de la documentación técnica de flujos en `FLUJO_08_ZARPE_CAMARA.md`.
+* **Qué se eliminó:** Lógica estática/demostrativa en el editor web y selección de zarpes cerrados en la App móvil.
+* **Migraciones:** Ninguna.
+
+* **Fecha/Hora:** 2026-07-02 03:42 (Local)
+* **Autor:** Antigravity (AI Agent)
+* **Qué se cambió:**
+  * Resolución de conflictos de fusión entre `develop` (local) y `origin/develop` (remoto).
+  * Fusión de `panel_calculo_vivo.dart` para mantener la modularización SRP implementada por Jhonatan.
+  * Fusión de `formulario_registro_pesca.dart` integrando la localización en español (`Locale('es', 'ES')`) en la función modular `_seleccionarFecha` y preservando el diseño móvil responsivo de Jhonatan.
+  * Corrección de regresión en `acceso_rapido_pantalla_test.dart` adaptando la aserción de carga para buscar `CargaOrbital` en lugar de `CircularProgressIndicator`.
+* **Qué se eliminó:** Conflictos de Git y aserciones de prueba obsoletas.
+* **Migraciones:** Ninguna.

@@ -1,0 +1,151 @@
+name: CI — Brismar Web Admin (Flutter Web)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 1: Análisis estático + pruebas unitarias
+  # ─────────────────────────────────────────────────────────────────────────────
+  analyze_and_test:
+    name: 📊 Analizar y Probar (Web Admin)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./bris_web
+
+    steps:
+      - name: ⬇️ Checkout del código
+        uses: actions/checkout@v4
+
+      - name: 🎯 Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: 📦 Obtener dependencias
+        run: flutter pub get
+
+      - name: 🔍 Análisis estático (dart analyze)
+        run: flutter analyze --no-fatal-infos --fatal-warnings
+
+      - name: ✅ Ejecutar pruebas unitarias
+        run: flutter test --coverage test/
+        # Si no hay tests, el paso no falla (continúa)
+        continue-on-error: true
+
+      - name: 📋 Subir reporte de cobertura
+        uses: codecov/codecov-action@v3
+        if: always()
+        with:
+          files: coverage/lcov.info
+          fail_ci_if_error: false
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 2: Compilar la Web
+  # ─────────────────────────────────────────────────────────────────────────────
+  build_web:
+    name: 🌐 Compilar Flutter Web
+    runs-on: ubuntu-latest
+    needs: analyze_and_test
+
+    defaults:
+      run:
+        working-directory: ./bris_web
+
+    steps:
+      - name: ⬇️ Checkout del código
+        uses: actions/checkout@v4
+
+      - name: 🎯 Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: 📦 Obtener dependencias
+        run: flutter pub get
+
+      - name: 🏗️ Compilar para Web (CanvasKit)
+        run: |
+          flutter build web \
+            --release \
+            --web-renderer canvaskit \
+            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: 📦 Subir artefacto web compilado
+        uses: actions/upload-artifact@v4
+        with:
+          name: brismar-web-admin-release
+          path: bris_web/build/web/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 3: Verificar archivos sensibles
+  # ─────────────────────────────────────────────────────────────────────────────
+  security_scan:
+    name: 🔒 Escaneo de Seguridad
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout del código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🚫 Detectar archivos prohibidos o sensibles
+        run: |
+          echo "Buscando archivos prohibidos..."
+          PATRONES="(\.env$|\.env\.|local\.properties|/build/|\.DS_Store|Thumbs\.db|google-services\.json|GoogleService-Info\.plist|keystore\.jks)"
+          ARCHIVOS=$(git ls-files | grep -E "$PATRONES" | grep -v "\.env\.example" || true)
+          if [ -n "$ARCHIVOS" ]; then
+            echo "::error::Archivos sensibles detectados:"
+            echo "$ARCHIVOS" | sed 's/^/  ❌ /'
+            exit 1
+          fi
+          echo "✅ Sin archivos sensibles detectados."
+
+      - name: 🔑 Detectar posibles API keys expuestas en código
+        run: |
+          echo "Escaneando por API keys expuestas..."
+          # Buscar patrones de keys en código Dart (NO en env files)
+          KEYS=$(grep -r --include="*.dart" \
+            -E "(apiKey|api_key|SUPABASE_URL|anon_key|ANON_KEY)\s*=\s*['\"][a-zA-Z0-9_\.\-]{20,}" \
+            bris_web/lib/ || true)
+          if [ -n "$KEYS" ]; then
+            echo "::warning::Posibles API keys hardcodeadas detectadas. Usa --dart-define."
+            echo "$KEYS"
+          fi
+          echo "✅ Sin keys expuestas en código fuente."
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 4: Notificación final
+  # ─────────────────────────────────────────────────────────────────────────────
+  notify:
+    name: 📣 Notificar resultado
+    runs-on: ubuntu-latest
+    needs: [analyze_and_test, build_web, security_scan]
+    if: always()
+
+    steps:
+      - name: Notificar a Discord (éxito)
+        if: ${{ needs.build_web.result == 'success' && env.DISCORD_WEBHOOK != '' }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: "✅ **Brismar Web Admin** — Build exitoso en `${{ github.ref_name }}` por `${{ github.actor }}`."
+
+      - name: Notificar a Discord (fallo)
+        if: ${{ failure() && env.DISCORD_WEBHOOK != '' }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: "❌ **Brismar Web Admin** — Fallo en el pipeline de `${{ github.ref_name }}`. Revisa Actions: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

@@ -1,0 +1,195 @@
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'galeria_lightbox.dart';
+
+class SeccionDatosZarpe extends StatefulWidget {
+  final List<String> urlsFotos;
+  final TextEditingController placaCtrl;
+  final TextEditingController choferCtrl;
+  final TextEditingController muelleCtrl;
+
+  const SeccionDatosZarpe({
+    super.key,
+    required this.urlsFotos,
+    required this.placaCtrl,
+    required this.choferCtrl,
+    required this.muelleCtrl,
+  });
+
+  @override
+  State<SeccionDatosZarpe> createState() => _SeccionDatosZarpeState();
+}
+
+class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
+  int _indiceFotoActiva = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.015),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Datos del Zarpe (Cámara)', style: TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold)),
+          const Divider(color: Color(0xFFF1F5F9), height: 32),
+          
+          if (widget.urlsFotos.isNotEmpty) ...[
+            const Text(
+              'Evidencia Fotográfica / Guía',
+              style: TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            
+            Container(
+              height: 220,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(11),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Positioned.fill(
+                      child: GestureDetector(
+                        onTap: () => GaleriaLightbox.mostrar(context, widget.urlsFotos, _indiceFotoActiva),
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: CachedNetworkImage(
+                            imageUrl: widget.urlsFotos[_indiceFotoActiva],
+                            fit: BoxFit.cover,
+                            placeholder: (c, u) => const Center(child: CircularProgressIndicator()),
+                            errorWidget: (c, u, e) => const Center(
+                              child: Icon(Icons.broken_image_rounded, color: Color(0xFF94A3B8), size: 40),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (widget.urlsFotos.length > 1)
+                      Positioned(
+                        left: 8,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.black.withValues(alpha: 0.5),
+                          radius: 18,
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 20),
+                            onPressed: () {
+                              setState(() {
+                                _indiceFotoActiva = (_indiceFotoActiva - 1 + widget.urlsFotos.length) % widget.urlsFotos.length;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    if (widget.urlsFotos.length > 1)
+                      Positioned(
+                        right: 8,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.black.withValues(alpha: 0.5),
+                          radius: 18,
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 20),
+                            onPressed: () {
+                              setState(() {
+                                _indiceFotoActiva = (_indiceFotoActiva + 1) % widget.urlsFotos.length;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${_indiceFotoActiva + 1} / ${widget.urlsFotos.length}',
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.fullscreen_rounded, color: Colors.white, size: 16),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+          
+          TextFormField(
+            controller: widget.placaCtrl,
+            style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600),
+            decoration: _decoracion('Placa Cámara'),
+            validator: (v) => v!.isEmpty ? 'Requerido' : null,
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: widget.choferCtrl,
+            style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600),
+            decoration: _decoracion('Chofer'),
+            validator: (v) => v!.isEmpty ? 'Requerido' : null,
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: widget.muelleCtrl,
+            style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600),
+            decoration: _decoracion('Muelle Partida'),
+            validator: (v) => v!.isEmpty ? 'Requerido' : null,
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Nota: Estos datos actualizan tanto el Zarpe como el Cuadre.', 
+            style: TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.4),
+          ),
+        ],
+      ),
+    );
+  }
+
+  InputDecoration _decoracion(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+      filled: true,
+      fillColor: const Color(0xFFF8FAFC),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.2)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF00796B), width: 1.5)),
+      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.2)),
+      focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
+    );
+  }
+}
