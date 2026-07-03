@@ -100,3 +100,13 @@ Hemos eliminado los archivos de texto `.md` manuales para gestionar versiones. T
   * Corrección de regresión en `acceso_rapido_pantalla_test.dart` adaptando la aserción de carga para buscar `CargaOrbital` en lugar de `CircularProgressIndicator`.
 * **Qué se eliminó:** Conflictos de Git y aserciones de prueba obsoletas.
 * **Migraciones:** Ninguna.
+
+* **Fecha/Hora:** 2026-07-03 16:15 (Local)
+* **Autor:** Antigravity (AI Agent)
+* **Qué se cambió:**
+  * Sincronización absoluta de todas las ramas a nivel corporativo.
+  * Migración exitosa de la interfaz gráfica web (Nautical Premium UI) a `bris_web`.
+  * Generación de entorno seguro con 2 únicas ramas de desarrollo paralelas (`DEV-JJGS` y `DEV-BELEN`).
+  * Actualización de versiones de proyecto (App: 1.3.4+9, Web: 1.1.4+6).
+* **Qué se eliminó:** `brismar_app`, `brismar_executive_app`, `brismar_mobile`, archivos de prueba (`scratch`), `.idea`, directorios obsoletos y ramas conflictivas (web, pruebita, etc.).
+* **Migraciones:** Consolidación de un solo proyecto móvil (`bris_tracker`) y un solo proyecto web (`bris_web`) listos para despliegue por GitHub Actions.
