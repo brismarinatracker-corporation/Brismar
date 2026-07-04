@@ -29,6 +29,8 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
   final _cajasVaciasCtrl = TextEditingController();
   final _muellePartidaCtrl = TextEditingController();
   final _pesadorCtrl = TextEditingController();
+  final _tipoCtrl = TextEditingController();
+  final _cuadrillaCtrl = TextEditingController();
 
   int _tipoProductoSeleccionado = 1; // 1: Pota, 2: Bonito, 3: Caballa, 4: Jurel, 5: Otros
   final List<XFile> _fotosEvidencia = [];
@@ -67,6 +69,8 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
     _cajasVaciasCtrl.dispose();
     _muellePartidaCtrl.dispose();
     _pesadorCtrl.dispose();
+    _tipoCtrl.dispose();
+    _cuadrillaCtrl.dispose();
     super.dispose();
   }
 
@@ -222,6 +226,8 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         tipoProducto: _tipoProductoSeleccionado,
         muellePartida: _muellePartidaCtrl.text.trim().isEmpty ? null : _muellePartidaCtrl.text.trim().toUpperCase(),
         pesador: _pesadorCtrl.text.trim().toUpperCase().isEmpty ? null : _pesadorCtrl.text.trim().toUpperCase(),
+        tipo: _tipoCtrl.text.trim().toUpperCase().isEmpty ? null : _tipoCtrl.text.trim().toUpperCase(),
+        cuadrilla: _cuadrillaCtrl.text.trim().toUpperCase().isEmpty ? null : _cuadrillaCtrl.text.trim().toUpperCase(),
         sincronizado: false,
         compras: const [],
         gastos: const [],
@@ -273,27 +279,27 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
   InputDecoration _construirInputDecoration({required String labelText, Widget? suffixIcon}) {
     return InputDecoration(
       labelText: labelText,
-      labelStyle: const TextStyle(color: Colors.white54, fontSize: 13),
-      floatingLabelStyle: const TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold),
+      labelStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
+      floatingLabelStyle: const TextStyle(color: Color(0xFF006B54), fontWeight: FontWeight.bold),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFF006B54), width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: Colors.redAccent, width: 1.0),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
       ),
       filled: true,
-      fillColor: const Color(0xFF0F224A).withValues(alpha: 0.4),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       suffixIcon: suffixIcon,
     );
   }
@@ -301,57 +307,22 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: const Color(0xFFF5F8F6),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF004D40)),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Registrar Zarpe de Cámara',
-          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+          'Registrar zarpe',
+          style: TextStyle(color: Color(0xFF004D40), fontSize: 18, fontWeight: FontWeight.w600),
         ),
-        centerTitle: true,
+        centerTitle: false,
+        titleSpacing: 0,
       ),
-      body: Stack(
-        children: [
-          // Fondo gradiente
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF040B1E),
-                  Color(0xFF0C1D3F),
-                  Color(0xFF143068),
-                ],
-              ),
-            ),
-          ),
-          // Esferas de brillo decorativas
-          Positioned(
-            top: -100,
-            left: -50,
-            child: Container(
-              width: 250,
-              height: 250,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0x1A00E5FF),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0x1A00E5FF).withValues(alpha: 0.15),
-                    blurRadius: 100,
-                    spreadRadius: 50,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SafeArea(
+      body: SafeArea(
             child: Form(
               key: _formKey,
               child: SingleChildScrollView(
@@ -368,12 +339,12 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text(
-                              'Fotos de Evidencia (Máx. 3)',
-                              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                              'Fotos de evidencia',
+                              style: TextStyle(color: Color(0xFF006B54), fontSize: 15, fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              '${_fotosEvidencia.length}/3',
-                              style: const TextStyle(color: Color(0xFF00E5FF), fontSize: 13, fontWeight: FontWeight.bold),
+                              '(${_fotosEvidencia.length}/3)',
+                              style: const TextStyle(color: Color(0xFF006B54), fontSize: 14, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -382,35 +353,29 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                           GestureDetector(
                             onTap: _mostrarOpcionesImagen,
                             child: Container(
-                              height: 180,
+                              height: 150,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF0F224A).withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(16),
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.15),
+                                  color: const Color(0xFFA8D5BA),
                                   width: 1.5,
+                                  style: BorderStyle.solid,
                                 ),
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(Icons.camera_alt_rounded, size: 36, color: Color(0xFF00E5FF)),
-                                  ),
-                                  const SizedBox(height: 12),
+                                  const Icon(Icons.camera_alt_outlined, size: 40, color: Color(0xFF006B54)),
+                                  const SizedBox(height: 8),
                                   const Text(
-                                    'Tomar Foto de Evidencia',
-                                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                                    'Tomar foto',
+                                    style: TextStyle(color: Color(0xFF006B54), fontSize: 15, fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(height: 4),
                                   const Text(
-                                    '(Al menos 1 foto requerida para el zarpe)',
-                                    style: TextStyle(color: Colors.white54, fontSize: 11),
+                                    'Al menos 1 foto requerida',
+                                    style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
                                   ),
                                 ],
                               ),
@@ -431,21 +396,21 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                                       width: 110,
                                       margin: const EdgeInsets.only(right: 12),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF0F224A).withValues(alpha: 0.3),
-                                        borderRadius: BorderRadius.circular(16),
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
-                                          color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+                                          color: const Color(0xFFA8D5BA),
                                           width: 1.5,
                                         ),
                                       ),
                                       child: const Column(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          Icon(Icons.add_a_photo_rounded, color: Color(0xFF00E5FF), size: 28),
+                                          Icon(Icons.add_a_photo_outlined, color: Color(0xFF006B54), size: 28),
                                           SizedBox(height: 8),
                                           Text(
                                             'Añadir',
-                                            style: TextStyle(color: Color(0xFF00E5FF), fontSize: 12, fontWeight: FontWeight.bold),
+                                            style: TextStyle(color: Color(0xFF006B54), fontSize: 13, fontWeight: FontWeight.bold),
                                           ),
                                         ],
                                       ),
@@ -505,22 +470,21 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
 
                     // Inputs de datos básicos
                     const Text(
-                      'Datos de la Cámara',
-                      style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                      'Datos de la camara',
+                      style: TextStyle(color: Color(0xFF006B54), fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
 
                     // Placa
                     TextFormField(
                       controller: _placaCtrl,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.black87),
                       textCapitalization: TextCapitalization.characters,
                       inputFormatters: [
                         _PlacaInputFormatter(),
                       ],
                       decoration: _construirInputDecoration(
-                        labelText: 'Placa de la Cámara (Ej: AAA-123)',
-                        suffixIcon: const Icon(Icons.local_shipping_rounded, color: Color(0xFF00E5FF), size: 20),
+                        labelText: 'Placa (Ej: AAA-123)',
                       ),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'La placa es requerida';
@@ -534,14 +498,13 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                     // Chofer
                     TextFormField(
                       controller: _choferCtrl,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.black87),
                       textCapitalization: TextCapitalization.characters,
                       inputFormatters: [
                         _UpperCaseInputFormatter(),
                       ],
                       decoration: _construirInputDecoration(
-                        labelText: 'Nombre del Chofer',
-                        suffixIcon: const Icon(Icons.person_outline_rounded, color: Color(0xFF00E5FF), size: 20),
+                        labelText: 'Nombre del chofer',
                       ),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'El nombre del chofer es requerido';
@@ -553,14 +516,13 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                     // Peso Total
                     TextFormField(
                       controller: _pesoTotalCtrl,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.black87),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
                       ],
                       decoration: _construirInputDecoration(
                         labelText: 'Peso Total (Kg)',
-                        suffixIcon: const Icon(Icons.scale_rounded, color: Color(0xFF00E5FF), size: 20),
                       ),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'El peso total es requerido';
@@ -577,7 +539,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                         Expanded(
                           child: TextFormField(
                             controller: _cajasLlenasCtrl,
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.black87),
                             keyboardType: TextInputType.number,
                             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                             decoration: _construirInputDecoration(labelText: 'Cajas Llenas'),
@@ -593,10 +555,10 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                         Expanded(
                           child: TextFormField(
                             controller: _cajasVaciasCtrl,
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.black87),
                             keyboardType: TextInputType.number,
                             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                            decoration: _construirInputDecoration(labelText: 'Cajas Vacías'),
+                            decoration: _construirInputDecoration(labelText: 'Cajas vacias'),
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'Requerido';
                               final valor = int.tryParse(v) ?? -1;
@@ -609,28 +571,12 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                     ),
                     const SizedBox(height: 16),
 
-                    // Tipo Producto (Selector desplegable)
                     DropdownButtonFormField<int>(
                       initialValue: _tipoProductoSeleccionado,
-                      dropdownColor: const Color(0xFF0F224A),
-                      style: const TextStyle(color: Colors.white),
-                      iconEnabledColor: const Color(0xFFFFD54F),
-                      decoration: InputDecoration(
-                        labelText: 'Tipo de Producto',
-                        labelStyle: const TextStyle(color: Colors.white70, fontSize: 13),
-                        floatingLabelStyle: const TextStyle(color: Color(0xFFFFD54F), fontWeight: FontWeight.bold),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: const Color(0xFFFFD54F).withValues(alpha: 0.35), width: 1.2),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFFFD54F), width: 1.8),
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFF0F224A).withValues(alpha: 0.5),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      ),
+                      dropdownColor: Colors.white,
+                      style: const TextStyle(color: Colors.black87),
+                      iconEnabledColor: const Color(0xFF006B54),
+                      decoration: _construirInputDecoration(labelText: 'Tipo de Producto'),
                       items: const [
                         DropdownMenuItem(value: 1, child: Text('Pota')),
                         DropdownMenuItem(value: 2, child: Text('Bonito')),
@@ -651,14 +597,13 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                     // Muelle de Partida
                     TextFormField(
                       controller: _muellePartidaCtrl,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.black87),
                       textCapitalization: TextCapitalization.characters,
                       inputFormatters: [
                         _UpperCaseInputFormatter(),
                       ],
                       decoration: _construirInputDecoration(
                         labelText: 'Muelle de Partida',
-                        suffixIcon: const Icon(Icons.anchor_rounded, color: Color(0xFF00E5FF), size: 20),
                       ),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'El muelle de partida es requerido';
@@ -670,43 +615,70 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                     // Pesador de Muelle
                     TextFormField(
                       controller: _pesadorCtrl,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.black87),
                       textCapitalization: TextCapitalization.characters,
                       inputFormatters: [
                         _UpperCaseInputFormatter(),
                       ],
                       decoration: _construirInputDecoration(
                         labelText: 'Pesador de Muelle',
-                        suffixIcon: const Icon(Icons.person_rounded, color: Color(0xFF00E5FF), size: 20),
                       ),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'El nombre del pesador es requerido';
                         return null;
                       },
                     ),
+                    const SizedBox(height: 16),
+
+                    // Tipo
+                    TextFormField(
+                      controller: _tipoCtrl,
+                      style: const TextStyle(color: Colors.black87),
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [
+                        _UpperCaseInputFormatter(),
+                      ],
+                      decoration: _construirInputDecoration(
+                        labelText: 'Tipo',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Cuadrilla
+                    TextFormField(
+                      controller: _cuadrillaCtrl,
+                      style: const TextStyle(color: Colors.black87),
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [
+                        _UpperCaseInputFormatter(),
+                      ],
+                      decoration: _construirInputDecoration(
+                        labelText: 'Cuadrilla',
+                      ),
+                    ),
                     const SizedBox(height: 32),
 
                     // Botón para Guardar
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00E5FF),
-                        foregroundColor: const Color(0xFF070E22),
+                        backgroundColor: const Color(0xFF004236),
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 4,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        elevation: 0,
                       ),
                       onPressed: _guardando ? null : _guardarZarpe,
                       child: _guardando
                           ? const CargaOrbital(tamano: 20)
                           : const Text(
-                              'REGISTRAR ZARPE DE CÁMARA',
-                              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                              'Guardar registro',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                     ),
                     const SizedBox(height: 12),
                     if (_guardando)
                       const LinearProgressIndicator(
-                        color: Color(0xFF00E5FF),
+                        color: Color(0xFF006B54),
                         backgroundColor: Colors.transparent,
                       ),
                   ],
@@ -714,8 +686,6 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
               ),
             ),
           ),
-        ],
-      ),
     );
   }
 }

@@ -75,6 +75,8 @@ class BrismarWebAdminApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final baseTextTheme = ThemeData(brightness: Brightness.light).textTheme;
+
     return MaterialApp.router(
       title: 'BrisWeb',
       debugShowCheckedModeBanner: false,
@@ -90,13 +92,24 @@ class BrismarWebAdminApp extends ConsumerWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF00E5FF),
-          brightness: Brightness.dark,
+          seedColor: const Color(0xFF0E3E2C),
+          brightness: Brightness.light,
         ),
-        textTheme: GoogleFonts.interTextTheme(
-          ThemeData(brightness: Brightness.dark).textTheme,
+        textTheme: GoogleFonts.interTextTheme(baseTextTheme).copyWith(
+          displayLarge: GoogleFonts.sora(textStyle: baseTextTheme.displayLarge?.copyWith(color: const Color(0xFF15181A))),
+          displayMedium: GoogleFonts.sora(textStyle: baseTextTheme.displayMedium?.copyWith(color: const Color(0xFF15181A))),
+          displaySmall: GoogleFonts.sora(textStyle: baseTextTheme.displaySmall?.copyWith(color: const Color(0xFF15181A))),
+          headlineLarge: GoogleFonts.sora(textStyle: baseTextTheme.headlineLarge?.copyWith(color: const Color(0xFF15181A))),
+          headlineMedium: GoogleFonts.sora(textStyle: baseTextTheme.headlineMedium?.copyWith(color: const Color(0xFF15181A))),
+          headlineSmall: GoogleFonts.sora(textStyle: baseTextTheme.headlineSmall?.copyWith(color: const Color(0xFF15181A))),
+          titleLarge: GoogleFonts.sora(textStyle: baseTextTheme.titleLarge?.copyWith(color: const Color(0xFF15181A))),
+          titleMedium: GoogleFonts.sora(textStyle: baseTextTheme.titleMedium?.copyWith(color: const Color(0xFF15181A))),
+          titleSmall: GoogleFonts.sora(textStyle: baseTextTheme.titleSmall?.copyWith(color: const Color(0xFF15181A))),
+        ).apply(
+          bodyColor: const Color(0xFF15181A),
+          displayColor: const Color(0xFF15181A),
         ),
-        scaffoldBackgroundColor: const Color(0xFF070E22), 
+        scaffoldBackgroundColor: const Color(0xFFF2F6F3), 
       ),
       routerConfig: ref.watch(proveedorEnrutador),
     );

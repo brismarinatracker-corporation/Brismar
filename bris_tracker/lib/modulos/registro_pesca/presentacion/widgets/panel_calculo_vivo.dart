@@ -35,11 +35,11 @@ class PanelCalculoVivo extends StatelessWidget {
   Widget _buildSummary() {
     return Column(
       children: [
-        _buildFilaResumen('Kilos Totales', '${_formatearNumero(totalKilosCompras)} kg', Colors.white),
-        const Divider(color: Colors.white12, height: 24),
-        _buildFilaResumen('Poder de Compra', 'S/ ${_formatearNumero(totalCostoCompras)}', Colors.white),
-        _buildFilaResumen('Adelantos (Cash)', '- S/ ${_formatearNumero(totalAdelantos)}', const Color(0xFFFFB74D)),
-        _buildFilaResumen('Gastos Muelle', '- S/ ${_formatearNumero(totalGastosOperativos)}', Colors.redAccent),
+        _buildFilaResumen('Kilos Totales', '${_formatearNumero(totalKilosCompras)} kg', const Color(0xFF1F2937)),
+        const Divider(color: Color(0xFFE5E7EB), height: 24),
+        _buildFilaResumen('Poder de Compra', 'S/ ${_formatearNumero(totalCostoCompras)}', const Color(0xFF1F2937)),
+        _buildFilaResumen('Adelantos (Cash)', '- S/ ${_formatearNumero(totalAdelantos)}', const Color(0xFFD97706)),
+        _buildFilaResumen('Gastos Muelle', '- S/ ${_formatearNumero(totalGastosOperativos)}', const Color(0xFFDC2626)),
       ],
     );
   }
@@ -52,19 +52,19 @@ class PanelCalculoVivo extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F224A),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.5)),
+        color: const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
-          const Text('ESTIMADO UTILIDAD (50/50)', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+          const Text('ESTIMADO UTILIDAD (50/50)', style: TextStyle(color: Color(0xFF064E3B), fontSize: 12, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          Text('S/ ${_formatearNumero(reparto)} c/u', style: const TextStyle(color: Color(0xFF00E5FF), fontSize: 28, fontWeight: FontWeight.w900)),
-          const Divider(color: Colors.white12, height: 24),
-          const Text('PAGO LÍQUIDO A EMBARCACIÓN', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+          Text('S/ ${_formatearNumero(reparto)} c/u', style: const TextStyle(color: Color(0xFF047857), fontSize: 28, fontWeight: FontWeight.w900)),
+          const Divider(color: Color(0xFFA7F3D0), height: 24),
+          const Text('PAGO LÍQUIDO A EMBARCACIÓN', style: TextStyle(color: Color(0xFF064E3B), fontSize: 12, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text('S/ ${_formatearNumero(pagoEmbarcacionFinal)}', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('S/ ${_formatearNumero(pagoEmbarcacionFinal)}', style: const TextStyle(color: Color(0xFF1F2937), fontSize: 20, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -75,15 +75,14 @@ class PanelCalculoVivo extends StatelessWidget {
       height: 64,
       child: ElevatedButton.icon(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF00E5FF),
-          foregroundColor: const Color(0xFF040B1E),
-          elevation: 10,
-          shadowColor: const Color(0xFF00E5FF).withValues(alpha: 0.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: const Color(0xFF004236),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         onPressed: guardando ? null : onGuardar,
         icon: guardando
-            ? const CargaOrbital(tamano: 24, colorPrimario: Color(0xFF040B1E))
+            ? const CargaOrbital(tamano: 24, colorPrimario: Colors.white)
             : const Icon(Icons.save_rounded, size: 28),
         label: Text(
           guardando ? 'GUARDANDO...' : 'CONFIRMAR DESPACHO',
@@ -108,21 +107,23 @@ class PanelCalculoVivo extends StatelessWidget {
 
   Decoration _buildContainerDecoration() {
     return BoxDecoration(
-      color: const Color(0xFF040B1E),
-      border: Border(left: BorderSide(color: const Color(0xFF00E5FF).withValues(alpha: 0.3), width: 2)),
-      boxShadow: [BoxShadow(color: const Color(0xFF00E5FF).withValues(alpha: 0.05), blurRadius: 30, offset: const Offset(-5, 0))],
+      color: Colors.white,
+      border: const Border(top: BorderSide(color: Color(0xFFE5E7EB), width: 1)),
+      boxShadow: [
+        BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, -5))
+      ],
     );
   }
 
   List<Widget> _buildColumnChildren() {
     return [
-      const Text('CUADRE EN VIVO', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 2), textAlign: TextAlign.center),
+      const Text('CUADRE EN VIVO', style: TextStyle(color: Color(0xFF064E3B), fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1), textAlign: TextAlign.center),
       const SizedBox(height: 24),
       _buildSummary(),
-      const Divider(color: Colors.white24, height: 32, thickness: 1),
+      const Divider(color: Color(0xFFE5E7EB), height: 32, thickness: 1),
       _buildEstimatesContainer(),
       const SizedBox(height: 24),
-      const Text('⚠️ Al guardar, el lote quedará en estado "Borrador" hasta el pesaje en planta.', style: TextStyle(color: Colors.white54, fontSize: 12), textAlign: TextAlign.center),
+      const Text('⚠️ Al guardar, el lote quedará en estado "Borrador" hasta el pesaje en planta.', style: TextStyle(color: Color(0xFF6B7280), fontSize: 12), textAlign: TextAlign.center),
       const SizedBox(height: 16),
       _buildSaveButton(),
     ];
@@ -134,7 +135,7 @@ class PanelCalculoVivo extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(etiqueta, style: const TextStyle(color: Colors.white70, fontSize: 15)),
+          Text(etiqueta, style: const TextStyle(color: Color(0xFF4B5563), fontSize: 15)),
           Text(valor, style: TextStyle(color: colorValor, fontWeight: FontWeight.bold, fontSize: 18)),
         ],
       ),

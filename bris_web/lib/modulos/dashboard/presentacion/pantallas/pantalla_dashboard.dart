@@ -13,9 +13,10 @@ class PantallaDashboard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(controladorDashboardProvider);
     final mesActual = DateFormat('MMMM yyyy', 'es').format(DateTime.now());
+    final esMovil = MediaQuery.of(context).size.width < 800;
 
     return Container(
-      color: const Color(0xFFEEF3F1),
+      color: const Color(0xFFF2F6F3),
       child: estado.cargando
           ? const Center(
               child: CargaOrbital(tamano: 80),
@@ -26,83 +27,52 @@ class PantallaDashboard extends ConsumerWidget {
                 // Topbar Premium (Look técnico/marítimo)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: esMovil ? 20 : 40,
+                    vertical: esMovil ? 20 : 24,
+                  ),
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                       colors: [
-                        Color(0xFF0A2440),
-                        Color(0xFF123A5C),
+                        Color(0xFF0E3E2C), // Verde dominante
+                        Color(0xFF0E3E2C),
                       ],
                     ),
                     borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Dashboard general',
-                            style: GoogleFonts.fraunces(
-                              color: Colors.white,
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
+                  child: esMovil
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Dashboard general',
+                              style: GoogleFonts.sora(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              // Indicador "en vivo" (pulso verde marino)
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF14B8A6), // Sea Green
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Color(0xFF14B8A6),
-                                      blurRadius: 4,
-                                      spreadRadius: 1,
-                                    ),
-                                  ],
+                            const SizedBox(height: 8),
+                            _indicadorEnVivo(mesActual),
+                            const SizedBox(height: 16),
+                            _botonActualizar(ref),
+                          ],
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Dashboard general',
+                                  style: GoogleFonts.sora(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'RESUMEN OPERATIVO — ${mesActual.toUpperCase()} — ACTUALIZADO HACE 3 MIN',
-                                style: GoogleFonts.ibmPlexMono(
-                                  color: const Color(0xFF94A3B8),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      
-                      // Botón Actualizar (Borde Ámbar)
-                      OutlinedButton.icon(
-                        onPressed: () => ref.read(controladorDashboardProvider.notifier).cargarKpis(),
-                        icon: const Icon(Icons.refresh_rounded, size: 18, color: Color(0xFFF59E0B)),
-                        label: Text(
-                          'Actualizar',
-                          style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                const SizedBox(height: 8),
+                                _indicadorEnVivo(mesActual),
+                              ],
+                            ),
+                            _botonActualizar(ref),
+                          ],
                         ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFFF59E0B),
-                          side: const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
 
                 // Grid y contenido principal
@@ -110,7 +80,7 @@ class PantallaDashboard extends ConsumerWidget {
                   child: CustomScrollView(
                     slivers: [
                       SliverPadding(
-                        padding: const EdgeInsets.all(40),
+                        padding: EdgeInsets.all(esMovil ? 20 : 40),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
                             if (estado.error != null) _bannerError(estado.error!),
@@ -125,6 +95,55 @@ class PantallaDashboard extends ConsumerWidget {
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _indicadorEnVivo(String mesActual) {
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+            color: Color(0xFF14B8A6),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(color: Color(0xFF14B8A6), blurRadius: 4, spreadRadius: 1),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            'RESUMEN OPERATIVO — ${mesActual.toUpperCase()} — ACTUALIZADO HACE 3 MIN',
+            style: GoogleFonts.ibmPlexMono(
+              color: const Color(0xFF94A3B8),
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _botonActualizar(WidgetRef ref) {
+    return OutlinedButton.icon(
+      onPressed: () => ref.read(controladorDashboardProvider.notifier).cargarKpis(),
+      icon: const Icon(Icons.refresh_rounded, size: 18, color: Color(0xFFF59E0B)),
+      label: Text(
+        'Actualizar',
+        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+      ),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: const Color(0xFFF59E0B),
+        side: const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
 
@@ -164,7 +183,7 @@ class PantallaDashboard extends ConsumerWidget {
         if (availableWidth < 500) columnas = 1;
 
         double anchoTarjeta = (availableWidth - (columnas - 1) * 20) / columnas;
-        double childAspectRatio = anchoTarjeta / 165;
+        double childAspectRatio = columnas == 1 ? (anchoTarjeta / 120) : (anchoTarjeta / 165);
 
         return GridView.count(
           shrinkWrap: true,
@@ -220,7 +239,7 @@ class PantallaDashboard extends ConsumerWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color(0xFF051329), // Deep Navy matching brand
+        color: Colors.white, // Light Mode Card
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -243,7 +262,7 @@ class PantallaDashboard extends ConsumerWidget {
             
             // Contenido
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 48),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -251,14 +270,14 @@ class PantallaDashboard extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                      color: const Color(0xFF7EBFC9).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+                      border: Border.all(color: const Color(0xFF7EBFC9).withValues(alpha: 0.3)),
                     ),
                     child: Text(
                       'EN CONSTRUCCIÓN',
                       style: GoogleFonts.ibmPlexMono(
-                        color: const Color(0xFFF59E0B),
+                        color: const Color(0xFF7EBFC9),
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.0,
@@ -269,8 +288,8 @@ class PantallaDashboard extends ConsumerWidget {
                   
                   Text(
                     'Métricas financieras',
-                    style: GoogleFonts.fraunces(
-                      color: Colors.white,
+                    style: GoogleFonts.sora(
+                      color: const Color(0xFF15181A),
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                     ),
@@ -280,7 +299,7 @@ class PantallaDashboard extends ConsumerWidget {
                   Text(
                     'Rentabilidad por faena, flujo de caja y comparativos mensuales a nivel nacional.\nEsta sección se activa en cuanto conectemos el módulo de cuadres con el motor de reportes.',
                     style: GoogleFonts.inter(
-                      color: const Color(0xFF94A3B8),
+                      color: const Color(0xFF475569),
                       fontSize: 14,
                       height: 1.55,
                     ),
@@ -291,7 +310,7 @@ class PantallaDashboard extends ConsumerWidget {
                   OutlinedButton(
                     onPressed: () {},
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF15181A),
                       side: const BorderSide(color: Color(0xFF334155), width: 1.5),
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -304,7 +323,7 @@ class PantallaDashboard extends ConsumerWidget {
                           style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward_rounded, size: 16, color: Color(0xFFF59E0B)),
+                        const Icon(Icons.arrow_forward_rounded, size: 16, color: Color(0xFF7EBFC9)),
                       ],
                     ),
                   ),
@@ -382,8 +401,8 @@ class _TarjetaKpiPremium extends StatelessWidget {
           // Valor numérico (Fraunces)
           Text(
             valor,
-            style: GoogleFonts.fraunces(
-              color: const Color(0xFF0F172A),
+            style: GoogleFonts.sora(
+              color: const Color(0xFF15181A),
               fontSize: 26,
               fontWeight: FontWeight.bold,
             ),

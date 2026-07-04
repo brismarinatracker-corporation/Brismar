@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import '../../../../cuadres/dominio/modelos/cuadre_web_modelo.dart';
-import 'dialogo_gasto.dart';
 
-class SeccionGastos extends StatelessWidget {
+class SeccionGastos extends StatefulWidget {
   final List<GastoWebModelo> gastos;
   final Function(GastoWebModelo) onGuardar;
   final Function(String) onEliminar;
@@ -13,6 +13,94 @@ class SeccionGastos extends StatelessWidget {
     required this.onGuardar,
     required this.onEliminar,
   });
+
+  @override
+  State<SeccionGastos> createState() => _SeccionGastosState();
+}
+
+class _SeccionGastosState extends State<SeccionGastos> {
+  final Map<String, TextEditingController> _ctrls = {
+    'FLETE': TextEditingController(),
+    'FACTURACION': TextEditingController(),
+    'PERSONAL': TextEditingController(),
+    'APOYO': TextEditingController(),
+    'AGUA': TextEditingController(),
+    'PESADOR': TextEditingController(),
+    'CLOROX': TextEditingController(),
+    'HIELO': TextEditingController(),
+    'OTROS': TextEditingController(),
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _sincronizarDesdeGastos();
+  }
+
+  @override
+  void didUpdateWidget(covariant SeccionGastos oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.gastos != oldWidget.gastos) {
+      _sincronizarDesdeGastos();
+    }
+  }
+
+  void _sincronizarDesdeGastos() {
+    for (var ctrl in _ctrls.values) {
+      ctrl.text = ''; // Limpiar
+    }
+    for (final g in widget.gastos) {
+      final concepto = g.concepto.toUpperCase().trim();
+      if (_ctrls.containsKey(concepto)) {
+        _ctrls[concepto]!.text = g.total > 0 ? g.total.toStringAsFixed(2) : '';
+      }
+    }
+  }
+
+  void _onFieldChanged(String concepto, String val) {
+    final valorStr = val.replaceAll(',', '.').trim();
+    final total = double.tryParse(valorStr) ?? 0.0;
+
+    // Buscar si ya existe este gasto
+    final idx = widget.gastos.indexWhere((g) => g.concepto.toUpperCase().trim() == concepto);
+    
+    if (idx >= 0) {
+      final existente = widget.gastos[idx];
+      if (total > 0) {
+        widget.onGuardar(GastoWebModelo(
+          id: existente.id,
+          cuadreId: existente.cuadreId,
+          tipo: 'Otros',
+          concepto: concepto,
+          cantidad: 1,
+          costoUnitario: total,
+          total: total,
+        ));
+      } else {
+        widget.onEliminar(existente.id);
+      }
+    } else {
+      if (total > 0) {
+        widget.onGuardar(GastoWebModelo(
+          id: const Uuid().v4(),
+          cuadreId: '', // Será sobreescrito en RepositorioEdicionZarpe
+          tipo: 'Otros',
+          concepto: concepto,
+          cantidad: 1,
+          costoUnitario: total,
+          total: total,
+        ));
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var ctrl in _ctrls.values) {
+      ctrl.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,58 +121,33 @@ class SeccionGastos extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Gastos (Flete y Otros)', style: TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Gastos Operativos (Fijos)', style: TextStyle(color: Color(0xFF15181A), fontSize: 18, fontWeight: FontWeight.bold)),
           const Divider(color: Color(0xFFF1F5F9), height: 32),
           
-          if (gastos.isEmpty) 
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Text('No hay gastos registrados.', style: TextStyle(color: Color(0xFF64748B), fontSize: 14)),
-            ),
-          
-          ...gastos.map((g) => Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              title: Text('${g.tipo} - ${g.concepto}', style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
-              subtitle: Text('Cant: ${g.cantidad} @ S/ ${g.costoUnitario}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('S/ ${g.total.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.w800, fontSize: 15)),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined, color: Color(0xFFEA580C), size: 20),
-                    onPressed: () => DialogoGasto.mostrar(context, g, onGuardar),
-                    tooltip: 'Editar gasto',
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
-                    onPressed: () => onEliminar(g.id),
-                    tooltip: 'Eliminar gasto',
-                  ),
-                ],
+          ..._ctrls.entries.map((e) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: TextFormField(
+                controller: e.value,
+                style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  labelText: e.key,
+                  prefixText: 'S/ ',
+                  labelStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.2)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF00796B), width: 1.5)),
+                ),
+                onChanged: (val) => _onFieldChanged(e.key, val),
               ),
-            ),
-          )),
-          const SizedBox(height: 16),
-          OutlinedButton.icon(
-            onPressed: () => DialogoGasto.mostrar(context, null, onGuardar),
-            icon: const Icon(Icons.add_rounded, color: Color(0xFFEA580C), size: 18),
-            label: const Text('Añadir gasto', style: TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.bold)),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Color(0xFFEA580C)),
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          )
+            );
+          }),
         ],
       ),
     );
   }
 }
+

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../dominio/modelos/usuario_admin_modelo.dart';
 import '../controladores/controlador_usuarios.dart';
 import '../../infraestructura/servicios/servicio_dni.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:bris_web/nucleo/componentes/carga_orbital.dart';
 
 class DialogoFormularioUsuario extends ConsumerStatefulWidget {
@@ -288,30 +289,30 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(etiqueta.toUpperCase(), style: const TextStyle(color: Colors.white38, fontSize: 10, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
+          Text(etiqueta.toUpperCase(), style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 11, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
             obscureText: esPassword ? _ocultarPassword : false,
-            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
+            style: GoogleFonts.inter(color: const Color(0xFF15181A), fontSize: 15, fontWeight: FontWeight.w500),
             decoration: InputDecoration(
               filled: true,
-              fillColor: const Color(0xFF0F121C),
+              fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFF1E2336), width: 1)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5)),
-              errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Colors.redAccent, width: 1)),
-              focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFE2E8F0), width: 1.5)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFF0E3E2C), width: 2.0)),
+              errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
+              focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 2.0)),
               suffixIcon: esPassword 
                   ? Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.password, color: Color(0xFF00E5FF), size: 18),
+                          icon: const Icon(Icons.password, color: const Color(0xFF7EBFC9), size: 18),
                           onPressed: _autogenerarPassword,
                         ),
                         IconButton(
-                          icon: Icon(_ocultarPassword ? Icons.visibility_off : Icons.visibility, color: Colors.white38, size: 18),
+                          icon: Icon(_ocultarPassword ? Icons.visibility_off : Icons.visibility, color: const Color(0xFF64748B), size: 18),
                           onPressed: () => setState(() => _ocultarPassword = !_ocultarPassword),
                         ),
                       ],
@@ -339,7 +340,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
         children: [
           const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
           const SizedBox(width: 12),
-          Expanded(child: Text(_mensajeError!, style: const TextStyle(color: Colors.redAccent, fontSize: 13))),
+          Expanded(child: Text(_mensajeError!, style: GoogleFonts.inter(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.w500))),
         ],
       ),
     );
@@ -349,6 +350,8 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
   Widget build(BuildContext context) {
     final estado = ref.watch(controladorUsuariosProvider);
     final esEdicion = widget.usuarioAEditar != null;
+    final anchoPantalla = MediaQuery.of(context).size.width;
+    final esMovil = anchoPantalla < 550;
 
     return Stack(
       children: [
@@ -363,23 +366,26 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
             child: Material(
               color: Colors.transparent,
               child: Container(
-                width: 480,
+                width: esMovil ? anchoPantalla : 480,
                 height: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF070A14), // Fondo ultra oscuro
-                  border: Border(left: BorderSide(color: Color(0xFF1E2336), width: 1)),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7F7F7),
+                  border: const Border(left: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 24, offset: const Offset(-8, 0)),
+                  ],
                 ),
                 child: Column(
                   children: [
                     // Header
                     Container(
                       padding: const EdgeInsets.all(32),
-                      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFF1E2336), width: 1))),
+                      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: const Color(0xFFE2E8F0), width: 1))),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(esEdicion ? 'Actualizar Perfil' : 'Nuevo Registro', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w300, letterSpacing: 0.5)),
-                          IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: _cerrar),
+                          Text(esEdicion ? 'Actualizar Perfil' : 'Nuevo Registro', style: GoogleFonts.sora(color: const Color(0xFF15181A), fontSize: 24, fontWeight: FontWeight.bold)),
+                          IconButton(icon: const Icon(Icons.close, color: const Color(0xFF64748B)), onPressed: _cerrar),
                         ],
                       ),
                     ),
@@ -405,7 +411,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                           ? MemoryImage(_fotoBytes!) 
                                           : (_fotoPerfilUrl != null ? NetworkImage(_fotoPerfilUrl!) as ImageProvider : null),
                                       child: (_fotoBytes == null && _fotoPerfilUrl == null)
-                                          ? const Icon(Icons.person, size: 40, color: Colors.white54)
+                                          ? const Icon(Icons.person, size: 40, color: const Color(0xFF64748B))
                                           : null,
                                     ),
                                     Positioned(
@@ -416,7 +422,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                         child: Container(
                                           padding: const EdgeInsets.all(6),
                                           decoration: const BoxDecoration(
-                                            color: Color(0xFF00E5FF),
+                                            color: const Color(0xFF7EBFC9),
                                             shape: BoxShape.circle,
                                           ),
                                           child: const Icon(Icons.camera_alt, size: 16, color: Color(0xFF070E22)),
@@ -428,54 +434,44 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                               ),
                               const SizedBox(height: 24),
 
-                              Row(
-                                children: [
-                                  Expanded(
-                                    flex: 2,
-                                    child: _construirCampoAbs(
-                                      etiqueta: 'DNI', 
-                                      controller: _dniCtrl,
-                                      suffixIcon: IconButton(
-                                        icon: _buscandoDNI 
-                                            ? const CargaOrbital(tamano: 14) 
-                                            : const Icon(Icons.manage_search, color: Color(0xFF00E5FF), size: 20),
-                                        onPressed: _buscandoDNI ? null : _buscarDNI,
-                                      )
-                                    ),
-                                  ),
-                                  const SizedBox(width: 24),
-                                  Expanded(
-                                    flex: 3,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(bottom: 24.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          const Text('ROL ASIGNADO', style: TextStyle(color: Colors.white38, fontSize: 10, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
-                                          const SizedBox(height: 8),
-                                          DropdownButtonFormField<String>(
-                                            initialValue: _rolSeleccionado,
-                                            dropdownColor: const Color(0xFF0F121C),
-                                            icon: const Icon(Icons.arrow_drop_down, color: Colors.white54),
-                                            style: const TextStyle(color: Colors.white, fontSize: 14),
-                                            decoration: InputDecoration(
-                                              filled: true,
-                                              fillColor: const Color(0xFF0F121C),
-                                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
-                                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFF1E2336), width: 1)),
-                                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5)),
-                                            ),
-                                            items: ['supervisor', 'administrador', 'bahia'].map((rol) {
-                                              return DropdownMenuItem(value: rol, child: Text(rol.toUpperCase()));
-                                            }).toList(),
-                                            onChanged: (v) => setState(() => _rolSeleccionado = v!),
-                                          ),
-                                        ],
+                              esMovil
+                                ? Column(
+                                    children: [
+                                      _construirCampoAbs(
+                                        etiqueta: 'DNI', 
+                                        controller: _dniCtrl,
+                                        suffixIcon: IconButton(
+                                          icon: _buscandoDNI 
+                                              ? const CargaOrbital(tamano: 14) 
+                                              : const Icon(Icons.manage_search, color: const Color(0xFF7EBFC9), size: 20),
+                                          onPressed: _buscandoDNI ? null : _buscarDNI,
+                                        )
                                       ),
-                                    ),
+                                      _construirCampoRol(),
+                                    ],
+                                  )
+                                : Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 2,
+                                        child: _construirCampoAbs(
+                                          etiqueta: 'DNI', 
+                                          controller: _dniCtrl,
+                                          suffixIcon: IconButton(
+                                            icon: _buscandoDNI 
+                                                ? const CargaOrbital(tamano: 14) 
+                                                : const Icon(Icons.manage_search, color: const Color(0xFF7EBFC9), size: 20),
+                                            onPressed: _buscandoDNI ? null : _buscarDNI,
+                                          )
+                                        ),
+                                      ),
+                                      const SizedBox(width: 24),
+                                      Expanded(
+                                        flex: 3,
+                                        child: _construirCampoRol(),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
 
                               _construirCampoAbs(etiqueta: 'Nombre Completo', controller: _nombreCtrl),
                                 _construirCampoAbs(
@@ -502,48 +498,34 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                   },
                                 ),
                               
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _construirCampoAbs(
-                                      etiqueta: esEdicion ? 'Reemplazar Contraseña' : 'Clave de Acceso', 
-                                      controller: _passwordCtrl, 
-                                      esPassword: true, 
-                                      requerido: !esEdicion
-                                    ),
-                                  ),
-                                  const SizedBox(width: 24),
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(bottom: 24.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          const Text('SEDE DE OPERACIÓN', style: TextStyle(color: Colors.white38, fontSize: 10, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
-                                          const SizedBox(height: 8),
-                                          DropdownButtonFormField<String>(
-                                            initialValue: _sedeSeleccionada,
-                                            dropdownColor: const Color(0xFF0F121C),
-                                            icon: const Icon(Icons.arrow_drop_down, color: Colors.white54),
-                                            style: const TextStyle(color: Colors.white, fontSize: 14),
-                                            decoration: InputDecoration(
-                                              filled: true,
-                                              fillColor: const Color(0xFF0F121C),
-                                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
-                                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFF1E2336), width: 1)),
-                                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5)),
-                                            ),
-                                            items: ['Piura', 'Lambayeque'].map((sede) {
-                                              return DropdownMenuItem(value: sede, child: Text(sede));
-                                            }).toList(),
-                                            onChanged: (v) => setState(() => _sedeSeleccionada = v!),
-                                          ),
-                                        ],
+                              esMovil
+                                ? Column(
+                                    children: [
+                                      _construirCampoAbs(
+                                        etiqueta: esEdicion ? 'Reemplazar Contraseña' : 'Clave de Acceso', 
+                                        controller: _passwordCtrl, 
+                                        esPassword: true, 
+                                        requerido: !esEdicion
                                       ),
-                                    ),
+                                      _construirCampoSede(),
+                                    ],
+                                  )
+                                : Row(
+                                    children: [
+                                      Expanded(
+                                        child: _construirCampoAbs(
+                                          etiqueta: esEdicion ? 'Reemplazar Contraseña' : 'Clave de Acceso', 
+                                          controller: _passwordCtrl, 
+                                          esPassword: true, 
+                                          requerido: !esEdicion
+                                        ),
+                                      ),
+                                      const SizedBox(width: 24),
+                                      Expanded(
+                                        child: _construirCampoSede(),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
                             ],
                           ),
                         ),
@@ -553,19 +535,19 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                     // Footer actions
                     Container(
                       padding: const EdgeInsets.all(32),
-                      decoration: const BoxDecoration(border: Border(top: BorderSide(color: Color(0xFF1E2336), width: 1))),
+                      decoration: const BoxDecoration(border: Border(top: BorderSide(color: const Color(0xFFE2E8F0), width: 1))),
                       child: Row(
                         children: [
                           Expanded(
                             child: OutlinedButton(
                               onPressed: estado.cargando ? null : _cerrar,
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.white,
+                                foregroundColor: const Color(0xFF0E3E2C),
                                 padding: const EdgeInsets.symmetric(vertical: 18),
-                                side: const BorderSide(color: Color(0xFF1E2336)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                side: const BorderSide(color: const Color(0xFFE2E8F0), width: 1.5),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               ),
-                              child: const Text('Descartar', style: TextStyle(fontWeight: FontWeight.w600)),
+                              child: Text('Descartar', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -574,15 +556,15 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                             child: ElevatedButton(
                               onPressed: estado.cargando ? null : _guardar,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF00E5FF),
-                                foregroundColor: Colors.black,
+                                backgroundColor: const Color(0xFF15181A),
+                                foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(vertical: 18),
                                 elevation: 0,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               ),
                               child: estado.cargando
                                   ? const CargaOrbital(tamano: 20)
-                                  : Text(esEdicion ? 'Confirmar Cambios' : 'Registrar Nuevo', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  : Text(esEdicion ? 'Confirmar Cambios' : 'Registrar Nuevo', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 15)),
                             ),
                           ),
                         ],
@@ -597,4 +579,67 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
       ],
     );
   }
+
+  Widget _construirCampoRol() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('ROL ASIGNADO', style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 11, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: _rolSeleccionado,
+            dropdownColor: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            icon: const Icon(Icons.arrow_drop_down, color: const Color(0xFF64748B)),
+            style: GoogleFonts.inter(color: const Color(0xFF15181A), fontSize: 14, fontWeight: FontWeight.w500),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFE2E8F0), width: 1.5)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFF0E3E2C), width: 2.0)),
+            ),
+            items: ['supervisor', 'administrador', 'bahia'].map((rol) {
+              return DropdownMenuItem(value: rol, child: Text(rol.toUpperCase()));
+            }).toList(),
+            onChanged: (v) => setState(() => _rolSeleccionado = v!),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _construirCampoSede() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('SEDE DE OPERACIÓN', style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 11, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: _sedeSeleccionada,
+            dropdownColor: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            icon: const Icon(Icons.arrow_drop_down, color: const Color(0xFF64748B)),
+            style: GoogleFonts.inter(color: const Color(0xFF15181A), fontSize: 14, fontWeight: FontWeight.w500),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFE2E8F0), width: 1.5)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFF0E3E2C), width: 2.0)),
+            ),
+            items: ['Piura', 'Lambayeque'].map((sede) {
+              return DropdownMenuItem(value: sede, child: Text(sede));
+            }).toList(),
+            onChanged: (v) => setState(() => _sedeSeleccionada = v!),
+          ),
+        ],
+      ),
+    );
+  }
 }
+

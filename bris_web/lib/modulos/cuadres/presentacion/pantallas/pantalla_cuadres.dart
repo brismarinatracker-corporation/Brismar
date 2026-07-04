@@ -36,8 +36,8 @@ class PantallaCuadres extends ConsumerWidget {
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [
-                Color(0xFF0A2440),
-                Color(0xFF123A5C),
+                Color(0xFF0E3E2C),
+                Color(0xFF0E3E2C),
               ],
             ),
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
@@ -50,7 +50,7 @@ class PantallaCuadres extends ConsumerWidget {
                 children: [
                   Text(
                     'Cuadres de Pesca',
-                    style: GoogleFonts.fraunces(
+                    style: GoogleFonts.sora(
                       color: Colors.white,
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -306,7 +306,7 @@ class _TablaCuadres extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Text(texto,
           style: TextStyle(
-            color: color ?? (bold ? const Color(0xFF0F172A) : const Color(0xFF475569)),
+            color: color ?? (bold ? const Color(0xFF15181A) : const Color(0xFF475569)),
             fontSize: 13,
             fontWeight: bold ? FontWeight.bold : FontWeight.normal,
           )),
@@ -427,7 +427,7 @@ class _PanelDetalle extends ConsumerWidget {
       children: [
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('Placa: ${cuadre.placa}',
-              style: const TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold)),
+              style: const TextStyle(color: Color(0xFF15181A), fontSize: 18, fontWeight: FontWeight.bold)),
           Text(cuadre.estado.toUpperCase(),
               style: const TextStyle(color: Color(0xFF00838F), fontSize: 12, fontWeight: FontWeight.bold)),
         ]),
@@ -450,7 +450,7 @@ class _PanelDetalle extends ConsumerWidget {
 
   Widget _seccionResumen() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Text('Resumen', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
+      const Text('Resumen', style: TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold)),
       const Divider(color: Color(0xFFE2E8F0)),
       _itemInfo('Fecha Zarpe', cuadre.fechaZarpe ?? '-'),
       _itemInfo('Planta Destino', cuadre.plantaDestino ?? '-'),
@@ -467,7 +467,7 @@ class _PanelDetalle extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
-          Text(valor, style: const TextStyle(color: Color(0xFF0F172A), fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(valor, style: const TextStyle(color: Color(0xFF15181A), fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -486,7 +486,7 @@ class _PanelDetalle extends ConsumerWidget {
         children: [
           Icon(icono, color: colorIcono, size: 16),
           const SizedBox(width: 6),
-          Text(titulo, style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 13)),
+          Text(titulo, style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold, fontSize: 13)),
         ],
       ),
       const Divider(color: Color(0xFFE2E8F0)),

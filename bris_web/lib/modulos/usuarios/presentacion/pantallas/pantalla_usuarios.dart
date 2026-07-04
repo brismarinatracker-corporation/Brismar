@@ -14,9 +14,10 @@ class PantallaUsuarios extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(controladorUsuariosProvider);
     final ctrl = ref.read(controladorUsuariosProvider.notifier);
+    final esMovil = MediaQuery.of(context).size.width < 800;
     
     return Container(
-      color: const Color(0xFFEEF3F1),
+      color: const Color(0xFFF2F6F3),
       child: estado.cargando && estado.usuarios.isEmpty
         ? const Center(child: CargaOrbital(tamano: 80))
         : Column(
@@ -25,74 +26,40 @@ class PantallaUsuarios extends ConsumerWidget {
               // Dark Blue Header Banner
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+                padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 40, vertical: esMovil ? 20 : 24),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
-                    colors: [
-                      Color(0xFF0A2440),
-                      Color(0xFF123A5C),
-                    ],
+                    colors: [Color(0xFF0E3E2C), Color(0xFF0E3E2C)],
                   ),
                   borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Gestión de Accesos',
-                          style: GoogleFonts.fraunces(
-                            color: Colors.white,
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
+                child: esMovil
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Gestión de Accesos', style: GoogleFonts.sora(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 8),
+                          const Text('Administra roles, sedes y estados de las cuentas de la plataforma.', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                          const SizedBox(height: 16),
+                          _botonNuevoAcceso(context),
+                        ],
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Gestión de Accesos', style: GoogleFonts.sora(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              const Text('Administra roles, sedes y estados de las cuentas de la plataforma.', style: TextStyle(color: Colors.white70, fontSize: 15)),
+                            ],
                           ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Administra roles, sedes y estados de las cuentas de la plataforma.',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        showGeneralDialog(
-                          context: context,
-                          barrierDismissible: true,
-                          barrierLabel: 'Cerrar',
-                          barrierColor: Colors.black.withValues(alpha: 0.6),
-                          transitionDuration: const Duration(milliseconds: 250),
-                          pageBuilder: (context, anim1, anim2) => const DialogoFormularioUsuario(),
-                          transitionBuilder: (context, anim1, anim2, child) {
-                            return SlideTransition(
-                              position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
-                                  .animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
-                              child: child,
-                            );
-                          },
-                        );
-                      },
-                      icon: const Icon(Icons.person_add_alt_1_rounded, color: Colors.white, size: 20),
-                      label: const Text(
-                        'Nuevo acceso',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                          _botonNuevoAcceso(context),
+                        ],
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00796B), // Dark green matching mockup
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 0,
-                      ),
-                    ),
-                  ],
-                ),
               ),
               // Rest of the screen
               Expanded(
@@ -114,23 +81,24 @@ class PantallaUsuarios extends ConsumerWidget {
                     child: Column(
                       children: [
                         // Header de la Tabla
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                            border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+                        if (!esMovil)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                              border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+                            ),
+                            child: const Row(
+                              children: [
+                                Expanded(flex: 3, child: Text('PERFIL', style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
+                                Expanded(flex: 2, child: Text('DOCUMENTO', style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
+                                Expanded(flex: 2, child: Text('ROL & SEDE', style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
+                                Expanded(flex: 1, child: Text('ESTADO', style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
+                                SizedBox(width: 120, child: Text('ACCIONES', textAlign: TextAlign.right, style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
+                              ],
+                            ),
                           ),
-                          child: const Row(
-                            children: [
-                              Expanded(flex: 3, child: Text('PERFIL', style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
-                              Expanded(flex: 2, child: Text('DOCUMENTO', style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
-                              Expanded(flex: 2, child: Text('ROL & SEDE', style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
-                              Expanded(flex: 1, child: Text('ESTADO', style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
-                              SizedBox(width: 120, child: Text('ACCIONES', textAlign: TextAlign.right, style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
-                            ],
-                          ),
-                        ),
                         
                         Expanded(
                           child: estado.error != null && estado.usuarios.isEmpty
@@ -141,7 +109,7 @@ class PantallaUsuarios extends ConsumerWidget {
                                       separatorBuilder: (context, index) => Divider(color: const Color(0xFFE2E8F0), height: 1),
                                       itemBuilder: (context, index) {
                                         final u = estado.usuarios[index];
-                                        return _FilaTablaUsuarioPremium(usuario: u, controlador: ctrl);
+                                        return _FilaTablaUsuarioPremium(usuario: u, controlador: ctrl, esMovil: esMovil);
                                       },
                                     ),
                         ),
@@ -159,188 +127,219 @@ class PantallaUsuarios extends ConsumerWidget {
 class _FilaTablaUsuarioPremium extends StatelessWidget {
   final UsuarioAdminModelo usuario;
   final ControladorUsuarios controlador;
+  final bool esMovil;
 
-  const _FilaTablaUsuarioPremium({required this.usuario, required this.controlador});
+  const _FilaTablaUsuarioPremium({required this.usuario, required this.controlador, this.esMovil = false});
 
   @override
   Widget build(BuildContext context) {
     final colorRol = usuario.rol == 'administrador' ? const Color(0xFF8B5CF6) : 
                      (usuario.rol == 'supervisor' ? const Color(0xFFF59E0B) : const Color(0xFF3B82F6));
     
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-      child: Row(
-        children: [
-          // Usuario
-          Expanded(
-            flex: 3,
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: usuario.activo ? colorRol.withValues(alpha: 0.12) : const Color(0xFFE2E8F0),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: usuario.activo ? colorRol.withValues(alpha: 0.3) : Colors.transparent),
-                    image: usuario.fotoPerfil != null && usuario.fotoPerfil!.isNotEmpty
-                        ? DecorationImage(
-                            image: NetworkImage(usuario.fotoPerfil!),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
-                  ),
-                  child: usuario.fotoPerfil == null || usuario.fotoPerfil!.isEmpty
-                      ? Center(
-                          child: Text(
-                            usuario.nombre.isNotEmpty ? usuario.nombre[0].toUpperCase() : 'U',
-                            style: TextStyle(
-                              color: usuario.activo ? colorRol : const Color(0xFF64748B),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                        )
-                      : null,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(usuario.nombre, style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 15), overflow: TextOverflow.ellipsis),
-                      const SizedBox(height: 4),
-                      Text(usuario.correo.isNotEmpty ? usuario.correo : 'Sin correo registrado', style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Documento
-          Expanded(
-            flex: 2,
-            child: Row(
-              children: [
-                const Icon(Icons.badge_rounded, color: Color(0xFF64748B), size: 16),
-                const SizedBox(width: 8),
-                Text(
-                  usuario.dni.isNotEmpty ? usuario.dni : 'No especificado', 
-                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 14, fontWeight: FontWeight.w500)
-                ),
-              ],
-            ),
-          ),
-          // Sede / Rol
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.location_on_rounded, color: Color(0xFF00838F), size: 14),
-                    const SizedBox(width: 4),
-                    Text(usuario.sede, style: const TextStyle(color: Color(0xFF0F172A), fontSize: 14, fontWeight: FontWeight.w600)),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: colorRol.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: colorRol.withValues(alpha: 0.2)),
-                  ),
-                  child: Text(
-                    usuario.rol.toUpperCase(), 
-                    style: TextStyle(color: colorRol, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Estado
-          Expanded(
-            flex: 1,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: usuario.activo ? const Color(0xFF10B981).withValues(alpha: 0.15) : const Color(0xFFEF4444).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: usuario.activo ? const Color(0xFF10B981).withValues(alpha: 0.3) : const Color(0xFFEF4444).withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: usuario.activo ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      usuario.activo ? 'ACTIVO' : 'SUSPENDIDO',
-                      style: TextStyle(
-                        color: usuario.activo ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+    final avatar = Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: usuario.activo ? colorRol.withValues(alpha: 0.12) : const Color(0xFFE2E8F0),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: usuario.activo ? colorRol.withValues(alpha: 0.3) : Colors.transparent),
+        image: usuario.fotoPerfil != null && usuario.fotoPerfil!.isNotEmpty
+            ? DecorationImage(
+                image: NetworkImage(usuario.fotoPerfil!),
+                fit: BoxFit.cover,
+              )
+            : null,
+      ),
+      child: usuario.fotoPerfil == null || usuario.fotoPerfil!.isEmpty
+          ? Center(
+              child: Text(
+                usuario.nombre.isNotEmpty ? usuario.nombre[0].toUpperCase() : 'U',
+                style: TextStyle(
+                  color: usuario.activo ? colorRol : const Color(0xFF64748B),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
                 ),
               ),
+            )
+          : null,
+    );
+
+    final infoUsuario = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(usuario.nombre, style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold, fontSize: 15), overflow: TextOverflow.ellipsis),
+        const SizedBox(height: 4),
+        Text(usuario.correo.isNotEmpty ? usuario.correo : 'Sin correo registrado', style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
+      ],
+    );
+
+    final widgetDni = Row(
+      children: [
+        const Icon(Icons.badge_rounded, color: Color(0xFF64748B), size: 16),
+        const SizedBox(width: 8),
+        Text(
+          usuario.dni.isNotEmpty ? usuario.dni : 'No especificado', 
+          style: const TextStyle(color: Color(0xFF15181A), fontSize: 14, fontWeight: FontWeight.w500)
+        ),
+      ],
+    );
+
+    final widgetRolSede = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.location_on_rounded, color: Color(0xFF00838F), size: 14),
+            const SizedBox(width: 4),
+            Text(usuario.sede, style: const TextStyle(color: Color(0xFF15181A), fontSize: 14, fontWeight: FontWeight.w600)),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: colorRol.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: colorRol.withValues(alpha: 0.2)),
+          ),
+          child: Text(
+            usuario.rol.toUpperCase(), 
+            style: TextStyle(color: colorRol, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)
+          ),
+        ),
+      ],
+    );
+
+    final widgetEstado = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: usuario.activo ? const Color(0xFF10B981).withValues(alpha: 0.15) : const Color(0xFFEF4444).withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: usuario.activo ? const Color(0xFF10B981).withValues(alpha: 0.3) : const Color(0xFFEF4444).withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: usuario.activo ? const Color(0xFF10B981) : const Color(0xFFEF4444),
             ),
           ),
-          // Acciones
-          SizedBox(
-            width: 120,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit_rounded, color: Color(0xFF64748B), size: 22),
-                  tooltip: 'Editar Perfil',
-                  hoverColor: const Color(0xFF3B82F6).withValues(alpha: 0.08),
-                  onPressed: () {
-                    showGeneralDialog(
-                      context: context,
-                      barrierDismissible: true,
-                      barrierLabel: 'Cerrar',
-                      barrierColor: Colors.black.withValues(alpha: 0.6),
-                      transitionDuration: const Duration(milliseconds: 250),
-                      pageBuilder: (context, anim1, anim2) => DialogoFormularioUsuario(usuarioAEditar: usuario),
-                      transitionBuilder: (context, anim1, anim2, child) {
-                        return SlideTransition(
-                          position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
-                          child: child,
-                        );
-                      },
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: Icon(
-                    usuario.activo ? Icons.block_rounded : Icons.check_circle_rounded, 
-                    color: usuario.activo ? const Color(0xFFEF4444) : const Color(0xFF10B981), 
-                    size: 22
-                  ),
-                  tooltip: usuario.activo ? 'Suspender Acceso' : 'Reactivar Acceso',
-                  hoverColor: usuario.activo ? const Color(0xFFEF4444).withValues(alpha: 0.1) : const Color(0xFF10B981).withValues(alpha: 0.1),
-                  onPressed: () {
-                    controlador.alternarEstadoUsuario(usuario.uid, !usuario.activo);
-                  },
-                ),
-              ],
+          const SizedBox(width: 6),
+          Text(
+            usuario.activo ? 'ACTIVO' : 'SUSPENDIDO',
+            style: TextStyle(
+              color: usuario.activo ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
       ),
     );
+
+    final widgetAcciones = Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.edit_rounded, color: Color(0xFF64748B), size: 22),
+          tooltip: 'Editar Perfil',
+          hoverColor: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+          onPressed: () {
+            showGeneralDialog(
+              context: context,
+              barrierDismissible: true,
+              barrierLabel: 'Cerrar',
+              barrierColor: Colors.black.withValues(alpha: 0.6),
+              transitionDuration: const Duration(milliseconds: 250),
+              pageBuilder: (context, anim1, anim2) => DialogoFormularioUsuario(usuarioAEditar: usuario),
+              transitionBuilder: (context, anim1, anim2, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
+                  child: child,
+                );
+              },
+            );
+          },
+        ),
+        IconButton(
+          icon: Icon(
+            usuario.activo ? Icons.block_rounded : Icons.check_circle_rounded, 
+            color: usuario.activo ? const Color(0xFFEF4444) : const Color(0xFF10B981), 
+            size: 22
+          ),
+          tooltip: usuario.activo ? 'Suspender Acceso' : 'Reactivar Acceso',
+          hoverColor: usuario.activo ? const Color(0xFFEF4444).withValues(alpha: 0.1) : const Color(0xFF10B981).withValues(alpha: 0.1),
+          onPressed: () {
+            controlador.alternarEstadoUsuario(usuario.uid, !usuario.activo);
+          },
+        ),
+      ],
+    );
+
+    if (esMovil) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [avatar, const SizedBox(width: 16), Expanded(child: infoUsuario)]),
+            const SizedBox(height: 16),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [widgetDni, widgetEstado]),
+            const SizedBox(height: 12),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [widgetRolSede, widgetAcciones]),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+      child: Row(
+        children: [
+          Expanded(flex: 3, child: Row(children: [avatar, const SizedBox(width: 16), Expanded(child: infoUsuario)])),
+          Expanded(flex: 2, child: widgetDni),
+          Expanded(flex: 2, child: widgetRolSede),
+          Expanded(flex: 1, child: Align(alignment: Alignment.centerLeft, child: widgetEstado)),
+          SizedBox(width: 120, child: widgetAcciones),
+        ],
+      ),
+    );
   }
+}
+
+Widget _botonNuevoAcceso(BuildContext context) {
+  return ElevatedButton.icon(
+    onPressed: () {
+      showGeneralDialog(
+        context: context,
+        barrierDismissible: true,
+        barrierLabel: 'Cerrar',
+        barrierColor: Colors.black.withValues(alpha: 0.6),
+        transitionDuration: const Duration(milliseconds: 250),
+        pageBuilder: (context, anim1, anim2) => const DialogoFormularioUsuario(),
+        transitionBuilder: (context, anim1, anim2, child) {
+          return SlideTransition(
+            position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
+                .animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
+            child: child,
+          );
+        },
+      );
+    },
+    icon: const Icon(Icons.person_add_alt_1_rounded, color: Colors.white, size: 20),
+    label: const Text(
+      'Nuevo acceso',
+      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+    ),
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFF00796B), // Dark green matching mockup
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 0,
+    ),
+  );
 }

@@ -106,7 +106,7 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
     }
 
     return Container(
-      color: const Color(0xFFEEF3F1),
+      color: const Color(0xFFF2F6F3),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -118,10 +118,10 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
               gradient: LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-                colors: [
-                  Color(0xFF0A2440),
-                  Color(0xFF123A5C),
-                ],
+                  colors: [
+                    Color(0xFF0E3E2C),
+                    Color(0xFF0E3E2C),
+                  ],
               ),
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
             ),
@@ -130,7 +130,7 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
               children: [
                 Text(
                   'Mi Perfil',
-                  style: GoogleFonts.fraunces(
+                  style: GoogleFonts.sora(
                     color: Colors.white,
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
@@ -250,7 +250,7 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
                                       child: _editando
                                           ? TextFormField(
                                               controller: _nombreCtrl,
-                                              style: const TextStyle(color: Color(0xFF0F172A), fontSize: 22, fontWeight: FontWeight.bold),
+                                              style: const TextStyle(color: Color(0xFF15181A), fontSize: 22, fontWeight: FontWeight.bold),
                                               decoration: InputDecoration(
                                                 hintText: 'Tu nombre',
                                                 filled: true,
@@ -263,7 +263,7 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
                                           : Text(
                                               nombre,
                                               style: const TextStyle(
-                                                color: Color(0xFF0F172A),
+                                                color: Color(0xFF15181A),
                                                 fontSize: 24,
                                                 fontWeight: FontWeight.bold,
                                               ),
@@ -372,7 +372,7 @@ class _InfoChip extends StatelessWidget {
               Text(
                 valor,
                 style: const TextStyle(
-                  color: Color(0xFF0F172A),
+                  color: Color(0xFF15181A),
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),

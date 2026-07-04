@@ -154,7 +154,7 @@ class ControladorCuadresWeb extends Notifier<EstadoCuadresWeb> {
 
   /// Selecciona o deselecciona un cuadre para ver su detalle lateral.
   void seleccionarCuadre(String? id) {
-    if (state.cuadreSeleccionadoId == id) {
+    if (id == null || state.cuadreSeleccionadoId == id) {
       state = state.copiarCon(limpiarSeleccion: true);
     } else {
       state = state.copiarCon(cuadreSeleccionadoId: id);

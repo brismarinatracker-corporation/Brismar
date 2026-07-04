@@ -68,7 +68,7 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
           // 1. Panel Derecho & Fondo General (Tono Espuma)
           Positioned.fill(
             child: Container(
-              color: const Color(0xFFF2F6F5), // Foam tone
+              color: const Color(0xFFF7F7F7), // Foam tone
               child: Row(
                 children: [
                   if (esPantallaAncha)
@@ -94,12 +94,12 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                                         margin: const EdgeInsets.only(bottom: 24),
                                         padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF051329),
+                                          color: const Color(0xFF0E3E2C),
                                           borderRadius: BorderRadius.circular(16),
                                         ),
                                         child: const Icon(
                                           Icons.anchor_rounded,
-                                          color: Color(0xFFF59E0B),
+                                          color: Colors.white,
                                           size: 40,
                                         ),
                                       ),
@@ -119,8 +119,8 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                                   const SizedBox(height: 12),
                                   Text(
                                     'Bienvenido de vuelta',
-                                    style: GoogleFonts.fraunces(
-                                      color: const Color(0xFF0F172A),
+                                    style: GoogleFonts.sora(
+                                      color: const Color(0xFF15181A),
                                       fontSize: 32,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -178,7 +178,7 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                                   TextFormField(
                                     controller: _correoController,
                                     keyboardType: TextInputType.emailAddress,
-                                    style: GoogleFonts.inter(color: const Color(0xFF0F172A), fontSize: 15),
+                                    style: GoogleFonts.inter(color: const Color(0xFF15181A), fontSize: 15),
                                     decoration: InputDecoration(
                                       hintText: 'nombre@brismar.pe',
                                       hintStyle: GoogleFonts.inter(color: const Color(0xFF94A3B8)),
@@ -196,7 +196,7 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 2.0), // Amber Focus
+                                        borderSide: const BorderSide(color: Color(0xFF0E3E2C), width: 2.0), // Dark Green Focus
                                       ),
                                       errorBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
@@ -228,7 +228,7 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                                   TextFormField(
                                     controller: _contrasenaController,
                                     obscureText: _ocultarContrasena,
-                                    style: GoogleFonts.inter(color: const Color(0xFF0F172A), fontSize: 15),
+                                    style: GoogleFonts.inter(color: const Color(0xFF15181A), fontSize: 15),
                                     decoration: InputDecoration(
                                       hintText: '••••••••',
                                       hintStyle: GoogleFonts.inter(color: const Color(0xFF94A3B8)),
@@ -258,7 +258,7 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 2.0),
+                                        borderSide: const BorderSide(color: Color(0xFF0E3E2C), width: 2.0),
                                       ),
                                       errorBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
@@ -286,7 +286,7 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                                             height: 24,
                                             child: Checkbox(
                                               value: _recordarme,
-                                              activeColor: const Color(0xFFF59E0B),
+                                              activeColor: const Color(0xFF0E3E2C),
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                                               side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
                                               onChanged: (val) {
@@ -327,11 +327,11 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                                   ),
                                   const SizedBox(height: 32),
 
-                                  // Botón Ingresar (Ámbar / Boya)
+                                  // Botón Ingresar (Negro Tinta)
                                   ElevatedButton(
                                     onPressed: _cargando ? null : _iniciarSesion,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFF59E0B), // Boya Amber Accent
+                                      backgroundColor: const Color(0xFF15181A), // Negro Tinta
                                       foregroundColor: Colors.white,
                                       elevation: 0,
                                       padding: const EdgeInsets.symmetric(vertical: 18),
@@ -386,7 +386,7 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                                               child: Text(
                                                 'Contacta a soporte',
                                                 style: GoogleFonts.inter(
-                                                  color: const Color(0xFF0F172A),
+                                                  color: const Color(0xFF15181A),
                                                   fontWeight: FontWeight.bold,
                                                   decoration: TextDecoration.underline,
                                                 ),
@@ -420,7 +420,7 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
               child: ClipPath(
                 clipper: ClipperHorizonte(),
                 child: Container(
-                  color: const Color(0xFF051329), // Deep Navy
+                  color: const Color(0xFF0E3E2C), // Verde dominante
                   child: Stack(
                     children: [
                       // Líneas de contorno tipo batimetría / Carta Náutica
@@ -440,7 +440,7 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                               Text(
                                 'NEGOCIOS BRISMAR S.R.L.',
                                 style: GoogleFonts.inter(
-                                  color: const Color(0xFFF59E0B), // Amber Accent
+                                  color: const Color(0xFF7EBFC9), // Celeste Accent
                                   fontSize: 14,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 2.0,
@@ -449,7 +449,7 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                               const SizedBox(height: 48),
                               Text(
                                 'Cada zarpe,\ncada descarga,\nbajo control.',
-                                style: GoogleFonts.fraunces(
+                                style: GoogleFonts.sora(
                                   color: Colors.white,
                                   fontSize: 44,
                                   height: 1.15,

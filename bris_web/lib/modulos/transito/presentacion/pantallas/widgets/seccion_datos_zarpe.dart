@@ -7,6 +7,14 @@ class SeccionDatosZarpe extends StatefulWidget {
   final TextEditingController placaCtrl;
   final TextEditingController choferCtrl;
   final TextEditingController muelleCtrl;
+  final TextEditingController pesoTotalCtrl;
+  final TextEditingController cajasLlenasCtrl;
+  final TextEditingController cajasVaciasCtrl;
+  final TextEditingController pesadorCtrl;
+  final TextEditingController tipoCtrl;
+  final TextEditingController cuadrillaCtrl;
+  final int tipoProductoActual;
+  final ValueChanged<int> onTipoProductoCambiado;
 
   const SeccionDatosZarpe({
     super.key,
@@ -14,6 +22,14 @@ class SeccionDatosZarpe extends StatefulWidget {
     required this.placaCtrl,
     required this.choferCtrl,
     required this.muelleCtrl,
+    required this.pesoTotalCtrl,
+    required this.cajasLlenasCtrl,
+    required this.cajasVaciasCtrl,
+    required this.pesadorCtrl,
+    required this.tipoCtrl,
+    required this.cuadrillaCtrl,
+    required this.tipoProductoActual,
+    required this.onTipoProductoCambiado,
   });
 
   @override
@@ -42,7 +58,7 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Datos del Zarpe (Cámara)', style: TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Datos del Zarpe (Cámara)', style: TextStyle(color: Color(0xFF15181A), fontSize: 18, fontWeight: FontWeight.bold)),
           const Divider(color: Color(0xFFF1F5F9), height: 32),
           
           if (widget.urlsFotos.isNotEmpty) ...[
@@ -151,25 +167,103 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
           
           TextFormField(
             controller: widget.placaCtrl,
-            style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600),
+            style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
             decoration: _decoracion('Placa Cámara'),
             validator: (v) => v!.isEmpty ? 'Requerido' : null,
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: widget.choferCtrl,
-            style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600),
+            style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
             decoration: _decoracion('Chofer'),
             validator: (v) => v!.isEmpty ? 'Requerido' : null,
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: widget.muelleCtrl,
-            style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600),
+            style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
             decoration: _decoracion('Muelle Partida'),
             validator: (v) => v!.isEmpty ? 'Requerido' : null,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: widget.pesadorCtrl,
+            style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
+            decoration: _decoracion('Pesador (Opcional)'),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: widget.tipoCtrl,
+                  style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
+                  decoration: _decoracion('Tipo (Opcional)'),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextFormField(
+                  controller: widget.cuadrillaCtrl,
+                  style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
+                  decoration: _decoracion('Cuadrilla (Opcional)'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: widget.pesoTotalCtrl,
+                  style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: _decoracion('Peso Total (Kg)'),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: DropdownButtonFormField<int>(
+                  value: widget.tipoProductoActual,
+                  decoration: _decoracion('Tipo Producto'),
+                  items: const [
+                    DropdownMenuItem(value: 1, child: Text('Pota')),
+                    DropdownMenuItem(value: 2, child: Text('Bonito')),
+                    DropdownMenuItem(value: 3, child: Text('Caballa')),
+                    DropdownMenuItem(value: 4, child: Text('Jurel')),
+                    DropdownMenuItem(value: 5, child: Text('Otros')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) widget.onTipoProductoCambiado(val);
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: widget.cajasLlenasCtrl,
+                  style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
+                  keyboardType: TextInputType.number,
+                  decoration: _decoracion('Cajas Llenas'),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextFormField(
+                  controller: widget.cajasVaciasCtrl,
+                  style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
+                  keyboardType: TextInputType.number,
+                  decoration: _decoracion('Cajas Vacías'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
           const Text(
             'Nota: Estos datos actualizan tanto el Zarpe como el Cuadre.', 
             style: TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.4),

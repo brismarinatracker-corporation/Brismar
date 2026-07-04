@@ -33,8 +33,8 @@ class SeccionEmbarcaciones extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Embarcaciones Asociadas (Compras)', style: TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold)),
-          const Divider(color: Color(0xFFF1F5F9), height: 32),
+          const Text('Embarcaciones Asociadas (Compras)', style: TextStyle(color: Color(0xFF15181A), fontSize: 18, fontWeight: FontWeight.bold)),
+          const Divider(color: Color(0xFFE2E8F0), height: 32),
           
           if (compras.isEmpty) 
             const Padding(
@@ -51,7 +51,7 @@ class SeccionEmbarcaciones extends StatelessWidget {
             ),
             child: ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              title: Text('${c.embarcacion} - ${c.producto}', style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
+              title: Text('${c.embarcacion} - ${c.producto}', style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold)),
               subtitle: Text('${c.kilos}kg @ S/ ${c.precioUnitario}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,

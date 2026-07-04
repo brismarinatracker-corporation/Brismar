@@ -154,8 +154,14 @@ class CuadreEntidad {
   /// Muelle o planta de destino.
   final String? muellePartida;
 
-  /// Nombre del pesador encargado en muelle.
+  /// Pesador (opcional)
   final String? pesador;
+
+  /// Tipo (opcional)
+  final String? tipo;
+
+  /// Cuadrilla (opcional)
+  final String? cuadrilla;
 
   /// Detalle de las compras de pescado asociadas.
   final List<CompraEntidad> compras;
@@ -184,6 +190,8 @@ class CuadreEntidad {
     this.tipoProducto,
     this.muellePartida,
     this.pesador,
+    this.tipo,
+    this.cuadrilla,
     this.compras = const [],
     this.gastos = const [],
     this.ventas = const [],

@@ -23,7 +23,7 @@ class GestorBaseDatos {
 
     return await openDatabase(
       path,
-      version: 8,
+      version: 9,
       password: 'BRISMAR_SECURE_KEY_2026',
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
@@ -58,7 +58,9 @@ class GestorBaseDatos {
         cajas_vacias INTEGER,
         tipo_producto INTEGER,
         planta_destino TEXT,
-        pesador TEXT
+        pesador TEXT,
+        tipo TEXT,
+        cuadrilla TEXT
       )
     ''');
   }
@@ -146,6 +148,9 @@ class GestorBaseDatos {
     if (oldVersion < 8) {
       await db.execute('ALTER TABLE compras ADD COLUMN adelanto REAL DEFAULT 0');
     }
+    if (oldVersion < 9) {
+      await _upgradeA9(db);
+    }
   }
 
   /// Migración: Eliminar tabla vieja y crear estructura nueva.
@@ -184,6 +189,11 @@ class GestorBaseDatos {
   /// Migración: Separar estado de negocio de sincronización en zarpes.
   Future<void> _upgradeA7(Database db) async {
     await db.execute('ALTER TABLE zarpes ADD COLUMN sincronizado INTEGER DEFAULT 0');
+  }
+
+  Future<void> _upgradeA9(Database db) async {
+    await db.execute('ALTER TABLE cuadres ADD COLUMN tipo TEXT');
+    await db.execute('ALTER TABLE cuadres ADD COLUMN cuadrilla TEXT');
   }
 
   /// Cierra la base de datos cuando ya no se requiere.

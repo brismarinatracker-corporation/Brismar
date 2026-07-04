@@ -10,6 +10,7 @@ class CompraModelo extends CompraEntidad {
     required super.producto,
     required super.kilos,
     required super.precioUnitario,
+    super.adelanto = 0.0,
     required super.total,
   });
 
@@ -21,6 +22,7 @@ class CompraModelo extends CompraEntidad {
         producto: e.producto,
         kilos: e.kilos,
         precioUnitario: e.precioUnitario,
+        adelanto: e.adelanto,
         total: e.total,
       );
 
@@ -32,6 +34,7 @@ class CompraModelo extends CompraEntidad {
         producto: map['producto'] as String,
         kilos: (map['kilos'] as num).toDouble(),
         precioUnitario: (map['precio_unitario'] as num).toDouble(),
+        adelanto: map['adelanto'] != null ? (map['adelanto'] as num).toDouble() : 0.0,
         total: (map['total'] as num).toDouble(),
       );
 
@@ -43,6 +46,7 @@ class CompraModelo extends CompraEntidad {
         'producto': producto,
         'kilos': kilos,
         'precio_unitario': precioUnitario,
+        'adelanto': adelanto,
         'total': total,
       };
 
@@ -54,6 +58,7 @@ class CompraModelo extends CompraEntidad {
         producto: map['producto'] as String,
         kilos: (map['kilos'] as num).toDouble(),
         precioUnitario: (map['precio_unitario'] as num).toDouble(),
+        adelanto: map['adelanto'] != null ? (map['adelanto'] as num).toDouble() : 0.0,
         total: (map['total'] as num).toDouble(),
       );
 
@@ -65,6 +70,7 @@ class CompraModelo extends CompraEntidad {
         'producto': producto,
         'kilos': kilos,
         'precio_unitario': precioUnitario,
+        'adelanto': adelanto,
         'total': total,
       };
 }
@@ -227,7 +233,9 @@ class CuadreModelo extends CuadreEntidad {
     super.tipoProducto,
     super.muellePartida,
     super.pesador,
-    super.compras,
+    super.tipo,
+    super.cuadrilla,
+    super.compras = const [],
     super.gastos,
     super.ventas,
   });
@@ -250,6 +258,8 @@ class CuadreModelo extends CuadreEntidad {
         tipoProducto: e.tipoProducto,
         muellePartida: e.muellePartida,
         pesador: e.pesador,
+        tipo: e.tipo,
+        cuadrilla: e.cuadrilla,
         compras: e.compras.map((c) => CompraModelo.fromEntidad(c)).toList(),
         gastos: e.gastos.map((g) => GastoModelo.fromEntidad(g)).toList(),
         ventas: e.ventas.map((v) => VentaModelo.fromEntidad(v)).toList(),
@@ -273,6 +283,8 @@ class CuadreModelo extends CuadreEntidad {
         tipoProducto: map['tipo_producto'] as int?,
         muellePartida: map['planta_destino'] as String?,
         pesador: map['pesador'] as String?,
+        tipo: map['tipo'] as String?,
+        cuadrilla: map['cuadrilla'] as String?,
       );
 
   /// Convierte este modelo a un mapa compatible con SQLite.
@@ -293,6 +305,8 @@ class CuadreModelo extends CuadreEntidad {
         'tipo_producto': tipoProducto,
         'planta_destino': muellePartida,
         'pesador': pesador,
+        'tipo': tipo,
+        'cuadrilla': cuadrilla,
       };
 
   /// Crea un [CuadreModelo] a partir de un mapa JSON de Supabase.
@@ -313,6 +327,8 @@ class CuadreModelo extends CuadreEntidad {
         tipoProducto: map['tipo_producto'] as int?,
         muellePartida: map['planta_destino'] as String?,
         pesador: map['pesador'] as String?,
+        tipo: map['tipo'] as String?,
+        cuadrilla: map['cuadrilla'] as String?,
       );
 
   /// Convierte este modelo a un mapa JSON para Supabase.
@@ -332,6 +348,8 @@ class CuadreModelo extends CuadreEntidad {
         'tipo_producto': tipoProducto,
         'planta_destino': muellePartida,
         'pesador': pesador,
+        'tipo': tipo,
+        'cuadrilla': cuadrilla,
       };
 }
 

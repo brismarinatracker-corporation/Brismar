@@ -22,6 +22,13 @@ class EdicionZarpeParams {
   final String muellePartida;
   final String? muelleDestino;
   final String? observaciones;
+  final double? pesoTotal;
+  final int? cajasLlenas;
+  final int? cajasVacias;
+  final int? tipoProducto;
+  final String? pesador;
+  final String? tipo;
+  final String? cuadrilla;
   final List<CompraWebModelo> compras;
   final List<GastoWebModelo> gastos;
 
@@ -32,6 +39,13 @@ class EdicionZarpeParams {
     required this.muellePartida,
     this.muelleDestino,
     this.observaciones,
+    this.pesoTotal,
+    this.cajasLlenas,
+    this.cajasVacias,
+    this.tipoProducto,
+    this.pesador,
+    this.tipo,
+    this.cuadrilla,
     this.compras = const [],
     this.gastos = const [],
   });
@@ -64,6 +78,17 @@ class RepositorioEdicionZarpe {
         .maybeSingle();
 
     return datos != null ? ZarpeModelo.desdeJson(datos) : null;
+  }
+
+  /// Carga los datos del cuadre asociado (pesos, cajas, etc.)
+  Future<CuadreWebModelo?> cargarCuadre(String id) async {
+    final datos = await _cliente
+        .from('cuadres')
+        .select()
+        .eq('id', id)
+        .maybeSingle();
+        
+    return datos != null ? CuadreWebModelo.desdeJson(datos) : null;
   }
 
   /// Carga las compras actuales asociadas al zarpe.
@@ -102,6 +127,7 @@ class RepositorioEdicionZarpe {
   Future<void> guardarEdicion(EdicionZarpeParams params) async {
     try {
       await _actualizarZarpe(params);
+      await _actualizarCuadre(params);
       await _reemplazarCompras(params.id, params.compras);
       await _reemplazarGastos(params.id, params.gastos);
     } on Exception catch (e) {
@@ -121,6 +147,27 @@ class RepositorioEdicionZarpe {
     if (params.observaciones != null) payload['observaciones'] = params.observaciones;
 
     await _cliente.from('zarpes').update(payload).eq('id', params.id);
+  }
+
+  Future<void> _actualizarCuadre(EdicionZarpeParams params) async {
+    final payload = <String, dynamic>{
+      'placa': params.placa.toUpperCase(),
+      if (params.muellePartida.isNotEmpty) 'planta_destino': params.muellePartida,
+    };
+    
+    if (params.pesoTotal != null) payload['peso_total'] = params.pesoTotal;
+    if (params.cajasLlenas != null) payload['cajas_llenas'] = params.cajasLlenas;
+    if (params.cajasVacias != null) payload['cajas_vacias'] = params.cajasVacias;
+    if (params.tipoProducto != null) {
+      payload['tipo_producto'] = params.tipoProducto;
+      payload['pesador'] = params.pesador;
+      payload['tipo'] = params.tipo;
+      payload['cuadrilla'] = params.cuadrilla;
+    }
+
+    // Actualizamos solo si el cuadre existe. No insertamos si no existe porque
+    // el tracker debería crearlo, pero podemos intentar un upsert o un update seguro.
+    await _cliente.from('cuadres').update(payload).eq('id', params.id);
   }
 
   Future<void> _reemplazarCompras(String zarpeId, List<CompraWebModelo> compras) async {

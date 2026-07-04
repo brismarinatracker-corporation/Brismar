@@ -21,27 +21,24 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
     final esAdmin = authState.rol == 'administrador';
     final nombre = authState.nombreReal ?? 'Usuario';
     final rolTexto = (authState.rol ?? '').toUpperCase();
-    final esExtendido = MediaQuery.of(context).size.width >= 1200;
+    final anchoPantalla = MediaQuery.of(context).size.width;
+    final esMovil = anchoPantalla < 800;
+    final esExtendido = anchoPantalla >= 1200;
     final anchoSidebar = esExtendido ? 260.0 : 80.0;
 
     return Scaffold(
+      bottomNavigationBar: esMovil ? _construirBottomNavigationBar(esAdmin) : null,
       body: Row(
         children: [
-          // Sidebar Navy Premium (Mismo gradiente/marca unificada)
+          if (!esMovil)
+            // Sidebar Navy Premium (Mismo gradiente/marca unificada)
           Container(
             width: anchoSidebar,
             height: double.infinity,
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF0A2440), // Navy profundo
-                  Color(0xFF123A5C), // Navy medio
-                ],
-              ),
+              color: Color(0xFF0E3E2C), // Verde dominante
               border: Border(
-                right: BorderSide(color: Color(0xFF1E293B), width: 1),
+                right: BorderSide(color: Color(0xFF0E3E2C), width: 1),
               ),
             ),
             child: SafeArea(
@@ -56,16 +53,16 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.12), // Amber tint
+                            color: const Color(0xFF7EBFC9).withValues(alpha: 0.2), // Celeste tint
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.anchor_rounded, color: Color(0xFFF59E0B), size: 28),
+                          child: const Icon(Icons.anchor_rounded, color: Color(0xFF7EBFC9), size: 28),
                         ),
                         if (esExtendido) ...[
                           const SizedBox(width: 12),
                           Text(
                             'Brismar',
-                            style: GoogleFonts.fraunces(
+                            style: GoogleFonts.sora(
                               color: Colors.white,
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
@@ -159,9 +156,9 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                             child: Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1E293B).withValues(alpha: 0.4),
+                                color: Colors.white.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFF334155).withValues(alpha: 0.3)),
+                                border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
                               ),
                               child: Row(
                                 children: [
@@ -191,7 +188,7 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                                         ),
                                         Text(
                                           rolTexto,
-                                          style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 11, fontWeight: FontWeight.w600),
+                                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
                                         ),
                                       ],
                                     ),
@@ -216,12 +213,12 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                           ),
                         const SizedBox(height: 12),
                         
-                        // Botón de Cerrar Sesión (Ámbar / Rojo suave)
+                        // Botón de Cerrar Sesión
                         IconButton(
-                          icon: const Icon(Icons.logout_rounded, color: Color(0xFFF59E0B)), // Amber logout
+                          icon: const Icon(Icons.logout_rounded, color: Colors.white),
                           tooltip: 'Cerrar Sesión',
                           style: IconButton.styleFrom(
-                            backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.08),
+                            backgroundColor: Colors.white.withValues(alpha: 0.1),
                             padding: const EdgeInsets.all(10),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
@@ -240,10 +237,48 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
           // Área Principal de Contenido
           Expanded(
             child: Container(
-              color: const Color(0xFFEEF3F1),
+              color: const Color(0xFFF2F6F3),
               child: widget.hijo,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _construirBottomNavigationBar(bool esAdmin) {
+    return Theme(
+      data: Theme.of(context).copyWith(
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+      ),
+      child: BottomNavigationBar(
+        currentIndex: _indiceSeleccionado,
+        onTap: (index) {
+          setState(() => _indiceSeleccionado = index);
+          if (index == 0) const RutaDashboard().go(context);
+          if (index == 1) const RutaTransito().go(context);
+          if (index == 2) const RutaCuadres().go(context);
+          if (esAdmin) {
+            if (index == 3) const RutaUsuarios().go(context);
+            if (index == 4) const RutaPerfil().go(context);
+          } else {
+            if (index == 3) const RutaPerfil().go(context);
+          }
+        },
+        backgroundColor: const Color(0xFF0E3E2C),
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: const Color(0xFF7EBFC9),
+        unselectedItemColor: Colors.white60,
+        selectedLabelStyle: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 11),
+        unselectedLabelStyle: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 10),
+        items: [
+          const BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard_rounded), label: 'Resumen'),
+          const BottomNavigationBarItem(icon: Icon(Icons.local_shipping_outlined), activeIcon: Icon(Icons.local_shipping_rounded), label: 'Tránsito'),
+          const BottomNavigationBarItem(icon: Icon(Icons.table_view_outlined), activeIcon: Icon(Icons.table_view_rounded), label: 'Cuadres'),
+          if (esAdmin)
+            const BottomNavigationBarItem(icon: Icon(Icons.people_alt_outlined), activeIcon: Icon(Icons.people_alt_rounded), label: 'Usuarios'),
+          const BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person_rounded), label: 'Perfil'),
         ],
       ),
     );
@@ -300,8 +335,8 @@ class _ItemMenuHoverState extends State<_ItemMenuHover> {
   Widget build(BuildContext context) {
     // Definimos el color del texto/ícono según el estado activo o hover
     final colorResaltado = widget.esActivo
-        ? const Color(0xFFF59E0B) // Amber
-        : (_estaCerniendo ? Colors.white : const Color(0xFF94A3B8));
+        ? Colors.white
+        : (_estaCerniendo ? Colors.white : Colors.white70);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _estaCerniendo = true),
@@ -311,12 +346,12 @@ class _ItemMenuHoverState extends State<_ItemMenuHover> {
         margin: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
           color: widget.esActivo
-              ? const Color(0xFF1E293B).withValues(alpha: 0.3)
-              : (_estaCerniendo ? Colors.white.withValues(alpha: 0.05) : Colors.transparent),
+              ? const Color(0xFF7EBFC9) // Celeste badge
+              : (_estaCerniendo ? Colors.white.withValues(alpha: 0.1) : Colors.transparent),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: widget.esActivo
-                ? const Color(0xFFF59E0B)
+                ? const Color(0xFF7EBFC9)
                 : (_estaCerniendo ? Colors.white.withValues(alpha: 0.15) : Colors.transparent),
             width: 1.5,
           ),
