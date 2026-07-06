@@ -71,16 +71,24 @@ class FuenteDatosTransito {
   /// Aplica el filtro temporal a la query de Supabase.
   dynamic _aplicarFiltroTemporal(dynamic query, String filtro) {
     final ahora = DateTime.now();
+    final hoy = DateTime(ahora.year, ahora.month, ahora.day);
+    final ayer = hoy.subtract(const Duration(days: 1));
+    
+    String format(DateTime d) => "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
+
     return switch (filtro) {
+      'ayer' => query
+          .gte('fecha_zarpe', format(ayer))
+          .lt('fecha_zarpe', format(hoy)),
       'semana' => query.gte(
           'fecha_zarpe',
-          ahora.subtract(const Duration(days: 7)).toIso8601String().substring(0, 10),
+          format(hoy.subtract(Duration(days: hoy.weekday - 1))), // Desde el lunes de esta semana
         ),
       'mes' => query.gte(
           'fecha_zarpe',
-          ahora.subtract(const Duration(days: 30)).toIso8601String().substring(0, 10),
+          format(DateTime(ahora.year, ahora.month, 1)), // Desde el inicio del mes
         ),
-      'anio' => query.gte('fecha_zarpe', '${ahora.year}-01-01'),
+      'anio' => query.gte('fecha_zarpe', format(DateTime(ahora.year, 1, 1))),
       _ => query,
     };
   }

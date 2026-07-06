@@ -145,12 +145,53 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
       await repo.guardarEdicion(params);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cambios guardados con éxito'), backgroundColor: Colors.green));
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (c) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 28),
+                SizedBox(width: 12),
+                Text('¡Éxito!', style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: const Text('Los cambios se guardaron correctamente.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(c),
+                child: const Text('Aceptar', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
         ref.read(proveedorTransito.notifier).recargar();
-        context.pop();
+        if (mounted) context.pop();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (c) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Row(
+              children: [
+                Icon(Icons.error, color: Colors.red, size: 28),
+                SizedBox(width: 12),
+                Text('Error', style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: Text('No se pudo guardar: $e'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(c),
+                child: const Text('Aceptar', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => _cargando = false);
     }

@@ -100,6 +100,14 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                 },
               ),
               _FiltroChip(
+                label: 'Ayer',
+                activo: filtro == 'ayer',
+                onTap: () {
+                  ref.read(proveedorFiltroTransito.notifier).establecerFiltro('ayer');
+                  setState(() => _paginaActual = 0);
+                },
+              ),
+              _FiltroChip(
                 label: 'Esta Semana',
                 activo: filtro == 'semana',
                 onTap: () {
@@ -320,11 +328,13 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
     final kilosCtrl = TextEditingController(text: pesoInicial > 0 ? pesoInicial.toString() : '');
     final precioCtrl = TextEditingController();
     final otraPlantaCtrl = TextEditingController();
+    bool guardando = false;
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setStateDialog) => AlertDialog(
+        builder: (contextDialog, setStateDialog) => AlertDialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
@@ -442,7 +452,7 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 OutlinedButton(
-                  onPressed: () => Navigator.pop(ctx),
+                  onPressed: guardando ? null : () => Navigator.pop(ctx),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFF64748B)),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -452,13 +462,36 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                 ),
                 const SizedBox(width: 12),
                 ElevatedButton.icon(
-                  onPressed: () async {
+                  onPressed: guardando ? null : () async {
                     final kilos = double.tryParse(kilosCtrl.text) ?? 0.0;
                     final precio = double.tryParse(precioCtrl.text) ?? 0.0;
                     final planta = plantaSeleccionada == 'OTROS' ? otraPlantaCtrl.text.trim().toUpperCase() : plantaSeleccionada;
-                    if (planta.isEmpty || kilos <= 0 || precio <= 0) return;
+                    
+                    if (planta.isEmpty || kilos <= 0) {
+                      showDialog(
+                        context: ctx,
+                        builder: (c) => AlertDialog(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          title: const Row(
+                            children: [
+                              Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+                              SizedBox(width: 12),
+                              Text('Datos incompletos', style: TextStyle(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          content: const Text('Por favor, selecciona una planta destino e ingresa una cantidad de kilos mayor a 0.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(c),
+                              child: const Text('Entendido', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ),
+                      );
+                      return;
+                    }
 
-                    Navigator.pop(ctx);
+                    setStateDialog(() => guardando = true);
 
                     try {
                       await ref.read(proveedorTransito.notifier).registrarRecepcionEnPlanta(
@@ -468,21 +501,63 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                         kilos: kilos,
                         precio: precio,
                       );
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Recepción registrada con éxito en planta $planta.'), backgroundColor: Colors.green),
+                      
+                      if (contextDialog.mounted) {
+                        Navigator.pop(ctx); // Cierra el formulario principal
+                        
+                        // Muestra el mensaje de éxito usando el contexto principal
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (c) => AlertDialog(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            title: const Row(
+                              children: [
+                                Icon(Icons.check_circle, color: Colors.green, size: 28),
+                                SizedBox(width: 12),
+                                Text('¡Recepción Exitosa!', style: TextStyle(fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            content: Text('La recepción se registró correctamente en la planta $planta.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(c),
+                                child: const Text('Aceptar', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
                         );
                       }
                     } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+                      if (contextDialog.mounted) {
+                        setStateDialog(() => guardando = false);
+                        showDialog(
+                          context: ctx,
+                          builder: (c) => AlertDialog(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            title: const Row(
+                              children: [
+                                Icon(Icons.error, color: Colors.red, size: 28),
+                                SizedBox(width: 12),
+                                Text('Error', style: TextStyle(fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            content: Text('No se pudo registrar la recepción:\n$e'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(c),
+                                child: const Text('Aceptar', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
                         );
                       }
                     }
                   },
-                  icon: const Icon(Icons.check, size: 18, color: Color(0xFF15181A)),
-                  label: const Text('Confirmar Recepción', style: TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold)),
+                  icon: guardando 
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF15181A)))
+                      : const Icon(Icons.check, size: 18, color: Color(0xFF15181A)),
+                  label: Text(guardando ? 'Guardando...' : 'Confirmar Recepción', style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00C853),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
