@@ -300,8 +300,9 @@ class _FormularioRegistroPescaState
       (Match m) => '${m[1]},',
     );
 
-    if (decimales > 0 && decimal.isNotEmpty)
+    if (decimales > 0 && decimal.isNotEmpty) {
       return '$enteraFormateada.$decimal';
+    }
     return enteraFormateada;
   }
 
@@ -467,10 +468,11 @@ class _FormularioRegistroPescaState
                                     )
                                     .toList(),
                             onChanged: (val) {
-                              if (val != null)
+                              if (val != null) {
                                 setStateDialog(
                                   () => productoSeleccionado = val,
                                 );
+                              }
                             },
                           ),
                         ] else ...[
@@ -538,10 +540,11 @@ class _FormularioRegistroPescaState
                                           )
                                           .toList(),
                                   onChanged: (val) {
-                                    if (val != null)
+                                    if (val != null) {
                                       setStateDialog(
                                         () => productoSeleccionado = val,
                                       );
+                                    }
                                   },
                                 ),
                               ),
@@ -587,8 +590,9 @@ class _FormularioRegistroPescaState
                                       decimal: true,
                                     ),
                                 validator: (v) {
-                                  if (v == null || v.isEmpty)
+                                  if (v == null || v.isEmpty) {
                                     return 'Requerido';
+                                  }
                                   final k = double.tryParse(
                                     v.replaceAll(',', ''),
                                   );
@@ -664,8 +668,9 @@ class _FormularioRegistroPescaState
                                         decimal: true,
                                       ),
                                   validator: (v) {
-                                    if (v == null || v.isEmpty)
+                                    if (v == null || v.isEmpty) {
                                       return 'Requerido';
+                                    }
                                     return null;
                                   },
                                 ),
@@ -716,8 +721,9 @@ class _FormularioRegistroPescaState
                               ),
                             ),
                             onPressed: () {
-                              if (!formKeyDialog.currentState!.validate())
+                              if (!formKeyDialog.currentState!.validate()) {
                                 return;
+                              }
                               final k = double.parse(
                                 kilosNetosCtrl.text.replaceAll(',', ''),
                               );

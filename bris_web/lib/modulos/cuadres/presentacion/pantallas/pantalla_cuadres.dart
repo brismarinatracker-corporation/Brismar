@@ -14,6 +14,7 @@ import 'package:bris_web/nucleo/componentes/carga_orbital.dart';
 class PantallaCuadres extends ConsumerWidget {
   const PantallaCuadres({super.key});
 
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(controladorCuadresWebProvider);
     final fmt = NumberFormat('#,##0.00', 'es_PE');
@@ -157,6 +158,7 @@ class _BotoFiltroFecha extends StatelessWidget {
   final ValueChanged<DateTime> onSeleccionar;
   final VoidCallback onLimpiar;
 
+  @override
   Widget build(BuildContext context) {
     final texto = fecha != null ? DateFormat('dd/MM/yyyy').format(fecha!) : label;
     return OutlinedButton.icon(

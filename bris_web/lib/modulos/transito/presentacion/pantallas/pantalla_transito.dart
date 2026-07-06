@@ -350,7 +350,7 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
               children: [
                 _construirEtiquetaDialogo('Planta de Destino (Procesadora)'),
                 DropdownButtonFormField<String>(
-                  value: plantaSeleccionada,
+                  initialValue: plantaSeleccionada,
                   dropdownColor: Colors.white,
                   iconEnabledColor: const Color(0xFF64748B),
                   style: const TextStyle(color: Color(0xFF15181A), fontSize: 14),
@@ -380,7 +380,7 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                 ],
                 _construirEtiquetaDialogo('Especie comercializada'),
                 DropdownButtonFormField<String>(
-                  value: especieSeleccionada,
+                  initialValue: especieSeleccionada,
                   dropdownColor: Colors.white,
                   iconEnabledColor: const Color(0xFF64748B),
                   style: const TextStyle(color: Color(0xFF15181A), fontSize: 14),

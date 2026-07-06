@@ -225,7 +225,7 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
               const SizedBox(width: 16),
               Expanded(
                 child: DropdownButtonFormField<int>(
-                  value: widget.tipoProductoActual,
+                  initialValue: widget.tipoProductoActual,
                   decoration: _decoracion('Tipo Producto'),
                   items: const [
                     DropdownMenuItem(value: 1, child: Text('Pota')),

@@ -299,8 +299,8 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
               filled: true,
               fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFE2E8F0), width: 1.5)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFF0E3E2C), width: 2.0)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0E3E2C), width: 2.0)),
               errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
               focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 2.0)),
               suffixIcon: esPassword 
@@ -308,7 +308,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.password, color: const Color(0xFF7EBFC9), size: 18),
+                          icon: const Icon(Icons.password, color: Color(0xFF7EBFC9), size: 18),
                           onPressed: _autogenerarPassword,
                         ),
                         IconButton(
@@ -380,12 +380,12 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                     // Header
                     Container(
                       padding: const EdgeInsets.all(32),
-                      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: const Color(0xFFE2E8F0), width: 1))),
+                      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1))),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(esEdicion ? 'Actualizar Perfil' : 'Nuevo Registro', style: GoogleFonts.sora(color: const Color(0xFF15181A), fontSize: 24, fontWeight: FontWeight.bold)),
-                          IconButton(icon: const Icon(Icons.close, color: const Color(0xFF64748B)), onPressed: _cerrar),
+                          IconButton(icon: const Icon(Icons.close, color: Color(0xFF64748B)), onPressed: _cerrar),
                         ],
                       ),
                     ),
@@ -411,7 +411,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                           ? MemoryImage(_fotoBytes!) 
                                           : (_fotoPerfilUrl != null ? NetworkImage(_fotoPerfilUrl!) as ImageProvider : null),
                                       child: (_fotoBytes == null && _fotoPerfilUrl == null)
-                                          ? const Icon(Icons.person, size: 40, color: const Color(0xFF64748B))
+                                          ? const Icon(Icons.person, size: 40, color: Color(0xFF64748B))
                                           : null,
                                     ),
                                     Positioned(
@@ -422,7 +422,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                         child: Container(
                                           padding: const EdgeInsets.all(6),
                                           decoration: const BoxDecoration(
-                                            color: const Color(0xFF7EBFC9),
+                                            color: Color(0xFF7EBFC9),
                                             shape: BoxShape.circle,
                                           ),
                                           child: const Icon(Icons.camera_alt, size: 16, color: Color(0xFF070E22)),
@@ -443,7 +443,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                         suffixIcon: IconButton(
                                           icon: _buscandoDNI 
                                               ? const CargaOrbital(tamano: 14) 
-                                              : const Icon(Icons.manage_search, color: const Color(0xFF7EBFC9), size: 20),
+                                              : const Icon(Icons.manage_search, color: Color(0xFF7EBFC9), size: 20),
                                           onPressed: _buscandoDNI ? null : _buscarDNI,
                                         )
                                       ),
@@ -460,7 +460,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                           suffixIcon: IconButton(
                                             icon: _buscandoDNI 
                                                 ? const CargaOrbital(tamano: 14) 
-                                                : const Icon(Icons.manage_search, color: const Color(0xFF7EBFC9), size: 20),
+                                                : const Icon(Icons.manage_search, color: Color(0xFF7EBFC9), size: 20),
                                             onPressed: _buscandoDNI ? null : _buscarDNI,
                                           )
                                         ),
@@ -535,7 +535,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                     // Footer actions
                     Container(
                       padding: const EdgeInsets.all(32),
-                      decoration: const BoxDecoration(border: Border(top: BorderSide(color: const Color(0xFFE2E8F0), width: 1))),
+                      decoration: const BoxDecoration(border: Border(top: BorderSide(color: Color(0xFFE2E8F0), width: 1))),
                       child: Row(
                         children: [
                           Expanded(
@@ -544,7 +544,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFF0E3E2C),
                                 padding: const EdgeInsets.symmetric(vertical: 18),
-                                side: const BorderSide(color: const Color(0xFFE2E8F0), width: 1.5),
+                                side: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               ),
                               child: Text('Descartar', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
@@ -592,14 +592,14 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
             initialValue: _rolSeleccionado,
             dropdownColor: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            icon: const Icon(Icons.arrow_drop_down, color: const Color(0xFF64748B)),
+            icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF64748B)),
             style: GoogleFonts.inter(color: const Color(0xFF15181A), fontSize: 14, fontWeight: FontWeight.w500),
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFE2E8F0), width: 1.5)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFF0E3E2C), width: 2.0)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0E3E2C), width: 2.0)),
             ),
             items: ['supervisor', 'administrador', 'bahia'].map((rol) {
               return DropdownMenuItem(value: rol, child: Text(rol.toUpperCase()));
@@ -623,14 +623,14 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
             initialValue: _sedeSeleccionada,
             dropdownColor: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            icon: const Icon(Icons.arrow_drop_down, color: const Color(0xFF64748B)),
+            icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF64748B)),
             style: GoogleFonts.inter(color: const Color(0xFF15181A), fontSize: 14, fontWeight: FontWeight.w500),
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFE2E8F0), width: 1.5)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFF0E3E2C), width: 2.0)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0E3E2C), width: 2.0)),
             ),
             items: ['Piura', 'Lambayeque'].map((sede) {
               return DropdownMenuItem(value: sede, child: Text(sede));

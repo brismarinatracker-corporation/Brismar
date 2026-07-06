@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:open-bpmn="http://open-bpmn.org/XMLSchema" id="Definitions_ConfiguracionImpresoraDetallada" targetNamespace="http://brismar.com/bpmn/config-impresora-detallada" exporter="Antigravity IDE - BRISMAR" exporterVersion="3.0">
+  <bpmn:collaboration id="Collaboration_ConfigImpresoraDetallada">
+    <bpmn:participant id="Pool_Usuario" name="Operario / Usuario" processRef="Process_Usuario" />
+    <bpmn:participant id="Pool_GestionTI" name="Gestión de TI (BRISMAR)" processRef="Process_GestionTI" />
+    <bpmn:messageFlow id="Flow_Msg_Solicitud" sourceRef="Task_SolicitarAcceso" targetRef="StartEvent_RecibirSolicitud" />
+    <bpmn:messageFlow id="Flow_Msg_NotificarPrueba" sourceRef="Task_NotificarPruebas" targetRef="StartEvent_PruebasUsuario" />
+    <bpmn:messageFlow id="Flow_Msg_FeedbackFalla" sourceRef="Task_ReportarFalla" targetRef="Task_SolucionarErrores" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Usuario" name="Proceso del Usuario" processType="Private" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_NecesidadImpresion" name="Necesidad de impresión">
+      <bpmn:outgoing>Flow_U1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_SolicitarAcceso" name="Solicitar configuración">
+      <bpmn:incoming>Flow_U1</bpmn:incoming>
+    </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="StartEvent_PruebasUsuario" name="Aviso de testing">
+      <bpmn:outgoing>Flow_U2</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_AvisoTesting" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:userTask id="Task_RealizarTesting" name="Probar impresión final (UAT)">
+      <bpmn:incoming>Flow_U2</bpmn:incoming>
+      <bpmn:outgoing>Flow_U3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_U_Exito" name="¿Éxito?" gatewayDirection="Diverging">
+      <bpmn:incoming>Flow_U3</bpmn:incoming>
+      <bpmn:outgoing>Flow_U_Si</bpmn:outgoing>
+      <bpmn:outgoing>Flow_U_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_ReportarFalla" name="Reportar falla a TI">
+      <bpmn:incoming>Flow_U_No</bpmn:incoming>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_UsuarioSatisfecho" name="Impresión Exitosa">
+      <bpmn:incoming>Flow_U_Si</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_U1" sourceRef="StartEvent_NecesidadImpresion" targetRef="Task_SolicitarAcceso" />
+    <bpmn:sequenceFlow id="Flow_U2" sourceRef="StartEvent_PruebasUsuario" targetRef="Task_RealizarTesting" />
+    <bpmn:sequenceFlow id="Flow_U3" sourceRef="Task_RealizarTesting" targetRef="Gateway_U_Exito" />
+    <bpmn:sequenceFlow id="Flow_U_Si" name="Sí" sourceRef="Gateway_U_Exito" targetRef="EndEvent_UsuarioSatisfecho" />
+    <bpmn:sequenceFlow id="Flow_U_No" name="No" sourceRef="Gateway_U_Exito" targetRef="Task_ReportarFalla" />
+  </bpmn:process>
+  <bpmn:process id="Process_GestionTI" name="Gestión de TI" processType="Private" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_TI">
+      <bpmn:lane id="Lane_Fisica" name="Configuración Física / Red">
+        <bpmn:flowNodeRef>StartEvent_RecibirSolicitud</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ConectarRed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AsignarIP</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Logica" name="Configuración Lógica (4 PCs)">
+        <bpmn:flowNodeRef>SubProcess_ConfigPCs</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Validacion" name="Pruebas Internas / Soporte">
+        <bpmn:flowNodeRef>Task_PruebaInterna</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_TI_Exito</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SolucionarErrores</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_NotificarPruebas</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:sequenceFlow id="Flow_TI_No" name="No" sourceRef="Gateway_TI_Exito" targetRef="Task_SolucionarErrores" />
+    <bpmn:sequenceFlow id="Flow_TI_Si" name="Sí" sourceRef="Gateway_TI_Exito" targetRef="Task_NotificarPruebas" />
+    <bpmn:sequenceFlow id="Flow_TI5" sourceRef="Task_PruebaInterna" targetRef="Gateway_TI_Exito" />
+    <bpmn:sequenceFlow id="Flow_TI4" sourceRef="SubProcess_ConfigPCs" targetRef="Task_PruebaInterna" />
+    <bpmn:sequenceFlow id="Flow_TI3" sourceRef="Task_AsignarIP" targetRef="SubProcess_ConfigPCs" />
+    <bpmn:sequenceFlow id="Flow_Error_Reintentar" name="Ajustar y Reintentar" sourceRef="Task_SolucionarErrores" targetRef="Task_AsignarIP" />
+    <bpmn:sequenceFlow id="Flow_TI2" sourceRef="Task_ConectarRed" targetRef="Task_AsignarIP" />
+    <bpmn:sequenceFlow id="Flow_TI1" sourceRef="StartEvent_RecibirSolicitud" targetRef="Task_ConectarRed" />
+    <bpmn:task id="Task_NotificarPruebas" name="Habilitar al Usuario para Testing">
+      <bpmn:incoming>Flow_TI_Si</bpmn:incoming>
+    </bpmn:task>
+    <bpmn:task id="Task_SolucionarErrores" name="Troubleshooting (Firewall, IP, Drivers)">
+      <bpmn:incoming>Flow_TI_No</bpmn:incoming>
+      <bpmn:outgoing>Flow_Error_Reintentar</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_TI_Exito" name="¿Test Técnico OK?" gatewayDirection="Diverging">
+      <bpmn:incoming>Flow_TI5</bpmn:incoming>
+      <bpmn:outgoing>Flow_TI_Si</bpmn:outgoing>
+      <bpmn:outgoing>Flow_TI_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_PruebaInterna" name="Imprimir página de prueba en cada PC">
+      <bpmn:incoming>Flow_TI4</bpmn:incoming>
+      <bpmn:outgoing>Flow_TI5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:subProcess id="SubProcess_ConfigPCs" name="Iteración x 4 (Para cada PC de la oficina)">
+      <bpmn:incoming>Flow_TI3</bpmn:incoming>
+      <bpmn:outgoing>Flow_TI4</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics />
+      <bpmn:startEvent id="StartEvent_Sub" name="Inicio">
+        <bpmn:outgoing>Flow_S1</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_InstalarDrivers" name="Descargar e instalar Drivers">
+        <bpmn:incoming>Flow_S1</bpmn:incoming>
+        <bpmn:outgoing>Flow_S2</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_AgregarPorIP" name="Agregar impresora vía IP local">
+        <bpmn:incoming>Flow_S2</bpmn:incoming>
+        <bpmn:outgoing>Flow_S3</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_FijarPredeterminada" name="Establecer Predeterminada">
+        <bpmn:incoming>Flow_S3</bpmn:incoming>
+        <bpmn:outgoing>Flow_S4</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="EndEvent_Sub" name="Fin">
+        <bpmn:incoming>Flow_S4</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_S1" sourceRef="StartEvent_Sub" targetRef="Task_InstalarDrivers" />
+      <bpmn:sequenceFlow id="Flow_S2" sourceRef="Task_InstalarDrivers" targetRef="Task_AgregarPorIP" />
+      <bpmn:sequenceFlow id="Flow_S3" sourceRef="Task_AgregarPorIP" targetRef="Task_FijarPredeterminada" />
+      <bpmn:sequenceFlow id="Flow_S4" sourceRef="Task_FijarPredeterminada" targetRef="EndEvent_Sub" />
+    </bpmn:subProcess>
+    <bpmn:task id="Task_AsignarIP" name="Reservar IP estática (DHCP)">
+      <bpmn:incoming>Flow_TI2</bpmn:incoming>
+      <bpmn:incoming>Flow_Error_Reintentar</bpmn:incoming>
+      <bpmn:outgoing>Flow_TI3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_ConectarRed" name="Conectar impresora a router (WiFi / Eth)">
+      <bpmn:incoming>Flow_TI1</bpmn:incoming>
+      <bpmn:outgoing>Flow_TI2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:startEvent id="StartEvent_RecibirSolicitud" name="Recibe solicitud">
+      <bpmn:outgoing>Flow_TI1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Solicitud" />
+    </bpmn:startEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ConfigDetallada">
+    <bpmndi:BPMNPlane id="BPMNPlane_ConfigDetallada" bpmnElement="Collaboration_ConfigImpresoraDetallada">
+      <bpmndi:BPMNShape id="Shape_Pool_Usuario" bpmnElement="Pool_Usuario" isHorizontal="true">
+        <dc:Bounds x="100" y="40" width="2550" height="280" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_StartEvent_Necesidad" bpmnElement="StartEvent_NecesidadImpresion" bioc:stroke="#205022" bioc:fill="#c8e6c9">
+        <dc:Bounds x="162" y="132" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="155" y="175" width="51" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Solicitar" bpmnElement="Task_SolicitarAcceso">
+        <dc:Bounds x="260" y="110" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_StartEvent_Pruebas" bpmnElement="StartEvent_PruebasUsuario">
+        <dc:Bounds x="2082" y="132" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2062" y="113" width="78" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_TestingU" bpmnElement="Task_RealizarTesting">
+        <dc:Bounds x="2190" y="110" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_U" bpmnElement="Gateway_U_Exito" isMarkerVisible="true">
+        <dc:Bounds x="2395" y="125" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2401" y="93" width="38" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_ReportarFalla" bpmnElement="Task_ReportarFalla">
+        <dc:Bounds x="2360" y="210" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_U" bpmnElement="EndEvent_UsuarioSatisfecho" bioc:stroke="#831311" bioc:fill="#ffcdd2">
+        <dc:Bounds x="2532" y="132" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2525" y="175" width="51" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_Flow_U1" bpmnElement="Flow_U1">
+        <di:waypoint x="198" y="150" />
+        <di:waypoint x="260" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_U2" bpmnElement="Flow_U2">
+        <di:waypoint x="2118" y="150" />
+        <di:waypoint x="2190" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_U3" bpmnElement="Flow_U3">
+        <di:waypoint x="2310" y="150" />
+        <di:waypoint x="2395" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_U_Si" bpmnElement="Flow_U_Si">
+        <di:waypoint x="2445" y="150" />
+        <di:waypoint x="2532" y="150" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2488" y="132" width="11" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_U_No" bpmnElement="Flow_U_No">
+        <di:waypoint x="2420" y="175" />
+        <di:waypoint x="2420" y="210" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2421" y="173" width="38" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Shape_Pool_GestionTI" bpmnElement="Pool_GestionTI" isHorizontal="true">
+        <dc:Bounds x="100" y="320" width="2550" height="850" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="Lane_Validacion" isHorizontal="true" bioc:stroke="#8a3a00" bioc:fill="#ffe0b2">
+        <dc:Bounds x="130" y="840" width="2520" height="330" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="Lane_Logica" isHorizontal="true" bioc:stroke="#5b176d" bioc:fill="#e1bee7">
+        <dc:Bounds x="130" y="540" width="2520" height="300" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="Lane_Fisica" isHorizontal="true" bioc:stroke="#205022" bioc:fill="#c8e6c9">
+        <dc:Bounds x="130" y="320" width="2520" height="220" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Start_TI" bpmnElement="StartEvent_RecibirSolicitud">
+        <dc:Bounds x="302" y="412" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="282" y="455" width="78" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_ConectarRed" bpmnElement="Task_ConectarRed">
+        <dc:Bounds x="420" y="390" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_AsignarIP" bpmnElement="Task_AsignarIP">
+        <dc:Bounds x="590" y="390" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Sub_PCs" bpmnElement="SubProcess_ConfigPCs" isExpanded="true">
+        <dc:Bounds x="780" y="580" width="840" height="220" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Sub_Start" bpmnElement="StartEvent_Sub">
+        <dc:Bounds x="812" y="672" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="817" y="708" width="26" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Sub_Drivers" bpmnElement="Task_InstalarDrivers">
+        <dc:Bounds x="910" y="650" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Sub_Agregar" bpmnElement="Task_AgregarPorIP">
+        <dc:Bounds x="1090" y="650" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Sub_Predeterminada" bpmnElement="Task_FijarPredeterminada">
+        <dc:Bounds x="1270" y="650" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Sub_End" bpmnElement="EndEvent_Sub">
+        <dc:Bounds x="1502" y="672" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1512" y="708" width="16" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_S1" bpmnElement="Flow_S1">
+        <di:waypoint x="848" y="690" />
+        <di:waypoint x="910" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_S2" bpmnElement="Flow_S2">
+        <di:waypoint x="1030" y="690" />
+        <di:waypoint x="1090" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_S3" bpmnElement="Flow_S3">
+        <di:waypoint x="1210" y="690" />
+        <di:waypoint x="1270" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_S4" bpmnElement="Flow_S4">
+        <di:waypoint x="1390" y="690" />
+        <di:waypoint x="1502" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Shape_Task_PruebaInterna" bpmnElement="Task_PruebaInterna">
+        <dc:Bounds x="1690" y="910" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_TI_Exito" bpmnElement="Gateway_TI_Exito" isMarkerVisible="true">
+        <dc:Bounds x="1925" y="925" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1875" y="976" width="69" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_SolucionarErrores" bpmnElement="Task_SolucionarErrores">
+        <dc:Bounds x="1890" y="1040" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_NotificarPruebas" bpmnElement="Task_NotificarPruebas">
+        <dc:Bounds x="2040" y="910" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_TI1" bpmnElement="Flow_TI1">
+        <di:waypoint x="338" y="430" />
+        <di:waypoint x="420" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TI2" bpmnElement="Flow_TI2">
+        <di:waypoint x="540" y="430" />
+        <di:waypoint x="590" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TI3" bpmnElement="Flow_TI3">
+        <di:waypoint x="710" y="430" />
+        <di:waypoint x="745" y="430" />
+        <di:waypoint x="745" y="690" />
+        <di:waypoint x="780" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TI4" bpmnElement="Flow_TI4">
+        <di:waypoint x="1620" y="690" />
+        <di:waypoint x="1655" y="690" />
+        <di:waypoint x="1655" y="950" />
+        <di:waypoint x="1690" y="950" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TI5" bpmnElement="Flow_TI5">
+        <di:waypoint x="1810" y="950" />
+        <di:waypoint x="1925" y="950" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TI_Si" bpmnElement="Flow_TI_Si">
+        <di:waypoint x="1975" y="950" />
+        <di:waypoint x="2040" y="950" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2005" y="932" width="11" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TI_No" bpmnElement="Flow_TI_No">
+        <di:waypoint x="1950" y="975" />
+        <di:waypoint x="1950" y="1040" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1958" y="1005" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Error_Reintentar" bpmnElement="Flow_Error_Reintentar">
+        <di:waypoint x="1890" y="1080" />
+        <di:waypoint x="650" y="1080" />
+        <di:waypoint x="650" y="470" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1245" y="1062" width="51" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Msg_Solicitud" bpmnElement="Flow_Msg_Solicitud">
+        <di:waypoint x="320" y="190" />
+        <di:waypoint x="320" y="412" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Msg_NotificarPrueba" bpmnElement="Flow_Msg_NotificarPrueba">
+        <di:waypoint x="2100" y="910" />
+        <di:waypoint x="2100" y="168" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Msg_FeedbackFalla" bpmnElement="Flow_Msg_FeedbackFalla">
+        <di:waypoint x="2420" y="290" />
+        <di:waypoint x="2420" y="1080" />
+        <di:waypoint x="2010" y="1080" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

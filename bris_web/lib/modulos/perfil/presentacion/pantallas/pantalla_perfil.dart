@@ -30,6 +30,7 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
   }
 
   Future<void> _subirNuevaFoto(BuildContext context, String userId) async {
+    final messenger = ScaffoldMessenger.of(context);
     setState(() => _subiendoFoto = true);
     try {
       final picker = ImagePicker();
@@ -52,14 +53,14 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
         await ref.read(proveedorAutenticacion.notifier).actualizarPerfil(fotoPerfil: urlConCacheBuster);
         
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             const SnackBar(content: Text('Foto de perfil actualizada con éxito'), backgroundColor: Colors.green),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(content: Text('Error al subir la foto: $e'), backgroundColor: Colors.redAccent),
         );
       }
@@ -71,6 +72,7 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
   Future<void> _guardarNombre() async {
     if (_nombreCtrl.text.trim().isEmpty) return;
     
+    final messenger = ScaffoldMessenger.of(context);
     setState(() => _subiendoFoto = true);
     try {
       await ref.read(proveedorAutenticacion.notifier).actualizarPerfil(nombreReal: _nombreCtrl.text.trim());
@@ -78,13 +80,13 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
         _editando = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(content: Text('Nombre actualizado con éxito'), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(content: Text('Error al guardar: $e'), backgroundColor: Colors.redAccent),
         );
       }
