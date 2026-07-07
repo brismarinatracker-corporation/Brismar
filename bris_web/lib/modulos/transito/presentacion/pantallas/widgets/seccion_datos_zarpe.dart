@@ -13,6 +13,7 @@ class SeccionDatosZarpe extends StatefulWidget {
   final TextEditingController pesadorCtrl;
   final TextEditingController tipoCtrl;
   final TextEditingController cuadrillaCtrl;
+  final TextEditingController? observacionesCtrl;
   final int tipoProductoActual;
   final ValueChanged<int> onTipoProductoCambiado;
 
@@ -28,6 +29,7 @@ class SeccionDatosZarpe extends StatefulWidget {
     required this.pesadorCtrl,
     required this.tipoCtrl,
     required this.cuadrillaCtrl,
+    this.observacionesCtrl,
     required this.tipoProductoActual,
     required this.onTipoProductoCambiado,
   });
@@ -168,28 +170,28 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
           TextFormField(
             controller: widget.placaCtrl,
             style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-            decoration: _decoracion('Placa Cámara'),
+            decoration: _decoracion('Placa Cámara', icono: Icons.directions_car_filled_outlined),
             validator: (v) => v!.isEmpty ? 'Requerido' : null,
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: widget.choferCtrl,
             style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-            decoration: _decoracion('Chofer'),
+            decoration: _decoracion('Chofer', icono: Icons.person_outline),
             validator: (v) => v!.isEmpty ? 'Requerido' : null,
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: widget.muelleCtrl,
             style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-            decoration: _decoracion('Muelle Partida'),
+            decoration: _decoracion('Muelle Partida', icono: Icons.anchor_outlined),
             validator: (v) => v!.isEmpty ? 'Requerido' : null,
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: widget.pesadorCtrl,
             style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-            decoration: _decoracion('Pesador (Opcional)'),
+            decoration: _decoracion('Pesador (Opcional)', icono: Icons.monitor_weight_outlined),
           ),
           const SizedBox(height: 16),
           Row(
@@ -198,7 +200,7 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
                 child: TextFormField(
                   controller: widget.tipoCtrl,
                   style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-                  decoration: _decoracion('Tipo (Opcional)'),
+                  decoration: _decoracion('Tipo (Opcional)', icono: Icons.category_outlined),
                 ),
               ),
               const SizedBox(width: 16),
@@ -206,7 +208,7 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
                 child: TextFormField(
                   controller: widget.cuadrillaCtrl,
                   style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-                  decoration: _decoracion('Cuadrilla (Opcional)'),
+                  decoration: _decoracion('Cuadrilla (Opcional)', icono: Icons.group_outlined),
                 ),
               ),
             ],
@@ -219,14 +221,14 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
                   controller: widget.pesoTotalCtrl,
                   style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: _decoracion('Peso Total (Kg)'),
+                  decoration: _decoracion('Peso Total (Kg)', icono: Icons.scale_outlined),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: DropdownButtonFormField<int>(
                   initialValue: widget.tipoProductoActual,
-                  decoration: _decoracion('Tipo Producto'),
+                  decoration: _decoracion('Tipo Producto', icono: Icons.set_meal_outlined),
                   items: const [
                     DropdownMenuItem(value: 1, child: Text('Pota')),
                     DropdownMenuItem(value: 2, child: Text('Bonito')),
@@ -249,7 +251,7 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
                   controller: widget.cajasLlenasCtrl,
                   style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
                   keyboardType: TextInputType.number,
-                  decoration: _decoracion('Cajas Llenas'),
+                  decoration: _decoracion('Cajas Llenas', icono: Icons.inventory_2_outlined),
                 ),
               ),
               const SizedBox(width: 16),
@@ -258,12 +260,21 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
                   controller: widget.cajasVaciasCtrl,
                   style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
                   keyboardType: TextInputType.number,
-                  decoration: _decoracion('Cajas Vacías'),
+                  decoration: _decoracion('Cajas Vacías', icono: Icons.inventory_outlined),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
+          if (widget.observacionesCtrl != null) ...[
+            TextFormField(
+              controller: widget.observacionesCtrl,
+              style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
+              decoration: _decoracion('Observaciones (Opcional)', icono: Icons.notes_outlined),
+              maxLines: 2,
+            ),
+            const SizedBox(height: 16),
+          ],
           const Text(
             'Nota: Estos datos actualizan tanto el Zarpe como el Cuadre.', 
             style: TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.4),
@@ -273,17 +284,31 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
     );
   }
 
-  InputDecoration _decoracion(String label) {
+  InputDecoration _decoracion(String label, {IconData? icono}) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+      labelStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.w500),
+      floatingLabelStyle: const TextStyle(color: Color(0xFF7EBFC9), fontSize: 14, fontWeight: FontWeight.bold),
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.2)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF00796B), width: 1.5)),
-      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.2)),
-      focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
+      prefixIcon: icono != null ? Icon(icono, color: const Color(0xFF94A3B8), size: 20) : null,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.transparent),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF7EBFC9), width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 1.0),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+      ),
     );
   }
 }

@@ -358,6 +358,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         pesadorCtrl: _pesadorCtrl,
         tipoCtrl: _tipoCtrl,
         cuadrillaCtrl: _cuadrillaCtrl,
+        observacionesCtrl: _observacionesCtrl,
         tipoProductoActual: _tipoProductoSeleccionado,
         onTipoProductoCambiado: (v) => setState(() => _tipoProductoSeleccionado = v),
       ),

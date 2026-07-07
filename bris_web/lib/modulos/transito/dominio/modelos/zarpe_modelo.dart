@@ -61,7 +61,7 @@ class ZarpeModelo {
       chofer: json['chofer'] as String? ?? '',
       muellePartida: json['muelle_partida'] as String? ?? '',
       muelleDestino: json['muelle_destino'] as String?,
-      estado: EstadoZarpe.desdeDb(json['estado'] as String?),
+      estado: EstadoZarpe.desdeDb((json['estado_transito'] ?? json['estado']) as String?),
       fechaZarpe: _parsearFecha(json['fecha_zarpe']),
       fotoUrlEvidencia: json['foto_url_evidencia'] as String?,
       numeroCajas: (json['numero_cajas'] as num?)?.toInt(),

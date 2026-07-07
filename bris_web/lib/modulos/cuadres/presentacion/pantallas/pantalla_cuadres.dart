@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../componentes/hoja_liquidacion_excel.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../../dominio/modelos/cuadre_web_modelo.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -420,6 +421,43 @@ class _PanelDetalle extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             _utilidadNeta(),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => Dialog(
+                      backgroundColor: Colors.transparent,
+                      insetPadding: const EdgeInsets.all(16),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 1200, maxHeight: 800),
+                          child: Scaffold(
+                            appBar: AppBar(
+                              backgroundColor: const Color(0xFF203764),
+                              title: Text('Liquidación - Placa: ${cuadre.placa}', style: const TextStyle(color: Colors.white)),
+                              iconTheme: const IconThemeData(color: Colors.white),
+                            ),
+                            body: HojaLiquidacionExcel(cuadre: cuadre, fmt: fmt),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.table_view_rounded, size: 20),
+                label: const Text('Generar Hoja de Liquidación', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: const Color(0xFF1D4ED8), 
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
           ],
         ),
       ),

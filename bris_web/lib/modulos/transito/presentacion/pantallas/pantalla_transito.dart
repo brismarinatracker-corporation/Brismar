@@ -140,184 +140,241 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
 
         // Main list container
         Expanded(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: esMovil ? 20.0 : 32.0, vertical: 16.0),
-            child: (() {
-              final hasData = estadoZarpes.hasValue && estadoZarpes.value!.isNotEmpty;
-              if (estadoZarpes.isLoading && !hasData) {
-                return const ShimmerTablaCarga(oscuro: false, filas: 5);
-              }
-              if (estadoZarpes.hasError && !hasData) {
-                return Center(child: Text('Error: ${estadoZarpes.error}', style: const TextStyle(color: Colors.redAccent)));
-              }
-              final zarpesFiltrados = estadoZarpes.value ?? [];
-
-                if (zarpesFiltrados.isEmpty) {
-                  return const Center(
-                    child: Text('No hay tránsitos que coincidan con el filtro seleccionado.', style: TextStyle(color: Color(0xFF64748B), fontSize: 16)),
-                  );
-                }
-
-                final startIndex = _paginaActual * _elementosPorPagina;
-                final endIndex = (startIndex + _elementosPorPagina > zarpesFiltrados.length)
-                    ? zarpesFiltrados.length
-                    : startIndex + _elementosPorPagina;
+          child: DefaultTabController(
+            length: 2,
+            child: Column(
+              children: [
+                // Tab Bar
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: esMovil ? 20.0 : 32.0, vertical: 8.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: TabBar(
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BoxDecoration(
+                      color: const Color(0xFF0E3E2C),
+                      borderRadius: BorderRadius.circular(11),
+                    ),
+                    labelColor: Colors.white,
+                    unselectedLabelColor: const Color(0xFF64748B),
+                    labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                    dividerColor: Colors.transparent,
+                    onTap: (_) => setState(() => _paginaActual = 0),
+                    tabs: const [
+                      Tab(text: 'Pendientes (En Tránsito)'),
+                      Tab(text: 'Finalizados (Recibidos)'),
+                    ],
+                  ),
+                ),
                 
-                final zarpesPaginados = zarpesFiltrados.sublist(startIndex, endIndex);
-                final totalPaginas = (zarpesFiltrados.length / _elementosPorPagina).ceil();
+                // Tab Bar View
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: esMovil ? 20.0 : 32.0, vertical: 8.0),
+                    child: (() {
+                      final hasData = estadoZarpes.hasValue && estadoZarpes.value!.isNotEmpty;
+                      if (estadoZarpes.isLoading && !hasData) {
+                        return const ShimmerTablaCarga(oscuro: false, filas: 5);
+                      }
+                      if (estadoZarpes.hasError && !hasData) {
+                        return Center(child: Text('Error: ${estadoZarpes.error}', style: const TextStyle(color: Colors.redAccent)));
+                      }
+                      final zarpesTotales = estadoZarpes.value ?? [];
 
-                return Column(
-                  children: [
-                    Expanded(
-                      child: ListView.separated(
-                        itemCount: zarpesPaginados.length,
-                        separatorBuilder: (ctx, i) => const SizedBox(height: 16),
-                        itemBuilder: (ctx, i) {
-                          final z = zarpesPaginados[i];
-                          final fecha = z.fechaZarpe;
-                          final fechaFormateada = fecha != null ? DateFormat('dd/MM/yyyy hh:mm a').format(fecha) : 'Fecha Desconocida';
-                          final urlFoto = z.fotoUrlEvidencia ?? '';
-                          final estaRecibido = z.estado.estaFinalizado;
-
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.03),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                )
-                              ],
+                      Widget construirListaPaginada(bool finalizados) {
+                        final zarpesFiltrados = zarpesTotales.where((z) => z.estado.estaFinalizado == finalizados).toList();
+                        
+                        if (zarpesFiltrados.isEmpty) {
+                          return Center(
+                            child: Text(
+                              finalizados ? 'No hay cámaras recibidas para esta fecha.' : 'No hay cámaras en tránsito para esta fecha.', 
+                              style: const TextStyle(color: Color(0xFF64748B), fontSize: 16)
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: IntrinsicHeight(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    // Left Status Stripe
-                                    Container(
-                                      width: 6,
-                                      color: estaRecibido ? const Color(0xFF16A34A) : const Color(0xFF1E88E5), // Green if received, Blue if in transit
+                          );
+                        }
+
+                        final startIndex = _paginaActual * _elementosPorPagina;
+                        final endIndex = (startIndex + _elementosPorPagina > zarpesFiltrados.length)
+                            ? zarpesFiltrados.length
+                            : startIndex + _elementosPorPagina;
+                        
+                        // Si la página actual es mayor a las páginas disponibles (por cambiar de tab)
+                        if (startIndex >= zarpesFiltrados.length) {
+                          Future.microtask(() => setState(() => _paginaActual = 0));
+                          return const SizedBox();
+                        }
+
+                        final zarpesPaginados = zarpesFiltrados.sublist(startIndex, endIndex);
+                        final totalPaginas = (zarpesFiltrados.length / _elementosPorPagina).ceil();
+
+                        return Column(
+                          children: [
+                            Expanded(
+                              child: ListView.separated(
+                                itemCount: zarpesPaginados.length,
+                                separatorBuilder: (ctx, i) => const SizedBox(height: 16),
+                                itemBuilder: (ctx, i) {
+                                  final z = zarpesPaginados[i];
+                                  final fecha = z.fechaZarpe;
+                                  final fechaFormateada = fecha != null ? DateFormat('dd/MM/yyyy hh:mm a').format(fecha) : 'Fecha Desconocida';
+                                  final urlFoto = z.fotoUrlEvidencia ?? '';
+                                  final estaRecibido = z.estado.estaFinalizado;
+
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.03),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 4),
+                                        )
+                                      ],
                                     ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: IntrinsicHeight(
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.stretch,
                                           children: [
-                                            Row(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                // Image/Photo placeholder
-                                                if (urlFoto.toString().isNotEmpty)
-                                                  ClipRRect(
-                                                    borderRadius: BorderRadius.circular(8),
-                                                    child: Image.network(urlFoto, width: 64, height: 64, fit: BoxFit.cover, errorBuilder: (c, e, s) => Container(width: 64, height: 64, color: const Color(0xFFE6F0FA), child: const Icon(Icons.broken_image, color: Color(0xFF1E88E5), size: 24))),
-                                                  )
-                                                else
-                                                  Container(
-                                                    width: 64, height: 64,
-                                                    decoration: BoxDecoration(color: const Color(0xFFE6F0FA), borderRadius: BorderRadius.circular(8)),
-                                                    child: const Icon(Icons.camera_alt_outlined, color: Color(0xFF1E88E5), size: 24),
-                                                  ),
-                                                const SizedBox(width: 16),
-                                                // Main texts column
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Wrap(
-                                                        spacing: 8,
-                                                        runSpacing: 4,
-                                                        crossAxisAlignment: WrapCrossAlignment.center,
-                                                        children: [
-                                                          Container(
-                                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                                            decoration: BoxDecoration(color: estaRecibido ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0), borderRadius: BorderRadius.circular(20)),
-                                                            child: Text(estaRecibido ? 'Recibido' : 'En tránsito', style: TextStyle(color: estaRecibido ? const Color(0xFF1B5E20) : const Color(0xFFE65100), fontSize: 11, fontWeight: FontWeight.bold)),
-                                                          ),
-                                                          Text('Placa: ${z.placaCamara}', style: const TextStyle(color: Color(0xFF15181A), fontSize: 16, fontWeight: FontWeight.bold)),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(height: 8),
-                                                      Text('Chofer: ${z.chofer}  ·  Muelle: ${z.muellePartida}', style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w500)),
-                                                      const SizedBox(height: 4),
-                                                      Text('Carga: ${z.pesoTotal ?? 0} kg  ·  Cajas: ${z.cajasLlenas ?? 0}  ·  Lanchas: ${(z.embarcacionesAsociadas ?? 'ninguna').toLowerCase()}', style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w500)),
-                                                      const SizedBox(height: 6),
-                                                      Wrap(
-                                                        spacing: 16,
-                                                        runSpacing: 4,
-                                                        children: [
-                                                          Text('Flete total: S/. ${z.costoFlete ?? '0'}', style: const TextStyle(color: Color(0xFF065F46), fontSize: 13, fontWeight: FontWeight.bold)),
-                                                          Text('Despacho: ${fechaFormateada.replaceAll('AM', 'a.m.').replaceAll('PM', 'p.m.')}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
+                                            // Left Status Stripe
+                                            Container(
+                                              width: 6,
+                                              color: estaRecibido ? const Color(0xFF16A34A) : const Color(0xFF1E88E5), // Green if received, Blue if in transit
                                             ),
-                                            if (esMovil) ...[
-                                              const SizedBox(height: 16),
-                                              _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, onMarcarRecibido: (zId, emb, peso) => _mostrarDialogoRecepcion(context, ref, zId, emb, peso)),
-                                            ]
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: Padding(
+                                                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Row(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        // Image/Photo placeholder
+                                                        if (urlFoto.toString().isNotEmpty)
+                                                          ClipRRect(
+                                                            borderRadius: BorderRadius.circular(8),
+                                                            child: Image.network(urlFoto, width: 64, height: 64, fit: BoxFit.cover, errorBuilder: (c, e, s) => Container(width: 64, height: 64, color: const Color(0xFFE6F0FA), child: const Icon(Icons.broken_image, color: Color(0xFF1E88E5), size: 24))),
+                                                          )
+                                                        else
+                                                          Container(
+                                                            width: 64, height: 64,
+                                                            decoration: BoxDecoration(color: const Color(0xFFE6F0FA), borderRadius: BorderRadius.circular(8)),
+                                                            child: const Icon(Icons.camera_alt_outlined, color: Color(0xFF1E88E5), size: 24),
+                                                          ),
+                                                        const SizedBox(width: 16),
+                                                        // Main texts column
+                                                        Expanded(
+                                                          child: Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              Wrap(
+                                                                spacing: 8,
+                                                                runSpacing: 4,
+                                                                crossAxisAlignment: WrapCrossAlignment.center,
+                                                                children: [
+                                                                  Container(
+                                                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                                    decoration: BoxDecoration(color: estaRecibido ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0), borderRadius: BorderRadius.circular(20)),
+                                                                    child: Text(estaRecibido ? 'Recibido' : 'En tránsito', style: TextStyle(color: estaRecibido ? const Color(0xFF1B5E20) : const Color(0xFFE65100), fontSize: 11, fontWeight: FontWeight.bold)),
+                                                                  ),
+                                                                  Text('Placa: ${z.placaCamara}', style: const TextStyle(color: Color(0xFF15181A), fontSize: 16, fontWeight: FontWeight.bold)),
+                                                                ],
+                                                              ),
+                                                              const SizedBox(height: 8),
+                                                              Text('Chofer: ${z.chofer}  ·  Muelle: ${z.muellePartida}', style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w500)),
+                                                              const SizedBox(height: 4),
+                                                              Text('Carga: ${z.pesoTotal ?? 0} kg  ·  Cajas: ${z.cajasLlenas ?? 0}  ·  Lanchas: ${(z.embarcacionesAsociadas ?? 'ninguna').toLowerCase()}', style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w500)),
+                                                              const SizedBox(height: 6),
+                                                              Wrap(
+                                                                spacing: 16,
+                                                                runSpacing: 4,
+                                                                children: [
+                                                                  Text('Flete total: S/. ${z.costoFlete ?? '0'}', style: const TextStyle(color: Color(0xFF065F46), fontSize: 13, fontWeight: FontWeight.bold)),
+                                                                  Text('Despacho: ${fechaFormateada.replaceAll('AM', 'a.m.').replaceAll('PM', 'p.m.')}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    if (esMovil) ...[
+                                                      const SizedBox(height: 16),
+                                                      _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, onMarcarRecibido: (zId, emb, peso) => _mostrarDialogoRecepcion(context, ref, zId, emb, peso)),
+                                                    ]
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            if (!esMovil)
+                                              Padding(
+                                                padding: const EdgeInsets.only(right: 20, top: 16, bottom: 16),
+                                                child: SizedBox(
+                                                  width: 170,
+                                                  child: _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, onMarcarRecibido: (zId, emb, peso) => _mostrarDialogoRecepcion(context, ref, zId, emb, peso)),
+                                                ),
+                                              ),
                                           ],
                                         ),
                                       ),
                                     ),
-                                    if (!esMovil)
-                                      Padding(
-                                        padding: const EdgeInsets.only(right: 20, top: 16, bottom: 16),
-                                        child: SizedBox(
-                                          width: 170,
-                                          child: _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, onMarcarRecibido: (zId, emb, peso) => _mostrarDialogoRecepcion(context, ref, zId, emb, peso)),
-                                        ),
-                                      ),
+                                  );
+                                },
+                              ),
+                            ),
+                            // Controles de paginación
+                            if (totalPaginas > 1)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 16),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.chevron_left),
+                                      onPressed: _paginaActual > 0
+                                          ? () => setState(() => _paginaActual--)
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Text(
+                                      'Página ${_paginaActual + 1} de $totalPaginas',
+                                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569)),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    IconButton(
+                                      icon: const Icon(Icons.chevron_right),
+                                      onPressed: _paginaActual < totalPaginas - 1
+                                          ? () => setState(() => _paginaActual++)
+                                          : null,
+                                    ),
                                   ],
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    // Controles de paginación
-                    if (totalPaginas > 1)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.chevron_left),
-                              onPressed: _paginaActual > 0
-                                  ? () => setState(() => _paginaActual--)
-                                  : null,
-                            ),
-                            const SizedBox(width: 16),
-                            Text(
-                              'Página ${_paginaActual + 1} de $totalPaginas',
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569)),
-                            ),
-                            const SizedBox(width: 16),
-                            IconButton(
-                              icon: const Icon(Icons.chevron_right),
-                              onPressed: _paginaActual < totalPaginas - 1
-                                  ? () => setState(() => _paginaActual++)
-                                  : null,
-                            ),
                           ],
-                        ),
-                      ),
-                  ],
-                );
-              })(),
+                        );
+                      }
+
+                      return TabBarView(
+                        children: [
+                          construirListaPaginada(false), // Pendientes (En Tránsito)
+                          construirListaPaginada(true),  // Finalizados (Recibidos)
+                        ],
+                      );
+                    })(),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
