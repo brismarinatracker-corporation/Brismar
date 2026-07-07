@@ -49,14 +49,17 @@ class PantallaUsuarios extends ConsumerWidget {
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Gestión de Accesos', style: GoogleFonts.sora(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 8),
-                              const Text('Administra roles, sedes y estados de las cuentas de la plataforma.', style: TextStyle(color: Colors.white70, fontSize: 15)),
-                            ],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Gestión de Accesos', style: GoogleFonts.sora(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 8),
+                                const Text('Administra roles, sedes y estados de las cuentas de la plataforma.', style: TextStyle(color: Colors.white70, fontSize: 15)),
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 16),
                           _botonNuevoAcceso(context),
                         ],
                       ),

@@ -46,27 +46,30 @@ class PantallaCuadres extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Cuadres de Pesca',
-                    style: GoogleFonts.sora(
-                      color: Colors.white,
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cuadres de Pesca',
+                      style: GoogleFonts.sora(
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${estado.cuadres.length} cuadres cargados',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 15,
+                    const SizedBox(height: 8),
+                    Text(
+                      '${estado.cuadres.length} cuadres cargados',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 15,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 16),
               OutlinedButton.icon(
                 onPressed: estado.cargando
                     ? null

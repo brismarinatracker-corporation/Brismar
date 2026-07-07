@@ -59,17 +59,20 @@ class PantallaDashboard extends ConsumerWidget {
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Dashboard general',
-                                  style: GoogleFonts.sora(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                _indicadorEnVivo(mesActual),
-                              ],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Dashboard general',
+                                    style: GoogleFonts.sora(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _indicadorEnVivo(mesActual),
+                                ],
+                              ),
                             ),
+                            const SizedBox(width: 16),
                             _botonActualizar(ref),
                           ],
                         ),
