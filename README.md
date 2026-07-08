@@ -12,32 +12,47 @@ Este archivo es la puerta de entrada para entender la estructura técnica y de c
 * 📱 [**bris_tracker**](./bris_tracker/) — Código fuente de la aplicación móvil (Flutter) para bahía/muelle. Implementa una robusta arquitectura *Offline-First* enfocada en seguridad. (Actualmente: **Fase 1 Autenticación COMPLETADA**, transitando a Fase 2 Registro). Revisa el detalle en `ESTADO_PROYECTO.md`. (Encargados: **Jhonatan y Belén**).
 * ⚙️ [**bris_web**](./bris_web/) — Código fuente del backend y dashboard logístico web para Brismar (Logística Central). (Encargado: **Yisus**).
 * 👔 [**bris_admin**](./bris_admin/) — App ejecutiva móvil planificada a futuro para gerencia.
-* 🗄️ [**supabase**](./supabase/) — Definiciones de tablas y migraciones de la base de datos PostgreSQL compartida.
+* 🗄️ [**supabase**](./supabase/) — Definiciones de tablas y migraciones de la base de datos PostgreSQL compartida. **(Entorno 100% puro: Sin dependencias de Node.js/NPM, optimizado exclusivamente para Supabase CLI y Deno Edge Functions).**
+* 🧠 [**docs/brismar_brain/**](./docs/brismar_brain/) — **NUEVO:** Bóveda centralizada de conocimiento (Obsidian-ready). Contiene toda la documentación de requerimientos, diagramas generados, excels, y la base de inteligencia artificial automatizada.
 
 ---
 
 ## 🌍 Ecosistema Externo de BRISMAR
+
 Para sacar el máximo provecho a la cuenta corporativa unificada de Gmail de Brismar, usamos las siguientes herramientas centralizadas. Toda IA o desarrollador debe usar estos canales:
 
-### 1. 📂 Google Drive Corporativo (5TB)
+### 1. 🧠 Obsidian y RepoWise (Documentación Visual e Inteligencia)
+
+Todo el proyecto está diseñado para ser documentado y visualizado en **Obsidian** abriendo la carpeta `docs/brismar_brain/` como bóveda.
+
+* **RepoWise:** Se ha integrado para indexar localmente el repositorio (`repowise init`). Genera un grafo de dependencias, historia de Git y base de datos MCP (`.repowise/`) que permite a los asistentes de IA comprender el monorepo en segundos.
+* **Visualización Automatizada:** Se emplean herramientas como diagramas en Mermaid integrados dentro de los Markdown para estructurar las relaciones entre `bris_tracker`, `bris_web` y `supabase`.
+
+### 2. 📂 Google Drive Corporativo (5TB)
+
 Todo documento pesado, PDF, diseños, requerimientos legales o facturas deben subirse aquí. **(NO se suben PDFs ni imágenes pesadas a GitHub)**.
-- **Enlace:** `[Insertar Enlace al Drive de Brismar aquí]`
-- *(Tip IA: Usa tu herramienta MCP de Google Drive para buscar en esta carpeta si necesitas contexto técnico que no está en el código).*
 
-### 2. 💬 Servidor de Discord Oficial
+* **Enlace:** `[Insertar Enlace al Drive de Brismar aquí]`
+* *(Tip IA: Usa tu herramienta MCP de Google Drive para buscar en esta carpeta si necesitas contexto técnico que no está en el código).*
+
+### 3. 💬 Servidor de Discord Oficial
+
 Para evitar la pérdida de contexto en WhatsApp y permitir la integración con IAs, toda la comunicación técnica ocurre en Discord.
-- **Enlace:** `[Insertar Invitación de Discord aquí]`
-- **Canal `#dev-mobile`**: Jhonatan y Belén discuten la App.
-- **Canal `#dev-web`**: Yisus reporta el progreso de la Web.
-- **Canal `#bots-ai`**: Conecta aquí tus asistentes de IA (Midjourney, bots de notificaciones de GitHub) para reportes de errores en tiempo real.
 
-### 3. 🧪 Google Colab / Notebooks
+* **Canal `#dev-mobile`**: Jhonatan y Belén discuten la App.
+* **Canal `#dev-web`**: Yisus reporta el progreso de la Web.
+* **Canal `#bots-ai`**: Conecta aquí tus asistentes de IA.
+
+### 4. 🧪 Google Colab / Notebooks
+
 Para el análisis de datos masivos de pesca, reportes contables o scripts de Python que consuman la BD de Supabase, usen Google Colab enlazado a la misma cuenta de Drive de Brismar.
 
-### 4. 📊 Políticas de Datos y Canales Operativos
-- **Supabase PostgreSQL** es la fuente única de verdad para la App y la Web.
-- **WhatsApp** queda erradicado como canal operativo principal para evitar pérdidas de contexto y desorden en datos de fletes, gastos o pesca.
-- **Excel** se mantiene como formato de salida compatible para reportes, entrega contable, análisis administrativo y respaldos operativos, buscando reducir la digitación manual mas no eliminar su uso tradicional en oficina.
+### 5. 📊 Políticas de Datos y Canales Operativos
+
+* **Supabase PostgreSQL** es la fuente única de verdad para la App y la Web.
+* **Node.js Estrictamente Prohibido:** Toda dependencia de Node.js ha sido purgada para mantener el monorepo ligero y atado únicamente a Flutter y Supabase/Deno.
+* **WhatsApp** queda erradicado como canal operativo principal.
+* **Excel** se mantiene como formato de salida compatible para reportes y respaldos (ubicados en `brismar_brain/General`).
 
 ---
 
@@ -47,11 +62,11 @@ Hemos eliminado los archivos de texto `.md` manuales para gestionar versiones. T
 
 1. **Gestión de Tareas (Issues):** Todo bug o función nueva debe crearse en la pestaña **"Issues"** de GitHub. Asigna el issue a Jhonatan, Belén o Yisus según corresponda.
 2. **Control de Ramas:**
-   - Nadie empuja código a `main`. Todo se ramifica desde `develop`.
-   - Cuando termines tu tarea (Ej. `feature/login`), abres un Pull Request hacia `develop` mencionando "Closes #NumeroDeIssue".
+   * Nadie empuja código a `main`. Todo se ramifica desde `develop`.
+   * Cuando termines tu tarea (Ej. `feature/login`), abres un Pull Request hacia `develop` mencionando "Closes #NumeroDeIssue".
 3. **Pases a Producción (Releases):**
-   - Cuando el equipo decide que la versión en `develop` está lista, Jhonatan (como Merge Manager) fusiona `develop` en `main`.
-   - Al fusionar en `main`, usa la pestaña **"Releases"** de GitHub para crear la versión (Ej. v1.0.2). GitHub auto-generará el *Changelog* leyendo los títulos de los PRs fusionados. ¡Magia y cero trabajo manual!
+   * Cuando el equipo decide que la versión en `develop` está lista, Jhonatan (como Merge Manager) fusiona `develop` en `main`.
+   * Al fusionar en `main`, usa la pestaña **"Releases"** de GitHub para crear la versión (Ej. v1.0.2). GitHub auto-generará el *Changelog* leyendo los títulos de los PRs fusionados. ¡Magia y cero trabajo manual!
 
 ---
 *Este manifiesto consolida todo el conocimiento técnico de Brismar. ¡A programar!* 🚀
@@ -59,6 +74,23 @@ Hemos eliminado los archivos de texto `.md` manuales para gestionar versiones. T
 ---
 
 ## 📝 Historial de Cambios (IAs y Desarrolladores)
+
+* **Fecha/Hora:** 2026-07-08 13:46 (Local)
+* **Autor:** Antigravity (AI Agent)
+* **Qué se cambió:**
+  * Se configuró el repositorio para ser utilizado con la herramienta de visualización Obsidian, designando a `docs/brismar_brain/` como la Bóveda raíz.
+  * Se ejecutó el comando `repowise init` en modo 2 (Index only). Esto creó la carpeta oculta `.repowise` conteniendo la base de datos `wiki.db` y las cachés semánticas (`centrality_cache.pkl`, `duplication_cache.pkl`, `parse_cache.pkl`).
+  * Se movió el archivo `Análisis de Riesgos Identificados - BRISMAR APP.xlsx` desde la raíz hacia `docs/brismar_brain/General/`.
+  * Se movió la presentación `BRISMAR_Segunda_Fase.pptx` desde la raíz hacia `docs/brismar_brain/General/`.
+  * Se movió el script `update_supabase_columns.sql` hacia `supabase/migrations/`.
+  * Se crearon los directorios `docs/brismar_brain/Mobile/` y `docs/brismar_brain/Web/` y se movió el contenido de las antiguas carpetas `bris_tracker/docs/` y `bris_web/docs/` allí.
+  * Las fuentes tipográficas dispersas `.ttf` fueron organizadas correctamente dentro de `bris_web/assets/fonts/`.
+  * En `brismar.code-workspace`, se actualizaron las rutas absolutas para referenciar `bris_tracker`, `bris_web` y `supabase`, solucionando los errores del IDE de "Missing Gradle project configuration folder" para las carpetas antiguas que ya no existían (`brismar_app`, `brismar_web`).
+* **Qué se eliminó:**
+  * Se purgó Node.js por completo del proyecto. Se eliminaron específicamente los archivos `package.json`, `package-lock.json` y la carpeta `node_modules` en el root del monorepo.
+  * Se eliminaron los archivos residuales `.npmrc` dentro de los directorios de las edge functions de Supabase (`supabase/functions/admin_usuarios/` y `supabase/functions/consulta_dni/`).
+  * Se eliminaron permanentemente las carpetas documentales obsoletas `Documentacion/`, `bris_tracker/docs/` y `bris_web/docs/` tras finalizar la migración a la bóveda central.
+* **Migraciones:** Creación de la arquitectura de Bóveda Central (brismar_brain) y mapeo inicial en `repowise`.
 
 * **Fecha/Hora:** 2026-07-02 03:57 (Local)
 * **Autor:** Antigravity (AI Agent)

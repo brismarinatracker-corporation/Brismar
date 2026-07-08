@@ -4,55 +4,87 @@ import 'package:file_saver/file_saver.dart';
 import 'package:intl/intl.dart';
 import '../dominio/modelos/cuadre_web_modelo.dart';
 
+/// Servicio encargado de exportar los datos de los cuadres operativos a
+/// formato Excel (.xlsx) y guardarlos en el dispositivo local.
 class ServicioExportacion {
-  // Mantengo intacta exportarCuadresAExcel (no se cambia según el plan)
+  /// Exporta una lista de cuadres operativos en un reporte consolidado de Excel.
+  ///
+  /// Dibuja cada compra asociada a cada cuadre y calcula los gastos prorrateados
+  /// y utilidades de bahía (50%).
   static Future<void> exportarCuadresAExcel(List<CuadreWebModelo> cuadres) async {
     final excel = Excel.createExcel();
     final Sheet sheetObject = excel['Cuadres Operativos'];
     excel.setDefaultSheet('Cuadres Operativos');
-    excel.delete('Sheet1'); 
+    excel.delete('Sheet1');
 
+    _escribirHeadersCuadres(sheetObject);
+    _escribirDatosCuadres(sheetObject, cuadres);
+    await _guardarReporteGeneral(excel);
+  }
+
+  /// Exporta un único cuadre simulando visualmente la hoja de liquidación de Excel original.
+  ///
+  /// Dibuja tablas separadas de compras, ventas y gastos del muelle/administrativos,
+  /// incorporando fórmulas dinámicas nativas de Excel.
+  static Future<void> exportarCuadreUnicoAExcel(CuadreWebModelo cuadre) async {
+    final escritor = _EscritorCuadreExcel(cuadre);
+    await escritor.exportar();
+  }
+
+  static void _escribirHeadersCuadres(Sheet sheet) {
     final headers = [
       'ID Cuadre', 'Fecha Zarpe', 'Placa Cámara', 'Embarcación', 'Especie', 
-      'Kilos', 'Precio Unitario', 'Poder de Compra (Bruto)', 
+      'Kilos', 'Precio Unitario', 'Poder de Compra (Bruto)', 'Adelanto', 
       'Gastos Operativos (Prorrateo)', 'Utilidad Bahía (50%)', 'Estado'
     ];
-    
-    sheetObject.appendRow(headers.map((h) => TextCellValue(h)).toList());
+    sheet.appendRow(headers.map((h) => TextCellValue(h)).toList());
+  }
 
+  static void _escribirDatosCuadres(Sheet sheet, List<CuadreWebModelo> cuadres) {
     for (var cuadre in cuadres) {
       final fechaStr = cuadre.fechaZarpe ?? 'Sin Fecha';
-      final placa = cuadre.placa;
-      
-      double gastosTotales = cuadre.gastos.fold(0.0, (sum, g) => sum + g.total);
-      double kilosTotales = cuadre.compras.fold(0.0, (sum, c) => sum + c.kilos);
+      final double gastosTotales = cuadre.gastos.fold(0.0, (sum, g) => sum + g.total);
+      final double kilosTotales = cuadre.compras.fold(0.0, (sum, c) => sum + c.kilos);
 
       for (var compra in cuadre.compras) {
-        double porcentajeKilos = kilosTotales > 0 ? (compra.kilos / kilosTotales) : 0;
-        double gastoAsignado = gastosTotales * porcentajeKilos;
-        double utilidadLote = compra.total - gastoAsignado;
-        double utilidadBahia = utilidadLote / 2;
-
-        sheetObject.appendRow([
-          TextCellValue(cuadre.id.substring(0, 8)),
-          TextCellValue(fechaStr),
-          TextCellValue(placa),
-          TextCellValue(compra.embarcacion),
-          TextCellValue(compra.producto),
-          DoubleCellValue(compra.kilos.toDouble()),
-          DoubleCellValue(compra.precioUnitario.toDouble()),
-          DoubleCellValue(compra.total.toDouble()),
-          DoubleCellValue(gastoAsignado),
-          DoubleCellValue(utilidadBahia),
-          TextCellValue(cuadre.estado),
-        ]);
+        _escribirFilaCompraCuadre(sheet, cuadre, compra, fechaStr, gastosTotales, kilosTotales);
       }
     }
+  }
 
+  static void _escribirFilaCompraCuadre(
+    Sheet sheet,
+    CuadreWebModelo cuadre,
+    CompraWebModelo compra,
+    String fechaStr,
+    double gastosTotales,
+    double kilosTotales,
+  ) {
+    final double porcentajeKilos = kilosTotales > 0 ? (compra.kilos / kilosTotales) : 0;
+    final double gastoAsignado = gastosTotales * porcentajeKilos;
+    final double utilidadLote = compra.total - gastoAsignado - (compra.adelanto ?? 0.0);
+    final double utilidadBahia = utilidadLote / 2;
+
+    sheet.appendRow([
+      TextCellValue(cuadre.id.substring(0, 8)),
+      TextCellValue(fechaStr),
+      TextCellValue(cuadre.placa),
+      TextCellValue(compra.embarcacion),
+      TextCellValue(compra.producto),
+      DoubleCellValue(compra.kilos.toDouble()),
+      DoubleCellValue(compra.precioUnitario.toDouble()),
+      DoubleCellValue(compra.total.toDouble()),
+      DoubleCellValue((compra.adelanto ?? 0.0).toDouble()),
+      DoubleCellValue(gastoAsignado),
+      DoubleCellValue(utilidadBahia),
+      TextCellValue(cuadre.estado),
+    ]);
+  }
+
+  static Future<void> _guardarReporteGeneral(Excel excel) async {
     final dateFormat = DateFormat('yyyyMMdd_HHmm');
     final fileName = 'Reporte_Cuadres_Brismar_${dateFormat.format(DateTime.now())}';
     final fileBytes = excel.encode();
-
     if (fileBytes != null) {
       await FileSaver.instance.saveFile(
         name: '$fileName.xlsx',
@@ -61,56 +93,105 @@ class ServicioExportacion {
       );
     }
   }
+}
 
-  // NUEVA LÓGICA DE EXPORTACIÓN (EXCEL EXACTO A LA UI)
-  static Future<void> exportarCuadreUnicoAExcel(CuadreWebModelo cuadre) async {
-    final excel = Excel.createExcel();
-    final hoja = excel['Liquidación'];
+/// Helper privado que encapsula la escritura y formateo del reporte detallado
+/// de liquidación de un único cuadre.
+class _EscritorCuadreExcel {
+  final CuadreWebModelo cuadre;
+  final Excel excel;
+  late final Sheet hoja;
+  
+  late final List<GastoWebModelo> gastosAdmin;
+  late final List<GastoWebModelo> gastosMuelle;
+  
+  late final CellStyle estiloCelesteCabecera;
+  late final CellStyle estiloCelesteTabla;
+  late final CellStyle estiloAmarillo;
+  late final CellStyle estiloVerdeSeparador;
+  late final CellStyle estiloAzulOscuro;
+  late final CellStyle estiloNaranja;
+  late final CellStyle estiloNegritaDerecha;
+  late final CellStyle estiloCabeceraColumna;
+
+  int fila = 3;
+  
+  int filaTotalCompra = 0;
+  int filaTotalVenta = 0;
+  int filaTotalGM = 0;
+  int filaTotalGA = 0;
+  int cellUB = 18;
+  int cellUO = 20;
+  int cellUAR = 22;
+  int cellUT = 23;
+  int cellUN = 25;
+  
+  _EscritorCuadreExcel(this.cuadre) : excel = Excel.createExcel() {
+    hoja = excel['Liquidación'];
     excel.setDefaultSheet('Liquidación');
     excel.delete('Sheet1');
-    
-    // Clasificar Gastos
-    List<GastoWebModelo> gastosAdmin = cuadre.gastos.where((g) {
+    _clasificarGastos();
+    _inicializarEstilos();
+  }
+  
+  void _clasificarGastos() {
+    gastosAdmin = cuadre.gastos.where((g) {
       final c = g.concepto.toLowerCase();
       return c.contains('administrativo') || c.contains('facturacion') || 
              c.contains('facturación') || c.contains('certificado') || 
              c.contains('liquidacion') || c.contains('liquidación') || 
              c.contains('financiero') || c.contains('impuesto') || c.contains('renta');
     }).toList();
-    List<GastoWebModelo> gastosMuelle = cuadre.gastos.where((g) => !gastosAdmin.contains(g)).toList();
-
-    // ESTILOS
-    var estiloCelesteCabecera = CellStyle(
+    gastosMuelle = cuadre.gastos.where((g) => !gastosAdmin.contains(g)).toList();
+  }
+  
+  void _inicializarEstilos() {
+    estiloCelesteCabecera = CellStyle(
       backgroundColorHex: ExcelColor.fromHexString('#B4C6E7'),
       bold: true,
       horizontalAlign: HorizontalAlign.Center,
     );
-    var estiloCelesteTabla = CellStyle(
+    estiloCelesteTabla = CellStyle(
       backgroundColorHex: ExcelColor.fromHexString('#D9E1F2'),
       bold: true,
       horizontalAlign: HorizontalAlign.Center,
     );
-    var estiloAmarillo = CellStyle(
+    estiloAmarillo = CellStyle(
       backgroundColorHex: ExcelColor.fromHexString('#FFFF00'),
       bold: true,
     );
-    var estiloVerdeSeparador = CellStyle(
+    estiloVerdeSeparador = CellStyle(
       backgroundColorHex: ExcelColor.fromHexString('#C6E0B4'),
     );
-    var estiloAzulOscuro = CellStyle(
+    estiloAzulOscuro = CellStyle(
       backgroundColorHex: ExcelColor.fromHexString('#203764'),
       fontColorHex: ExcelColor.fromHexString('#FFFFFF'),
       bold: true,
       horizontalAlign: HorizontalAlign.Center,
     );
-    var estiloNaranja = CellStyle(
+    estiloNaranja = CellStyle(
       backgroundColorHex: ExcelColor.fromHexString('#FCE4D6'),
       bold: true,
     );
-    var estiloNegritaDerecha = CellStyle(bold: true, horizontalAlign: HorizontalAlign.Right);
-    var estiloCabeceraColumna = CellStyle(bold: true, horizontalAlign: HorizontalAlign.Center);
-
-    // Ajustar anchos
+    estiloNegritaDerecha = CellStyle(bold: true, horizontalAlign: HorizontalAlign.Right);
+    estiloCabeceraColumna = CellStyle(bold: true, horizontalAlign: HorizontalAlign.Center);
+  }
+  
+  Future<void> exportar() async {
+    _ajustarAnchosColumna();
+    _escribirCabeceraInicial();
+    _escribirTablaCompra();
+    _escribirTablaVenta();
+    _escribirRendimientoKilos();
+    _escribirSeparadorVerde();
+    _escribirGastosMuelle();
+    _escribirGastosAdministrativos();
+    _escribirUtilidadesDerecha();
+    _escribirTablaResumenYReparto();
+    await _guardarArchivo();
+  }
+  
+  void _ajustarAnchosColumna() {
     hoja.setColumnWidth(0, 12.0); // A
     hoja.setColumnWidth(1, 25.0); // B
     hoja.setColumnWidth(2, 15.0); // C
@@ -125,191 +206,183 @@ class ServicioExportacion {
     hoja.setColumnWidth(11, 4.0); // L
     hoja.setColumnWidth(12, 15.0);// M
     hoja.setColumnWidth(13, 15.0);// N
+  }
 
-    // Fila 1: Cabecera
-    _escribir(hoja, 'B1', 'PLACA ${cuadre.placa}', estiloCelesteCabecera);
+  void _escribirCabeceraInicial() {
+    _escribirCelda('B1', 'PLACA ${cuadre.placa}', estiloCelesteCabecera);
     hoja.merge(CellIndex.indexByString('B1'), CellIndex.indexByString('C1'));
-    _escribir(hoja, 'D1', 'CAJAS', estiloCelesteCabecera);
-    _escribir(hoja, 'E1', '${cuadre.cajasLlenas ?? 0}', estiloCelesteCabecera);
-    
-    // Panel Derecho - Margen (Fila 2)
-    _escribir(hoja, 'M2', 'MARGEN', estiloNaranja);
+    _escribirCelda('D1', 'CAJAS', estiloCelesteCabecera);
+    _escribirCelda('E1', '${cuadre.cajasLlenas ?? 0}', estiloCelesteCabecera);
+    _escribirCelda('M2', 'MARGEN', estiloNaranja);
+  }
 
-    // TABLA COMPRA
-    int fila = 3;
-    _escribir(hoja, 'B$fila', 'COMPRA', estiloCelesteTabla);
+  void _escribirTablaCompra() {
+    _escribirCelda('B$fila', 'COMPRA', estiloCelesteTabla);
     hoja.merge(CellIndex.indexByString('B$fila'), CellIndex.indexByString('F$fila'));
     fila++;
     
-    _escribir(hoja, 'A$fila', 'FECHA', estiloCabeceraColumna);
-    _escribir(hoja, 'B$fila', 'EMBARCACION', estiloCabeceraColumna);
-    _escribir(hoja, 'C$fila', 'PRODUCTO', estiloCabeceraColumna);
-    _escribir(hoja, 'D$fila', 'KILOS', estiloCabeceraColumna);
-    _escribir(hoja, 'E$fila', 'PRECIO', estiloCabeceraColumna);
-    _escribir(hoja, 'F$fila', 'TOTAL', estiloCabeceraColumna);
+    _escribirCelda('A$fila', 'FECHA', estiloCabeceraColumna);
+    _escribirCelda('B$fila', 'EMBARCACION', estiloCabeceraColumna);
+    _escribirCelda('C$fila', 'PRODUCTO', estiloCabeceraColumna);
+    _escribirCelda('D$fila', 'KILOS', estiloCabeceraColumna);
+    _escribirCelda('E$fila', 'PRECIO', estiloCabeceraColumna);
+    _escribirCelda('F$fila', 'TOTAL', estiloCabeceraColumna);
     fila++;
     
-    int filaInicioCompra = fila;
+    final filaInicio = fila;
     for (var c in cuadre.compras) {
-      _escribir(hoja, 'A$fila', cuadre.fechaZarpe != null ? DateFormat('dd-MMM').format(DateTime.tryParse(cuadre.fechaZarpe!) ?? DateTime.now()).toUpperCase() : '');
-      _escribir(hoja, 'B$fila', c.embarcacion);
-      _escribir(hoja, 'C$fila', c.producto);
-      _escribirNumero(hoja, 'D$fila', c.kilos);
-      _escribirNumero(hoja, 'E$fila', c.precioUnitario);
-      _escribirNumero(hoja, 'F$fila', c.total);
+      final fecha = cuadre.fechaZarpe != null ? DateFormat('dd-MMM').format(DateTime.tryParse(cuadre.fechaZarpe!) ?? DateTime.now()).toUpperCase() : '';
+      _escribirCelda('A$fila', fecha);
+      _escribirCelda('B$fila', c.embarcacion);
+      _escribirCelda('C$fila', c.producto);
+      _escribirNumeroCelda('D$fila', c.kilos);
+      _escribirNumeroCelda('E$fila', c.precioUnitario);
+      _escribirNumeroCelda('F$fila', c.total);
       fila++;
     }
-    int filaFinCompra = fila - 1;
-    if (filaFinCompra < filaInicioCompra) { filaFinCompra = filaInicioCompra; } // Para rangos vacíos
+    final filaFin = (fila - 1) < filaInicio ? filaInicio : (fila - 1);
     
-    _escribir(hoja, 'D$fila', '=SUM(D$filaInicioCompra:D$filaFinCompra)', estiloNegritaDerecha);
-    _escribir(hoja, 'F$fila', '=SUM(F$filaInicioCompra:F$filaFinCompra)', estiloNegritaDerecha);
-    int filaTotalCompra = fila;
+    _escribirCelda('D$fila', '=SUM(D$filaInicio:D$filaFin)', estiloNegritaDerecha);
+    _escribirCelda('F$fila', '=SUM(F$filaInicio:F$filaFin)', estiloNegritaDerecha);
+    filaTotalCompra = fila;
     fila += 2;
+  }
 
-    // TABLA VENTA
-    _escribir(hoja, 'B$fila', 'VENTA', estiloCelesteTabla);
+  void _escribirTablaVenta() {
+    _escribirCelda('B$fila', 'VENTA', estiloCelesteTabla);
     hoja.merge(CellIndex.indexByString('B$fila'), CellIndex.indexByString('F$fila'));
     fila++;
     
-    _escribir(hoja, 'A$fila', 'FECHA', estiloCabeceraColumna);
-    _escribir(hoja, 'B$fila', 'LUGAR', estiloCabeceraColumna);
-    _escribir(hoja, 'C$fila', 'PRODUCTO', estiloCabeceraColumna);
-    _escribir(hoja, 'D$fila', 'KILOS', estiloCabeceraColumna);
-    _escribir(hoja, 'E$fila', 'PRECIO', estiloCabeceraColumna);
-    _escribir(hoja, 'F$fila', 'TOTAL', estiloCabeceraColumna);
+    _escribirCelda('A$fila', 'FECHA', estiloCabeceraColumna);
+    _escribirCelda('B$fila', 'LUGAR', estiloCabeceraColumna);
+    _escribirCelda('C$fila', 'PRODUCTO', estiloCabeceraColumna);
+    _escribirCelda('D$fila', 'KILOS', estiloCabeceraColumna);
+    _escribirCelda('E$fila', 'PRECIO', estiloCabeceraColumna);
+    _escribirCelda('F$fila', 'TOTAL', estiloCabeceraColumna);
     fila++;
     
-    int filaInicioVenta = fila;
+    final filaInicio = fila;
     for (var v in cuadre.ventas) {
-      _escribir(hoja, 'A$fila', cuadre.fechaCuadre != null ? DateFormat('dd-MMM').format(DateTime.tryParse(cuadre.fechaCuadre!) ?? DateTime.now()).toUpperCase() : '');
-      _escribir(hoja, 'B$fila', v.lugar);
-      _escribir(hoja, 'C$fila', v.producto);
-      _escribirNumero(hoja, 'D$fila', v.kilos);
-      _escribirNumero(hoja, 'E$fila', v.precioUnitario);
-      _escribirNumero(hoja, 'F$fila', v.total);
+      final fecha = cuadre.fechaCuadre != null ? DateFormat('dd-MMM').format(DateTime.tryParse(cuadre.fechaCuadre!) ?? DateTime.now()).toUpperCase() : '';
+      _escribirCelda('A$fila', fecha);
+      _escribirCelda('B$fila', v.lugar);
+      _escribirCelda('C$fila', v.producto);
+      _escribirNumeroCelda('D$fila', v.kilos);
+      _escribirNumeroCelda('E$fila', v.precioUnitario);
+      _escribirNumeroCelda('F$fila', v.total);
       fila++;
     }
-    int filaFinVenta = fila - 1;
-    if (filaFinVenta < filaInicioVenta) { filaFinVenta = filaInicioVenta; }
+    final filaFin = (fila - 1) < filaInicio ? filaInicio : (fila - 1);
     
-    _escribir(hoja, 'A$fila', 'TOTAL VENTA', estiloNegritaDerecha);
-    _escribir(hoja, 'D$fila', '=SUM(D$filaInicioVenta:D$filaFinVenta)', estiloNegritaDerecha);
-    _escribir(hoja, 'F$fila', '=SUM(F$filaInicioVenta:F$filaFinVenta)', estiloNegritaDerecha);
-    int filaTotalVenta = fila;
+    _escribirCelda('A$fila', 'TOTAL VENTA', estiloNegritaDerecha);
+    _escribirCelda('D$fila', '=SUM(D$filaInicio:D$filaFin)', estiloNegritaDerecha);
+    _escribirCelda('F$fila', '=SUM(F$filaInicio:F$filaFin)', estiloNegritaDerecha);
+    filaTotalVenta = fila;
     fila += 2;
+  }
 
-    // RENDIMIENTO KILOS
-    _escribir(hoja, 'A$fila', 'RENDIMIENTO', estiloAmarillo);
+  void _escribirRendimientoKilos() {
+    _escribirCelda('A$fila', 'RENDIMIENTO', estiloAmarillo);
     hoja.merge(CellIndex.indexByString('A$fila'), CellIndex.indexByString('C$fila'));
-    _escribir(hoja, 'D$fila', '=D$filaTotalVenta-D$filaTotalCompra', estiloAmarillo);
-    
-    // Separador central (Columna H) desde fila 1 hasta la actual
+    _escribirCelda('D$fila', '=D$filaTotalVenta-D$filaTotalCompra', estiloAmarillo);
+  }
+
+  void _escribirSeparadorVerde() {
     for (int i = 1; i <= fila + 25; i++) {
-      _escribir(hoja, 'H$i', '', estiloVerdeSeparador);
+      _escribirCelda('H$i', '', estiloVerdeSeparador);
     }
-    
     fila += 2;
+  }
 
-    // Columna Izquierda Inferior: Gastos Muelle
-    _escribir(hoja, 'B$fila', 'GASTOS MUELLE', estiloCelesteTabla);
+  void _escribirGastosMuelle() {
+    _escribirCelda('B$fila', 'GASTOS MUELLE', estiloCelesteTabla);
     hoja.merge(CellIndex.indexByString('B$fila'), CellIndex.indexByString('C$fila'));
     fila++;
     
-    _escribir(hoja, 'B$fila', 'DETALLE', estiloCabeceraColumna);
-    _escribir(hoja, 'D$fila', 'IMPORTE', estiloCabeceraColumna);
+    _escribirCelda('B$fila', 'DETALLE', estiloCabeceraColumna);
+    _escribirCelda('D$fila', 'IMPORTE', estiloCabeceraColumna);
     fila++;
     
-    int filaInicioGM = fila;
+    final filaInicio = fila;
     for (var g in gastosMuelle) {
-      _escribir(hoja, 'B$fila', g.concepto);
-      _escribirNumero(hoja, 'D$fila', g.total);
+      _escribirCelda('B$fila', g.concepto);
+      _escribirNumeroCelda('D$fila', g.total);
       fila++;
     }
-    int filaFinGM = fila - 1;
-    if (filaFinGM < filaInicioGM) { filaFinGM = filaInicioGM; }
+    final filaFin = (fila - 1) < filaInicio ? filaInicio : (fila - 1);
     
-    _escribir(hoja, 'B$fila', 'TOTAL', estiloNegritaDerecha);
-    _escribir(hoja, 'D$fila', '=SUM(D$filaInicioGM:D$filaFinGM)', estiloNegritaDerecha);
-    int filaTotalGM = fila;
+    _escribirCelda('B$fila', 'TOTAL', estiloNegritaDerecha);
+    _escribirCelda('D$fila', '=SUM(D$filaInicio:D$filaFin)', estiloNegritaDerecha);
+    filaTotalGM = fila;
     fila += 2;
+  }
 
-    // Gastos Administrativo
-    _escribir(hoja, 'B$fila', 'GASTOS ADMINISTRATIVO', estiloCelesteTabla);
+  void _escribirGastosAdministrativos() {
+    _escribirCelda('B$fila', 'GASTOS ADMINISTRATIVO', estiloCelesteTabla);
     hoja.merge(CellIndex.indexByString('B$fila'), CellIndex.indexByString('C$fila'));
     fila++;
     
-    _escribir(hoja, 'B$fila', 'DETALLE', estiloCabeceraColumna);
-    _escribir(hoja, 'D$fila', 'IMPORTE', estiloCabeceraColumna);
+    _escribirCelda('B$fila', 'DETALLE', estiloCabeceraColumna);
+    _escribirCelda('D$fila', 'IMPORTE', estiloCabeceraColumna);
     fila++;
     
-    int filaInicioGA = fila;
+    final filaInicio = fila;
     for (var g in gastosAdmin) {
-      _escribir(hoja, 'B$fila', g.concepto);
-      _escribirNumero(hoja, 'D$fila', g.total);
+      _escribirCelda('B$fila', g.concepto);
+      _escribirNumeroCelda('D$fila', g.total);
       fila++;
     }
-    int filaFinGA = fila - 1;
-    if (filaFinGA < filaInicioGA) { filaFinGA = filaInicioGA; }
+    final filaFin = (fila - 1) < filaInicio ? filaInicio : (fila - 1);
     
-    _escribir(hoja, 'B$fila', 'TOTAL', estiloNegritaDerecha);
-    _escribir(hoja, 'D$fila', '=SUM(D$filaInicioGA:D$filaFinGA)', estiloNegritaDerecha);
-    int filaTotalGA = fila;
+    _escribirCelda('B$fila', 'TOTAL', estiloNegritaDerecha);
+    _escribirCelda('D$fila', '=SUM(D$filaInicio:D$filaFin)', estiloNegritaDerecha);
+    filaTotalGA = fila;
+  }
 
-    // Utilidades a la derecha (Panel flotante)
-    // Usaremos la fila 18 estática a la derecha
-    int filaUD = 18;
-    _escribir(hoja, 'J$filaUD', 'UTILIDAD BRUTA', estiloAmarillo);
-    _escribir(hoja, 'K$filaUD', '=F$filaTotalVenta-F$filaTotalCompra', estiloAmarillo);
-    int cellUB = filaUD;
+  void _escribirUtilidadesDerecha() {
+    _escribirCelda('J$cellUB', 'UTILIDAD BRUTA', estiloAmarillo);
+    _escribirCelda('K$cellUB', '=F$filaTotalVenta-F$filaTotalCompra', estiloAmarillo);
     
-    filaUD += 2;
-    _escribir(hoja, 'J$filaUD', 'UTILIDAD OPERATIVA', estiloAmarillo);
-    _escribir(hoja, 'K$filaUD', '=K$cellUB-D$filaTotalGM', estiloAmarillo);
-    int cellUO = filaUD;
+    _escribirCelda('J$cellUO', 'UTILIDAD OPERATIVA', estiloAmarillo);
+    _escribirCelda('K$cellUO', '=K$cellUB-D$filaTotalGM', estiloAmarillo);
     
-    filaUD += 2;
-    _escribir(hoja, 'J$filaUD', 'UT. ANTES DE REPARTO', estiloAmarillo);
-    _escribir(hoja, 'K$filaUD', '=K$cellUO-D$filaTotalGA', estiloAmarillo);
-    int cellUAR = filaUD;
+    _escribirCelda('J$cellUAR', 'UT. ANTES DE REPARTO', estiloAmarillo);
+    _escribirCelda('K$cellUAR', '=K$cellUO-D$filaTotalGA', estiloAmarillo);
     
-    filaUD++;
-    _escribir(hoja, 'J$filaUD', 'UTILIDAD DE TERCEROS');
-    _escribirNumero(hoja, 'K$filaUD', 0.0);
-    int cellUT = filaUD;
+    _escribirCelda('J$cellUT', 'UTILIDAD DE TERCEROS');
+    _escribirNumeroCelda('K$cellUT', 0.0);
     
-    filaUD += 2;
-    _escribir(hoja, 'J$filaUD', 'UTILIDAD NETA', estiloAmarillo);
-    _escribir(hoja, 'K$filaUD', '=K$cellUAR-K$cellUT', estiloAmarillo);
-    int cellUN = filaUD;
+    _escribirCelda('J$cellUN', 'UTILIDAD NETA', estiloAmarillo);
+    _escribirCelda('K$cellUN', '=K$cellUAR-K$cellUT', estiloAmarillo);
 
-    // Fila N2 Margen (Fórmula corregida sin IF)
-    _escribir(hoja, 'N2', '=K$cellUN/F$filaTotalVenta', estiloNaranja);
+    _escribirCelda('N2', '=K$cellUN/F$filaTotalVenta', estiloNaranja);
+  }
 
-    // Tabla Resumen (Abajo a la derecha del separador)
+  void _escribirTablaResumenYReparto() {
     int filaResumen = filaTotalGA + 2;
-    if(filaResumen < filaUD + 2) filaResumen = filaUD + 2;
+    if (filaResumen < cellUN + 2) { filaResumen = cellUN + 2; }
 
-    _escribir(hoja, 'B$filaResumen', 'RESUMEN', estiloAzulOscuro);
+    _escribirCelda('B$filaResumen', 'RESUMEN', estiloAzulOscuro);
     hoja.merge(CellIndex.indexByString('B$filaResumen'), CellIndex.indexByString('D$filaResumen'));
     filaResumen++;
     
-    _escribir(hoja, 'B$filaResumen', '(1) VENTA'); _escribir(hoja, 'D$filaResumen', '=F$filaTotalVenta'); filaResumen++;
-    _escribir(hoja, 'B$filaResumen', '(2) COMPRA'); _escribir(hoja, 'D$filaResumen', '=-F$filaTotalCompra'); filaResumen++;
-    _escribir(hoja, 'B$filaResumen', '(3) GASTOS MUELLE'); _escribir(hoja, 'D$filaResumen', '=-D$filaTotalGM'); filaResumen++;
-    _escribir(hoja, 'B$filaResumen', '(4) GASTOS ADMINISTRATIVO'); _escribir(hoja, 'D$filaResumen', '=-D$filaTotalGA'); filaResumen++;
+    _escribirCelda('B$filaResumen', '(1) VENTA'); _escribirCelda('D$filaResumen', '=F$filaTotalVenta'); filaResumen++;
+    _escribirCelda('B$filaResumen', '(2) COMPRA'); _escribirCelda('D$filaResumen', '=-F$filaTotalCompra'); filaResumen++;
+    _escribirCelda('B$filaResumen', '(3) GASTOS MUELLE'); _escribirCelda('D$filaResumen', '=-D$filaTotalGM'); filaResumen++;
+    _escribirCelda('B$filaResumen', '(4) GASTOS ADMINISTRATIVO'); _escribirCelda('D$filaResumen', '=-D$filaTotalGA'); filaResumen++;
     
-    _escribir(hoja, 'B$filaResumen', 'TOTAL', estiloNegritaDerecha);
-    _escribir(hoja, 'D$filaResumen', '=SUM(D${filaResumen-4}:D${filaResumen-1})', estiloNegritaDerecha);
-    int celdaResumenTotal = filaResumen;
+    _escribirCelda('B$filaResumen', 'TOTAL', estiloNegritaDerecha);
+    _escribirCelda('D$filaResumen', '=SUM(D${filaResumen-4}:D${filaResumen-1})', estiloNegritaDerecha);
+    final celdaResumenTotal = filaResumen;
     
     filaResumen += 3;
-    _escribir(hoja, 'B$filaResumen', '50%'); _escribir(hoja, 'C$filaResumen', 'EMPRESA'); _escribir(hoja, 'D$filaResumen', '=D$celdaResumenTotal*0.5'); filaResumen++;
-    _escribir(hoja, 'B$filaResumen', '50%'); _escribir(hoja, 'C$filaResumen', 'DANIEL'); _escribir(hoja, 'D$filaResumen', '=D$celdaResumenTotal*0.5'); filaResumen++;
+    _escribirCelda('B$filaResumen', '50%'); _escribirCelda('C$filaResumen', 'EMPRESA'); _escribirCelda('D$filaResumen', '=D$celdaResumenTotal*0.5'); filaResumen++;
+    _escribirCelda('B$filaResumen', '50%'); _escribirCelda('C$filaResumen', 'DANIEL'); _escribirCelda('D$filaResumen', '=D$celdaResumenTotal*0.5');
+  }
 
+  Future<void> _guardarArchivo() async {
     final nombreArchivo = 'Liquidacion_${cuadre.placa}_${DateTime.now().millisecondsSinceEpoch}';
     final fileBytes = excel.encode();
-
     if (fileBytes != null) {
       await FileSaver.instance.saveFile(
         name: '$nombreArchivo.xlsx',
@@ -318,9 +391,9 @@ class ServicioExportacion {
       );
     }
   }
-
-  static void _escribir(Sheet hoja, String index, String valor, [CellStyle? estilo]) {
-    var cell = hoja.cell(CellIndex.indexByString(index));
+  
+  void _escribirCelda(String index, String valor, [CellStyle? estilo]) {
+    final cell = hoja.cell(CellIndex.indexByString(index));
     if (valor.startsWith('=')) {
       cell.value = FormulaCellValue(valor);
     } else {
@@ -331,8 +404,8 @@ class ServicioExportacion {
     }
   }
 
-  static void _escribirNumero(Sheet hoja, String index, double valor, [CellStyle? estilo]) {
-    var cell = hoja.cell(CellIndex.indexByString(index));
+  void _escribirNumeroCelda(String index, double valor, [CellStyle? estilo]) {
+    final cell = hoja.cell(CellIndex.indexByString(index));
     cell.value = DoubleCellValue(valor);
     if (estilo != null) {
       cell.cellStyle = estilo;
