@@ -65,7 +65,7 @@ class ControladorDashboard extends Notifier<EstadoDashboard> {
       final kpis = await _fuente.obtenerKpis();
       state = state.copiarCon(cargando: false, kpis: kpis);
     } catch (e, st) {
-      print('=== ERROR EN DASHBOARD ===\n$e\n$st');
+      // print('=== ERROR EN DASHBOARD ===\n$e\n$st');
       state = state.copiarCon(cargando: false, error: 'Ocurrió un error inesperado: $e');
     }
   }

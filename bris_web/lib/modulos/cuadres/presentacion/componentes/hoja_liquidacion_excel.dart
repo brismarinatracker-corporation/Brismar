@@ -25,16 +25,16 @@ class HojaLiquidacionExcel extends StatelessWidget {
   // Clasificación de Gastos
   List<GastoWebModelo> get gastosAdministrativos {
     return cuadre.gastos.where((g) {
-      final c = g.concepto.toLowerCase();
-      return c.contains('administrativo') ||
-             c.contains('facturacion') ||
-             c.contains('facturación') ||
-             c.contains('certificado') ||
-             c.contains('liquidacion') ||
-             c.contains('liquidación') ||
-             c.contains('financiero') ||
-             c.contains('impuesto') ||
-             c.contains('renta');
+      if (g.tipo == 'Administrativo') return true;
+      
+      // Por si hay registros antiguos sin el tipo correcto
+      final c = g.concepto.toUpperCase().trim();
+      return c == 'FACTURACION_PLANTA' ||
+             c == 'PESADOR_PLANTA' ||
+             c == 'GASTOS FINANCIEROS' ||
+             c == 'CERTIFICADO' ||
+             c == 'LIQUIDACION' ||
+             c == 'IMPUESTO DE RENTA';
     }).toList();
   }
 

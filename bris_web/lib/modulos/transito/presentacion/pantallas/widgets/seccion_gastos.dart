@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../cuadres/dominio/modelos/cuadre_web_modelo.dart';
 
@@ -121,7 +122,7 @@ class _SeccionGastosState extends State<SeccionGastos> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Gastos Operativos (Fijos)', style: TextStyle(color: Color(0xFF15181A), fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Gastos del Muelle', style: TextStyle(color: Color(0xFF15181A), fontSize: 18, fontWeight: FontWeight.bold)),
           const Divider(color: Color(0xFFF1F5F9), height: 32),
           
           ..._ctrls.entries.map((e) {
@@ -131,6 +132,9 @@ class _SeccionGastosState extends State<SeccionGastos> {
                 controller: e.value,
                 style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                ],
                 decoration: InputDecoration(
                   labelText: e.key,
                   prefixText: 'S/ ',

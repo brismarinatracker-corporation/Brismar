@@ -12,6 +12,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'widgets/seccion_datos_zarpe.dart';
 import 'widgets/seccion_embarcaciones.dart';
 import 'widgets/seccion_gastos.dart';
+import 'widgets/seccion_gastos_administrativos.dart';
 
 class PantallaEdicionTransito extends ConsumerStatefulWidget {
   final String id;
@@ -392,6 +393,21 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         },
         onEliminar: (id) => setState(() => _gastos.removeWhere((item) => item.id == id)),
       ),
+      const SizedBox(height: 24),
+      SeccionGastosAdministrativos(
+        gastos: _gastos,
+        onGuardar: (g) {
+          setState(() {
+            final idx = _gastos.indexWhere((item) => item.id == g.id);
+            if (idx >= 0) {
+              _gastos[idx] = g;
+            } else {
+              _gastos.add(g);
+            }
+          });
+        },
+        onEliminar: (id) => setState(() => _gastos.removeWhere((item) => item.id == id)),
+      ),
     ];
   }
 
@@ -430,19 +446,38 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         onEliminar: (id) => setState(() => _compras.removeWhere((item) => item.id == id)),
       )),
       const SizedBox(width: 32),
-      Expanded(flex: 1, child: SeccionGastos(
-        gastos: _gastos,
-        onGuardar: (g) {
-          setState(() {
-            final idx = _gastos.indexWhere((item) => item.id == g.id);
-            if (idx >= 0) {
-              _gastos[idx] = g;
-            } else {
-              _gastos.add(g);
-            }
-          });
-        },
-        onEliminar: (id) => setState(() => _gastos.removeWhere((item) => item.id == id)),
+      Expanded(flex: 1, child: Column(
+        children: [
+          SeccionGastos(
+            gastos: _gastos,
+            onGuardar: (g) {
+              setState(() {
+                final idx = _gastos.indexWhere((item) => item.id == g.id);
+                if (idx >= 0) {
+                  _gastos[idx] = g;
+                } else {
+                  _gastos.add(g);
+                }
+              });
+            },
+            onEliminar: (id) => setState(() => _gastos.removeWhere((item) => item.id == id)),
+          ),
+          const SizedBox(height: 24),
+          SeccionGastosAdministrativos(
+            gastos: _gastos,
+            onGuardar: (g) {
+              setState(() {
+                final idx = _gastos.indexWhere((item) => item.id == g.id);
+                if (idx >= 0) {
+                  _gastos[idx] = g;
+                } else {
+                  _gastos.add(g);
+                }
+              });
+            },
+            onEliminar: (id) => setState(() => _gastos.removeWhere((item) => item.id == id)),
+          ),
+        ],
       )),
     ];
   }
