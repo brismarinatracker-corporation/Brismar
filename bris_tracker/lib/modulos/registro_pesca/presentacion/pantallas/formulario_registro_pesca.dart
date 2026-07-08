@@ -164,7 +164,6 @@ class _FormularioRegistroPescaState
 
   double get totalKilosCompras => _compras.fold(0.0, (sum, c) => sum + c.kilos);
   double get totalCostoCompras => _compras.fold(0.0, (sum, c) => sum + c.total);
-  double get totalAdelantos => _compras.fold(0.0, (sum, c) => sum + c.adelanto);
 
   double get totalGastosOperativos {
     double sum = 0.0;
@@ -352,11 +351,6 @@ class _FormularioRegistroPescaState
     final precioCtrl = TextEditingController(
       text: compraAEditar != null
           ? compraAEditar.precioUnitario.toString()
-          : '',
-    );
-    final adelantoCtrl = TextEditingController(
-      text: compraAEditar != null && compraAEditar.adelanto > 0
-          ? compraAEditar.adelanto.toString()
           : '',
     );
 
@@ -626,24 +620,6 @@ class _FormularioRegistroPescaState
                               return null;
                             },
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: adelantoCtrl,
-                            style: const TextStyle(
-                              color: Color(0xFFD97706),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24,
-                            ),
-                            decoration:
-                                _construirInputDecoration(
-                                  labelText: 'S/ Adelanto Efectivo (Opcional)',
-                                ).copyWith(
-                                  contentPadding: const EdgeInsets.all(20),
-                                ),
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                          ),
                         ] else ...[
                           Row(
                             children: [
@@ -673,29 +649,6 @@ class _FormularioRegistroPescaState
                                     }
                                     return null;
                                   },
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: TextFormField(
-                                  controller: adelantoCtrl,
-                                  style: const TextStyle(
-                                    color: Color(0xFFD97706),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 28,
-                                  ),
-                                  decoration:
-                                      _construirInputDecoration(
-                                        labelText: 'S/ Adelanto Efectivo',
-                                      ).copyWith(
-                                        contentPadding: const EdgeInsets.all(
-                                          24,
-                                        ),
-                                      ),
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                      ),
                                 ),
                               ),
                             ],
@@ -730,11 +683,6 @@ class _FormularioRegistroPescaState
                               final p = double.parse(
                                 precioCtrl.text.replaceAll(',', ''),
                               );
-                              final a =
-                                  double.tryParse(
-                                    adelantoCtrl.text.replaceAll(',', ''),
-                                  ) ??
-                                  0.0;
 
                               setState(() {
                                 final item = CompraEntidad(
@@ -744,7 +692,6 @@ class _FormularioRegistroPescaState
                                   producto: productoSeleccionado,
                                   kilos: k,
                                   precioUnitario: p,
-                                  adelanto: a,
                                   total: k * p,
                                 );
                                 if (compraAEditar != null &&
@@ -1289,7 +1236,6 @@ class _FormularioRegistroPescaState
       totalKilosCompras: totalKilosCompras,
       totalCostoCompras: totalCostoCompras,
       totalGastosOperativos: totalGastosOperativos,
-      totalAdelantos: totalAdelantos,
       guardando: _guardando,
       onGuardar: _guardarCuadre,
     );

@@ -118,7 +118,10 @@ class _BarraFiltros extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ctrl = ref.read(controladorCuadresWebProvider.notifier);
-    return Row(
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         _BotoFiltroFecha(
           label: 'Desde',
@@ -126,15 +129,13 @@ class _BarraFiltros extends ConsumerWidget {
           onSeleccionar: (d) => ctrl.aplicarFiltroDesde(d),
           onLimpiar: () => ctrl.aplicarFiltroDesde(null),
         ),
-        const SizedBox(width: 12),
         _BotoFiltroFecha(
           label: 'Hasta',
           fecha: estado.filtroHasta,
           onSeleccionar: (d) => ctrl.aplicarFiltroHasta(d),
           onLimpiar: () => ctrl.aplicarFiltroHasta(null),
         ),
-        if (estado.filtroDesde != null || estado.filtroHasta != null) ...[
-          const SizedBox(width: 12),
+        if (estado.filtroDesde != null || estado.filtroHasta != null)
           TextButton.icon(
             onPressed: () async {
               await ctrl.aplicarFiltroDesde(null);
@@ -143,7 +144,6 @@ class _BarraFiltros extends ConsumerWidget {
             icon: const Icon(Icons.clear, size: 16, color: Colors.orangeAccent),
             label: const Text('Limpiar filtros', style: TextStyle(color: Colors.orangeAccent)),
           ),
-        ],
       ],
     );
   }
@@ -184,8 +184,14 @@ class _BotoFiltroFecha extends StatelessWidget {
       ),
       label: Text(texto, style: TextStyle(color: fecha != null ? const Color(0xFF00838F) : const Color(0xFF475569))),
       style: OutlinedButton.styleFrom(
-        side: BorderSide(color: fecha != null ? const Color(0xFF00838F) : const Color(0xFFE2E8F0)),
+        backgroundColor: fecha != null ? const Color(0xFFE0F7FA) : Colors.white,
+        side: BorderSide(
+          color: fecha != null ? const Color(0xFF00838F) : const Color(0xFF94A3B8),
+          width: 1.2,
+        ),
         foregroundColor: fecha != null ? const Color(0xFF00838F) : const Color(0xFF475569),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

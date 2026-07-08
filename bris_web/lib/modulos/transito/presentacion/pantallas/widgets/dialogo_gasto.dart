@@ -22,7 +22,7 @@ class DialogoGasto {
       builder: (ctx) => Consumer(
         builder: (context, ref, _) {
           final estadoMaestros = ref.watch(controladorMaestrosProvider).value;
-          List<String> tiposGasto = ['Flete', 'Hielo', 'Estiba', 'Otros'];
+          List<String> tiposGasto = ['Flete', 'Hielo', 'Estiba', 'Administrativo', 'Otros'];
           if (estadoMaestros != null && estadoMaestros.tiposGasto.isNotEmpty) {
             tiposGasto = estadoMaestros.tiposGasto.map((t) => t.nombre).toList();
           }

@@ -5,7 +5,6 @@ class PanelCalculoVivo extends StatelessWidget {
   final double totalKilosCompras;
   final double totalCostoCompras;
   final double totalGastosOperativos;
-  final double totalAdelantos;
   final bool guardando;
   final VoidCallback onGuardar;
 
@@ -14,7 +13,6 @@ class PanelCalculoVivo extends StatelessWidget {
     required this.totalKilosCompras,
     required this.totalCostoCompras,
     required this.totalGastosOperativos,
-    required this.totalAdelantos,
     required this.guardando,
     required this.onGuardar,
   });
@@ -38,7 +36,6 @@ class PanelCalculoVivo extends StatelessWidget {
         _buildFilaResumen('Kilos Totales', '${_formatearNumero(totalKilosCompras)} kg', const Color(0xFF1F2937)),
         const Divider(color: Color(0xFFE5E7EB), height: 24),
         _buildFilaResumen('Poder de Compra', 'S/ ${_formatearNumero(totalCostoCompras)}', const Color(0xFF1F2937)),
-        _buildFilaResumen('Adelantos (Cash)', '- S/ ${_formatearNumero(totalAdelantos)}', const Color(0xFFD97706)),
         _buildFilaResumen('Gastos Muelle', '- S/ ${_formatearNumero(totalGastosOperativos)}', const Color(0xFFDC2626)),
       ],
     );
@@ -47,7 +44,7 @@ class PanelCalculoVivo extends StatelessWidget {
   Widget _buildEstimatesContainer() {
     final utilidadBruta = totalCostoCompras - totalGastosOperativos;
     final reparto = utilidadBruta / 2;
-    final pagoEmbarcacionFinal = totalCostoCompras - totalAdelantos;
+    final pagoEmbarcacionFinal = totalCostoCompras;
 
     return Container(
       padding: const EdgeInsets.all(16),

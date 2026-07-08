@@ -16,7 +16,6 @@ class DialogoCompra {
     String productoSeleccionado = compra?.producto ?? 'POTA';
     final kilosCtrl = TextEditingController(text: compra?.kilos.toString() ?? '');
     final precioCtrl = TextEditingController(text: compra?.precioUnitario.toString() ?? '');
-    final adelantoCtrl = TextEditingController(text: compra?.adelanto?.toString() ?? '0.00');
 
     showDialog(
       context: context,
@@ -114,14 +113,6 @@ class DialogoCompra {
                     ),
                   ],
                 ),
-                _construirEtiquetaDialogo('Adelanto Entregado (S/)'),
-                TextField(
-                  controller: adelantoCtrl,
-                  style: const TextStyle(color: Color(0xFF15181A), fontSize: 14, fontWeight: FontWeight.w500),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
-                  decoration: _decoracionDialogo('S/ 0.00', icono: Icons.money_outlined),
-                ),
               ],
             ),
           ),
@@ -134,7 +125,6 @@ class DialogoCompra {
               onPressed: () {
                 final k = double.tryParse(kilosCtrl.text) ?? 0;
                 final p = double.tryParse(precioCtrl.text) ?? 0;
-                final a = double.tryParse(adelantoCtrl.text) ?? 0;
                 if (embarcacionCtrl.text.isEmpty || k <= 0 || p <= 0) return;
 
                 final String idAsignado = (compra?.id == null || compra!.id.isEmpty) 
@@ -149,7 +139,6 @@ class DialogoCompra {
                   kilos: k,
                   precioUnitario: p,
                   total: k * p,
-                  adelanto: a,
                 );
                 onGuardar(nueva);
                 Navigator.pop(ctx);
