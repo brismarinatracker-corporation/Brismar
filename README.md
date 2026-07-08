@@ -1,4 +1,4 @@
-# ⚓ BRISMAR - Central de Operaciones y Ecosistema ⚓
+#  ⚓ BRISMAR - Central de Operaciones y Ecosistema ⚓
 
 Bienvenido al Monorepo oficial de **NEGOCIOS BRISMAR S.R.L.**
 Este archivo es la puerta de entrada para entender la estructura técnica y de comunicación del proyecto corporativo.

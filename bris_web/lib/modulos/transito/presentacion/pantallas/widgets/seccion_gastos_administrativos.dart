@@ -30,7 +30,7 @@ class _SeccionGastosAdministrativosState extends State<SeccionGastosAdministrati
   };
 
   // Para los gastos "Otros" (conceptos dinámicos)
-  List<GastoWebModelo> _otrosGastos = [];
+  final _otrosGastos = <GastoWebModelo>[];
 
   @override
   void initState() {

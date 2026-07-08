@@ -46,6 +46,21 @@ class ZarpeModelo {
     );
   }
 
+  /// Construye un [ZarpeModelo] a partir de una [ZarpeEntidad].
+  factory ZarpeModelo.fromEntidad(dynamic entidad) {
+    return ZarpeModelo(
+      id: entidad.id,
+      placaCamara: entidad.placaCamara,
+      chofer: entidad.chofer,
+      muellePartida: entidad.muellePartida,
+      fotoUrlEvidencia: entidad.fotoUrlEvidencia,
+      fotoLocalPath: entidad.fotoLocalPath,
+      fechaZarpe: entidad.fechaZarpe,
+      estado: entidad.estado,
+      sincronizado: 0, // Por defecto no sincronizado
+    );
+  }
+
   /// Serializa para INSERT/UPDATE en SQLite local.
   Map<String, dynamic> toMap() {
     return {
