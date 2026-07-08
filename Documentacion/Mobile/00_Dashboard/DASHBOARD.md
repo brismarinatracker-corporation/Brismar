@@ -2,13 +2,14 @@
 
 > 🔄 **Última actualización automática:** 02 de junio de 2026 a las 01:27
 > Vuelve a [[CONTEXTO_PROYECTO]] para el menú principal.
+> 📖 **Lectura recomendada:** Comienza por el [[MAPA_MAESTRO]] para entender el flujo paso a paso y los anti-patrones.
 
 ---
 
 ## Números del proyecto
 
 | Métrica | Valor |
-|---|---|
+| --- | --- |
 | 📄 Archivos Dart | **27** |
 | 📝 Líneas de código | **2219** |
 | 📦 Módulos | **2** |
@@ -16,10 +17,28 @@
 
 ---
 
+## Arquitectura General
+
+```mermaid
+graph LR
+    A[UI / Pantallas] --> B(Controladores Riverpod)
+    B --> C{Casos de Uso}
+    C --> D[Supabase Remoto]
+    C --> E[SQLite Local]
+    
+    style A fill:#4dabf7,stroke:#1971c2,stroke-width:2px,color:#fff
+    style B fill:#38d9a9,stroke:#0ca678,stroke-width:2px,color:#fff
+    style C fill:#ffd43b,stroke:#f59f00,stroke-width:2px,color:#333
+    style D fill:#ff8787,stroke:#e03131,stroke-width:2px,color:#fff
+    style E fill:#da77f2,stroke:#ae3ec9,stroke-width:2px,color:#fff
+```
+
+---
+
 ## Módulos
 
 | Módulo | Archivos | Líneas | Capas |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | [[MODULO_AUTENTICACION]] | 6 archivos | 489 líneas | datos dominio presentacion |
 | [[MODULO_REGISTRO]] | 15 archivos | 1383 líneas | datos dominio presentacion |
 
@@ -28,7 +47,7 @@
 ## Rutas de navegación ([[GoRouter]])
 
 | Ruta | Descripción |
-|---|---|
+| --- | --- |
 | `/login` | Pantalla de /login |
 | `/registro` | Pantalla de /registro |
 
@@ -44,7 +63,7 @@
 ## Tecnologías usadas
 
 | Paquete | Versión |
-|---|---|
+| --- | --- |
 | cupertino_icons | ^1.0.8 |
 | http | ^1.6.0 |
 | supabase_flutter | ^2.6.0 |
@@ -63,7 +82,7 @@
 
 ## Archivos del proyecto (árbol)
 
-```
+```text
   main.dart
   modulos/autenticacion/datos/fuentes_datos/auth_remoto_datasource.dart
   modulos/autenticacion/datos/repositorios/auth_repositorio_imp.dart
@@ -95,4 +114,4 @@
 
 ---
 
-#brismar #dashboard #autogenerado
+**Etiquetas:** #brismar #dashboard #autogenerado

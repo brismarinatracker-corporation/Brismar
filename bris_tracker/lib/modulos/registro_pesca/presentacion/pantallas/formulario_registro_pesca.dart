@@ -8,7 +8,7 @@ import '../../dominio/entidades/cuadre_entidad.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../widgets/panel_calculo_vivo.dart';
-import '../../../../nucleo/base_datos/gestor_base_datos.dart';
+import '../../registro_pesca_inyeccion.dart';
 
 class _UpperCaseTextFormatter extends TextInputFormatter {
   @override
@@ -743,12 +743,25 @@ class _FormularioRegistroPescaState
   }
 
   Future<List<Map<String, dynamic>>> _obtenerZarpesDisponibles() async {
-    final db = await GestorBaseDatos.instance.database;
-    return await db.query(
-      'zarpes',
-      where: "estado != 'RECIBIDO_LAMBAYEQUE'",
-      orderBy: 'fecha_zarpe DESC',
-    );
+    final repo = ref.read(proveedorZarpeRepositorio);
+    final historial = await repo.obtenerHistorial('');
+    
+    // Filtrar zarpes y convertirlos a Map para compatibilidad temporal con el UI
+    final zarpes = historial
+        .where((z) => z.estado != 'RECIBIDO_LAMBAYEQUE')
+        .toList();
+    
+    // Ordenar por fecha_zarpe DESC
+    zarpes.sort((a, b) => b.fechaZarpe.compareTo(a.fechaZarpe));
+    
+    return zarpes.map((z) => {
+      'id': z.id,
+      'placa_camara': z.placaCamara,
+      'chofer': z.chofer,
+      'muelle_partida': z.muellePartida,
+      'fecha_zarpe': z.fechaZarpe,
+      'estado': z.estado,
+    }).toList();
   }
 
   Future<void> _mostrarSelectorZarpes() async {
@@ -1275,11 +1288,21 @@ class _FormularioRegistroPescaState
   }
 
   Future<void> _cargarZarpeAsociado(String id) async {
-    final db = await GestorBaseDatos.instance.database;
-    final zarpes = await db.query('zarpes', where: 'id = ?', whereArgs: [id]);
+    final repo = ref.read(proveedorZarpeRepositorio);
+    final historial = await repo.obtenerHistorial('');
+    final zarpes = historial.where((z) => z.id == id).toList();
+    
     if (zarpes.isNotEmpty && mounted) {
       setState(() {
-        _zarpeSeleccionado = zarpes.first;
+        final z = zarpes.first;
+        _zarpeSeleccionado = {
+          'id': z.id,
+          'placa_camara': z.placaCamara,
+          'chofer': z.chofer,
+          'muelle_partida': z.muellePartida,
+          'fecha_zarpe': z.fechaZarpe,
+          'estado': z.estado,
+        };
       });
     }
   }

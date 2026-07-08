@@ -1,21 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../../nucleo/base_datos/gestor_base_datos.dart';
-import '../../../../nucleo/red/verificador_conexion.dart';
-import '../../datos/fuentes_datos/fuente_datos_cuadres_local.dart';
-import '../../datos/fuentes_datos/fuente_datos_cuadres_remota.dart';
-import '../../datos/repositorios/cuadre_repositorio_imp.dart';
 import '../../datos/modelos/cuadre_modelo.dart';
 import '../../dominio/entidades/cuadre_entidad.dart';
+import '../../datos/repositorios/cuadre_repositorio_imp.dart';
+import '../../../../nucleo/red/verificador_conexion.dart';
 
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
-
-final cuadreRepositorioProvider = Provider<CuadreRepositorioImp>((ref) {
-  final local = FuenteDatosCuadresLocal(GestorBaseDatos.instance);
-  final remota = FuenteDatosCuadresRemota(Supabase.instance.client);
-  return CuadreRepositorioImp(local: local, remota: remota);
-});
+import '../../registro_pesca_inyeccion.dart';
 
 final cuadresProvider = StateNotifierProvider<CuadresNotifier, AsyncValue<List<CuadreEntidad>>>((ref) {
   final authState = ref.watch(proveedorControladorAutenticacion);

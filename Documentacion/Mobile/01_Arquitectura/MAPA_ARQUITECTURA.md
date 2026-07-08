@@ -7,9 +7,32 @@
 
 ## Las 3 capas (Clean Architecture)
 
-```
-PRESENTACIÓN  →  DOMINIO  ←  DATOS
-  (lo que ves)    (las reglas)   (de dónde salen los datos)
+```mermaid
+flowchart TD
+    subgraph PRESENTACIÓN ["🎨 Presentación (lo que ves)"]
+        UI[Pantallas y Widgets]
+        Controller[Controladores / Riverpod]
+        UI --> Controller
+    end
+
+    subgraph DOMINIO ["📐 Dominio (las reglas)"]
+        UseCase[Casos de Uso]
+        Entity[Entidades]
+        RepoInterface[Contratos de Repositorios]
+        UseCase --> Entity
+        UseCase --> RepoInterface
+    end
+
+    subgraph DATOS ["💾 Datos (origen)"]
+        RepoImpl[Implementación de Repositorios]
+        Supabase[(Supabase Remoto)]
+        SQLite[(SQLite Local)]
+        RepoImpl --> Supabase
+        RepoImpl --> SQLite
+    end
+
+    Controller -->|Llama a| UseCase
+    RepoImpl -.->|Implementa| RepoInterface
 ```
 
 ### 🎨 Presentación (lo que el usuario ve)
