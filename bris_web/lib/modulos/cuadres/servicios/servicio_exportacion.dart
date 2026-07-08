@@ -14,7 +14,7 @@ class ServicioExportacion {
 
     final headers = [
       'ID Cuadre', 'Fecha Zarpe', 'Placa Cámara', 'Embarcación', 'Especie', 
-      'Kilos', 'Precio Unitario', 'Poder de Compra (Bruto)', 'Adelanto', 
+      'Kilos', 'Precio Unitario', 'Poder de Compra (Bruto)', 
       'Gastos Operativos (Prorrateo)', 'Utilidad Bahía (50%)', 'Estado'
     ];
     
@@ -30,7 +30,7 @@ class ServicioExportacion {
       for (var compra in cuadre.compras) {
         double porcentajeKilos = kilosTotales > 0 ? (compra.kilos / kilosTotales) : 0;
         double gastoAsignado = gastosTotales * porcentajeKilos;
-        double utilidadLote = compra.total - gastoAsignado - (compra.adelanto ?? 0.0);
+        double utilidadLote = compra.total - gastoAsignado;
         double utilidadBahia = utilidadLote / 2;
 
         sheetObject.appendRow([
@@ -42,7 +42,6 @@ class ServicioExportacion {
           DoubleCellValue(compra.kilos.toDouble()),
           DoubleCellValue(compra.precioUnitario.toDouble()),
           DoubleCellValue(compra.total.toDouble()),
-          DoubleCellValue((compra.adelanto ?? 0.0).toDouble()),
           DoubleCellValue(gastoAsignado),
           DoubleCellValue(utilidadBahia),
           TextCellValue(cuadre.estado),
