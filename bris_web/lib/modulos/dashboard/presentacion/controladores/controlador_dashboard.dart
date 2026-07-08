@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -65,7 +66,7 @@ class ControladorDashboard extends Notifier<EstadoDashboard> {
       final kpis = await _fuente.obtenerKpis();
       state = state.copiarCon(cargando: false, kpis: kpis);
     } catch (e, st) {
-      print('=== ERROR EN DASHBOARD ===\n$e\n$st');
+      debugPrint('=== ERROR EN DASHBOARD ===\n$e\n$st');
       state = state.copiarCon(cargando: false, error: 'Ocurrió un error inesperado: $e');
     }
   }
