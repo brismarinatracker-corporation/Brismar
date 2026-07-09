@@ -186,7 +186,8 @@ class PantallaDashboard extends ConsumerWidget {
         if (availableWidth < 500) columnas = 1;
 
         double anchoTarjeta = (availableWidth - (columnas - 1) * 20) / columnas;
-        double childAspectRatio = columnas == 1 ? (anchoTarjeta / 120) : (anchoTarjeta / 165);
+        // Asignamos una altura fija de 180px independientemente del ancho para evitar overflow
+        double childAspectRatio = anchoTarjeta / 180;
 
         return GridView.count(
           shrinkWrap: true,

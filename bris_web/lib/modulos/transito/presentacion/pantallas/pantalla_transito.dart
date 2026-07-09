@@ -82,23 +82,19 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.filter_alt_outlined, color: Color(0xFF64748B), size: 20),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Filtrar por fecha:',
-                    style: TextStyle(color: Color(0xFF475569), fontWeight: FontWeight.w600, fontSize: 14),
-                  ),
-                  SizedBox(width: esMovil ? 0 : 8),
-                ],
-              ),
               _FiltroChip(
                 label: 'Todos',
                 activo: filtro == 'todos',
                 onTap: () {
                   ref.read(proveedorFiltroTransito.notifier).establecerFiltro('todos');
+                  setState(() => _paginaActual = 0);
+                },
+              ),
+              _FiltroChip(
+                label: 'Hoy',
+                activo: filtro == 'hoy',
+                onTap: () {
+                  ref.read(proveedorFiltroTransito.notifier).establecerFiltro('hoy');
                   setState(() => _paginaActual = 0);
                 },
               ),
@@ -123,14 +119,6 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                 activo: filtro == 'mes',
                 onTap: () {
                   ref.read(proveedorFiltroTransito.notifier).establecerFiltro('mes');
-                  setState(() => _paginaActual = 0);
-                },
-              ),
-              _FiltroChip(
-                label: 'Este Año',
-                activo: filtro == 'anio',
-                onTap: () {
-                  ref.read(proveedorFiltroTransito.notifier).establecerFiltro('anio');
                   setState(() => _paginaActual = 0);
                 },
               ),
@@ -165,8 +153,8 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                     dividerColor: Colors.transparent,
                     onTap: (_) => setState(() => _paginaActual = 0),
                     tabs: const [
-                      Tab(text: 'Pendientes (En Tránsito)'),
-                      Tab(text: 'Finalizados (Recibidos)'),
+                      Tab(text: 'Pendientes'),
+                      Tab(text: 'Finalizados'),
                     ],
                   ),
                 ),
@@ -214,9 +202,15 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                         return Column(
                           children: [
                             Expanded(
-                              child: ListView.separated(
+                              child: GridView.builder(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent: 450,
+                                  mainAxisExtent: 390,
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                ),
                                 itemCount: zarpesPaginados.length,
-                                separatorBuilder: (ctx, i) => const SizedBox(height: 16),
                                 itemBuilder: (ctx, i) {
                                   final z = zarpesPaginados[i];
                                   final fecha = z.fechaZarpe;
@@ -231,101 +225,98 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                                       border: Border.all(color: const Color(0xFFE2E8F0)),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.03),
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 4),
+                                          color: Colors.black.withValues(alpha: 0.05),
+                                          blurRadius: 15,
+                                          offset: const Offset(0, 5),
                                         )
                                       ],
                                     ),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(16),
-                                      child: IntrinsicHeight(
-                                        child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                                          children: [
-                                            // Left Status Stripe
-                                            Container(
-                                              width: 6,
-                                              color: estaRecibido ? const Color(0xFF16A34A) : const Color(0xFF1E88E5), // Green if received, Blue if in transit
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        children: [
+                                          // Imagen Header o Placeholder
+                                          Container(
+                                            height: 130,
+                                            decoration: BoxDecoration(
+                                              color: estaRecibido ? const Color(0xFFE8F5E9) : const Color(0xFFE3F2FD),
+                                              image: urlFoto.toString().isNotEmpty
+                                                  ? DecorationImage(image: NetworkImage(urlFoto), fit: BoxFit.cover)
+                                                  : null,
                                             ),
-                                            const SizedBox(width: 16),
-                                            Expanded(
-                                              child: Padding(
-                                                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                    Row(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        // Image/Photo placeholder
-                                                        if (urlFoto.toString().isNotEmpty)
-                                                          ClipRRect(
-                                                            borderRadius: BorderRadius.circular(8),
-                                                            child: Image.network(urlFoto, width: 64, height: 64, fit: BoxFit.cover, errorBuilder: (c, e, s) => Container(width: 64, height: 64, color: const Color(0xFFE6F0FA), child: const Icon(Icons.broken_image, color: Color(0xFF1E88E5), size: 24))),
-                                                          )
-                                                        else
-                                                          Container(
-                                                            width: 64, height: 64,
-                                                            decoration: BoxDecoration(color: const Color(0xFFE6F0FA), borderRadius: BorderRadius.circular(8)),
-                                                            child: const Icon(Icons.camera_alt_outlined, color: Color(0xFF1E88E5), size: 24),
-                                                          ),
-                                                        const SizedBox(width: 16),
-                                                        // Main texts column
-                                                        Expanded(
-                                                          child: Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              Wrap(
-                                                                spacing: 8,
-                                                                runSpacing: 4,
-                                                                crossAxisAlignment: WrapCrossAlignment.center,
-                                                                children: [
-                                                                  Container(
-                                                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                                                    decoration: BoxDecoration(color: estaRecibido ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0), borderRadius: BorderRadius.circular(20)),
-                                                                    child: Text(estaRecibido ? 'Recibido' : 'En tránsito', style: TextStyle(color: estaRecibido ? const Color(0xFF1B5E20) : const Color(0xFFE65100), fontSize: 11, fontWeight: FontWeight.bold)),
-                                                                  ),
-                                                                  Text('Placa: ${z.placaCamara}', style: const TextStyle(color: Color(0xFF15181A), fontSize: 16, fontWeight: FontWeight.bold)),
-                                                                ],
-                                                              ),
-                                                              const SizedBox(height: 8),
-                                                              Text('Chofer: ${z.chofer}  ·  Muelle: ${z.muellePartida}', style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w500)),
-                                                              const SizedBox(height: 4),
-                                                              Text('Carga: ${z.pesoTotal ?? 0} kg  ·  Cajas: ${z.cajasLlenas ?? 0}  ·  Lanchas: ${(z.embarcacionesAsociadas ?? 'ninguna').toLowerCase()}', style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w500)),
-                                                              const SizedBox(height: 6),
-                                                              Wrap(
-                                                                spacing: 16,
-                                                                runSpacing: 4,
-                                                                children: [
-                                                                  Text('Flete total: S/. ${z.costoFlete ?? '0'}', style: const TextStyle(color: Color(0xFF065F46), fontSize: 13, fontWeight: FontWeight.bold)),
-                                                                  Text('Despacho: ${fechaFormateada.replaceAll('AM', 'a.m.').replaceAll('PM', 'p.m.')}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
-                                                                ],
-                                                              ),
-                                                            ],
-                                                          ),
+                                            child: urlFoto.toString().isEmpty
+                                                ? Icon(Icons.local_shipping_outlined, size: 40, color: estaRecibido ? const Color(0xFF1B5E20) : const Color(0xFF1E88E5))
+                                                : null,
+                                          ),
+                                          Expanded(
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(16.0),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          z.placaCamara ?? 'Sin Placa', 
+                                                          style: const TextStyle(color: Color(0xFF15181A), fontSize: 18, fontWeight: FontWeight.bold),
+                                                          maxLines: 1, overflow: TextOverflow.ellipsis,
                                                         ),
-                                                      ],
-                                                    ),
-                                                    if (esMovil) ...[
-                                                      const SizedBox(height: 16),
-                                                      _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, onMarcarRecibido: (zId, emb, peso) => _mostrarDialogoRecepcion(context, ref, zId, emb, peso)),
-                                                    ]
-                                                  ],
-                                                ),
+                                                      ),
+                                                      Container(
+                                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                        decoration: BoxDecoration(color: estaRecibido ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0), borderRadius: BorderRadius.circular(20)),
+                                                        child: Text(estaRecibido ? 'Recibido' : 'En tránsito', style: TextStyle(color: estaRecibido ? const Color(0xFF1B5E20) : const Color(0xFFE65100), fontSize: 12, fontWeight: FontWeight.bold)),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 12),
+                                                  Row(
+                                                    children: [
+                                                      const Icon(Icons.person_outline, size: 16, color: Color(0xFF64748B)),
+                                                      const SizedBox(width: 8),
+                                                      Expanded(child: Text('Chofer: ${z.chofer}', style: const TextStyle(color: Color(0xFF475569), fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 6),
+                                                  Row(
+                                                    children: [
+                                                      const Icon(Icons.location_on_outlined, size: 16, color: Color(0xFF64748B)),
+                                                      const SizedBox(width: 8),
+                                                      Expanded(child: Text('Muelle: ${z.muellePartida}', style: const TextStyle(color: Color(0xFF475569), fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 6),
+                                                  Row(
+                                                    children: [
+                                                      const Icon(Icons.scale_outlined, size: 16, color: Color(0xFF64748B)),
+                                                      const SizedBox(width: 8),
+                                                      Expanded(child: Text('Peso total: ${z.pesoTotal ?? 0} kg', style: const TextStyle(color: Color(0xFF475569), fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 6),
+                                                  Row(
+                                                    children: [
+                                                      const Icon(Icons.calendar_today_outlined, size: 16, color: Color(0xFF64748B)),
+                                                      const SizedBox(width: 8),
+                                                      Expanded(child: Text('Fecha: ${fechaFormateada.replaceAll('AM', 'a.m.').replaceAll('PM', 'p.m.')}', style: const TextStyle(color: Color(0xFF475569), fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                                                    ],
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                            if (!esMovil)
-                                              Padding(
-                                                padding: const EdgeInsets.only(right: 20, top: 16, bottom: 16),
-                                                child: SizedBox(
-                                                  width: 170,
-                                                  child: _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, onMarcarRecibido: (zId, emb, peso) => _mostrarDialogoRecepcion(context, ref, zId, emb, peso)),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            decoration: const BoxDecoration(
+                                              border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+                                              color: Color(0xFFF8FAFC)
+                                            ),
+                                            child: _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, onMarcarRecibido: (zId, emb, peso) => _mostrarDialogoRecepcion(context, ref, zId, emb, peso)),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   );
@@ -509,119 +500,128 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
           ),
           actions: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                OutlinedButton(
-                  onPressed: guardando ? null : () => Navigator.pop(ctx),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFF64748B)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: guardando ? null : () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFF64748B)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const FittedBox(child: Text('Cancelar', style: TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold))),
                   ),
-                  child: const Text('Cancelar', style: TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: guardando ? null : () async {
-                    final kilos = double.tryParse(kilosCtrl.text) ?? 0.0;
-                    final precio = double.tryParse(precioCtrl.text) ?? 0.0;
-                    final planta = plantaSeleccionada == 'OTROS' ? otraPlantaCtrl.text.trim().toUpperCase() : plantaSeleccionada;
-                    
-                    if (planta.isEmpty || kilos <= 0) {
-                      showDialog(
-                        context: ctx,
-                        builder: (c) => AlertDialog(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          title: const Row(
-                            children: [
-                              Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
-                              SizedBox(width: 12),
-                              Text('Datos incompletos', style: TextStyle(fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                          content: const Text('Por favor, selecciona una planta destino e ingresa una cantidad de kilos mayor a 0.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(c),
-                              child: const Text('Entendido', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
-                            ),
-                          ],
-                        ),
-                      );
-                      return;
-                    }
-
-                    setStateDialog(() => guardando = true);
-
-                    try {
-                      await ref.read(proveedorTransito.notifier).registrarRecepcionEnPlanta(
-                        id: id,
-                        planta: planta,
-                        especie: especieSeleccionada,
-                        kilos: kilos,
-                        precio: precio,
-                      );
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: guardando ? null : () async {
+                      final kilos = double.tryParse(kilosCtrl.text) ?? 0.0;
+                      final precio = double.tryParse(precioCtrl.text) ?? 0.0;
+                      final planta = plantaSeleccionada == 'OTROS' ? otraPlantaCtrl.text.trim().toUpperCase() : plantaSeleccionada;
                       
-                      if (contextDialog.mounted) {
-                        Navigator.pop(ctx); // Cierra el formulario principal
-                        
-                        // Muestra el mensaje de éxito usando el contexto principal
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (c) => AlertDialog(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            title: const Row(
-                              children: [
-                                Icon(Icons.check_circle, color: Colors.green, size: 28),
-                                SizedBox(width: 12),
-                                Text('¡Recepción Exitosa!', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                            content: Text('La recepción se registró correctamente en la planta $planta.'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(c),
-                                child: const Text('Aceptar', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      if (contextDialog.mounted) {
-                        setStateDialog(() => guardando = false);
+                      if (planta.isEmpty || kilos <= 0) {
                         showDialog(
                           context: ctx,
                           builder: (c) => AlertDialog(
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             title: const Row(
                               children: [
-                                Icon(Icons.error, color: Colors.red, size: 28),
+                                Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
                                 SizedBox(width: 12),
-                                Text('Error', style: TextStyle(fontWeight: FontWeight.bold)),
+                                Text('Datos incompletos', style: TextStyle(fontWeight: FontWeight.bold)),
                               ],
                             ),
-                            content: Text('No se pudo registrar la recepción:\n$e'),
+                            content: const Text('Por favor, selecciona una planta destino e ingresa una cantidad de kilos mayor a 0.'),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(c),
-                                child: const Text('Aceptar', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                child: const Text('Entendido', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
                               ),
                             ],
                           ),
                         );
+                        return;
                       }
-                    }
-                  },
-                  icon: guardando 
-                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF15181A)))
-                      : const Icon(Icons.check, size: 18, color: Color(0xFF15181A)),
-                  label: Text(guardando ? 'Guardando...' : 'Confirmar Recepción', style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00C853),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+  
+                      setStateDialog(() => guardando = true);
+  
+                      try {
+                        await ref.read(proveedorTransito.notifier).registrarRecepcionEnPlanta(
+                          id: id,
+                          planta: planta,
+                          especie: especieSeleccionada,
+                          kilos: kilos,
+                          precio: precio,
+                        );
+                        
+                        if (contextDialog.mounted) {
+                          Navigator.pop(ctx); // Cierra el formulario principal
+                          
+                          // Muestra el mensaje de éxito usando el contexto principal
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (c) => AlertDialog(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              title: const Row(
+                                children: [
+                                  Icon(Icons.check_circle, color: Colors.green, size: 28),
+                                  SizedBox(width: 12),
+                                  Text('¡Recepción Exitosa!', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                              content: Text('La recepción se registró correctamente en la planta $planta.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(c),
+                                  child: const Text('Aceptar', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (contextDialog.mounted) {
+                          setStateDialog(() => guardando = false);
+                          showDialog(
+                            context: ctx,
+                            builder: (c) => AlertDialog(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              title: const Row(
+                                children: [
+                                  Icon(Icons.error, color: Colors.red, size: 28),
+                                  SizedBox(width: 12),
+                                  Text('Error', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                              content: Text('No se pudo registrar la recepción:\n$e'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(c),
+                                  child: const Text('Aceptar', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    icon: guardando 
+                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF15181A)))
+                        : const Icon(Icons.check, size: 18, color: Color(0xFF15181A)),
+                    label: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        guardando ? 'Guardando...' : 'Confirmar Recepción', 
+                        style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold)
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF00C853),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                   ),
                 ),
               ],
@@ -684,18 +684,12 @@ class _BotonesAccionTransito extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final esMovil = MediaQuery.of(context).size.width < 800;
-    return Flex(
-      direction: esMovil ? Axis.horizontal : Axis.vertical,
-      crossAxisAlignment: esMovil ? CrossAxisAlignment.center : CrossAxisAlignment.stretch,
-      mainAxisAlignment: esMovil ? MainAxisAlignment.end : MainAxisAlignment.center,
+    return Row(
       children: [
-        if (esMovil) Expanded(child: _botonVerEditar(context)),
-        if (!esMovil) _botonVerEditar(context),
+        Expanded(child: _botonVerEditar(context)),
         if (!estaRecibido) ...[
-          SizedBox(height: esMovil ? 0 : 8, width: esMovil ? 8 : 0),
-          if (esMovil) Expanded(child: _botonRecibir(context)),
-          if (!esMovil) _botonRecibir(context),
+          const SizedBox(width: 8),
+          Expanded(child: _botonRecibir(context)),
         ]
       ],
     );
