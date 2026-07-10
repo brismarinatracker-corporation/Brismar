@@ -134,6 +134,17 @@ class ControladorAutenticacion extends Notifier<EstadoAutenticacion> {
       await _cargarPerfil(user);
     }
   }
+
+  /// Envía un correo de recuperación de contraseña utilizando Supabase Auth.
+  Future<void> enviarCorreoRecuperacion(String correo) async {
+    try {
+      await Supabase.instance.client.auth.resetPasswordForEmail(correo.trim());
+    } on AuthException catch (e) {
+      throw Exception(e.message);
+    } catch (e) {
+      throw Exception('Ocurrió un error inesperado al enviar el correo: $e');
+    }
+  }
 }
 
 final proveedorAutenticacion = NotifierProvider<ControladorAutenticacion, EstadoAutenticacion>(() {

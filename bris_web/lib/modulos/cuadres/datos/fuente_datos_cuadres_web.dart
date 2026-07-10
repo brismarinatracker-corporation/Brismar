@@ -25,15 +25,13 @@ class FuenteDatosCuadresWeb {
   /// - [desde]: Fecha de zarpe mínima.
   /// - [hasta]: Fecha de zarpe máxima.
   /// - [sede]: Filtro por sede (no implementado aún — Issue #004 futuro).
-  Future<List<CuadreWebModelo>> obtenerTodos({
-    DateTime? desde,
-    DateTime? hasta,
     String? sede,
+    String? placa,
     int? limit,
     int? offset,
   }) async {
     try {
-      final cuadresRaw = await _consultarCuadresFiltrados(desde, hasta, limit, offset);
+      final cuadresRaw = await _consultarCuadresFiltrados(desde, hasta, placa, limit, offset);
       if (cuadresRaw.isEmpty) return [];
 
       final ids = cuadresRaw.map((c) => c['id'] as String).toList();
@@ -64,6 +62,7 @@ class FuenteDatosCuadresWeb {
   Future<List<Map<String, dynamic>>> _consultarCuadresFiltrados(
     DateTime? desde,
     DateTime? hasta,
+    String? placa,
     int? limit,
     int? offset,
   ) async {
@@ -73,6 +72,9 @@ class FuenteDatosCuadresWeb {
     }
     if (hasta != null) {
       query = query.lte('fecha_zarpe', hasta.toIso8601String());
+    }
+    if (placa != null && placa.trim().isNotEmpty) {
+      query = query.ilike('placa', '%${placa.trim()}%');
     }
     final result = await query.order('fecha_zarpe', ascending: false).range(offset ?? 0, (offset ?? 0) + (limit ?? 50) - 1);
     return List<Map<String, dynamic>>.from(result as List);

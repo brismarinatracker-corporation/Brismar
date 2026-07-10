@@ -113,33 +113,96 @@ class PantallaCuadres extends ConsumerWidget {
 
 // ─── Barra de Filtros ─────────────────────────────────────────────────────────
 
-class _BarraFiltros extends ConsumerWidget {
+class _BarraFiltros extends ConsumerStatefulWidget {
   const _BarraFiltros({required this.estado});
   final EstadoCuadresWeb estado;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_BarraFiltros> createState() => _BarraFiltrosState();
+}
+
+class _BarraFiltrosState extends ConsumerState<_BarraFiltros> {
+  final _busquedaCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _busquedaCtrl.text = widget.estado.filtroPlaca ?? '';
+  }
+
+  @override
+  void didUpdateWidget(covariant _BarraFiltros oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.estado.filtroPlaca != oldWidget.estado.filtroPlaca) {
+      _busquedaCtrl.text = widget.estado.filtroPlaca ?? '';
+    }
+  }
+
+  @override
+  void dispose() {
+    _busquedaCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final ctrl = ref.read(controladorCuadresWebProvider.notifier);
     return Wrap(
       spacing: 12,
       runSpacing: 12,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
+        SizedBox(
+          width: 220,
+          child: TextField(
+            controller: _busquedaCtrl,
+            decoration: InputDecoration(
+              hintText: 'Buscar cámara (placa)',
+              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+              prefixIcon: const Icon(Icons.search, size: 18, color: Colors.grey),
+              suffixIcon: widget.estado.filtroPlaca != null
+                  ? IconButton(
+                      icon: const Icon(Icons.close, size: 16),
+                      onPressed: () {
+                        _busquedaCtrl.clear();
+                        ctrl.aplicarFiltroPlaca(null);
+                      },
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFF0E3E2C)),
+              ),
+            ),
+            onSubmitted: (val) => ctrl.aplicarFiltroPlaca(val),
+          ),
+        ),
         _BotoFiltroFecha(
           label: 'Desde',
-          fecha: estado.filtroDesde,
+          fecha: widget.estado.filtroDesde,
           onSeleccionar: (d) => ctrl.aplicarFiltroDesde(d),
           onLimpiar: () => ctrl.aplicarFiltroDesde(null),
         ),
         _BotoFiltroFecha(
           label: 'Hasta',
-          fecha: estado.filtroHasta,
+          fecha: widget.estado.filtroHasta,
           onSeleccionar: (d) => ctrl.aplicarFiltroHasta(d),
           onLimpiar: () => ctrl.aplicarFiltroHasta(null),
         ),
-        if (estado.filtroDesde != null || estado.filtroHasta != null)
+        if (widget.estado.filtroDesde != null || widget.estado.filtroHasta != null || widget.estado.filtroPlaca != null)
           TextButton.icon(
             onPressed: () async {
+              _busquedaCtrl.clear();
+              await ctrl.aplicarFiltroPlaca(null);
               await ctrl.aplicarFiltroDesde(null);
               await ctrl.aplicarFiltroHasta(null);
             },
