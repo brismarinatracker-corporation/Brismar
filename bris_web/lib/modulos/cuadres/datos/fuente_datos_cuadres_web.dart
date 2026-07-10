@@ -25,6 +25,9 @@ class FuenteDatosCuadresWeb {
   /// - [desde]: Fecha de zarpe mínima.
   /// - [hasta]: Fecha de zarpe máxima.
   /// - [sede]: Filtro por sede (no implementado aún — Issue #004 futuro).
+  Future<List<CuadreWebModelo>> obtenerTodos({
+    DateTime? desde,
+    DateTime? hasta,
     String? sede,
     String? placa,
     int? limit,

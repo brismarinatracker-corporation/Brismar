@@ -8,6 +8,8 @@ import '../../modulos/transito/presentacion/pantallas/pantalla_edicion_transito.
 import '../../modulos/cuadres/presentacion/pantallas/pantalla_cuadres.dart';
 import '../../modulos/usuarios/presentacion/pantallas/pantalla_usuarios.dart';
 import '../../modulos/perfil/presentacion/pantallas/pantalla_perfil.dart';
+import '../../modulos/productos/presentacion/pantallas/pantalla_productos.dart';
+import '../../modulos/camaras/presentacion/pantallas/pantalla_camaras.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../modulos/autenticacion/presentacion/controladores/controlador_autenticacion.dart';
@@ -50,8 +52,8 @@ final proveedorEnrutador = Provider<GoRouter>((ref) {
         return const RutaLogin().location;
       }
 
-      // Si es supervisor y trata de acceder a usuarios, lo devolvemos al dashboard
-      if (rol == 'supervisor' && state.uri.path.startsWith('/usuarios')) {
+      // Si no es administrador y trata de acceder a rutas exclusivas, lo devolvemos al dashboard
+      if (rol != 'administrador' && (state.uri.path.startsWith('/usuarios') || state.uri.path.startsWith('/productos') || state.uri.path.startsWith('/camaras'))) {
         return const RutaDashboard().location;
       }
 
@@ -71,6 +73,8 @@ final proveedorEnrutador = Provider<GoRouter>((ref) {
     ),
     TypedGoRoute<RutaCuadres>(path: '/cuadres'),
     TypedGoRoute<RutaUsuarios>(path: '/usuarios'),
+    TypedGoRoute<RutaProductos>(path: '/productos'),
+    TypedGoRoute<RutaCamaras>(path: '/camaras'),
     TypedGoRoute<RutaPerfil>(path: '/perfil'),
   ],
 )
@@ -126,6 +130,24 @@ class RutaUsuarios extends GoRouteData with $RutaUsuarios {
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) {
     return const NoTransitionPage(child: PantallaUsuarios());
+  }
+}
+
+class RutaProductos extends GoRouteData with $RutaProductos {
+  const RutaProductos();
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return const NoTransitionPage(child: PantallaProductos());
+  }
+}
+
+class RutaCamaras extends GoRouteData with $RutaCamaras {
+  const RutaCamaras();
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return const NoTransitionPage(child: PantallaCamaras());
   }
 }
 
