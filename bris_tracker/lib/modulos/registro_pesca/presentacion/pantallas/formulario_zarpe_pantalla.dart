@@ -12,6 +12,8 @@ import '../controladores/controlador_cuadres.dart';
 import '../controladores/controlador_zarpes.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import 'package:bris_tracker/nucleo/componentes/carga_orbital.dart';
+import '../../datos/repositorios/zarpe_repositorio_imp.dart';
+import '../../datos/repositorios/camaras_repositorio_local.dart';
 
 class FormularioZarpePantalla extends ConsumerStatefulWidget {
   const FormularioZarpePantalla({super.key});
@@ -35,12 +37,14 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
   int _tipoProductoSeleccionado = 1; // 1: Pota, 2: Bonito, 3: Caballa, 4: Jurel, 5: Otros
   final List<XFile> _fotosEvidencia = [];
   bool _guardando = false;
+  List<String> _placasGuardadas = [];
 
   final _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
+    _cargarPlacas();
     if (!kIsWeb && Platform.isAndroid) {
       _recuperarDatosPerdidos();
     }
@@ -56,8 +60,15 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         });
       }
     } catch (e) {
-      debugPrint('Error al recuperar foto perdida: $e');
+      // Ignorar
     }
+  }
+
+  Future<void> _cargarPlacas() async {
+    final placas = await CamarasRepositorioLocal().obtenerPlacasActivas();
+    setState(() {
+      _placasGuardadas = placas;
+    });
   }
 
   @override
@@ -206,6 +217,8 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
     setState(() => _guardando = true);
 
     try {
+      await CamarasRepositorioLocal().guardarPlacaLocal(_placaCtrl.text);
+
       final idZarpe = const Uuid().v4();
       final pesoTotal = double.tryParse(_pesoTotalCtrl.text) ?? 0.0;
       final cajasLlenas = int.tryParse(_cajasLlenasCtrl.text) ?? 0;
@@ -476,21 +489,66 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                     const SizedBox(height: 16),
 
                     // Placa
-                    TextFormField(
-                      controller: _placaCtrl,
-                      style: const TextStyle(color: Colors.black87),
-                      textCapitalization: TextCapitalization.characters,
-                      inputFormatters: [
-                        _PlacaInputFormatter(),
-                      ],
-                      decoration: _construirInputDecoration(
-                        labelText: 'Placa (Ej: AAA-123)',
-                      ),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'La placa es requerida';
-                        final clean = v.replaceAll('-', '');
-                        if (clean.length != 6) return 'La placa debe tener exactamente 6 caracteres (Ej: AAA-123)';
-                        return null;
+                    RawAutocomplete<String>(
+                      textEditingController: _placaCtrl,
+                      focusNode: FocusNode(),
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        if (textEditingValue.text.isEmpty) {
+                          return _placasGuardadas;
+                        }
+                        return _placasGuardadas.where((String option) {
+                          return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                        });
+                      },
+                      fieldViewBuilder: (BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
+                        return TextFormField(
+                          controller: textEditingController,
+                          focusNode: focusNode,
+                          style: const TextStyle(color: Colors.black87),
+                          textCapitalization: TextCapitalization.characters,
+                          inputFormatters: [
+                            _PlacaInputFormatter(),
+                          ],
+                          decoration: _construirInputDecoration(
+                            labelText: 'Placa (Ej: AAA-123)',
+                          ),
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return 'La placa es requerida';
+                            final clean = v.replaceAll('-', '');
+                            if (clean.length != 6) return 'La placa debe tener exactamente 6 caracteres (Ej: AAA-123)';
+                            return null;
+                          },
+                        );
+                      },
+                      optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
+                        return Align(
+                          alignment: Alignment.topLeft,
+                          child: Material(
+                            elevation: 4.0,
+                            borderRadius: BorderRadius.circular(8),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxHeight: 200, maxWidth: 300),
+                              child: ListView.builder(
+                                padding: EdgeInsets.zero,
+                                shrinkWrap: true,
+                                itemCount: options.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  final String option = options.elementAt(index);
+                                  return InkWell(
+                                    onTap: () {
+                                      onSelected(option);
+                                    },
+                                    child: Container(
+                                      color: Colors.white,
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Text(option, style: const TextStyle(color: Colors.black87)),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        );
                       },
                     ),
                     const SizedBox(height: 16),

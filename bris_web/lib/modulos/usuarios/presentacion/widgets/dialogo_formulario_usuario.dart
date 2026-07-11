@@ -68,7 +68,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
     if (u != null) {
       _correoCtrl.text = u.correo;
       _nombreCtrl.text = u.nombre;
-      if (['empleado', 'administrador', 'bahia'].contains(u.rol)) {
+      if (['empleado', 'administrador', 'bahia', 'supervisor'].contains(u.rol)) {
         _rolSeleccionado = u.rol;
       }
       if (['paita', 'piura', 'lambayeque'].contains(u.sede)) {
@@ -610,7 +610,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0E3E2C), width: 2.0)),
             ),
-            items: ['empleado', 'administrador', 'bahia'].map((rol) {
+            items: ['empleado', 'administrador', 'bahia', 'supervisor'].map((rol) {
               return DropdownMenuItem(value: rol, child: Text(rol.toUpperCase()));
             }).toList(),
             onChanged: (v) => setState(() => _rolSeleccionado = v!),

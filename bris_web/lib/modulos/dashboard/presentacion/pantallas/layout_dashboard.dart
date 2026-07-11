@@ -19,6 +19,7 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
   Widget build(BuildContext context) {
     final authState = ref.watch(proveedorAutenticacion);
     final esAdmin = authState.rol == 'administrador';
+    final esSupervisor = authState.rol == 'supervisor';
     final nombre = authState.nombreReal ?? 'Usuario';
     final rolTexto = (authState.rol ?? '').toUpperCase();
     final anchoPantalla = MediaQuery.of(context).size.width;
@@ -27,7 +28,7 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
     final anchoSidebar = esExtendido ? 260.0 : 80.0;
 
     return Scaffold(
-      bottomNavigationBar: esMovil ? _construirBottomNavigationBar(esAdmin) : null,
+      bottomNavigationBar: esMovil ? _construirBottomNavigationBar(esAdmin, esSupervisor) : null,
       body: Row(
         children: [
           if (!esMovil)
@@ -91,72 +92,71 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                             const RutaDashboard().go(context);
                           },
                         ),
-                        if (!esAdmin)
-                          _itemMenu(
-                            index: 1,
-                            icono: Icons.local_shipping_outlined,
-                            iconoSeleccionado: Icons.local_shipping_rounded,
-                            etiqueta: 'Tránsito',
-                            esExtendido: esExtendido,
-                            onTap: () {
-                              setState(() => _indiceSeleccionado = 1);
-                              const RutaTransito().go(context);
-                            },
-                          ),
                         _itemMenu(
-                          index: esAdmin ? 1 : 2,
+                          index: 1,
+                          icono: Icons.local_shipping_outlined,
+                          iconoSeleccionado: Icons.local_shipping_rounded,
+                          etiqueta: 'Tránsito',
+                          esExtendido: esExtendido,
+                          onTap: () {
+                            setState(() => _indiceSeleccionado = 1);
+                            const RutaTransito().go(context);
+                          },
+                        ),
+                        _itemMenu(
+                          index: 2,
                           icono: Icons.table_view_outlined,
                           iconoSeleccionado: Icons.table_view_rounded,
                           etiqueta: 'Cuadres',
                           esExtendido: esExtendido,
                           onTap: () {
-                            setState(() => _indiceSeleccionado = esAdmin ? 1 : 2);
+                            setState(() => _indiceSeleccionado = 2);
                             const RutaCuadres().go(context);
                           },
                         ),
                         if (esAdmin) ...[
                           _itemMenu(
-                            index: 2,
+                            index: 3,
                             icono: Icons.people_alt_outlined,
                             iconoSeleccionado: Icons.people_alt_rounded,
                             etiqueta: 'Usuarios',
                             esExtendido: esExtendido,
                             onTap: () {
-                              setState(() => _indiceSeleccionado = 2);
+                              setState(() => _indiceSeleccionado = 3);
                               const RutaUsuarios().go(context);
                             },
                           ),
                           _itemMenu(
-                            index: 3,
+                            index: 4,
                             icono: Icons.inventory_2_outlined,
                             iconoSeleccionado: Icons.inventory_2_rounded,
                             etiqueta: 'Productos',
                             esExtendido: esExtendido,
                             onTap: () {
-                              setState(() => _indiceSeleccionado = 3);
+                              setState(() => _indiceSeleccionado = 4);
                               const RutaProductos().go(context);
                             },
                           ),
                           _itemMenu(
-                            index: 4,
+                            index: 5,
                             icono: Icons.directions_car_filled_outlined,
                             iconoSeleccionado: Icons.directions_car_filled_rounded,
                             etiqueta: 'Cámaras',
                             esExtendido: esExtendido,
                             onTap: () {
-                              setState(() => _indiceSeleccionado = 4);
+                              setState(() => _indiceSeleccionado = 5);
                               const RutaCamaras().go(context);
                             },
                           ),
                         ],
                         _itemMenu(
-                          index: esAdmin ? 5 : 3,
+                          index: esAdmin ? 6 : 3,
                           icono: Icons.person_outline,
                           iconoSeleccionado: Icons.person_rounded,
                           etiqueta: 'Perfil',
                           esExtendido: esExtendido,
                           onTap: () {
-                            setState(() => _indiceSeleccionado = esAdmin ? 5 : 3);
+                            setState(() => _indiceSeleccionado = esAdmin ? 6 : 3);
                             const RutaPerfil().go(context);
                           },
                         ),
@@ -173,7 +173,7 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                         if (esExtendido)
                           InkWell(
                             onTap: () {
-                              setState(() => _indiceSeleccionado = esAdmin ? 5 : 3);
+                              setState(() => _indiceSeleccionado = esAdmin ? 6 : 3);
                               const RutaPerfil().go(context);
                             },
                             borderRadius: BorderRadius.circular(16),
@@ -270,7 +270,7 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
     );
   }
 
-  Widget _construirBottomNavigationBar(bool esAdmin) {
+  Widget _construirBottomNavigationBar(bool esAdmin, bool esSupervisor) {
     return Theme(
       data: Theme.of(context).copyWith(
         splashColor: Colors.transparent,
@@ -281,15 +281,15 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
         onTap: (index) {
           setState(() => _indiceSeleccionado = index);
           if (index == 0) const RutaDashboard().go(context);
+          if (index == 1) const RutaTransito().go(context);
+          if (index == 2) const RutaCuadres().go(context);
+          
           if (esAdmin) {
-            if (index == 1) const RutaCuadres().go(context);
-            if (index == 2) const RutaUsuarios().go(context);
-            if (index == 3) const RutaProductos().go(context);
-            if (index == 4) const RutaCamaras().go(context);
-            if (index == 5) const RutaPerfil().go(context);
+            if (index == 3) const RutaUsuarios().go(context);
+            if (index == 4) const RutaProductos().go(context);
+            if (index == 5) const RutaCamaras().go(context);
+            if (index == 6) const RutaPerfil().go(context);
           } else {
-            if (index == 1) const RutaTransito().go(context);
-            if (index == 2) const RutaCuadres().go(context);
             if (index == 3) const RutaPerfil().go(context);
           }
         },
@@ -301,8 +301,7 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
         unselectedLabelStyle: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 10),
         items: [
           const BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard_rounded), label: 'Resumen'),
-          if (!esAdmin)
-            const BottomNavigationBarItem(icon: Icon(Icons.local_shipping_outlined), activeIcon: Icon(Icons.local_shipping_rounded), label: 'Tránsito'),
+          const BottomNavigationBarItem(icon: Icon(Icons.local_shipping_outlined), activeIcon: Icon(Icons.local_shipping_rounded), label: 'Tránsito'),
           const BottomNavigationBarItem(icon: Icon(Icons.table_view_outlined), activeIcon: Icon(Icons.table_view_rounded), label: 'Cuadres'),
           if (esAdmin) ...[
             const BottomNavigationBarItem(icon: Icon(Icons.people_alt_outlined), activeIcon: Icon(Icons.people_alt_rounded), label: 'Usuarios'),

@@ -5,6 +5,7 @@ import '../../dominio/entidades/cuadre_entidad.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../controladores/controlador_zarpes.dart';
+import '../../datos/repositorios/camaras_repositorio_local.dart';
 import 'package:bris_tracker/nucleo/componentes/carga_orbital.dart';
 
 class DashboardCuadresPantalla extends ConsumerStatefulWidget {
@@ -36,9 +37,11 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
     if (index == 2) {
       // Sincronizar
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sincronizando cuadres...')),
+        const SnackBar(content: Text('Sincronizando datos...')),
       );
       ref.read(cuadresProvider.notifier).cargarHistorial();
+      ref.read(proveedorZarpes.notifier).sincronizarZarpesPendientes();
+      CamarasRepositorioLocal().sincronizarCamaras();
     } else {
       setState(() {
         _pestanaSeleccionada = index;
@@ -169,13 +172,14 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
         ],
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-          onPressed: () {
-            ref.read(cuadresProvider.notifier).cargarHistorial();
-            ref.read(proveedorZarpes.notifier).sincronizarZarpesPendientes();
-          },
-        ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+            onPressed: () {
+              ref.read(cuadresProvider.notifier).cargarHistorial();
+              ref.read(proveedorZarpes.notifier).sincronizarZarpesPendientes();
+              CamarasRepositorioLocal().sincronizarCamaras();
+            },
+          ),
       ],
     );
   }

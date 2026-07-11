@@ -104,6 +104,18 @@ class ControladorUsuarios extends Notifier<EstadoUsuarios> {
     }
   }
 
+  Future<bool> eliminarUsuario(String uid) async {
+    state = state.copiarCon(cargando: true, limpiarError: true);
+    try {
+      await _repositorio.eliminarUsuario(uid);
+      await cargarUsuarios();
+      return true;
+    } on Exception catch (e) {
+      state = state.copiarCon(cargando: false, error: e.toString());
+      return false;
+    }
+  }
+
   Future<String?> subirAvatar(dynamic bytes, String extension) async {
     state = state.copiarCon(cargando: true, limpiarError: true);
     try {

@@ -23,7 +23,7 @@ class GestorBaseDatos {
 
     return await openDatabase(
       path,
-      version: 9,
+      version: 10,
       password: 'BRISMAR_SECURE_KEY_2026',
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
@@ -37,6 +37,7 @@ class GestorBaseDatos {
     await _createTablaGastos(db);
     await _createTablaVentas(db);
     await _createTablaZarpes(db);
+    await _createTablaCamaras(db);
   }
 
   /// Crea la tabla 'cuadres' en SQLite local.
@@ -131,6 +132,17 @@ class GestorBaseDatos {
     ''');
   }
 
+  /// Crea la tabla 'camaras' en SQLite local (para autocompletado de placas).
+  Future<void> _createTablaCamaras(Database db) async {
+    await db.execute('''
+      CREATE TABLE camaras (
+        id TEXT PRIMARY KEY,
+        placa TEXT NOT NULL UNIQUE,
+        sincronizado INTEGER DEFAULT 1
+      )
+    ''');
+  }
+
   /// Migraciones de la base de datos local.
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 4) {
@@ -150,6 +162,9 @@ class GestorBaseDatos {
     }
     if (oldVersion < 9) {
       await _upgradeA9(db);
+    }
+    if (oldVersion < 10) {
+      await _createTablaCamaras(db);
     }
   }
 

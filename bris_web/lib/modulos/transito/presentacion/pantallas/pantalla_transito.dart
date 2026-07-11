@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../controladores/controlador_transito.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../compartido/widgets/shimmer_carga.dart';
+import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 
 // Esta pantalla es FRONTEND PURO. Solo dibuja. No sabe de Supabase.
 // El filtro y los datos vienen del ControladorTransito (capa de lógica).
@@ -25,6 +26,8 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
     // Escucha el estado del controlador y del filtro
     final estadoZarpes = ref.watch(proveedorTransito);
     final filtro = ref.watch(proveedorFiltroTransito);
+    final authState = ref.watch(proveedorAutenticacion);
+    final esSoloLectura = authState.rol == 'administrador' || authState.rol == 'supervisor';
     final esMovil = MediaQuery.of(context).size.width < 800;
 
     return Container(
@@ -314,7 +317,7 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                                               border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
                                               color: Color(0xFFF8FAFC)
                                             ),
-                                            child: _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, onMarcarRecibido: (zId, emb, peso) => _mostrarDialogoRecepcion(context, ref, zId, emb, peso)),
+                                            child: _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, esSoloLectura: esSoloLectura, onMarcarRecibido: (zId, emb, peso) => _mostrarDialogoRecepcion(context, ref, zId, emb, peso)),
                                           ),
                                         ],
                                       ),
@@ -678,16 +681,17 @@ class _BotonActualizarTransito extends StatelessWidget {
 class _BotonesAccionTransito extends StatelessWidget {
   final dynamic z;
   final bool estaRecibido;
+  final bool esSoloLectura;
   final Function(String, String, double) onMarcarRecibido;
 
-  const _BotonesAccionTransito({required this.z, required this.estaRecibido, required this.onMarcarRecibido});
+  const _BotonesAccionTransito({required this.z, required this.estaRecibido, required this.onMarcarRecibido, this.esSoloLectura = false});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Expanded(child: _botonVerEditar(context)),
-        if (!estaRecibido) ...[
+        if (!estaRecibido && !esSoloLectura) ...[
           const SizedBox(width: 8),
           Expanded(child: _botonRecibir(context)),
         ]
@@ -698,8 +702,8 @@ class _BotonesAccionTransito extends StatelessWidget {
   Widget _botonVerEditar(BuildContext context) {
     return OutlinedButton.icon(
       onPressed: () => context.go('/transito/editar/${z.id}'),
-      icon: const Icon(Icons.edit_outlined, size: 16),
-      label: const Text('Ver / editar'),
+      icon: Icon(esSoloLectura ? Icons.visibility_outlined : Icons.edit_outlined, size: 16),
+      label: Text(esSoloLectura ? 'Ver detalles' : 'Ver / editar'),
       style: OutlinedButton.styleFrom(
         foregroundColor: const Color(0xFF374151),
         side: const BorderSide(color: Color(0xFFD1D5DB)),
