@@ -656,12 +656,28 @@ class _PanelDetalle extends ConsumerWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Text('Resumen', style: TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold)),
       const Divider(color: Color(0xFFE2E8F0)),
-      _itemInfo('Fecha Zarpe', cuadre.fechaZarpe ?? '-'),
-      _itemInfo('Planta Destino', cuadre.plantaDestino ?? '-'),
+      _itemInfo('Chofer', cuadre.chofer ?? '-'),
+      _itemInfo('Número de Chofer', cuadre.numeroChofer ?? '-'),
+      _itemInfo('Fecha Zarpe', cuadre.fechaZarpe != null ? DateFormat('dd/MM/yyyy').format(DateTime.tryParse(cuadre.fechaZarpe!)!) : '-'),
+      _itemInfo('Muelle de Partida', cuadre.plantaDestino ?? '-'),
       _itemInfo('Peso Total', cuadre.pesoTotal != null ? '${cuadre.pesoTotal} kg' : '-'),
-      _itemInfo('Cajas Llenas / Vacías',
-          '${cuadre.cajasLlenas ?? 0} / ${cuadre.cajasVacias ?? 0}'),
+      _itemInfo('Cajas (Llenas/Vacías)', '${cuadre.cajasLlenas ?? 0} / ${cuadre.cajasVacias ?? 0}'),
+      _itemInfo('Tipo Producto', _nombreTipoProducto(cuadre.tipoProducto)),
+      _itemInfo('Pesador de Muelle', cuadre.pesador ?? '-'),
+      _itemInfo('Tipo', cuadre.tipo ?? '-'),
+      _itemInfo('Cuadrilla', cuadre.cuadrilla ?? '-'),
     ]);
+  }
+
+  String _nombreTipoProducto(int? tipo) {
+    switch(tipo) {
+      case 1: return 'Pota';
+      case 2: return 'Bonito';
+      case 3: return 'Caballa';
+      case 4: return 'Jurel';
+      case 5: return 'Otros';
+      default: return 'No definido';
+    }
   }
 
   Widget _itemInfo(String label, String valor) {

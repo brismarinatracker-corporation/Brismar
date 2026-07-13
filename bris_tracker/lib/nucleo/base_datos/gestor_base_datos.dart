@@ -23,7 +23,7 @@ class GestorBaseDatos {
 
     return await openDatabase(
       path,
-      version: 10,
+      version: 11,
       password: 'BRISMAR_SECURE_KEY_2026',
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
@@ -127,7 +127,8 @@ class GestorBaseDatos {
         foto_local_path TEXT,
         fecha_zarpe TEXT NOT NULL,
         estado TEXT DEFAULT 'DESPACHADO_PIURA',
-        sincronizado INTEGER DEFAULT 0
+        sincronizado INTEGER DEFAULT 0,
+        numero_chofer TEXT NOT NULL DEFAULT '-'
       )
     ''');
   }
@@ -165,6 +166,9 @@ class GestorBaseDatos {
     }
     if (oldVersion < 10) {
       await _createTablaCamaras(db);
+    }
+    if (oldVersion < 11) {
+      await _upgradeA11(db);
     }
   }
 
@@ -209,6 +213,11 @@ class GestorBaseDatos {
   Future<void> _upgradeA9(Database db) async {
     await db.execute('ALTER TABLE cuadres ADD COLUMN tipo TEXT');
     await db.execute('ALTER TABLE cuadres ADD COLUMN cuadrilla TEXT');
+  }
+
+  /// Migración: Agregar columna numero_chofer en zarpes.
+  Future<void> _upgradeA11(Database db) async {
+    await db.execute("ALTER TABLE zarpes ADD COLUMN numero_chofer TEXT NOT NULL DEFAULT '-'");
   }
 
   /// Cierra la base de datos cuando ya no se requiere.

@@ -17,6 +17,7 @@ class ZarpeModelo {
   final String id;
   final String placaCamara;
   final String chofer;
+  final String numeroChofer;
   final String muellePartida;
   final String? muelleDestino;
   final EstadoZarpe estado;
@@ -36,6 +37,7 @@ class ZarpeModelo {
     required this.id,
     required this.placaCamara,
     required this.chofer,
+    required this.numeroChofer,
     required this.muellePartida,
     this.muelleDestino,
     this.estado = EstadoZarpe.pendiente,
@@ -59,6 +61,7 @@ class ZarpeModelo {
       id: json['id'] as String? ?? '',
       placaCamara: json['placa_camara'] as String? ?? '',
       chofer: json['chofer'] as String? ?? '',
+      numeroChofer: json['numero_chofer'] as String? ?? '-',
       muellePartida: json['muelle_partida'] as String? ?? '',
       muelleDestino: json['muelle_destino'] as String?,
       estado: EstadoZarpe.desdeDb((json['estado_transito'] ?? json['estado']) as String?),
@@ -81,6 +84,7 @@ class ZarpeModelo {
       'id': id,
       'placa_camara': placaCamara,
       'chofer': chofer,
+      'numero_chofer': numeroChofer,
       'muelle_partida': muellePartida,
       if (muelleDestino != null) 'muelle_destino': muelleDestino,
       'estado': estado.valorDb,
@@ -113,6 +117,7 @@ class ZarpeModelo {
   ZarpeModelo copiarCon({
     String? placaCamara,
     String? chofer,
+    String? numeroChofer,
     String? muellePartida,
     EstadoZarpe? estado,
   }) {
@@ -120,6 +125,7 @@ class ZarpeModelo {
       id: id,
       placaCamara: placaCamara ?? this.placaCamara,
       chofer: chofer ?? this.chofer,
+      numeroChofer: numeroChofer ?? this.numeroChofer,
       muellePartida: muellePartida ?? this.muellePartida,
       muelleDestino: muelleDestino,
       estado: estado ?? this.estado,

@@ -46,6 +46,7 @@ class ZarpeRepositorioImp implements ZarpeRepositorio {
       id: m.id,
       placaCamara: m.placaCamara,
       chofer: m.chofer,
+      numeroChofer: m.numeroChofer,
       muellePartida: m.muellePartida,
       fotoUrlEvidencia: m.fotoUrlEvidencia,
       fotoLocalPath: m.fotoLocalPath,

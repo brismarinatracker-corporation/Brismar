@@ -26,6 +26,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
   final _formKey = GlobalKey<FormState>();
   final _placaCtrl = TextEditingController();
   final _choferCtrl = TextEditingController();
+  final _numeroChoferCtrl = TextEditingController();
   final _pesoTotalCtrl = TextEditingController();
   final _cajasLlenasCtrl = TextEditingController();
   final _cajasVaciasCtrl = TextEditingController();
@@ -75,6 +76,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
   void dispose() {
     _placaCtrl.dispose();
     _choferCtrl.dispose();
+    _numeroChoferCtrl.dispose();
     _pesoTotalCtrl.dispose();
     _cajasLlenasCtrl.dispose();
     _cajasVaciasCtrl.dispose();
@@ -238,9 +240,9 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         cajasVacias: cajasVacias,
         tipoProducto: _tipoProductoSeleccionado,
         muellePartida: _muellePartidaCtrl.text.trim().isEmpty ? null : _muellePartidaCtrl.text.trim().toUpperCase(),
-        pesador: _pesadorCtrl.text.trim().toUpperCase().isEmpty ? null : _pesadorCtrl.text.trim().toUpperCase(),
-        tipo: _tipoCtrl.text.trim().toUpperCase().isEmpty ? null : _tipoCtrl.text.trim().toUpperCase(),
-        cuadrilla: _cuadrillaCtrl.text.trim().toUpperCase().isEmpty ? null : _cuadrillaCtrl.text.trim().toUpperCase(),
+        pesador: _pesadorCtrl.text.trim().toUpperCase(),
+        tipo: _tipoCtrl.text.trim().toUpperCase(),
+        cuadrilla: _cuadrillaCtrl.text.trim().toUpperCase(),
         sincronizado: false,
         compras: const [],
         gastos: const [],
@@ -255,6 +257,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         id: idZarpe,
         placaCamara: _placaCtrl.text.toUpperCase(),
         chofer: _choferCtrl.text.trim().toUpperCase(),
+        numeroChofer: _numeroChoferCtrl.text.trim(),
         muellePartida: _muellePartidaCtrl.text.trim().toUpperCase(),
         fotoUrlEvidencia: _fotosEvidencia.map((f) => f.path).join(','),
         fotoLocalPath: _fotosEvidencia.map((f) => f.path).join(','),
@@ -571,6 +574,26 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                     ),
                     const SizedBox(height: 16),
 
+                    // Número de Chofer
+                    TextFormField(
+                      controller: _numeroChoferCtrl,
+                      style: const TextStyle(color: Colors.black87),
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(9),
+                      ],
+                      decoration: _construirInputDecoration(
+                        labelText: 'Número del chofer',
+                      ),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'El número del chofer es requerido';
+                        if (v.trim().length != 9) return 'El número debe tener exactamente 9 dígitos';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
                     // Peso Total
                     TextFormField(
                       controller: _pesoTotalCtrl,
@@ -699,6 +722,10 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                       decoration: _construirInputDecoration(
                         labelText: 'Tipo',
                       ),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'El tipo es requerido';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
 
@@ -713,6 +740,10 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                       decoration: _construirInputDecoration(
                         labelText: 'Cuadrilla',
                       ),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'La cuadrilla es requerida';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 32),
 

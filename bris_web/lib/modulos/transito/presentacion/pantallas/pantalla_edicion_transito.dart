@@ -34,6 +34,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   // Controladores Zarpe
   final _placaCtrl = TextEditingController();
   final _choferCtrl = TextEditingController();
+  final _numeroChoferCtrl = TextEditingController();
   final _muelleCtrl = TextEditingController();
   final _observacionesCtrl = TextEditingController();
 
@@ -60,6 +61,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   void dispose() {
     _placaCtrl.dispose();
     _choferCtrl.dispose();
+    _numeroChoferCtrl.dispose();
     _muelleCtrl.dispose();
     _observacionesCtrl.dispose();
     _pesoTotalCtrl.dispose();
@@ -94,6 +96,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         _zarpeInfo = zarpe;
         _placaCtrl.text = zarpe.placaCamara;
         _choferCtrl.text = zarpe.chofer;
+        _numeroChoferCtrl.text = zarpe.numeroChofer;
         _muelleCtrl.text = zarpe.muellePartida;
         _observacionesCtrl.text = zarpe.observaciones ?? '';
         
@@ -361,6 +364,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         urlsFotos: urlsFotos,
         placaCtrl: _placaCtrl,
         choferCtrl: _choferCtrl,
+        numeroChoferCtrl: _numeroChoferCtrl,
         muelleCtrl: _muelleCtrl,
         pesoTotalCtrl: _pesoTotalCtrl,
         cajasLlenasCtrl: _cajasLlenasCtrl,
@@ -428,6 +432,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
           urlsFotos: urlsFotos,
           placaCtrl: _placaCtrl,
           choferCtrl: _choferCtrl,
+          numeroChoferCtrl: _numeroChoferCtrl,
           muelleCtrl: _muelleCtrl,
           pesoTotalCtrl: _pesoTotalCtrl,
           cajasLlenasCtrl: _cajasLlenasCtrl,

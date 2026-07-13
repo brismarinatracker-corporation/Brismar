@@ -6,6 +6,7 @@ class SeccionDatosZarpe extends StatefulWidget {
   final List<String> urlsFotos;
   final TextEditingController placaCtrl;
   final TextEditingController choferCtrl;
+  final TextEditingController numeroChoferCtrl;
   final TextEditingController muelleCtrl;
   final TextEditingController pesoTotalCtrl;
   final TextEditingController cajasLlenasCtrl;
@@ -22,6 +23,7 @@ class SeccionDatosZarpe extends StatefulWidget {
     required this.urlsFotos,
     required this.placaCtrl,
     required this.choferCtrl,
+    required this.numeroChoferCtrl,
     required this.muelleCtrl,
     required this.pesoTotalCtrl,
     required this.cajasLlenasCtrl,
@@ -195,12 +197,25 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
             validator: (v) => v!.isEmpty ? 'Requerido' : null,
           ),
           const SizedBox(height: 16),
-          TextFormField(
-            controller: widget.choferCtrl,
-            style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
-            readOnly: true,
-            decoration: _decoracion('Chofer', icono: Icons.person_outline, esSoloLectura: true),
-            validator: (v) => v!.isEmpty ? 'Requerido' : null,
+          filaResponsiva(
+            TextFormField(
+              controller: widget.choferCtrl,
+              style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+              readOnly: true,
+              decoration: _decoracion('Chofer', icono: Icons.person_outline, esSoloLectura: true),
+              validator: (v) => v!.isEmpty ? 'Requerido' : null,
+            ),
+            TextFormField(
+              controller: widget.numeroChoferCtrl,
+              style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+              readOnly: true,
+              decoration: _decoracion('Número Chofer', icono: Icons.phone_outlined, esSoloLectura: true),
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return 'Requerido';
+                if (v.trim().length != 9) return 'Debe tener exactamente 9 dígitos';
+                return null;
+              },
+            ),
           ),
           const SizedBox(height: 16),
           TextFormField(
@@ -215,21 +230,19 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
             controller: widget.pesadorCtrl,
             style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
             readOnly: true,
-            decoration: _decoracion('Pesador (Opcional)', icono: Icons.monitor_weight_outlined, esSoloLectura: true),
+            decoration: _decoracion('Pesador', icono: Icons.monitor_weight_outlined, esSoloLectura: true),
           ),
           const SizedBox(height: 16),
           filaResponsiva(
             TextFormField(
               controller: widget.tipoCtrl,
               style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
-              readOnly: true,
-              decoration: _decoracion('Tipo (Opcional)', icono: Icons.category_outlined, esSoloLectura: true),
+              decoration: _decoracion('Tipo', icono: Icons.category_outlined),
             ),
             TextFormField(
               controller: widget.cuadrillaCtrl,
               style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
-              readOnly: true,
-              decoration: _decoracion('Cuadrilla (Opcional)', icono: Icons.group_outlined, esSoloLectura: true),
+              decoration: _decoracion('Cuadrilla', icono: Icons.group_outlined),
             ),
           ),
           const SizedBox(height: 16),

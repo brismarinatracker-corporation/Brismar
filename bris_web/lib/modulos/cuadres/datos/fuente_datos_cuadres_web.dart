@@ -91,19 +91,33 @@ class FuenteDatosCuadresWeb {
       _cliente.from('compras').select().inFilter('cuadre_id', ids),
       _cliente.from('gastos').select().inFilter('cuadre_id', ids),
       _cliente.from('ventas').select().inFilter('cuadre_id', ids),
+      _cliente.from('zarpes').select('id, chofer, numero_chofer').inFilter('id', ids),
     ]);
 
     // Inicializar el mapa de relaciones vacías para cada ID
     final mapa = <String, Map<String, List<Map<String, dynamic>>>>{
       for (final id in ids)
-        id: {'compras': [], 'gastos': [], 'ventas': []},
+        id: {'compras': [], 'gastos': [], 'ventas': [], 'zarpes': []},
     };
 
     _agruparPorCuadreId(results[0] as List, mapa, 'compras');
     _agruparPorCuadreId(results[1] as List, mapa, 'gastos');
     _agruparPorCuadreId(results[2] as List, mapa, 'ventas');
+    _agruparZarpesPorId(results[3] as List, mapa);
 
     return mapa;
+  }
+
+  void _agruparZarpesPorId(
+    List<dynamic> datos,
+    Map<String, Map<String, List<Map<String, dynamic>>>> mapa,
+  ) {
+    for (final item in datos) {
+      final id = item['id'] as String?;
+      if (id != null && mapa.containsKey(id)) {
+        mapa[id]!['zarpes']!.add(Map<String, dynamic>.from(item as Map));
+      }
+    }
   }
 
   /// Agrupa filas de Supabase por su `cuadre_id` dentro del [mapa].
@@ -126,8 +140,16 @@ class FuenteDatosCuadresWeb {
     Map<String, Map<String, List<Map<String, dynamic>>>> relaciones,
   ) {
     return cuadresRaw.map((json) {
+      final idStr = json['id'] as String;
+      final rel = relaciones[idStr];
+      final zarpeInfo = (rel?['zarpes']?.isNotEmpty == true) ? rel!['zarpes']!.first : null;
+      
+      if (zarpeInfo != null) {
+        json['chofer'] = zarpeInfo['chofer'];
+        json['numero_chofer'] = zarpeInfo['numero_chofer'];
+      }
+      
       final cuadre = CuadreWebModelo.desdeJson(json);
-      final rel = relaciones[cuadre.id];
       return cuadre.conRelaciones(
         compras: (rel?['compras'] ?? []).map(CompraWebModelo.desdeJson).toList(),
         gastos: (rel?['gastos'] ?? []).map(GastoWebModelo.desdeJson).toList(),

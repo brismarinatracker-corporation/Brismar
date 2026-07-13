@@ -9,6 +9,9 @@ class ZarpeEntidad {
   /// Nombre completo del chofer de la cámara.
   final String chofer;
 
+  /// Número de contacto o identificación del chofer.
+  final String numeroChofer;
+
   /// Nombre del muelle de partida.
   final String muellePartida;
 
@@ -29,6 +32,7 @@ class ZarpeEntidad {
     required this.id,
     required this.placaCamara,
     required this.chofer,
+    required this.numeroChofer,
     required this.muellePartida,
     required this.fotoUrlEvidencia,
     this.fotoLocalPath,
@@ -41,6 +45,7 @@ class ZarpeEntidad {
     String? id,
     String? placaCamara,
     String? chofer,
+    String? numeroChofer,
     String? muellePartida,
     String? fotoUrlEvidencia,
     String? fotoLocalPath,
@@ -51,6 +56,7 @@ class ZarpeEntidad {
       id: id ?? this.id,
       placaCamara: placaCamara ?? this.placaCamara,
       chofer: chofer ?? this.chofer,
+      numeroChofer: numeroChofer ?? this.numeroChofer,
       muellePartida: muellePartida ?? this.muellePartida,
       fotoUrlEvidencia: fotoUrlEvidencia ?? this.fotoUrlEvidencia,
       fotoLocalPath: fotoLocalPath ?? this.fotoLocalPath,
