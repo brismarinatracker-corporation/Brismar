@@ -317,7 +317,7 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                                               border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
                                               color: Color(0xFFF8FAFC)
                                             ),
-                                            child: _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, esSoloLectura: esSoloLectura, onMarcarRecibido: (zId, emb, peso) => _mostrarDialogoRecepcion(context, ref, zId, emb, peso)),
+                                            child: _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, esSoloLectura: esSoloLectura),
                                           ),
                                         ],
                                       ),
@@ -376,286 +376,7 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
    );
   }
 
-  void _mostrarDialogoRecepcion(BuildContext context, WidgetRef ref, String id, String embarcaciones, double pesoInicial) {
-    String plantaSeleccionada = 'DEXIM';
-    String especieSeleccionada = 'POTA';
-    final kilosCtrl = TextEditingController(text: pesoInicial > 0 ? pesoInicial.toString() : '');
-    final precioCtrl = TextEditingController();
-    final otraPlantaCtrl = TextEditingController();
-    bool guardando = false;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => StatefulBuilder(
-        builder: (contextDialog, setStateDialog) => AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-          actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-          title: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Registrar Recepción en Planta',
-                style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF15181A), fontSize: 22),
-              ),
-              SizedBox(height: 4),
-              Text(
-                'Completa los datos de venta finales de esta cámara.',
-                style: TextStyle(color: Color(0xFF9E9E9E), fontSize: 13),
-              ),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _construirEtiquetaDialogo('Planta de Destino (Procesadora)'),
-                DropdownButtonFormField<String>(
-                  initialValue: plantaSeleccionada,
-                  dropdownColor: Colors.white,
-                  iconEnabledColor: const Color(0xFF64748B),
-                  style: const TextStyle(color: Color(0xFF15181A), fontSize: 14),
-                  decoration: _decoracionDialogo('Selecciona planta'),
-                  items: ['DEXIM', 'SEAFROST', 'ALTAMAR', 'PERUPEZ', 'TRANSMARINA', 'OTROS'].map((String value) => DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value, style: const TextStyle(color: Color(0xFF15181A), fontSize: 14)),
-                      )).toList(),
-                  selectedItemBuilder: (BuildContext context) {
-                    return ['DEXIM', 'SEAFROST', 'ALTAMAR', 'PERUPEZ', 'TRANSMARINA', 'OTROS'].map<Widget>((String value) {
-                      return Text(value, style: const TextStyle(color: Color(0xFF15181A), fontSize: 14));
-                    }).toList();
-                  },
-                  onChanged: (val) {
-                    if (val != null) setStateDialog(() => plantaSeleccionada = val);
-                  },
-                ),
-                if (plantaSeleccionada == 'OTROS') ...[
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: otraPlantaCtrl,
-                    style: const TextStyle(color: Color(0xFF15181A), fontSize: 14),
-                    textCapitalization: TextCapitalization.characters,
-                    inputFormatters: [UpperCaseTextFormatter()],
-                    decoration: _decoracionDialogo('Nombre de la planta procesadora'),
-                  ),
-                ],
-                _construirEtiquetaDialogo('Especie comercializada'),
-                DropdownButtonFormField<String>(
-                  initialValue: especieSeleccionada,
-                  dropdownColor: Colors.white,
-                  iconEnabledColor: const Color(0xFF64748B),
-                  style: const TextStyle(color: Color(0xFF15181A), fontSize: 14),
-                  decoration: _decoracionDialogo('Selecciona especie'),
-                  items: ["POTA", "JUREL", "BONITO", "CABALLA", "PERICO"].map((String value) => DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value, style: const TextStyle(color: Color(0xFF15181A), fontSize: 14)),
-                      )).toList(),
-                  selectedItemBuilder: (BuildContext context) {
-                    return ["POTA", "JUREL", "BONITO", "CABALLA", "PERICO"].map<Widget>((String value) {
-                      return Text(value, style: const TextStyle(color: Color(0xFF15181A), fontSize: 14));
-                    }).toList();
-                  },
-                  onChanged: (val) {
-                    if (val != null) setStateDialog(() => especieSeleccionada = val);
-                  },
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _construirEtiquetaDialogo('Kilos Finales'),
-                          TextField(
-                            controller: kilosCtrl,
-                            style: const TextStyle(color: Color(0xFF15181A), fontSize: 14),
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
-                            decoration: _decoracionDialogo('0'),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _construirEtiquetaDialogo('Precio Venta (x Kg)'),
-                          TextField(
-                            controller: precioCtrl,
-                            style: const TextStyle(color: Color(0xFF15181A), fontSize: 14),
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
-                            decoration: _decoracionDialogo('S/ 0.00'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: guardando ? null : () => Navigator.pop(ctx),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFF64748B)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const FittedBox(child: Text('Cancelar', style: TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold))),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: guardando ? null : () async {
-                      final kilos = double.tryParse(kilosCtrl.text) ?? 0.0;
-                      final precio = double.tryParse(precioCtrl.text) ?? 0.0;
-                      final planta = plantaSeleccionada == 'OTROS' ? otraPlantaCtrl.text.trim().toUpperCase() : plantaSeleccionada;
-                      
-                      if (planta.isEmpty || kilos <= 0) {
-                        showDialog(
-                          context: ctx,
-                          builder: (c) => AlertDialog(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            title: const Row(
-                              children: [
-                                Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
-                                SizedBox(width: 12),
-                                Text('Datos incompletos', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                            content: const Text('Por favor, selecciona una planta destino e ingresa una cantidad de kilos mayor a 0.'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(c),
-                                child: const Text('Entendido', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
-                              ),
-                            ],
-                          ),
-                        );
-                        return;
-                      }
-  
-                      setStateDialog(() => guardando = true);
-  
-                      try {
-                        await ref.read(proveedorTransito.notifier).registrarRecepcionEnPlanta(
-                          id: id,
-                          planta: planta,
-                          especie: especieSeleccionada,
-                          kilos: kilos,
-                          precio: precio,
-                        );
-                        
-                        if (contextDialog.mounted) {
-                          Navigator.pop(ctx); // Cierra el formulario principal
-                          
-                          // Muestra el mensaje de éxito usando el contexto principal
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (c) => AlertDialog(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              title: const Row(
-                                children: [
-                                  Icon(Icons.check_circle, color: Colors.green, size: 28),
-                                  SizedBox(width: 12),
-                                  Text('¡Recepción Exitosa!', style: TextStyle(fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                              content: Text('La recepción se registró correctamente en la planta $planta.'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(c),
-                                  child: const Text('Aceptar', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (contextDialog.mounted) {
-                          setStateDialog(() => guardando = false);
-                          showDialog(
-                            context: ctx,
-                            builder: (c) => AlertDialog(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              title: const Row(
-                                children: [
-                                  Icon(Icons.error, color: Colors.red, size: 28),
-                                  SizedBox(width: 12),
-                                  Text('Error', style: TextStyle(fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                              content: Text('No se pudo registrar la recepción:\n$e'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(c),
-                                  child: const Text('Aceptar', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    icon: guardando 
-                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF15181A)))
-                        : const Icon(Icons.check, size: 18, color: Color(0xFF15181A)),
-                    label: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        guardando ? 'Guardando...' : 'Confirmar Recepción', 
-                        style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold)
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00C853),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _construirEtiquetaDialogo(String label) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6, top: 12),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(label, style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w500)),
-      ),
-    );
-  }
-
-  InputDecoration _decoracionDialogo(String hintText) {
-    return InputDecoration(
-      hintText: hintText,
-      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF64748B))),
-    );
-  }
+  // Modal de recepción rápido eliminado en favor del nuevo flujo de 4 pasos.
 }
 
 class _BotonActualizarTransito extends StatelessWidget {
@@ -682,47 +403,26 @@ class _BotonesAccionTransito extends StatelessWidget {
   final dynamic z;
   final bool estaRecibido;
   final bool esSoloLectura;
-  final Function(String, String, double) onMarcarRecibido;
-
-  const _BotonesAccionTransito({required this.z, required this.estaRecibido, required this.onMarcarRecibido, this.esSoloLectura = false});
+  const _BotonesAccionTransito({required this.z, required this.estaRecibido, this.esSoloLectura = false});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Expanded(child: _botonVerEditar(context)),
-        if (!estaRecibido && !esSoloLectura) ...[
-          const SizedBox(width: 8),
-          Expanded(child: _botonRecibir(context)),
-        ]
       ],
     );
   }
 
   Widget _botonVerEditar(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: () => context.go('/transito/editar/${z.id}'),
-      icon: Icon(esSoloLectura ? Icons.visibility_outlined : Icons.edit_outlined, size: 16),
-      label: Text(esSoloLectura ? 'Ver detalles' : 'Ver / editar'),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(0xFF374151),
-        side: const BorderSide(color: Color(0xFFD1D5DB)),
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
-  }
-
-  Widget _botonRecibir(BuildContext context) {
     return ElevatedButton.icon(
-      onPressed: () => onMarcarRecibido(z.id, z.embarcacionesAsociadas ?? '', z.pesoTotal ?? 0.0),
-      icon: const Icon(Icons.check_rounded, size: 16),
-      label: const Text('Marcar recibido'),
+      onPressed: () => context.go('/transito/editar/${z.id}'),
+      icon: Icon(esSoloLectura ? Icons.visibility_outlined : Icons.edit_note_rounded, size: 18),
+      label: Text(esSoloLectura ? 'Ver detalles' : 'Continuar / Gestionar'),
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF0D5C75),
         foregroundColor: Colors.white,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );

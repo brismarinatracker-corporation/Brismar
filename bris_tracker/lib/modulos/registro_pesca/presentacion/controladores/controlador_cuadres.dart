@@ -83,6 +83,8 @@ class CuadresNotifier extends StateNotifier<AsyncValue<List<CuadreEntidad>>> {
           tipoProducto: cuadre.tipoProducto,
           muellePartida: cuadre.muellePartida,
           pesador: cuadre.pesador,
+          tipo: cuadre.tipo,
+          cuadrilla: cuadre.cuadrilla,
           compras: cuadre.compras,
           gastos: nuevosGastos,
           ventas: cuadre.ventas,

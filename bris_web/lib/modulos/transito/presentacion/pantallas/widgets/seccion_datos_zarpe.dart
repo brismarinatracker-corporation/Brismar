@@ -237,12 +237,14 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
             TextFormField(
               controller: widget.tipoCtrl,
               style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
-              decoration: _decoracion('Tipo', icono: Icons.category_outlined),
+              readOnly: true,
+              decoration: _decoracion('Tipo', icono: Icons.category_outlined, esSoloLectura: true),
             ),
             TextFormField(
               controller: widget.cuadrillaCtrl,
               style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
-              decoration: _decoracion('Cuadrilla', icono: Icons.group_outlined),
+              readOnly: true,
+              decoration: _decoracion('Cuadrilla', icono: Icons.group_outlined, esSoloLectura: true),
             ),
           ),
           const SizedBox(height: 16),

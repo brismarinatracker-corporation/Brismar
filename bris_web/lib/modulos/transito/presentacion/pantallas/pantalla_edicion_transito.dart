@@ -14,6 +14,8 @@ import 'widgets/seccion_datos_zarpe.dart';
 import 'widgets/seccion_embarcaciones.dart';
 import 'widgets/seccion_gastos.dart';
 import 'widgets/seccion_gastos_administrativos.dart';
+import 'widgets/seccion_recepcion_venta.dart';
+
 
 class PantallaEdicionTransito extends ConsumerStatefulWidget {
   final String id;
@@ -47,9 +49,13 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   final _cuadrillaCtrl = TextEditingController();
   int _tipoProductoSeleccionado = 1;
 
-  // Variables locales para Compras, Gastos
+  // Variables locales para Compras, Gastos, Ventas
   List<CompraWebModelo> _compras = [];
   List<GastoWebModelo> _gastos = [];
+  List<VentaWebModelo> _ventas = [];
+  
+  // Paso actual
+  int _pasoActual = 0;
 
   @override
   void initState() {
@@ -83,12 +89,14 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         repo.cargarCuadre(widget.id),
         repo.cargarCompras(widget.id),
         repo.cargarGastos(widget.id),
+        repo.cargarVentas(widget.id),
       ]);
 
       final zarpe = resultados[0] as ZarpeModelo?;
       final cuadre = resultados[1] as CuadreWebModelo?;
       final compras = resultados[2] as List<CompraWebModelo>;
       final gastos = resultados[3] as List<GastoWebModelo>;
+      final ventas = resultados[4] as List<VentaWebModelo>;
 
       if (zarpe == null) throw Exception('No se encontró el zarpe con ID ${widget.id}');
       
@@ -116,6 +124,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
 
         _compras = List.from(compras);
         _gastos = List.from(gastos);
+        _ventas = List.from(ventas);
         _cargando = false;
       });
     } catch (e) {
@@ -145,6 +154,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         cuadrilla: _cuadrillaCtrl.text.trim(),
         compras: _compras,
         gastos: _gastos,
+        ventas: _ventas,
       );
 
       await repo.guardarEdicion(params);
@@ -239,25 +249,22 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                 Expanded(
                   child: Form(
                     key: _formKey,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final esPantallaPequena = constraints.maxWidth <= 1200;
-                        return SingleChildScrollView(
-                          padding: const EdgeInsets.all(32),
-                          child: AbsorbPointer(
-                            absorbing: esSoloLectura,
-                            child: esPantallaPequena
-                                ? Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    children: _construirSecciones(urlsFotos),
-                                  )
-                                : Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: _construirSeccionesRow(urlsFotos),
-                                  ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Navegación Lateral (Pasos)
+                        _construirNavegacionPasos(esSoloLectura),
+                        // Contenido del Paso Actual
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(32),
+                            child: AbsorbPointer(
+                              absorbing: esSoloLectura,
+                              child: _construirContenidoPasoActual(urlsFotos),
+                            ),
                           ),
-                        );
-                      },
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -358,141 +365,180 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
     );
   }
 
-  List<Widget> _construirSecciones(List<String> urlsFotos) {
-    return [
-      SeccionDatosZarpe(
-        urlsFotos: urlsFotos,
-        placaCtrl: _placaCtrl,
-        choferCtrl: _choferCtrl,
-        numeroChoferCtrl: _numeroChoferCtrl,
-        muelleCtrl: _muelleCtrl,
-        pesoTotalCtrl: _pesoTotalCtrl,
-        cajasLlenasCtrl: _cajasLlenasCtrl,
-        cajasVaciasCtrl: _cajasVaciasCtrl,
-        pesadorCtrl: _pesadorCtrl,
-        tipoCtrl: _tipoCtrl,
-        cuadrillaCtrl: _cuadrillaCtrl,
-        observacionesCtrl: _observacionesCtrl,
-        tipoProductoActual: _tipoProductoSeleccionado,
-        onTipoProductoCambiado: (v) => setState(() => _tipoProductoSeleccionado = v),
+  Widget _construirNavegacionPasos(bool esSoloLectura) {
+    return Container(
+      width: 300,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(right: BorderSide(color: Color(0xFFE2E8F0))),
       ),
-      const SizedBox(height: 24),
-      SeccionEmbarcaciones(
-        compras: _compras, 
-        onGuardar: (c) {
-          setState(() {
-            final idx = _compras.indexWhere((item) => item.id == c.id);
-            if (idx >= 0) {
-              _compras[idx] = c;
-            } else {
-              _compras.add(c);
-            }
-          });
-        },
-        onEliminar: (id) => setState(() => _compras.removeWhere((item) => item.id == id)),
+      child: Column(
+        children: [
+          _construirItemPaso(0, 'Zarpe Inicial', 'Datos de partida', Icons.directions_boat_outlined, esSoloLectura),
+          _construirItemPaso(1, 'Cuadre de Muelle', 'Gastos operativos y compras', Icons.receipt_long_outlined, esSoloLectura),
+          _construirItemPaso(2, 'Recepción y Venta', 'Destino, kilos y precio final', Icons.storefront_outlined, esSoloLectura),
+          _construirItemPaso(3, 'Gastos Administrativos', 'Fletes y comisiones', Icons.account_balance_wallet_outlined, esSoloLectura),
+        ],
       ),
-      const SizedBox(height: 24),
-      SeccionGastos(
-        gastos: _gastos,
-        onGuardar: (g) {
-          setState(() {
-            final idx = _gastos.indexWhere((item) => item.id == g.id);
-            if (idx >= 0) {
-              _gastos[idx] = g;
-            } else {
-              _gastos.add(g);
-            }
-          });
-        },
-        onEliminar: (id) => setState(() => _gastos.removeWhere((item) => item.id == id)),
-      ),
-      const SizedBox(height: 24),
-      SeccionGastosAdministrativos(
-        gastos: _gastos,
-        onGuardar: (g) {
-          setState(() {
-            final idx = _gastos.indexWhere((item) => item.id == g.id);
-            if (idx >= 0) {
-              _gastos[idx] = g;
-            } else {
-              _gastos.add(g);
-            }
-          });
-        },
-        onEliminar: (id) => setState(() => _gastos.removeWhere((item) => item.id == id)),
-      ),
-    ];
+    );
   }
 
-  List<Widget> _construirSeccionesRow(List<String> urlsFotos) {
-    return [
-      Expanded(
-        flex: 1,
-        child: SeccionDatosZarpe(
-          urlsFotos: urlsFotos,
-          placaCtrl: _placaCtrl,
-          choferCtrl: _choferCtrl,
-          numeroChoferCtrl: _numeroChoferCtrl,
-          muelleCtrl: _muelleCtrl,
-          pesoTotalCtrl: _pesoTotalCtrl,
-          cajasLlenasCtrl: _cajasLlenasCtrl,
-          cajasVaciasCtrl: _cajasVaciasCtrl,
-          pesadorCtrl: _pesadorCtrl,
-          tipoCtrl: _tipoCtrl,
-          cuadrillaCtrl: _cuadrillaCtrl,
-          tipoProductoActual: _tipoProductoSeleccionado,
-          onTipoProductoCambiado: (v) => setState(() => _tipoProductoSeleccionado = v),
+  Widget _construirItemPaso(int indice, String titulo, String subtitulo, IconData icono, bool esSoloLectura) {
+    final seleccionado = _pasoActual == indice;
+    return InkWell(
+      onTap: () => setState(() => _pasoActual = indice),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        decoration: BoxDecoration(
+          color: seleccionado ? const Color(0xFFF0FDF4) : Colors.transparent,
+          border: Border(
+            left: BorderSide(
+              color: seleccionado ? const Color(0xFF00C853) : Colors.transparent,
+              width: 4,
+            ),
+            bottom: const BorderSide(color: Color(0xFFE2E8F0)),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: seleccionado ? const Color(0xFF00C853) : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icono, color: seleccionado ? Colors.white : const Color(0xFF64748B), size: 22),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    titulo,
+                    style: TextStyle(
+                      color: seleccionado ? const Color(0xFF15181A) : const Color(0xFF475569),
+                      fontWeight: seleccionado ? FontWeight.bold : FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitulo,
+                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
-      const SizedBox(width: 32),
-      Expanded(flex: 1, child: SeccionEmbarcaciones(
-        compras: _compras, 
-        onGuardar: (c) {
-          setState(() {
-            final idx = _compras.indexWhere((item) => item.id == c.id);
-            if (idx >= 0) {
-              _compras[idx] = c;
-            } else {
-              _compras.add(c);
-            }
-          });
-        },
-        onEliminar: (id) => setState(() => _compras.removeWhere((item) => item.id == id)),
-      )),
-      const SizedBox(width: 32),
-      Expanded(flex: 1, child: Column(
-        children: [
-          SeccionGastos(
-            gastos: _gastos,
-            onGuardar: (g) {
-              setState(() {
-                final idx = _gastos.indexWhere((item) => item.id == g.id);
-                if (idx >= 0) {
-                  _gastos[idx] = g;
-                } else {
-                  _gastos.add(g);
-                }
-              });
-            },
-            onEliminar: (id) => setState(() => _gastos.removeWhere((item) => item.id == id)),
-          ),
-          const SizedBox(height: 24),
-          SeccionGastosAdministrativos(
-            gastos: _gastos,
-            onGuardar: (g) {
-              setState(() {
-                final idx = _gastos.indexWhere((item) => item.id == g.id);
-                if (idx >= 0) {
-                  _gastos[idx] = g;
-                } else {
-                  _gastos.add(g);
-                }
-              });
-            },
-            onEliminar: (id) => setState(() => _gastos.removeWhere((item) => item.id == id)),
-          ),
-        ],
-      )),
-    ];
+    );
+  }
+
+  Widget _construirContenidoPasoActual(List<String> urlsFotos) {
+    switch (_pasoActual) {
+      case 0:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _tituloSeccion('Paso 1: Zarpe Inicial (Bahía)'),
+            SeccionDatosZarpe(
+              urlsFotos: urlsFotos,
+              placaCtrl: _placaCtrl,
+              choferCtrl: _choferCtrl,
+              numeroChoferCtrl: _numeroChoferCtrl,
+              muelleCtrl: _muelleCtrl,
+              pesoTotalCtrl: _pesoTotalCtrl,
+              cajasLlenasCtrl: _cajasLlenasCtrl,
+              cajasVaciasCtrl: _cajasVaciasCtrl,
+              pesadorCtrl: _pesadorCtrl,
+              tipoCtrl: _tipoCtrl,
+              cuadrillaCtrl: _cuadrillaCtrl,
+              observacionesCtrl: _observacionesCtrl,
+              tipoProductoActual: _tipoProductoSeleccionado,
+              onTipoProductoCambiado: (v) => setState(() => _tipoProductoSeleccionado = v),
+            ),
+          ],
+        );
+      case 1:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _tituloSeccion('Paso 2: Cuadre de Muelle (Bahía)'),
+            SeccionEmbarcaciones(
+              compras: _compras, 
+              onGuardar: (c) {
+                setState(() {
+                  final idx = _compras.indexWhere((item) => item.id == c.id);
+                  if (idx >= 0) _compras[idx] = c;
+                  else _compras.add(c);
+                });
+              },
+              onEliminar: (id) => setState(() => _compras.removeWhere((item) => item.id == id)),
+            ),
+            const SizedBox(height: 24),
+            SeccionGastos(
+              gastos: _gastos,
+              onGuardar: (g) {
+                setState(() {
+                  final idx = _gastos.indexWhere((item) => item.id == g.id);
+                  if (idx >= 0) _gastos[idx] = g;
+                  else _gastos.add(g);
+                });
+              },
+              onEliminar: (id) => setState(() => _gastos.removeWhere((item) => item.id == id)),
+            ),
+          ],
+        );
+      case 2:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _tituloSeccion('Paso 3: Recepción y Venta (Trabajador de Planta)'),
+            SeccionRecepcionVenta(
+              ventas: _ventas,
+              onGuardar: (v) {
+                setState(() {
+                  final idx = _ventas.indexWhere((item) => item.id == v.id);
+                  if (idx >= 0) _ventas[idx] = v;
+                  else _ventas.add(v);
+                });
+              },
+              onEliminar: (id) => setState(() => _ventas.removeWhere((item) => item.id == id)),
+            ),
+          ],
+        );
+      case 3:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _tituloSeccion('Paso 4: Gastos Administrativos (Trabajador/Admin)'),
+            SeccionGastosAdministrativos(
+              gastos: _gastos,
+              onGuardar: (g) {
+                setState(() {
+                  final idx = _gastos.indexWhere((item) => item.id == g.id);
+                  if (idx >= 0) _gastos[idx] = g;
+                  else _gastos.add(g);
+                });
+              },
+              onEliminar: (id) => setState(() => _gastos.removeWhere((item) => item.id == id)),
+            ),
+          ],
+        );
+      default:
+        return const SizedBox();
+    }
+  }
+
+  Widget _tituloSeccion(String titulo) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Text(
+        titulo,
+        style: GoogleFonts.sora(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF15181A)),
+      ),
+    );
   }
 }

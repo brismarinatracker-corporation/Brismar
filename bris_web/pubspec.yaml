@@ -51,6 +51,7 @@ dependencies:
   http: ^1.6.0
   image_picker: ^1.2.2
   cached_network_image: ^3.4.1
+  postgres: ^3.5.12
 
 dev_dependencies:
   flutter_test:
