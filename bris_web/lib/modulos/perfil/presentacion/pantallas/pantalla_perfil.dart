@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:bris_web/compartido/widgets/cabecera_pagina_web.dart';
 
 class PantallaPerfil extends ConsumerStatefulWidget {
   const PantallaPerfil({super.key});
@@ -113,30 +114,9 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cabecera simple sin navbar oscuro
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 40, vertical: esMovil ? 20 : 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Mi Perfil',
-                  style: GoogleFonts.sora(
-                    color: const Color(0xFF0E3E2C),
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Información de tu cuenta y sesión activa.',
-                  style: TextStyle(
-                    color: Colors.black54,
-                    fontSize: 15,
-                  ),
-                ),
-              ],
-            ),
+          const CabeceraPaginaWeb(
+            titulo: 'Mi Perfil',
+            subtitulo: 'Información de tu cuenta y sesión activa.',
           ),
           // Main profile card
           Expanded(

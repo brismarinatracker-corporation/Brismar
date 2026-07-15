@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../nucleo/componentes/estilos_formulario.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../dominio/entidades/zarpe_entidad.dart';
@@ -67,6 +68,15 @@ class _FormularioRegistroPescaState
   final _placaCtrl = TextEditingController();
   final _fechaZarpeCtrl = TextEditingController();
   final _muellePartidaCtrl = TextEditingController();
+  
+  // Controladores de info del Zarpe
+  final _cajasLlenasCtrl = TextEditingController();
+  final _cajasVaciasCtrl = TextEditingController();
+  final _nombrePesadorCtrl = TextEditingController();
+  final _tipoCtrl = TextEditingController();
+  final _cuadrillaCtrl = TextEditingController();
+  final _observacionesCtrl = TextEditingController();
+  int? _tipoProductoSeleccionado;
 
   // Controladores de Gastos Operativos Establecidos
   final _fleteCtrl = TextEditingController();
@@ -96,13 +106,27 @@ class _FormularioRegistroPescaState
       _placaCtrl.text = widget.cuadreInicial!.placa;
       _fechaZarpeCtrl.text = widget.cuadreInicial!.fechaZarpe ?? '';
       _muellePartidaCtrl.text = widget.cuadreInicial!.muellePartida ?? '';
+      
+      _cajasLlenasCtrl.text = (widget.cuadreInicial!.cajasLlenas ?? 0).toString();
+      _cajasVaciasCtrl.text = (widget.cuadreInicial!.cajasVacias ?? 0).toString();
+      _nombrePesadorCtrl.text = widget.cuadreInicial!.pesador ?? '';
+      _tipoCtrl.text = widget.cuadreInicial!.tipo ?? '';
+      _cuadrillaCtrl.text = widget.cuadreInicial!.cuadrilla ?? '';
+      _tipoProductoSeleccionado = widget.cuadreInicial!.tipoProducto;
+      if (_tipoProductoSeleccionado == 0 || !([1, 2, 3, 4, 5].contains(_tipoProductoSeleccionado))) {
+        _tipoProductoSeleccionado = null;
+      }
+
       _compras.addAll(widget.cuadreInicial!.compras);
       _gastos.addAll(widget.cuadreInicial!.gastos);
       _cargarZarpeAsociado(widget.cuadreInicial!.id);
 
       for (final g in widget.cuadreInicial!.gastos) {
         final conceptoUpper = g.concepto.toUpperCase().trim();
-        if (conceptoUpper == 'OBSERVACIONES') continue;
+        if (conceptoUpper == 'OBSERVACIONES') {
+          _observacionesCtrl.text = g.tipo;
+          continue;
+        }
 
         final totalStr = g.total > 0 ? g.total.toString() : '';
         switch (conceptoUpper) {
@@ -149,6 +173,12 @@ class _FormularioRegistroPescaState
     _placaCtrl.dispose();
     _fechaZarpeCtrl.dispose();
     _muellePartidaCtrl.dispose();
+    _cajasLlenasCtrl.dispose();
+    _cajasVaciasCtrl.dispose();
+    _nombrePesadorCtrl.dispose();
+    _tipoCtrl.dispose();
+    _cuadrillaCtrl.dispose();
+    _observacionesCtrl.dispose();
     _fleteCtrl.dispose();
     _facturacionCtrl.dispose();
     _personalCtrl.dispose();
@@ -179,7 +209,21 @@ class _FormularioRegistroPescaState
   }
 
   void _guardarGastosEstablecidos() {
-    _gastos.removeWhere((g) => g.concepto != 'OBSERVACIONES');
+    _gastos.clear();
+
+    if (_observacionesCtrl.text.trim().isNotEmpty) {
+      _gastos.add(
+        GastoEntidad(
+          id: const Uuid().v4(),
+          cuadreId: _cuadreId,
+          tipo: _observacionesCtrl.text.trim(),
+          concepto: 'OBSERVACIONES',
+          cantidad: 1,
+          costoUnitario: 0,
+          total: 0,
+        ),
+      );
+    }
 
     final conceptosMap = {
       'FLETE': _fleteCtrl,
@@ -253,12 +297,13 @@ class _FormularioRegistroPescaState
       pesoTotal: totalKilosCompras > 0
           ? totalKilosCompras
           : (widget.cuadreInicial?.pesoTotal ?? 0),
-      cajasLlenas: widget.cuadreInicial?.cajasLlenas ?? 0,
-      cajasVacias: widget.cuadreInicial?.cajasVacias ?? 0,
-      tipoProducto: widget.cuadreInicial?.tipoProducto ?? 0,
-      muellePartida: _muellePartidaCtrl.text.trim().isEmpty
-          ? null
-          : _muellePartidaCtrl.text.trim(),
+      cajasLlenas: int.tryParse(_cajasLlenasCtrl.text) ?? 0,
+      cajasVacias: int.tryParse(_cajasVaciasCtrl.text) ?? 0,
+      tipoProducto: _tipoProductoSeleccionado ?? 0,
+      muellePartida: _muellePartidaCtrl.text.trim().isEmpty ? null : _muellePartidaCtrl.text.trim(),
+      pesador: _nombrePesadorCtrl.text.trim().isEmpty ? null : _nombrePesadorCtrl.text.trim().toUpperCase(),
+      tipo: _tipoCtrl.text.trim().isEmpty ? null : _tipoCtrl.text.trim().toUpperCase(),
+      cuadrilla: _cuadrillaCtrl.text.trim().isEmpty ? null : _cuadrillaCtrl.text.trim().toUpperCase(),
       compras: _compras,
       gastos: _gastos,
       ventas: [],
@@ -290,36 +335,7 @@ class _FormularioRegistroPescaState
     return enteraFormateada;
   }
 
-  InputDecoration _construirInputDecoration({
-    required String labelText,
-    Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      labelText: labelText,
-      labelStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
-      floatingLabelStyle: const TextStyle(color: Color(0xFF006B54), fontWeight: FontWeight.bold),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF006B54), width: 1.5),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Colors.redAccent, width: 1.0),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
-      ),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      suffixIcon: suffixIcon,
-    );
-  }
+
 
   void _agregarCompraDialog({
     CompraEntidad? compraAEditar,
@@ -409,7 +425,7 @@ class _FormularioRegistroPescaState
                           ),
                           textCapitalization: TextCapitalization.characters,
                           inputFormatters: [_UpperCaseTextFormatter()],
-                          decoration: _construirInputDecoration(
+                          decoration: EstilosFormulario.construirInputDecoration(
                             labelText: 'Nombre de Embarcación',
                           ),
                           validator: (v) => (v == null || v.trim().isEmpty)
@@ -424,7 +440,7 @@ class _FormularioRegistroPescaState
                             color: Colors.black87,
                             fontSize: 16,
                           ),
-                          decoration: _construirInputDecoration(
+                          decoration: EstilosFormulario.construirInputDecoration(
                             labelText: 'Especie (Producto)',
                           ),
                           items:
@@ -456,7 +472,7 @@ class _FormularioRegistroPescaState
                                   fontWeight: FontWeight.bold,
                                   fontSize: 20,
                                 ),
-                                decoration: _construirInputDecoration(
+                                decoration: EstilosFormulario.construirInputDecoration(
                                   labelText: 'Kilos (Total)',
                                 ),
                                 keyboardType:
@@ -484,7 +500,7 @@ class _FormularioRegistroPescaState
                                   fontWeight: FontWeight.bold,
                                   fontSize: 20,
                                 ),
-                                decoration: _construirInputDecoration(
+                                decoration: EstilosFormulario.construirInputDecoration(
                                   labelText: 'S/ Precio x Kg',
                                 ),
                                 keyboardType:
@@ -765,7 +781,7 @@ class _FormularioRegistroPescaState
                         style: const TextStyle(color: Color(0xFF1F2937)),
                         textCapitalization: TextCapitalization.characters,
                         inputFormatters: [_PlacaInputFormatter()],
-                        decoration: _construirInputDecoration(
+                        decoration: EstilosFormulario.construirInputDecoration(
                           labelText: 'Placa (Ej: AAA-123)',
                           suffixIcon: IconButton(
                             icon: const Icon(
@@ -817,7 +833,7 @@ class _FormularioRegistroPescaState
                     controller: _fechaZarpeCtrl,
                     readOnly: true,
                     style: const TextStyle(color: Color(0xFF1F2937)),
-                    decoration: _construirInputDecoration(
+                    decoration: EstilosFormulario.construirInputDecoration(
                       labelText: 'Fecha',
                       suffixIcon: const Icon(
                         Icons.calendar_today,
@@ -830,6 +846,87 @@ class _FormularioRegistroPescaState
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _cajasLlenasCtrl,
+                    style: const TextStyle(color: Color(0xFF1F2937)),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: EstilosFormulario.construirInputDecoration(labelText: 'Cajas Llenas'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextFormField(
+                    controller: _cajasVaciasCtrl,
+                    style: const TextStyle(color: Color(0xFF1F2937)),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: EstilosFormulario.construirInputDecoration(labelText: 'Cajas Vacías'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<int>(
+              value: _tipoProductoSeleccionado,
+              dropdownColor: Colors.white,
+              style: const TextStyle(color: Colors.black87),
+              iconEnabledColor: const Color(0xFF006B54),
+              decoration: EstilosFormulario.construirInputDecoration(labelText: 'Tipo de Producto'),
+              items: const [
+                DropdownMenuItem(value: 1, child: Text('Pota')),
+                DropdownMenuItem(value: 2, child: Text('Bonito')),
+                DropdownMenuItem(value: 3, child: Text('Caballa')),
+                DropdownMenuItem(value: 4, child: Text('Jurel')),
+                DropdownMenuItem(value: 5, child: Text('Otros')),
+              ],
+              onChanged: (val) {
+                if (val != null) {
+                  setState(() => _tipoProductoSeleccionado = val);
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _nombrePesadorCtrl,
+              style: const TextStyle(color: Colors.black87),
+              textCapitalization: TextCapitalization.characters,
+              decoration: EstilosFormulario.construirInputDecoration(labelText: 'Pesador de Muelle'),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _tipoCtrl,
+                    style: const TextStyle(color: Colors.black87),
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: EstilosFormulario.construirInputDecoration(labelText: 'Tipo'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextFormField(
+                    controller: _cuadrillaCtrl,
+                    style: const TextStyle(color: Colors.black87),
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: EstilosFormulario.construirInputDecoration(labelText: 'Cuadrilla'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _observacionesCtrl,
+              style: const TextStyle(color: Colors.black87),
+              maxLines: 2,
+              decoration: EstilosFormulario.construirInputDecoration(labelText: 'Observaciones / Notas de Bahía (Opcional)'),
+            ),
+            const SizedBox(height: 16),
             _buildFotosZarpeEvidencia(),
           ],
         ),

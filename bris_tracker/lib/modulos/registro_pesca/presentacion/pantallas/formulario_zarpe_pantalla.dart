@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../nucleo/componentes/estilos_formulario.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
@@ -309,34 +310,6 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
     }
   }
 
-  InputDecoration _construirInputDecoration({required String labelText, Widget? suffixIcon}) {
-    return InputDecoration(
-      labelText: labelText,
-      labelStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
-      floatingLabelStyle: const TextStyle(color: Color(0xFF006B54), fontWeight: FontWeight.bold),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF006B54), width: 1.5),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Colors.redAccent, width: 1.0),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
-      ),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      suffixIcon: suffixIcon,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -529,7 +502,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                           inputFormatters: [
                             _PlacaInputFormatter(),
                           ],
-                          decoration: _construirInputDecoration(
+                          decoration: EstilosFormulario.construirInputDecoration(
                             labelText: 'Placa (Ej: AAA-123)',
                           ),
                           validator: (v) {
@@ -581,7 +554,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                       inputFormatters: [
                         _UpperCaseInputFormatter(),
                       ],
-                      decoration: _construirInputDecoration(
+                      decoration: EstilosFormulario.construirInputDecoration(
                         labelText: 'Nombre del chofer',
                       ),
                       validator: (v) {
@@ -600,7 +573,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                         FilteringTextInputFormatter.digitsOnly,
                         LengthLimitingTextInputFormatter(9),
                       ],
-                      decoration: _construirInputDecoration(
+                      decoration: EstilosFormulario.construirInputDecoration(
                         labelText: 'Número del chofer',
                       ),
                       validator: (v) {
@@ -619,7 +592,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
                       ],
-                      decoration: _construirInputDecoration(
+                      decoration: EstilosFormulario.construirInputDecoration(
                         labelText: 'Peso Total (Kg)',
                       ),
                       validator: (v) {
@@ -640,7 +613,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                             style: const TextStyle(color: Colors.black87),
                             keyboardType: TextInputType.number,
                             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                            decoration: _construirInputDecoration(labelText: 'Cajas Llenas'),
+                            decoration: EstilosFormulario.construirInputDecoration(labelText: 'Cajas Llenas'),
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'Requerido';
                               final valor = int.tryParse(v) ?? -1;
@@ -656,7 +629,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                             style: const TextStyle(color: Colors.black87),
                             keyboardType: TextInputType.number,
                             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                            decoration: _construirInputDecoration(labelText: 'Cajas vacias'),
+                            decoration: EstilosFormulario.construirInputDecoration(labelText: 'Cajas vacias'),
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'Requerido';
                               final valor = int.tryParse(v) ?? -1;
@@ -674,7 +647,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                       dropdownColor: Colors.white,
                       style: const TextStyle(color: Colors.black87),
                       iconEnabledColor: const Color(0xFF006B54),
-                      decoration: _construirInputDecoration(labelText: 'Tipo de Producto'),
+                      decoration: EstilosFormulario.construirInputDecoration(labelText: 'Tipo de Producto'),
                       items: const [
                         DropdownMenuItem(value: 1, child: Text('Pota')),
                         DropdownMenuItem(value: 2, child: Text('Bonito')),
@@ -700,7 +673,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                       inputFormatters: [
                         _UpperCaseInputFormatter(),
                       ],
-                      decoration: _construirInputDecoration(
+                      decoration: EstilosFormulario.construirInputDecoration(
                         labelText: 'Muelle de Partida',
                       ),
                       validator: (v) {
@@ -718,7 +691,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                       inputFormatters: [
                         _UpperCaseInputFormatter(),
                       ],
-                      decoration: _construirInputDecoration(
+                      decoration: EstilosFormulario.construirInputDecoration(
                         labelText: 'Pesador de Muelle',
                       ),
                       validator: (v) {
@@ -736,7 +709,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                       inputFormatters: [
                         _UpperCaseInputFormatter(),
                       ],
-                      decoration: _construirInputDecoration(
+                      decoration: EstilosFormulario.construirInputDecoration(
                         labelText: 'Tipo',
                       ),
                       validator: (v) {
@@ -754,7 +727,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                       inputFormatters: [
                         _UpperCaseInputFormatter(),
                       ],
-                      decoration: _construirInputDecoration(
+                      decoration: EstilosFormulario.construirInputDecoration(
                         labelText: 'Cuadrilla',
                       ),
                       validator: (v) {
@@ -768,7 +741,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                     TextFormField(
                       controller: _observacionesCtrl,
                       style: const TextStyle(color: Colors.black87),
-                      decoration: _construirInputDecoration(
+                      decoration: EstilosFormulario.construirInputDecoration(
                         labelText: 'Observaciones / Notas (Opcional)',
                       ),
                     ),

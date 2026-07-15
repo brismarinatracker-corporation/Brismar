@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:bris_web/compartido/widgets/cabecera_pagina_web.dart';
 
 import '../componentes/hoja_liquidacion_excel.dart';
 import '../controladores/controlador_cuadres.dart';
@@ -31,52 +33,24 @@ class PantallaCuadres extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 32, vertical: esMovil ? 20 : 24),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Cuadres de Pesca',
-                      style: GoogleFonts.sora(
-                        color: const Color(0xFF0E3E2C),
-                        fontSize: esMovil ? 22 : 26,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${estado.cuadres.length} cuadres cargados',
-                      style: const TextStyle(
-                        color: Colors.black54,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              OutlinedButton.icon(
-                onPressed: estado.cargando
-                    ? null
-                    : () => ref.read(controladorCuadresWebProvider.notifier).cargarCuadres(),
-                icon: estado.cargando
-                    ? const CargaOrbital(tamano: 16)
-                    : const Icon(Icons.refresh_rounded, size: 18),
-                label: esMovil ? const SizedBox() : const Text('Actualizar'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF0E3E2C),
-                  disabledForegroundColor: Colors.black38,
-                  side: const BorderSide(color: Colors.black12),
-                  padding: EdgeInsets.symmetric(horizontal: esMovil ? 12 : 20, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-            ],
+        CabeceraPaginaWeb(
+          titulo: 'Cuadres de Pesca',
+          subtitulo: '${estado.cuadres.length} cuadres cargados',
+          widgetAccion: OutlinedButton.icon(
+            onPressed: estado.cargando
+                ? null
+                : () => ref.read(controladorCuadresWebProvider.notifier).cargarCuadres(),
+            icon: estado.cargando
+                ? const CargaOrbital(tamano: 16)
+                : const Icon(Icons.refresh_rounded, size: 18),
+            label: esMovil ? const SizedBox() : const Text('Actualizar'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF0E3E2C),
+              disabledForegroundColor: Colors.black38,
+              side: const BorderSide(color: Colors.black12),
+              padding: EdgeInsets.symmetric(horizontal: esMovil ? 12 : 20, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
           ),
         ),
         // Rest of the screen

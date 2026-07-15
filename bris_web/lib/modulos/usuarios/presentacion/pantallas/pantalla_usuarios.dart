@@ -7,6 +7,7 @@ import '../../dominio/modelos/usuario_admin_modelo.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bris_web/nucleo/componentes/carga_orbital.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
+import 'package:bris_web/compartido/widgets/cabecera_pagina_web.dart';
 
 class PantallaUsuarios extends ConsumerWidget {
   const PantallaUsuarios({super.key});
@@ -26,40 +27,10 @@ class PantallaUsuarios extends ConsumerWidget {
         : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Cabecera simple sin navbar oscuro
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 40, vertical: esMovil ? 20 : 24),
-                child: esMovil
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Gestión de Accesos', style: GoogleFonts.sora(color: const Color(0xFF0E3E2C), fontSize: 24, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 8),
-                          const Text('Administra roles, sedes y estados de las cuentas de la plataforma.', style: TextStyle(color: Colors.black54, fontSize: 14)),
-                          const SizedBox(height: 16),
-                          if (esAdmin)
-                            _botonNuevoAcceso(context),
-                        ],
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Gestión de Accesos', style: GoogleFonts.sora(color: const Color(0xFF0E3E2C), fontSize: 26, fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 8),
-                                const Text('Administra roles, sedes y estados de las cuentas de la plataforma.', style: TextStyle(color: Colors.black54, fontSize: 15)),
-                              ],
-                            ),
-                          ),
-                          if (esAdmin) ...[
-                            const SizedBox(width: 16),
-                            _botonNuevoAcceso(context),
-                          ],
-                        ],
-                      ),
+              CabeceraPaginaWeb(
+                titulo: 'Gestión de Accesos',
+                subtitulo: 'Administra roles, sedes y estados de las cuentas de la plataforma.',
+                widgetAccion: esAdmin ? _botonNuevoAcceso(context) : null,
               ),
               // Rest of the screen
               Expanded(

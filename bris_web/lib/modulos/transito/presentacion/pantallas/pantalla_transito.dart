@@ -7,6 +7,7 @@ import '../controladores/controlador_transito.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../compartido/widgets/shimmer_carga.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
+import 'package:bris_web/compartido/widgets/cabecera_pagina_web.dart';
 
 // Esta pantalla es FRONTEND PURO. Solo dibuja. No sabe de Supabase.
 // El filtro y los datos vienen del ControladorTransito (capa de lógica).
@@ -35,37 +36,10 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cabecera simple sin navbar oscuro
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 32, vertical: esMovil ? 20 : 24),
-            child: esMovil
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Radar de tránsito (cámaras entrantes)', style: GoogleFonts.sora(color: const Color(0xFF0E3E2C), fontSize: 22, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
-                      const Text('Vista en tiempo real de las cámaras despachadas desde Piura.', style: TextStyle(color: Colors.black54, fontSize: 14)),
-                      const SizedBox(height: 16),
-                      _BotonActualizarTransito(ref: ref),
-                    ],
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Radar de tránsito (cámaras entrantes)', style: GoogleFonts.sora(color: const Color(0xFF0E3E2C), fontSize: 26, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 8),
-                            const Text('Vista en tiempo real de las cámaras despachadas desde Piura.', style: TextStyle(color: Colors.black54, fontSize: 15)),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      _BotonActualizarTransito(ref: ref),
-                    ],
-                  ),
+          CabeceraPaginaWeb(
+            titulo: 'Radar de tránsito (cámaras entrantes)',
+            subtitulo: 'Vista en tiempo real de las cámaras despachadas desde Piura.',
+            widgetAccion: _BotonActualizarTransito(ref: ref),
           ),
         
         // Filter bar
@@ -381,8 +355,8 @@ class _BotonActualizarTransito extends StatelessWidget {
       icon: const Icon(Icons.refresh_rounded, size: 18),
       label: const Text('Actualizar'),
       style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.white,
-        side: const BorderSide(color: Colors.white30),
+        foregroundColor: const Color(0xFF0E3E2C),
+        side: const BorderSide(color: Colors.black26, width: 1.5),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),

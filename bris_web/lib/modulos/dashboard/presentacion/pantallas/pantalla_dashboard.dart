@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controladores/controlador_dashboard.dart';
 import 'package:bris_web/nucleo/componentes/carga_orbital.dart';
+import 'package:bris_web/compartido/widgets/cabecera_pagina_web.dart';
 
 /// Pantalla de KPIs del Dashboard — Web Admin.
 class PantallaDashboard extends ConsumerWidget {
@@ -23,46 +24,10 @@ class PantallaDashboard extends ConsumerWidget {
             )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [                // Cabecera simple sin navbar oscuro
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: esMovil ? 20 : 40,
-                    vertical: esMovil ? 20 : 24,
-                  ),
-                  child: esMovil
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Dashboard general',
-                              style: GoogleFonts.sora(color: const Color(0xFF0E3E2C), fontSize: 24, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            _indicadorEnVivo(mesActual),
-                            const SizedBox(height: 16),
-                            _botonActualizar(ref),
-                          ],
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Dashboard general',
-                                    style: GoogleFonts.sora(color: const Color(0xFF0E3E2C), fontSize: 28, fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  _indicadorEnVivo(mesActual),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            _botonActualizar(ref),
-                          ],
-                        ),
+              children: [                CabeceraPaginaWeb(
+                  titulo: 'Dashboard general',
+                  contenidoExtra: _indicadorEnVivo(mesActual),
+                  widgetAccion: _botonActualizar(ref),
                 ),
 
                 // Grid y contenido principal

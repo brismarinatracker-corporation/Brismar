@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../dominio/modelos/producto_modelo.dart';
 import '../controladores/controlador_productos.dart';
 import '../widgets/dialogo_formulario_producto.dart';
+import 'package:bris_web/compartido/widgets/cabecera_pagina_web.dart';
 
 import 'package:bris_web/nucleo/componentes/carga_orbital.dart';
 
@@ -70,53 +71,48 @@ class _PantallaProductosState extends ConsumerState<PantallaProductos> {
         children: [
           // Header y Buscador
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
             decoration: const BoxDecoration(
               color: Colors.white,
               border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
             ),
-            child: Row(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Productos', style: GoogleFonts.sora(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF15181A))),
-                    const SizedBox(height: 4),
-                    Text('Gestión de catálogo de pesca', style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF64748B))),
-                  ],
-                ),
-                const Spacer(),
-                SizedBox(
-                  width: 300,
-                  child: TextField(
-                    controller: _busquedaCtrl,
-                    onChanged: (v) => setState(() => _terminoBusqueda = v.trim().toLowerCase()),
-                    style: GoogleFonts.inter(fontSize: 14),
-                    decoration: InputDecoration(
-                      hintText: 'Buscar por nombre...',
-                      hintStyle: GoogleFonts.inter(color: const Color(0xFF94A3B8)),
-                      prefixIcon: const Icon(Icons.search, color: Color(0xFF94A3B8)),
-                      filled: true,
-                      fillColor: const Color(0xFFF8FAFC),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7EBFC9))),
+            child: CabeceraPaginaWeb(
+              titulo: 'Productos',
+              subtitulo: 'Gestión de catálogo de pesca',
+              widgetAccion: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width < 800 ? 200 : 300,
+                    child: TextField(
+                      controller: _busquedaCtrl,
+                      onChanged: (v) => setState(() => _terminoBusqueda = v.trim().toLowerCase()),
+                      style: GoogleFonts.inter(fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: 'Buscar por nombre...',
+                        hintStyle: GoogleFonts.inter(color: const Color(0xFF94A3B8)),
+                        prefixIcon: const Icon(Icons.search, color: Color(0xFF94A3B8)),
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7EBFC9))),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.add, color: Color(0xFF070E22)),
-                  label: Text('NUEVO', style: GoogleFonts.inter(color: const Color(0xFF070E22), fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF7EBFC9),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 0,
+                  const SizedBox(width: 16),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.add, color: Color(0xFF070E22)),
+                    label: Text('NUEVO', style: GoogleFonts.inter(color: const Color(0xFF070E22), fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF7EBFC9),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    onPressed: () => _abrirFormulario(),
                   ),
-                  onPressed: () => _abrirFormulario(),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
