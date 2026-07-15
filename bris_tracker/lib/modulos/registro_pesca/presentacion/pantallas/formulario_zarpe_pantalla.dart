@@ -34,6 +34,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
   final _pesadorCtrl = TextEditingController();
   final _tipoCtrl = TextEditingController();
   final _cuadrillaCtrl = TextEditingController();
+  final _observacionesCtrl = TextEditingController();
 
   int _tipoProductoSeleccionado = 1; // 1: Pota, 2: Bonito, 3: Caballa, 4: Jurel, 5: Otros
   final List<XFile> _fotosEvidencia = [];
@@ -84,6 +85,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
     _pesadorCtrl.dispose();
     _tipoCtrl.dispose();
     _cuadrillaCtrl.dispose();
+    _observacionesCtrl.dispose();
     super.dispose();
   }
 
@@ -228,6 +230,21 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
 
       final fechaActual = DateTime.now().toIso8601String().substring(0, 10);
 
+      final observaciones = _observacionesCtrl.text.trim();
+      final gastos = observaciones.isNotEmpty
+          ? [
+              GastoEntidad(
+                id: const Uuid().v4(),
+                cuadreId: idZarpe,
+                tipo: observaciones,
+                concepto: 'OBSERVACIONES',
+                cantidad: 1,
+                costoUnitario: 0,
+                total: 0,
+              )
+            ]
+          : const <GastoEntidad>[];
+
       final nuevoCuadre = CuadreEntidad(
         id: idZarpe,
         usuarioId: usuarioActualId,
@@ -245,7 +262,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         cuadrilla: _cuadrillaCtrl.text.trim().toUpperCase(),
         sincronizado: false,
         compras: const [],
-        gastos: const [],
+        gastos: gastos,
         ventas: const [],
       );
 
@@ -744,6 +761,16 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                         if (v == null || v.trim().isEmpty) return 'La cuadrilla es requerida';
                         return null;
                       },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Observaciones
+                    TextFormField(
+                      controller: _observacionesCtrl,
+                      style: const TextStyle(color: Colors.black87),
+                      decoration: _construirInputDecoration(
+                        labelText: 'Observaciones / Notas (Opcional)',
+                      ),
                     ),
                     const SizedBox(height: 32),
 

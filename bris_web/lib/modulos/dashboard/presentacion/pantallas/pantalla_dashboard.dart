@@ -23,24 +23,11 @@ class PantallaDashboard extends ConsumerWidget {
             )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Topbar Premium (Look técnico/marítimo)
-                Container(
-                  width: double.infinity,
+              children: [                // Cabecera simple sin navbar oscuro
+                Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: esMovil ? 20 : 40,
                     vertical: esMovil ? 20 : 24,
-                  ),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        Color(0xFF0E3E2C), // Verde dominante
-                        Color(0xFF0E3E2C),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
                   ),
                   child: esMovil
                       ? Column(
@@ -48,7 +35,7 @@ class PantallaDashboard extends ConsumerWidget {
                           children: [
                             Text(
                               'Dashboard general',
-                              style: GoogleFonts.sora(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                              style: GoogleFonts.sora(color: const Color(0xFF0E3E2C), fontSize: 24, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 8),
                             _indicadorEnVivo(mesActual),
@@ -65,9 +52,9 @@ class PantallaDashboard extends ConsumerWidget {
                                 children: [
                                   Text(
                                     'Dashboard general',
-                                    style: GoogleFonts.sora(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+                                    style: GoogleFonts.sora(color: const Color(0xFF0E3E2C), fontSize: 28, fontWeight: FontWeight.bold),
                                   ),
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 4),
                                   _indicadorEnVivo(mesActual),
                                 ],
                               ),

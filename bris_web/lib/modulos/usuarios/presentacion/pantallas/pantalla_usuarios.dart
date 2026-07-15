@@ -26,25 +26,16 @@ class PantallaUsuarios extends ConsumerWidget {
         : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Dark Blue Header Banner
-              Container(
-                width: double.infinity,
+              // Cabecera simple sin navbar oscuro
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 40, vertical: esMovil ? 20 : 24),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [Color(0xFF0E3E2C), Color(0xFF0E3E2C)],
-                  ),
-                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
-                ),
                 child: esMovil
                     ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Gestión de Accesos', style: GoogleFonts.sora(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                          Text('Gestión de Accesos', style: GoogleFonts.sora(color: const Color(0xFF0E3E2C), fontSize: 24, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
-                          const Text('Administra roles, sedes y estados de las cuentas de la plataforma.', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                          const Text('Administra roles, sedes y estados de las cuentas de la plataforma.', style: TextStyle(color: Colors.black54, fontSize: 14)),
                           const SizedBox(height: 16),
                           if (esAdmin)
                             _botonNuevoAcceso(context),
@@ -57,9 +48,9 @@ class PantallaUsuarios extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Gestión de Accesos', style: GoogleFonts.sora(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
+                                Text('Gestión de Accesos', style: GoogleFonts.sora(color: const Color(0xFF0E3E2C), fontSize: 26, fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 8),
-                                const Text('Administra roles, sedes y estados de las cuentas de la plataforma.', style: TextStyle(color: Colors.white70, fontSize: 15)),
+                                const Text('Administra roles, sedes y estados de las cuentas de la plataforma.', style: TextStyle(color: Colors.black54, fontSize: 15)),
                               ],
                             ),
                           ),

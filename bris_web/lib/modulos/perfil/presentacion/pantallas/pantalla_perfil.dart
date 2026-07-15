@@ -113,28 +113,16 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Dark Blue Header Banner
-          Container(
-            width: double.infinity,
+          // Cabecera simple sin navbar oscuro
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 40, vertical: esMovil ? 20 : 24),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                  colors: [
-                    Color(0xFF0E3E2C),
-                    Color(0xFF0E3E2C),
-                  ],
-              ),
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
-            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Mi Perfil',
                   style: GoogleFonts.sora(
-                    color: Colors.white,
+                    color: const Color(0xFF0E3E2C),
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                   ),
@@ -143,7 +131,7 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
                 Text(
                   'Información de tu cuenta y sesión activa.',
                   style: TextStyle(
-                    color: Colors.white70,
+                    color: Colors.black54,
                     fontSize: 15,
                   ),
                 ),

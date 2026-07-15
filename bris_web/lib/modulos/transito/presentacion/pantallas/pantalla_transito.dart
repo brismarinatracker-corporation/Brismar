@@ -35,25 +35,16 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Dark Blue Header Banner
-          Container(
-            width: double.infinity,
+          // Cabecera simple sin navbar oscuro
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 32, vertical: esMovil ? 20 : 24),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [Color(0xFF0E3E2C), Color(0xFF0E3E2C)],
-              ),
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
-            ),
             child: esMovil
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Radar de tránsito (cámaras entrantes)', style: GoogleFonts.sora(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+                      Text('Radar de tránsito (cámaras entrantes)', style: GoogleFonts.sora(color: const Color(0xFF0E3E2C), fontSize: 22, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
-                      const Text('Vista en tiempo real de las cámaras despachadas desde Piura.', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                      const Text('Vista en tiempo real de las cámaras despachadas desde Piura.', style: TextStyle(color: Colors.black54, fontSize: 14)),
                       const SizedBox(height: 16),
                       _BotonActualizarTransito(ref: ref),
                     ],
@@ -65,9 +56,9 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Radar de tránsito (cámaras entrantes)', style: GoogleFonts.sora(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
+                            Text('Radar de tránsito (cámaras entrantes)', style: GoogleFonts.sora(color: const Color(0xFF0E3E2C), fontSize: 26, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 8),
-                            const Text('Vista en tiempo real de las cámaras despachadas desde Piura.', style: TextStyle(color: Colors.white70, fontSize: 15)),
+                            const Text('Vista en tiempo real de las cámaras despachadas desde Piura.', style: TextStyle(color: Colors.black54, fontSize: 15)),
                           ],
                         ),
                       ),

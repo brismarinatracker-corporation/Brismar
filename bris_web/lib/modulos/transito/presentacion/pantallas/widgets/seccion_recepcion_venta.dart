@@ -22,9 +22,9 @@ class SeccionRecepcionVenta extends StatefulWidget {
 class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
   void _mostrarDialogoVenta([VentaWebModelo? ventaExistente]) {
     String plantaSeleccionada = ventaExistente?.lugar != null && 
-        ['DEXIM', 'SEAFROST', 'ALTAMAR', 'PERUPEZ', 'TRANSMARINA'].contains(ventaExistente!.lugar)
+        ['PERU FROST', 'ARCOPA', 'ALTAMAR', 'PROANCO', 'INVERSIONES EL RIVALDO (EL MAYOR)', 'KSL', 'CORPOESMAR', 'PERUVIAN' ].contains(ventaExistente!.lugar)
         ? ventaExistente.lugar 
-        : (ventaExistente != null ? 'OTROS' : 'DEXIM');
+        : (ventaExistente != null ? 'OTROS' : 'PERU FROST');
         
     String especieSeleccionada = ventaExistente?.producto ?? 'POTA';
     final kilosCtrl = TextEditingController(text: ventaExistente?.kilos.toString() ?? '');
@@ -54,7 +54,7 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
                   value: plantaSeleccionada,
                   dropdownColor: Colors.white,
                   decoration: _decoracionInput('Selecciona planta'),
-                  items: ['DEXIM', 'SEAFROST', 'ALTAMAR', 'PERUPEZ', 'TRANSMARINA', 'OTROS'].map((String value) => DropdownMenuItem<String>(
+                  items: ['PERU FROST', 'ARCOPA', 'ALTAMAR', 'PROANCO', 'INVERSIONES EL RIVALDO (EL MAYOR)', 'KSL', 'CORPOESMAR', 'PERUVIAN', 'OTROS'].map((String value) => DropdownMenuItem<String>(
                         value: value,
                         child: Text(value),
                       )).toList(),
@@ -76,7 +76,7 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
                   value: especieSeleccionada,
                   dropdownColor: Colors.white,
                   decoration: _decoracionInput('Selecciona especie'),
-                  items: ["POTA", "JUREL", "BONITO", "CABALLA", "PERICO"].map((String value) => DropdownMenuItem<String>(
+                  items: ["POTA", "JUREL", "BONITO", "CABALLA",].map((String value) => DropdownMenuItem<String>(
                         value: value,
                         child: Text(value),
                       )).toList(),

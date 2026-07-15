@@ -31,21 +31,8 @@ class PantallaCuadres extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Dark Blue Header Banner
-        Container(
-          width: double.infinity,
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 32, vertical: esMovil ? 20 : 24),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                Color(0xFF0E3E2C),
-                Color(0xFF0E3E2C),
-              ],
-            ),
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
-          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -56,7 +43,7 @@ class PantallaCuadres extends ConsumerWidget {
                     Text(
                       'Cuadres de Pesca',
                       style: GoogleFonts.sora(
-                        color: Colors.white,
+                        color: const Color(0xFF0E3E2C),
                         fontSize: esMovil ? 22 : 26,
                         fontWeight: FontWeight.bold,
                       ),
@@ -65,7 +52,7 @@ class PantallaCuadres extends ConsumerWidget {
                     Text(
                       '${estado.cuadres.length} cuadres cargados',
                       style: const TextStyle(
-                        color: Colors.white70,
+                        color: Colors.black54,
                         fontSize: 15,
                       ),
                     ),
@@ -82,9 +69,9 @@ class PantallaCuadres extends ConsumerWidget {
                     : const Icon(Icons.refresh_rounded, size: 18),
                 label: esMovil ? const SizedBox() : const Text('Actualizar'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  disabledForegroundColor: Colors.white30,
-                  side: const BorderSide(color: Colors.white30),
+                  foregroundColor: const Color(0xFF0E3E2C),
+                  disabledForegroundColor: Colors.black38,
+                  side: const BorderSide(color: Colors.black12),
                   padding: EdgeInsets.symmetric(horizontal: esMovil ? 12 : 20, vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),

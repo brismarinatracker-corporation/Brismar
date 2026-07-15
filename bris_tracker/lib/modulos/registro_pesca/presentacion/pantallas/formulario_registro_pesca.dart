@@ -68,9 +68,6 @@ class _FormularioRegistroPescaState
   final _fechaZarpeCtrl = TextEditingController();
   final _muellePartidaCtrl = TextEditingController();
 
-  // Controladores de Observaciones
-  final _observacionesCtrl = TextEditingController();
-
   // Controladores de Gastos Operativos Establecidos
   final _fleteCtrl = TextEditingController();
   final _facturacionCtrl = TextEditingController();
@@ -104,41 +101,39 @@ class _FormularioRegistroPescaState
       _cargarZarpeAsociado(widget.cuadreInicial!.id);
 
       for (final g in widget.cuadreInicial!.gastos) {
-        if (g.concepto == 'OBSERVACIONES') {
-          _observacionesCtrl.text = g.tipo;
-        } else {
-          final conceptoUpper = g.concepto.toUpperCase().trim();
-          final totalStr = g.total > 0 ? g.total.toString() : '';
-          switch (conceptoUpper) {
-            case 'FLETE':
-              _fleteCtrl.text = totalStr;
-              break;
-            case 'FACTURACION':
-            case 'FACTURACIÓN':
-              _facturacionCtrl.text = totalStr;
-              break;
-            case 'PERSONAL':
-              _personalCtrl.text = totalStr;
-              break;
-            case 'APOYO':
-              _apoyoCtrl.text = totalStr;
-              break;
-            case 'AGUA':
-              _aguaCtrl.text = totalStr;
-              break;
-            case 'PESADOR':
-              _pesadorCtrl.text = totalStr;
-              break;
-            case 'CLOROX':
-              _cloroxCtrl.text = totalStr;
-              break;
-            case 'HIELO':
-              _hieloCtrl.text = totalStr;
-              break;
-            case 'OTROS':
-              _otrosCtrl.text = totalStr;
-              break;
-          }
+        final conceptoUpper = g.concepto.toUpperCase().trim();
+        if (conceptoUpper == 'OBSERVACIONES') continue;
+
+        final totalStr = g.total > 0 ? g.total.toString() : '';
+        switch (conceptoUpper) {
+          case 'FLETE':
+            _fleteCtrl.text = totalStr;
+            break;
+          case 'FACTURACION':
+          case 'FACTURACIÓN':
+            _facturacionCtrl.text = totalStr;
+            break;
+          case 'PERSONAL':
+            _personalCtrl.text = totalStr;
+            break;
+          case 'APOYO':
+            _apoyoCtrl.text = totalStr;
+            break;
+          case 'AGUA':
+            _aguaCtrl.text = totalStr;
+            break;
+          case 'PESADOR':
+            _pesadorCtrl.text = totalStr;
+            break;
+          case 'CLOROX':
+            _cloroxCtrl.text = totalStr;
+            break;
+          case 'HIELO':
+            _hieloCtrl.text = totalStr;
+            break;
+          case 'OTROS':
+            _otrosCtrl.text = totalStr;
+            break;
         }
       }
     } else {
@@ -154,7 +149,6 @@ class _FormularioRegistroPescaState
     _placaCtrl.dispose();
     _fechaZarpeCtrl.dispose();
     _muellePartidaCtrl.dispose();
-    _observacionesCtrl.dispose();
     _fleteCtrl.dispose();
     _facturacionCtrl.dispose();
     _personalCtrl.dispose();
@@ -233,22 +227,6 @@ class _FormularioRegistroPescaState
     }
 
     _guardarGastosEstablecidos();
-
-    // Remover observación previa si existe antes de agregar la nueva
-    _gastos.removeWhere((g) => g.concepto == 'OBSERVACIONES');
-    if (_observacionesCtrl.text.trim().isNotEmpty) {
-      _gastos.add(
-        GastoEntidad(
-          id: const Uuid().v4(),
-          cuadreId: _cuadreId,
-          tipo: _observacionesCtrl.text.trim(),
-          concepto: 'OBSERVACIONES',
-          cantidad: 1,
-          costoUnitario: 0,
-          total: 0,
-        ),
-      );
-    }
 
     final authState = ref.read(proveedorControladorAutenticacion);
     if (authState is! EstadoAutenticacionAutenticado) {
@@ -397,7 +375,7 @@ class _FormularioRegistroPescaState
                             const Icon(
                               Icons.directions_boat,
                               color: Color(0xFF006B54),
-                              size: 32,
+                              size: 28,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -406,190 +384,85 @@ class _FormularioRegistroPescaState
                                     ? 'EDITAR EMBARCACIÓN'
                                     : 'NUEVA EMBARCACIÓN',
                                 style: const TextStyle(
-                                  color: Color(0xFF1F2937),
+                                  color: Color(0xFF006B54),
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 22,
+                                  fontSize: 18,
                                 ),
                               ),
                             ),
                             IconButton(
                               icon: const Icon(
                                 Icons.close,
-                                color: Color(0x8A1F2937),
-                                size: 32,
+                                color: Color(0xFF6B7280),
+                                size: 28,
                               ),
                               onPressed: () => Navigator.pop(ctx),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
-                        if (isMobile) ...[
-                          TextFormField(
-                            controller: embCtrl,
-                            style: const TextStyle(
-                              color: Color(0xFF1F2937),
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textCapitalization: TextCapitalization.characters,
-                            inputFormatters: [_UpperCaseTextFormatter()],
-                            decoration:
-                                _construirInputDecoration(
-                                  labelText: 'Nombre de Embarcación',
-                                ).copyWith(
-                                  contentPadding: const EdgeInsets.all(20),
-                                ),
-                            validator: (v) => (v == null || v.trim().isEmpty)
-                                ? 'Requerido'
-                                : null,
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          controller: embCtrl,
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 16,
                           ),
-                          const SizedBox(height: 16),
-                          DropdownButtonFormField<String>(
-                            initialValue: productoSeleccionado,
-                            dropdownColor: Colors.white,
-                            style: const TextStyle(
-                              color: Color(0xFF1F2937),
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            decoration:
-                                _construirInputDecoration(
-                                  labelText: 'Especie (Producto)',
-                                ).copyWith(
-                                  contentPadding: const EdgeInsets.all(20),
-                                ),
-                            items:
-                                ["POTA", "JUREL", "BONITO", "CABALLA", "PERICO"]
-                                    .map(
-                                      (String value) =>
-                                          DropdownMenuItem<String>(
-                                            value: value,
-                                            child: Text(value),
-                                          ),
-                                    )
-                                    .toList(),
-                            onChanged: (val) {
-                              if (val != null) {
-                                setStateDialog(
-                                  () => productoSeleccionado = val,
-                                );
-                              }
-                            },
+                          textCapitalization: TextCapitalization.characters,
+                          inputFormatters: [_UpperCaseTextFormatter()],
+                          decoration: _construirInputDecoration(
+                            labelText: 'Nombre de Embarcación',
                           ),
-                        ] else ...[
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: TextFormField(
-                                  controller: embCtrl,
-                                  style: const TextStyle(
-                                    color: Color(0xFF1F2937),
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textCapitalization:
-                                      TextCapitalization.characters,
-                                  inputFormatters: [_UpperCaseTextFormatter()],
-                                  decoration:
-                                      _construirInputDecoration(
-                                        labelText: 'Nombre de Embarcación',
-                                      ).copyWith(
-                                        contentPadding: const EdgeInsets.all(
-                                          20,
-                                        ),
-                                      ),
-                                  validator: (v) =>
-                                      (v == null || v.trim().isEmpty)
-                                      ? 'Requerido'
-                                      : null,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                flex: 1,
-                                child: DropdownButtonFormField<String>(
-                                  initialValue: productoSeleccionado,
-                                  dropdownColor: Colors.white,
-                                  style: const TextStyle(
-                                    color: Color(0xFF1F2937),
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  decoration:
-                                      _construirInputDecoration(
-                                        labelText: 'Especie (Producto)',
-                                      ).copyWith(
-                                        contentPadding: const EdgeInsets.all(
-                                          20,
-                                        ),
-                                      ),
-                                  items:
-                                      [
-                                            "POTA",
-                                            "JUREL",
-                                            "BONITO",
-                                            "CABALLA",
-                                            "PERICO",
-                                          ]
-                                          .map(
-                                            (String value) =>
-                                                DropdownMenuItem<String>(
-                                                  value: value,
-                                                  child: Text(value),
-                                                ),
-                                          )
-                                          .toList(),
-                                  onChanged: (val) {
-                                    if (val != null) {
-                                      setStateDialog(
-                                        () => productoSeleccionado = val,
-                                      );
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Requerido'
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          initialValue: productoSeleccionado,
+                          dropdownColor: Colors.white,
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 16,
                           ),
-                        ],
-                        const SizedBox(height: 24),
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Color(0x4D000000),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Color(0x1F1F2937),
-                            ),
+                          decoration: _construirInputDecoration(
+                            labelText: 'Especie (Producto)',
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Datos de Pesaje',
-                                style: TextStyle(
-                                  color: Color(0x8A1F2937),
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
+                          items:
+                              ["POTA", "JUREL", "BONITO", "CABALLA", "PERICO"]
+                                  .map(
+                                    (String value) => DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setStateDialog(
+                                () => productoSeleccionado = val,
+                              );
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: TextFormField(
                                 controller: kilosNetosCtrl,
                                 style: const TextStyle(
                                   color: Color(0xFF059669),
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
                                 ),
-                                decoration:
-                                    _construirInputDecoration(
-                                      labelText: 'KILOS (PESO TOTAL)',
-                                    ).copyWith(
-                                      contentPadding: const EdgeInsets.all(24),
-                                    ),
+                                decoration: _construirInputDecoration(
+                                  labelText: 'Kilos (Total)',
+                                ),
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
+                                  decimal: true,
+                                ),
                                 validator: (v) {
                                   if (v == null || v.isEmpty) {
                                     return 'Requerido';
@@ -601,83 +474,50 @@ class _FormularioRegistroPescaState
                                   return null;
                                 },
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: TextFormField(
+                                controller: precioCtrl,
+                                style: const TextStyle(
+                                  color: Color(0xFF006B54),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                                decoration: _construirInputDecoration(
+                                  labelText: 'S/ Precio x Kg',
+                                ),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                  decimal: true,
+                                ),
+                                validator: (v) {
+                                  if (v == null || v.isEmpty) {
+                                    return 'Requerido';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 24),
-                        if (isMobile) ...[
-                          TextFormField(
-                            controller: precioCtrl,
-                            style: const TextStyle(
-                              color: Color(0xFF1F2937),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24,
-                            ),
-                            decoration:
-                                _construirInputDecoration(
-                                  labelText: 'S/ Precio x Kg',
-                                ).copyWith(
-                                  contentPadding: const EdgeInsets.all(20),
-                                ),
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return 'Requerido';
-                              return null;
-                            },
-                          ),
-                        ] else ...[
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  controller: precioCtrl,
-                                  style: const TextStyle(
-                                    color: Color(0xFF1F2937),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 28,
-                                  ),
-                                  decoration:
-                                      _construirInputDecoration(
-                                        labelText: 'S/ Precio x Kg',
-                                      ).copyWith(
-                                        contentPadding: const EdgeInsets.all(
-                                          24,
-                                        ),
-                                      ),
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                      ),
-                                  validator: (v) {
-                                    if (v == null || v.isEmpty) {
-                                      return 'Requerido';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        const SizedBox(height: 32),
                         SizedBox(
-                          height: 64, // Botón super gigante POS
+                          height: 54,
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF006B54),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            icon: const Icon(Icons.check, size: 32),
+                            icon: const Icon(Icons.check, size: 24),
                             label: const Text(
                               'CONFIRMAR EMBARCACIÓN',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                                fontSize: 16,
                               ),
                             ),
                             onPressed: () {
@@ -884,10 +724,11 @@ class _FormularioRegistroPescaState
   // Vistas Parciales
   Widget _buildSeccionGeneral() {
     return Card(
-      color: const Color(0xB30E3E2C),
+      color: Colors.white,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Color(0x0D1F2937)),
+        side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -897,7 +738,7 @@ class _FormularioRegistroPescaState
             const Text(
               'Información de Cámara',
               style: TextStyle(
-                color: Color(0xFF1F2937),
+                color: Color(0xFF006B54),
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -998,10 +839,11 @@ class _FormularioRegistroPescaState
 
   Widget _buildSeccionEmbarcaciones() {
     return Card(
-      color: const Color(0xB30E3E2C),
+      color: Colors.white,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Color(0x0D1F2937)),
+        side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -1015,7 +857,7 @@ class _FormularioRegistroPescaState
                   child: Text(
                     'Embarcaciones',
                     style: TextStyle(
-                      color: Color(0xFF1F2937),
+                      color: Color(0xFF006B54),
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1066,10 +908,11 @@ class _FormularioRegistroPescaState
                   return Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
-                      color: Color(0x33000000),
+                      color: const Color(0xFFF9FAFB),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Color(0x1F1F2937),
+                        color: const Color(0xFFE5E7EB),
+                        width: 1.5,
                       ),
                     ),
                     child: ListTile(
@@ -1090,7 +933,7 @@ class _FormularioRegistroPescaState
                           Text(
                             '${c.producto} • ${_formatearNumero(c.kilos)} kg a S/ ${_formatearNumero(c.precioUnitario)}',
                             style: const TextStyle(
-                              color: Color(0xB31F2937),
+                              color: Color(0xFF6B7280),
                             ),
                           ),
                           if (c.adelanto > 0)
@@ -1118,7 +961,7 @@ class _FormularioRegistroPescaState
                           IconButton(
                             icon: const Icon(
                               Icons.edit,
-                              color: Color(0x8A1F2937),
+                              color: Color(0xFF006B54),
                               size: 20,
                             ),
                             onPressed: () => _agregarCompraDialog(
@@ -1128,7 +971,7 @@ class _FormularioRegistroPescaState
                           ),
                           IconButton(
                             icon: const Icon(
-                              Icons.delete,
+                              Icons.delete_outline,
                               color: Colors.redAccent,
                               size: 20,
                             ),
@@ -1149,10 +992,11 @@ class _FormularioRegistroPescaState
 
   Widget _buildSeccionGastos() {
     return Card(
-      color: const Color(0xB30E3E2C),
+      color: Colors.white,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Color(0x0D1F2937)),
+        side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -1162,7 +1006,7 @@ class _FormularioRegistroPescaState
             const Text(
               'Gastos Operativos',
               style: TextStyle(
-                color: Color(0xFF1F2937),
+                color: Color(0xFF006B54),
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -1194,14 +1038,6 @@ class _FormularioRegistroPescaState
               ],
             ),
 
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _observacionesCtrl,
-              style: const TextStyle(color: Color(0xFF1F2937)),
-              decoration: _construirInputDecoration(
-                labelText: 'Observaciones / Notas (Opcional)',
-              ),
-            ),
           ],
         ),
       ),
@@ -1220,26 +1056,27 @@ class _FormularioRegistroPescaState
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(
-          color: Color(0x8A1F2937),
+          color: Color(0xFF6B7280),
           fontSize: 12,
         ),
         prefixText: 'S/ ',
         prefixStyle: const TextStyle(
-          color: Colors.orangeAccent,
+          color: Color(0xFF006B54),
           fontWeight: FontWeight.bold,
         ),
         filled: true,
-        fillColor: const Color(0x80F2F6F3),
+        fillColor: const Color(0xFFF9FAFB),
         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Color(0x141F2937),
+          borderSide: const BorderSide(
+            color: Color(0xFFE5E7EB),
+            width: 1.5,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.orangeAccent),
+          borderSide: const BorderSide(color: Color(0xFF006B54), width: 1.5),
         ),
       ),
     );
