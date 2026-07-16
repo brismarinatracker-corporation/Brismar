@@ -25,7 +25,7 @@ class EdicionZarpeParams {
   final double? pesoTotal;
   final int? cajasLlenas;
   final int? cajasVacias;
-  final int? tipoProducto;
+  final String? tipoProducto;
   final String? pesador;
   final String? tipo;
   final String? cuadrilla;

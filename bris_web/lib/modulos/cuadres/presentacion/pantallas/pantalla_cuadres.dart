@@ -630,15 +630,9 @@ class _PanelDetalle extends ConsumerWidget {
     ]);
   }
 
-  String _nombreTipoProducto(int? tipo) {
-    switch(tipo) {
-      case 1: return 'Pota';
-      case 2: return 'Bonito';
-      case 3: return 'Caballa';
-      case 4: return 'Jurel';
-      case 5: return 'Otros';
-      default: return 'No definido';
-    }
+  String _nombreTipoProducto(String? tipo) {
+    if (tipo == null || tipo.trim().isEmpty) return 'No definido';
+    return tipo;
   }
 
   Widget _itemInfo(String label, String valor) {

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../cuadres/dominio/modelos/cuadre_web_modelo.dart';
 import '../../../../maestros/presentacion/controladores/controlador_maestros.dart';
-import '../../../../nucleo/utilidades/formateador_miles.dart';
+import 'package:bris_web/nucleo/utilidades/formateador_miles.dart';
 
 class DialogoCompra {
   static void mostrar(

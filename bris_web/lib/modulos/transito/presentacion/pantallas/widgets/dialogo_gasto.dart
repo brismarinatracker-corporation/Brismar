@@ -4,7 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../cuadres/dominio/modelos/cuadre_web_modelo.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../maestros/presentacion/controladores/controlador_maestros.dart';
-import '../../../../nucleo/utilidades/formateador_miles.dart';
+import 'package:bris_web/nucleo/utilidades/formateador_miles.dart';
 
 class DialogoGasto {
   static void mostrar(

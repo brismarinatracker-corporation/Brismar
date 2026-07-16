@@ -22,7 +22,8 @@ class CuadreWebModelo {
   final double? pesoTotal;
   final int? cajasLlenas;
   final int? cajasVacias;
-  final int? tipoProducto;
+  final String? tipoProducto;
+  final String? muellePartida;
   final String? pesador;
   final String? tipo;
   final String? cuadrilla;
@@ -47,6 +48,7 @@ class CuadreWebModelo {
     this.cajasLlenas,
     this.cajasVacias,
     this.tipoProducto,
+    this.muellePartida,
     this.pesador,
     this.tipo,
     this.cuadrilla,
@@ -73,7 +75,8 @@ class CuadreWebModelo {
       pesoTotal: (json['peso_total'] as num?)?.toDouble(),
       cajasLlenas: json['cajas_llenas'] as int?,
       cajasVacias: json['cajas_vacias'] as int?,
-      tipoProducto: json['tipo_producto'] as int?,
+      tipoProducto: json['tipo_producto']?.toString(),
+      muellePartida: json['muelle_partida'] as String?,
       pesador: json['pesador'] as String?,
       tipo: json['tipo'] as String?,
       cuadrilla: json['cuadrilla'] as String?,

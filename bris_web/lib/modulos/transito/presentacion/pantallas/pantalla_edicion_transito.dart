@@ -48,7 +48,8 @@ class _PantallaEdicionTransitoState
   final _pesadorCtrl = TextEditingController();
   final _tipoCtrl = TextEditingController();
   final _cuadrillaCtrl = TextEditingController();
-  int _tipoProductoSeleccionado = 1;
+  final _otroProductoCtrl = TextEditingController();
+  String? _tipoProductoSeleccionado;
 
   // Variables locales para Compras, Gastos, Ventas
   List<CompraWebModelo> _compras = [];
@@ -120,7 +121,11 @@ class _PantallaEdicionTransitoState
           _pesadorCtrl.text = cuadre.pesador ?? '';
           _tipoCtrl.text = cuadre.tipo ?? '';
           _cuadrillaCtrl.text = cuadre.cuadrilla ?? '';
-          _tipoProductoSeleccionado = cuadre.tipoProducto ?? 1;
+          _tipoProductoSeleccionado = cuadre.tipoProducto;
+          if (_tipoProductoSeleccionado != null && !['CATANA', 'POTA', '1a', '2a', 'Destare', 'Caballa', 'BONITO', 'JUREL', 'OTROS'].contains(_tipoProductoSeleccionado)) {
+            _otroProductoCtrl.text = _tipoProductoSeleccionado!;
+            _tipoProductoSeleccionado = 'OTROS';
+          }
         } else {
           // If cuadre doesn't exist, we fall back to zarpe fields if any.
           _pesoTotalCtrl.text =
@@ -161,9 +166,9 @@ class _PantallaEdicionTransitoState
         observaciones: _observacionesCtrl.text.trim(),
         pesoTotal: double.tryParse(_pesoTotalCtrl.text.trim()),
         cajasLlenas: int.tryParse(_cajasLlenasCtrl.text.trim()),
-        cajasVacias: int.tryParse(_cajasVaciasCtrl.text.trim()),
-        tipoProducto: _tipoProductoSeleccionado,
-        pesador: _pesadorCtrl.text.trim(),
+        cajasVacias: int.tryParse(_cajasVaciasCtrl.text) ?? 0,
+        tipoProducto: _tipoProductoSeleccionado == 'OTROS' ? _otroProductoCtrl.text.trim().toUpperCase() : _tipoProductoSeleccionado,
+        pesador: _pesadorCtrl.text.trim().isEmpty ? null : _pesadorCtrl.text.trim().toUpperCase(),
         tipo: _tipoCtrl.text.trim(),
         cuadrilla: _cuadrillaCtrl.text.trim(),
         compras: _compras,
@@ -574,7 +579,7 @@ class _PantallaEdicionTransitoState
               tipoCtrl: _tipoCtrl,
               cuadrillaCtrl: _cuadrillaCtrl,
               observacionesCtrl: _observacionesCtrl,
-              tipoProductoActual: _tipoProductoSeleccionado,
+              tipoProductoActual: _tipoProductoSeleccionado == 'OTROS' ? _otroProductoCtrl.text : _tipoProductoSeleccionado,
               onTipoProductoCambiado: (v) =>
                   setState(() => _tipoProductoSeleccionado = v),
             ),

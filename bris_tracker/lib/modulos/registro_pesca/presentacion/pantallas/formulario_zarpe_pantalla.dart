@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../nucleo/componentes/estilos_formulario.dart';
+import '../../../../nucleo/componentes/estilos_formulario.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
@@ -15,7 +15,7 @@ import '../../../autenticacion/presentacion/controladores/controlador_autenticac
 import 'package:bris_tracker/nucleo/componentes/carga_orbital.dart';
 import '../../datos/repositorios/zarpe_repositorio_imp.dart';
 import '../../datos/repositorios/camaras_repositorio_local.dart';
-import '../../../nucleo/utilidades/formateador_miles.dart';
+import '../../../../nucleo/utilidades/formateador_miles.dart';
 
 class FormularioZarpePantalla extends ConsumerStatefulWidget {
   const FormularioZarpePantalla({super.key});
@@ -37,8 +37,9 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
   final _tipoCtrl = TextEditingController();
   final _cuadrillaCtrl = TextEditingController();
   final _observacionesCtrl = TextEditingController();
+  final _otroProductoCtrl = TextEditingController();
 
-  int _tipoProductoSeleccionado = 1; // 1: Pota, 2: Bonito, 3: Caballa, 4: Jurel, 5: Otros
+  String? _tipoProductoSeleccionado;
   final List<XFile> _fotosEvidencia = [];
   bool _guardando = false;
   List<String> _placasGuardadas = [];
@@ -88,6 +89,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
     _tipoCtrl.dispose();
     _cuadrillaCtrl.dispose();
     _observacionesCtrl.dispose();
+    _otroProductoCtrl.dispose();
     super.dispose();
   }
 
@@ -257,7 +259,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         pesoTotal: pesoTotal,
         cajasLlenas: cajasLlenas,
         cajasVacias: cajasVacias,
-        tipoProducto: _tipoProductoSeleccionado,
+        tipoProducto: _tipoProductoSeleccionado == 'OTROS' ? _otroProductoCtrl.text.trim().toUpperCase() : _tipoProductoSeleccionado,
         muellePartida: _muellePartidaCtrl.text.trim().isEmpty ? null : _muellePartidaCtrl.text.trim().toUpperCase(),
         pesador: _pesadorCtrl.text.trim().toUpperCase(),
         tipo: _tipoCtrl.text.trim().toUpperCase(),
@@ -643,27 +645,45 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                     ),
                     const SizedBox(height: 16),
 
-                    DropdownButtonFormField<int>(
-                      initialValue: _tipoProductoSeleccionado,
+                    DropdownButtonFormField<String>(
+                      value: _tipoProductoSeleccionado,
                       dropdownColor: Colors.white,
                       style: const TextStyle(color: Colors.black87),
                       iconEnabledColor: const Color(0xFF006B54),
                       decoration: EstilosFormulario.construirInputDecoration(labelText: 'Tipo de Producto'),
                       items: const [
-                        DropdownMenuItem(value: 1, child: Text('Pota')),
-                        DropdownMenuItem(value: 2, child: Text('Bonito')),
-                        DropdownMenuItem(value: 3, child: Text('Caballa')),
-                        DropdownMenuItem(value: 4, child: Text('Jurel')),
-                        DropdownMenuItem(value: 5, child: Text('Otros')),
+                        DropdownMenuItem(value: 'CATANA', child: Text('CATANA')),
+                        DropdownMenuItem(value: 'POTA', child: Text('POTA')),
+                        DropdownMenuItem(value: '1a', child: Text('1a')),
+                        DropdownMenuItem(value: '2a', child: Text('2a')),
+                        DropdownMenuItem(value: 'Destare', child: Text('Destare')),
+                        DropdownMenuItem(value: 'Caballa', child: Text('Caballa')),
+                        DropdownMenuItem(value: 'BONITO', child: Text('BONITO')),
+                        DropdownMenuItem(value: 'JUREL', child: Text('JUREL')),
+                        DropdownMenuItem(value: 'OTROS', child: Text('OTROS')),
                       ],
                       onChanged: (val) {
                         if (val != null) {
                           setState(() {
                             _tipoProductoSeleccionado = val;
+                            if (val != 'OTROS') {
+                              _otroProductoCtrl.clear();
+                            }
                           });
                         }
                       },
+                      validator: (v) => (v == null || v.isEmpty) ? 'Requerido' : null,
                     ),
+                    if (_tipoProductoSeleccionado == 'OTROS') ...[
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _otroProductoCtrl,
+                        style: const TextStyle(color: Colors.black87),
+                        textCapitalization: TextCapitalization.characters,
+                        decoration: EstilosFormulario.construirInputDecoration(labelText: 'Especifique otro producto'),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Requerido' : null,
+                      ),
+                    ],
                     const SizedBox(height: 16),
 
                     // Muelle de Partida

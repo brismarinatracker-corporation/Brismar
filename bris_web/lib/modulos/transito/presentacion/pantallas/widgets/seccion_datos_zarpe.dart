@@ -15,8 +15,8 @@ class SeccionDatosZarpe extends StatefulWidget {
   final TextEditingController tipoCtrl;
   final TextEditingController cuadrillaCtrl;
   final TextEditingController? observacionesCtrl;
-  final int tipoProductoActual;
-  final ValueChanged<int> onTipoProductoCambiado;
+  final String? tipoProductoActual;
+  final ValueChanged<String?> onTipoProductoCambiado;
 
   const SeccionDatosZarpe({
     super.key,
@@ -256,18 +256,11 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
               readOnly: true,
               decoration: _decoracion('Peso Total (Kg)', icono: Icons.scale_outlined, esSoloLectura: true),
             ),
-            DropdownButtonFormField<int>(
-              initialValue: widget.tipoProductoActual,
+            TextFormField(
+              initialValue: widget.tipoProductoActual ?? 'No definido',
+              style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+              readOnly: true,
               decoration: _decoracion('Tipo Producto', icono: Icons.set_meal_outlined, esSoloLectura: true),
-              items: const [
-                DropdownMenuItem(value: 0, child: Text('No definido')),
-                DropdownMenuItem(value: 1, child: Text('Pota')),
-                DropdownMenuItem(value: 2, child: Text('Bonito')),
-                DropdownMenuItem(value: 3, child: Text('Caballa')),
-                DropdownMenuItem(value: 4, child: Text('Jurel')),
-                DropdownMenuItem(value: 5, child: Text('Otros')),
-              ],
-              onChanged: null,
             ),
           ),
           const SizedBox(height: 16),

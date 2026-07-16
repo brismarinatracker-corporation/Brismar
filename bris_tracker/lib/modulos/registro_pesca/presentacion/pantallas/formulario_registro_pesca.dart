@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../nucleo/componentes/estilos_formulario.dart';
+import '../../../../nucleo/componentes/estilos_formulario.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../dominio/entidades/zarpe_entidad.dart';
@@ -13,7 +13,7 @@ import '../controladores/controlador_cuadres.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../widgets/panel_calculo_vivo.dart';
 import '../../registro_pesca_inyeccion.dart';
-import '../../../nucleo/utilidades/formateador_miles.dart';
+import '../../../../nucleo/utilidades/formateador_miles.dart';
 
 class _UpperCaseTextFormatter extends TextInputFormatter {
   @override
@@ -77,7 +77,8 @@ class _FormularioRegistroPescaState
   final _tipoCtrl = TextEditingController();
   final _cuadrillaCtrl = TextEditingController();
   final _observacionesCtrl = TextEditingController();
-  int? _tipoProductoSeleccionado;
+  final _otroProductoCtrl = TextEditingController();
+  String? _tipoProductoSeleccionado;
 
   // Controladores de Gastos Operativos Establecidos
   final _fleteCtrl = TextEditingController();
@@ -117,9 +118,9 @@ class _FormularioRegistroPescaState
       _tipoCtrl.text = widget.cuadreInicial!.tipo ?? '';
       _cuadrillaCtrl.text = widget.cuadreInicial!.cuadrilla ?? '';
       _tipoProductoSeleccionado = widget.cuadreInicial!.tipoProducto;
-      if (_tipoProductoSeleccionado == 0 ||
-          !([1, 2, 3, 4, 5].contains(_tipoProductoSeleccionado))) {
-        _tipoProductoSeleccionado = null;
+      if (_tipoProductoSeleccionado != null && !['CATANA', 'POTA', '1a', '2a', 'Destare', 'Caballa', 'BONITO', 'JUREL', 'OTROS'].contains(_tipoProductoSeleccionado)) {
+        _otroProductoCtrl.text = _tipoProductoSeleccionado!;
+        _tipoProductoSeleccionado = 'OTROS';
       }
 
       _compras.addAll(widget.cuadreInicial!.compras);
@@ -311,7 +312,7 @@ class _FormularioRegistroPescaState
           : (widget.cuadreInicial?.pesoTotal ?? 0),
       cajasLlenas: int.tryParse(_cajasLlenasCtrl.text) ?? 0,
       cajasVacias: int.tryParse(_cajasVaciasCtrl.text) ?? 0,
-      tipoProducto: _tipoProductoSeleccionado ?? 0,
+      tipoProducto: _tipoProductoSeleccionado == 'OTROS' ? _otroProductoCtrl.text.trim().toUpperCase() : _tipoProductoSeleccionado,
       muellePartida: _muellePartidaCtrl.text.trim().isEmpty
           ? null
           : _muellePartidaCtrl.text.trim(),
@@ -755,7 +756,9 @@ class _FormularioRegistroPescaState
       _zarpeSeleccionado = z;
       _cuadreId = z['id'] ?? '';
       _placaCtrl.text = z['placa_camara'] ?? '';
-      _fechaZarpeCtrl.text = z['fecha_zarpe'] ?? '';
+      _fechaZarpeCtrl.text = z['fecha_zarpe'] != null 
+          ? (z['fecha_zarpe'] as DateTime).toIso8601String().substring(0, 10) 
+          : '';
     });
     Navigator.pop(context);
   }
@@ -923,7 +926,7 @@ class _FormularioRegistroPescaState
               ],
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<int>(
+            DropdownButtonFormField<String>(
               value: _tipoProductoSeleccionado,
               dropdownColor: Colors.white,
               style: const TextStyle(color: Colors.black87),
@@ -932,18 +935,34 @@ class _FormularioRegistroPescaState
                 labelText: 'Tipo de Producto',
               ),
               items: const [
-                DropdownMenuItem(value: 1, child: Text('Pota')),
-                DropdownMenuItem(value: 2, child: Text('Bonito')),
-                DropdownMenuItem(value: 3, child: Text('Caballa')),
-                DropdownMenuItem(value: 4, child: Text('Jurel')),
-                DropdownMenuItem(value: 5, child: Text('Otros')),
+                DropdownMenuItem(value: 'CATANA', child: Text('CATANA')),
+                DropdownMenuItem(value: 'POTA', child: Text('POTA')),
+                DropdownMenuItem(value: '1a', child: Text('1a')),
+                DropdownMenuItem(value: '2a', child: Text('2a')),
+                DropdownMenuItem(value: 'Destare', child: Text('Destare')),
+                DropdownMenuItem(value: 'Caballa', child: Text('Caballa')),
+                DropdownMenuItem(value: 'BONITO', child: Text('BONITO')),
+                DropdownMenuItem(value: 'JUREL', child: Text('JUREL')),
+                DropdownMenuItem(value: 'OTROS', child: Text('OTROS')),
               ],
               onChanged: (val) {
                 if (val != null) {
-                  setState(() => _tipoProductoSeleccionado = val);
+                  setState(() {
+                    _tipoProductoSeleccionado = val;
+                    if (val != 'OTROS') _otroProductoCtrl.clear();
+                  });
                 }
               },
             ),
+            if (_tipoProductoSeleccionado == 'OTROS') ...[
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _otroProductoCtrl,
+                style: const TextStyle(color: Colors.black87),
+                textCapitalization: TextCapitalization.characters,
+                decoration: EstilosFormulario.construirInputDecoration(labelText: 'Especifique otro producto'),
+              ),
+            ],
             const SizedBox(height: 16),
             TextFormField(
               controller: _nombrePesadorCtrl,

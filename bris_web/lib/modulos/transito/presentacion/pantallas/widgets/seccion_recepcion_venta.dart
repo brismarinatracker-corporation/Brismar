@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../cuadres/dominio/modelos/cuadre_web_modelo.dart';
-import '../../../../nucleo/utilidades/formateador_miles.dart';
+import 'package:bris_web/nucleo/utilidades/formateador_miles.dart';
 
 class SeccionRecepcionVenta extends StatefulWidget {
   final List<VentaWebModelo> ventas;
