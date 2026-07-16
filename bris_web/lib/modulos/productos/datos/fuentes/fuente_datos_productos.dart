@@ -9,7 +9,7 @@ class FuenteDatosProductos {
         .from('productos')
         .select()
         .order('created_at', ascending: false);
-    
+
     return (respuesta as List)
         .map((e) => Producto.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -25,7 +25,7 @@ class FuenteDatosProductos {
         })
         .select()
         .single();
-    
+
     return Producto.fromJson(respuesta);
   }
 
@@ -36,7 +36,7 @@ class FuenteDatosProductos {
         .eq('id', producto.id)
         .select()
         .single();
-    
+
     return Producto.fromJson(respuesta);
   }
 

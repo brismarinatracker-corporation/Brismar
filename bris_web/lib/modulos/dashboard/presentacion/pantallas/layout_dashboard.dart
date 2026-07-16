@@ -28,235 +28,279 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
     final anchoSidebar = esExtendido ? 260.0 : 80.0;
 
     return Scaffold(
-      bottomNavigationBar: esMovil ? _construirBottomNavigationBar(esAdmin, esSupervisor) : null,
+      bottomNavigationBar: esMovil
+          ? _construirBottomNavigationBar(esAdmin, esSupervisor)
+          : null,
       body: Row(
         children: [
           if (!esMovil)
             // Sidebar Navy Premium (Mismo gradiente/marca unificada)
-          Container(
-            width: anchoSidebar,
-            height: double.infinity,
-            decoration: const BoxDecoration(
-              color: Color(0xFF0E3E2C), // Verde dominante
-              border: Border(
-                right: BorderSide(color: Color(0xFF0E3E2C), width: 1),
+            Container(
+              width: anchoSidebar,
+              height: double.infinity,
+              decoration: const BoxDecoration(
+                color: Color(0xFF0E3E2C), // Verde dominante
+                border: Border(
+                  right: BorderSide(color: Color(0xFF0E3E2C), width: 1),
+                ),
               ),
-            ),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  // Logo / Cabecera Brismar (Fraunces)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: esExtendido ? MainAxisAlignment.start : MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF7EBFC9).withValues(alpha: 0.2), // Celeste tint
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(Icons.anchor_rounded, color: Color(0xFF7EBFC9), size: 28),
-                        ),
-                        if (esExtendido) ...[
-                          const SizedBox(width: 12),
-                          Text(
-                            'Brismar',
-                            style: GoogleFonts.sora(
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // Logo / Cabecera Brismar (Fraunces)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 24,
+                        horizontal: 16,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: esExtendido
+                            ? MainAxisAlignment.start
+                            : MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            height: 56,
+                            width: 56,
+                            decoration: BoxDecoration(
                               color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Transform.scale(
+                                scale:
+                                    1.8, // Zoom para acercar el logo y quitar bordes blancos de la imagen original
+                                child: Image.asset(
+                                  'assets/logo.png',
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
                             ),
                           ),
+                          if (esExtendido) ...[
+                            const SizedBox(width: 12),
+                            Text(
+                              'BRIS GROUP',
+                              style: GoogleFonts.sora(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                  // Lista de navegación personalizada
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      children: [
-                        _itemMenu(
-                          index: 0,
-                          icono: Icons.dashboard_outlined,
-                          iconoSeleccionado: Icons.dashboard_rounded,
-                          etiqueta: 'Dashboard',
-                          esExtendido: esExtendido,
-                          onTap: () {
-                            setState(() => _indiceSeleccionado = 0);
-                            const RutaDashboard().go(context);
-                          },
-                        ),
-                        _itemMenu(
-                          index: 1,
-                          icono: Icons.local_shipping_outlined,
-                          iconoSeleccionado: Icons.local_shipping_rounded,
-                          etiqueta: 'Tránsito',
-                          esExtendido: esExtendido,
-                          onTap: () {
-                            setState(() => _indiceSeleccionado = 1);
-                            const RutaTransito().go(context);
-                          },
-                        ),
-                        _itemMenu(
-                          index: 2,
-                          icono: Icons.table_view_outlined,
-                          iconoSeleccionado: Icons.table_view_rounded,
-                          etiqueta: 'Cuadres',
-                          esExtendido: esExtendido,
-                          onTap: () {
-                            setState(() => _indiceSeleccionado = 2);
-                            const RutaCuadres().go(context);
-                          },
-                        ),
-                        if (esAdmin) ...[
+                    // Lista de navegación personalizada
+                    Expanded(
+                      child: ListView(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        children: [
                           _itemMenu(
-                            index: 3,
-                            icono: Icons.people_alt_outlined,
-                            iconoSeleccionado: Icons.people_alt_rounded,
-                            etiqueta: 'Usuarios',
+                            index: 0,
+                            icono: Icons.dashboard_outlined,
+                            iconoSeleccionado: Icons.dashboard_rounded,
+                            etiqueta: 'Dashboard',
                             esExtendido: esExtendido,
                             onTap: () {
-                              setState(() => _indiceSeleccionado = 3);
-                              const RutaUsuarios().go(context);
+                              setState(() => _indiceSeleccionado = 0);
+                              const RutaDashboard().go(context);
                             },
                           ),
                           _itemMenu(
-                            index: 4,
-                            icono: Icons.inventory_2_outlined,
-                            iconoSeleccionado: Icons.inventory_2_rounded,
-                            etiqueta: 'Productos',
+                            index: 1,
+                            icono: Icons.local_shipping_outlined,
+                            iconoSeleccionado: Icons.local_shipping_rounded,
+                            etiqueta: 'Tránsito',
                             esExtendido: esExtendido,
                             onTap: () {
-                              setState(() => _indiceSeleccionado = 4);
-                              const RutaProductos().go(context);
+                              setState(() => _indiceSeleccionado = 1);
+                              const RutaTransito().go(context);
                             },
                           ),
                           _itemMenu(
-                            index: 5,
-                            icono: Icons.directions_car_filled_outlined,
-                            iconoSeleccionado: Icons.directions_car_filled_rounded,
-                            etiqueta: 'Cámaras',
+                            index: 2,
+                            icono: Icons.table_view_outlined,
+                            iconoSeleccionado: Icons.table_view_rounded,
+                            etiqueta: 'Cuadres',
                             esExtendido: esExtendido,
                             onTap: () {
-                              setState(() => _indiceSeleccionado = 5);
-                              const RutaCamaras().go(context);
+                              setState(() => _indiceSeleccionado = 2);
+                              const RutaCuadres().go(context);
                             },
                           ),
-                        ],
-                        _itemMenu(
-                          index: esAdmin ? 6 : 3,
-                          icono: Icons.person_outline,
-                          iconoSeleccionado: Icons.person_rounded,
-                          etiqueta: 'Perfil',
-                          esExtendido: esExtendido,
-                          onTap: () {
-                            setState(() => _indiceSeleccionado = esAdmin ? 6 : 3);
-                            const RutaPerfil().go(context);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Sección inferior de usuario
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (esExtendido)
-                          InkWell(
+                          if (esAdmin) ...[
+                            _itemMenu(
+                              index: 3,
+                              icono: Icons.people_alt_outlined,
+                              iconoSeleccionado: Icons.people_alt_rounded,
+                              etiqueta: 'Usuarios',
+                              esExtendido: esExtendido,
+                              onTap: () {
+                                setState(() => _indiceSeleccionado = 3);
+                                const RutaUsuarios().go(context);
+                              },
+                            ),
+                          ],
+                          _itemMenu(
+                            index: esAdmin ? 4 : 3,
+                            icono: Icons.person_outline,
+                            iconoSeleccionado: Icons.person_rounded,
+                            etiqueta: 'Perfil',
+                            esExtendido: esExtendido,
                             onTap: () {
-                              setState(() => _indiceSeleccionado = esAdmin ? 6 : 3);
+                              setState(
+                                () => _indiceSeleccionado = esAdmin ? 4 : 3,
+                              );
                               const RutaPerfil().go(context);
                             },
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-                              ),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 18,
-                                    backgroundColor: const Color(0xFF14B8A6).withValues(alpha: 0.2), // Sea green
-                                    backgroundImage: authState.fotoPerfil != null && authState.fotoPerfil!.isNotEmpty 
-                                      ? NetworkImage(authState.fotoPerfil!) 
-                                      : null,
-                                    child: authState.fotoPerfil == null || authState.fotoPerfil!.isEmpty
-                                      ? Text(
-                                          nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : 'U',
-                                          style: GoogleFonts.inter(color: const Color(0xFF14B8A6), fontWeight: FontWeight.bold),
-                                        )
-                                      : null,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Sección inferior de usuario
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (esExtendido)
+                            InkWell(
+                              onTap: () {
+                                setState(
+                                  () => _indiceSeleccionado = esAdmin ? 4 : 3,
+                                );
+                                const RutaPerfil().go(context);
+                              },
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.15),
                                   ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          nombre,
-                                          style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        Text(
-                                          rolTexto,
-                                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
-                                        ),
-                                      ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 18,
+                                      backgroundColor: const Color(
+                                        0xFF14B8A6,
+                                      ).withValues(alpha: 0.2), // Sea green
+                                      backgroundImage:
+                                          authState.fotoPerfil != null &&
+                                              authState.fotoPerfil!.isNotEmpty
+                                          ? NetworkImage(authState.fotoPerfil!)
+                                          : null,
+                                      child:
+                                          authState.fotoPerfil == null ||
+                                              authState.fotoPerfil!.isEmpty
+                                          ? Text(
+                                              nombre.isNotEmpty
+                                                  ? nombre
+                                                        .substring(0, 1)
+                                                        .toUpperCase()
+                                                  : 'U',
+                                              style: GoogleFonts.inter(
+                                                color: const Color(0xFF14B8A6),
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            )
+                                          : null,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            nombre,
+                                            style: GoogleFonts.inter(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            rolTexto,
+                                            style: GoogleFonts.inter(
+                                              color: Colors.white70,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          else
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundColor: const Color(
+                                0xFF14B8A6,
+                              ).withValues(alpha: 0.2),
+                              backgroundImage:
+                                  authState.fotoPerfil != null &&
+                                      authState.fotoPerfil!.isNotEmpty
+                                  ? NetworkImage(authState.fotoPerfil!)
+                                  : null,
+                              child:
+                                  authState.fotoPerfil == null ||
+                                      authState.fotoPerfil!.isEmpty
+                                  ? Text(
+                                      nombre.isNotEmpty
+                                          ? nombre.substring(0, 1).toUpperCase()
+                                          : 'U',
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFF14B8A6),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          const SizedBox(height: 12),
+
+                          // Botón de Cerrar Sesión
+                          IconButton(
+                            icon: const Icon(
+                              Icons.logout_rounded,
+                              color: Colors.white,
+                            ),
+                            tooltip: 'Cerrar Sesión',
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.white.withValues(
+                                alpha: 0.1,
+                              ),
+                              padding: const EdgeInsets.all(10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                          )
-                        else
-                          CircleAvatar(
-                            radius: 18,
-                            backgroundColor: const Color(0xFF14B8A6).withValues(alpha: 0.2),
-                            backgroundImage: authState.fotoPerfil != null && authState.fotoPerfil!.isNotEmpty 
-                              ? NetworkImage(authState.fotoPerfil!) 
-                              : null,
-                            child: authState.fotoPerfil == null || authState.fotoPerfil!.isEmpty
-                              ? Text(
-                                  nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : 'U',
-                                  style: GoogleFonts.inter(color: const Color(0xFF14B8A6), fontWeight: FontWeight.bold),
-                                )
-                              : null,
+                            onPressed: () {
+                              ref
+                                  .read(proveedorAutenticacion.notifier)
+                                  .cerrarSesion();
+                            },
                           ),
-                        const SizedBox(height: 12),
-                        
-                        // Botón de Cerrar Sesión
-                        IconButton(
-                          icon: const Icon(Icons.logout_rounded, color: Colors.white),
-                          tooltip: 'Cerrar Sesión',
-                          style: IconButton.styleFrom(
-                            backgroundColor: Colors.white.withValues(alpha: 0.1),
-                            padding: const EdgeInsets.all(10),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          onPressed: () {
-                            ref.read(proveedorAutenticacion.notifier).cerrarSesion();
-                          },
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
 
           // Área Principal de Contenido
           Expanded(
@@ -283,12 +327,10 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
           if (index == 0) const RutaDashboard().go(context);
           if (index == 1) const RutaTransito().go(context);
           if (index == 2) const RutaCuadres().go(context);
-          
+
           if (esAdmin) {
             if (index == 3) const RutaUsuarios().go(context);
-            if (index == 4) const RutaProductos().go(context);
-            if (index == 5) const RutaCamaras().go(context);
-            if (index == 6) const RutaPerfil().go(context);
+            if (index == 4) const RutaPerfil().go(context);
           } else {
             if (index == 3) const RutaPerfil().go(context);
           }
@@ -297,18 +339,42 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
         type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color(0xFF7EBFC9),
         unselectedItemColor: Colors.white60,
-        selectedLabelStyle: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 11),
-        unselectedLabelStyle: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 10),
+        selectedLabelStyle: GoogleFonts.inter(
+          fontWeight: FontWeight.bold,
+          fontSize: 11,
+        ),
+        unselectedLabelStyle: GoogleFonts.inter(
+          fontWeight: FontWeight.w500,
+          fontSize: 10,
+        ),
         items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard_rounded), label: 'Resumen'),
-          const BottomNavigationBarItem(icon: Icon(Icons.local_shipping_outlined), activeIcon: Icon(Icons.local_shipping_rounded), label: 'Tránsito'),
-          const BottomNavigationBarItem(icon: Icon(Icons.table_view_outlined), activeIcon: Icon(Icons.table_view_rounded), label: 'Cuadres'),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard_outlined),
+            activeIcon: Icon(Icons.dashboard_rounded),
+            label: 'Resumen',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.local_shipping_outlined),
+            activeIcon: Icon(Icons.local_shipping_rounded),
+            label: 'Tránsito',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.table_view_outlined),
+            activeIcon: Icon(Icons.table_view_rounded),
+            label: 'Cuadres',
+          ),
           if (esAdmin) ...[
-            const BottomNavigationBarItem(icon: Icon(Icons.people_alt_outlined), activeIcon: Icon(Icons.people_alt_rounded), label: 'Usuarios'),
-            const BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2_rounded), label: 'Productos'),
-            const BottomNavigationBarItem(icon: Icon(Icons.directions_car_filled_outlined), activeIcon: Icon(Icons.directions_car_filled_rounded), label: 'Cámaras'),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.people_alt_outlined),
+              activeIcon: Icon(Icons.people_alt_rounded),
+              label: 'Usuarios',
+            ),
           ],
-          const BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person_rounded), label: 'Perfil'),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person_rounded),
+            label: 'Perfil',
+          ),
         ],
       ),
     );
@@ -377,31 +443,40 @@ class _ItemMenuHoverState extends State<_ItemMenuHover> {
         decoration: BoxDecoration(
           color: widget.esActivo
               ? const Color(0xFF7EBFC9) // Celeste badge
-              : (_estaCerniendo ? Colors.white.withValues(alpha: 0.1) : Colors.transparent),
+              : (_estaCerniendo
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.transparent),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: widget.esActivo
                 ? const Color(0xFF7EBFC9)
-                : (_estaCerniendo ? Colors.white.withValues(alpha: 0.15) : Colors.transparent),
+                : (_estaCerniendo
+                      ? Colors.white.withValues(alpha: 0.15)
+                      : Colors.transparent),
             width: 1.5,
           ),
         ),
         child: ListTile(
           onTap: widget.onTap,
           dense: true,
-          hoverColor: Colors.transparent, // Desactivamos el hover por defecto para usar la animación del Container
+          hoverColor: Colors
+              .transparent, // Desactivamos el hover por defecto para usar la animación del Container
           mouseCursor: SystemMouseCursors.click,
           contentPadding: EdgeInsets.symmetric(
-            horizontal: widget.esExtendido ? 16 : 0, 
-            vertical: 2
+            horizontal: widget.esExtendido ? 16 : 0,
+            vertical: 2,
           ),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           title: widget.esExtendido
               ? Text(
                   widget.etiqueta,
                   style: GoogleFonts.inter(
                     color: colorResaltado,
-                    fontWeight: widget.esActivo ? FontWeight.bold : FontWeight.w500,
+                    fontWeight: widget.esActivo
+                        ? FontWeight.bold
+                        : FontWeight.w500,
                     fontSize: 14,
                   ),
                 )

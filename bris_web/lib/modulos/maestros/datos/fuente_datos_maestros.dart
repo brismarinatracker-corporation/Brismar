@@ -13,7 +13,7 @@ class FuenteDatosMaestros {
           .select()
           .eq('activo', true)
           .order('orden', ascending: true);
-          
+
       return (respuesta as List)
           .map((json) => EspecieModelo.desdeJson(json))
           .toList();
@@ -29,7 +29,7 @@ class FuenteDatosMaestros {
           .select()
           .eq('activo', true)
           .order('orden', ascending: true);
-          
+
       return (respuesta as List)
           .map((json) => TipoGastoModelo.desdeJson(json))
           .toList();

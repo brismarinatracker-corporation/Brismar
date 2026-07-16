@@ -77,19 +77,13 @@ class FuenteDatosDashboard {
 
   /// Cuenta los zarpes que se encuentran en un estado específico.
   Future<int> _contarZarpesPorEstado(String estado) async {
-    final count = await _cliente
-        .from('zarpes')
-        .count()
-        .eq('estado', estado);
+    final count = await _cliente.from('zarpes').count().eq('estado', estado);
     return count;
   }
 
   /// Cuenta los usuarios con la cuenta activa.
   Future<int> _contarUsuariosActivos() async {
-    final count = await _cliente
-        .from('usuarios')
-        .count()
-        .eq('activo', true);
+    final count = await _cliente.from('usuarios').count().eq('activo', true);
     return count;
   }
 

@@ -92,7 +92,7 @@ class _SeccionGastosState extends State<SeccionGastos> {
       if (total > 0) {
         widget.onGuardar(
           GastoWebModelo(
-            id: const Uuid().v4(),
+            id: Uuid().v4(),
             cuadreId: '', // Será sobreescrito en RepositorioEdicionZarpe
             tipo: 'Otros',
             concepto: concepto,
@@ -154,9 +154,7 @@ class _SeccionGastosState extends State<SeccionGastos> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                inputFormatters: [
-                  FormateadorMiles(),
-                ],
+                inputFormatters: [FormateadorMiles()],
                 decoration: InputDecoration(
                   labelText: e.key,
                   prefixText: 'S/ ',

@@ -43,21 +43,27 @@ class HojaLiquidacionExcel extends StatelessWidget {
   List<GastoWebModelo> get gastosAdministrativos {
     return cuadre.gastos.where((g) {
       if (g.tipo == 'Administrativo') return true;
-      
+
       // Por si hay registros antiguos sin el tipo correcto
       final c = g.concepto.toUpperCase().trim();
       return c == 'FACTURACION_PLANTA' ||
-             c == 'PESADOR_PLANTA' ||
-             c == 'GASTOS FINANCIEROS' ||
-             c == 'CERTIFICADO' ||
-             c == 'LIQUIDACION' ||
-             c == 'IMPUESTO DE RENTA';
+          c == 'PESADOR_PLANTA' ||
+          c == 'GASTOS FINANCIEROS' ||
+          c == 'CERTIFICADO' ||
+          c == 'LIQUIDACION' ||
+          c == 'IMPUESTO DE RENTA';
     }).toList();
   }
 
   /// Obtiene los gastos de muelle que no son administrativos.
   List<GastoWebModelo> get gastosMuelle {
-    return cuadre.gastos.where((g) => !gastosAdministrativos.contains(g)).toList();
+    return cuadre.gastos
+        .where(
+          (g) =>
+              !gastosAdministrativos.contains(g) &&
+              g.concepto.toUpperCase().trim() != 'OBSERVACIONES',
+        )
+        .toList();
   }
 
   /// Total acumulado de las compras.
@@ -70,7 +76,8 @@ class HojaLiquidacionExcel extends StatelessWidget {
   double get totalGastosMuelle => gastosMuelle.fold(0.0, (s, g) => s + g.total);
 
   /// Total acumulado de los gastos administrativos.
-  double get totalGastosAdmin => gastosAdministrativos.fold(0.0, (s, g) => s + g.total);
+  double get totalGastosAdmin =>
+      gastosAdministrativos.fold(0.0, (s, g) => s + g.total);
 
   /// Cantidad total de kilos comprados.
   double get kilosCompra => cuadre.compras.fold(0.0, (s, c) => s + c.kilos);
@@ -115,7 +122,11 @@ class HojaLiquidacionExcel extends StatelessWidget {
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
           child: DefaultTextStyle(
-            style: const TextStyle(color: Colors.black, fontSize: 11, fontFamily: 'Arial'),
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 11,
+              fontFamily: 'Arial',
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -172,9 +183,17 @@ class HojaLiquidacionExcel extends StatelessWidget {
           width: 250,
           child: Column(
             children: [
-              _construirTablaGastos('GASTOS MUELLE', gastosMuelle, totalGastosMuelle),
+              _construirTablaGastos(
+                'GASTOS MUELLE',
+                gastosMuelle,
+                totalGastosMuelle,
+              ),
               const SizedBox(height: 16),
-              _construirTablaGastos('GASTOS ADMINISTRATIVO', gastosAdministrativos, totalGastosAdmin),
+              _construirTablaGastos(
+                'GASTOS ADMINISTRATIVO',
+                gastosAdministrativos,
+                totalGastosAdmin,
+              ),
             ],
           ),
         ),
@@ -184,11 +203,21 @@ class HojaLiquidacionExcel extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _construirTablaResumen(totalVenta, totalCompra, totalGastosMuelle, totalGastosAdmin, utilidadNeta),
+              _construirTablaResumen(
+                totalVenta,
+                totalCompra,
+                totalGastosMuelle,
+                totalGastosAdmin,
+                utilidadNeta,
+              ),
               const SizedBox(height: 24),
               _construirTablaReparto(repartoEmpresa, repartoDaniel),
               const SizedBox(height: 32),
-              _construirRendimientoFooter(kilosVenta, kilosCompra, rendimientoKilos),
+              _construirRendimientoFooter(
+                kilosVenta,
+                kilosCompra,
+                rendimientoKilos,
+              ),
             ],
           ),
         ),
@@ -202,14 +231,22 @@ class HojaLiquidacionExcel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          _celdaIndependiente('MARGEN', '${(margen * 100).toStringAsFixed(2)}%', colorFondo: colorNaranjaClaro),
+          _celdaIndependiente(
+            'MARGEN',
+            '${(margen * 100).toStringAsFixed(2)}%',
+            colorFondo: colorNaranjaClaro,
+          ),
           const SizedBox(height: 180),
           _filaUtilidadDerecha('UTILIDAD BRUTA', utilidadBruta),
           const SizedBox(height: 90),
           _filaUtilidadDerecha('UTILIDAD OPERATIVA', utilidadOperativa),
           const SizedBox(height: 90),
           _filaUtilidadDerecha('UT. ANTES DE REPARTO', utilidadAntesReparto),
-          _filaValorSolo('UTILIDAD DE TERCEROS', utilidadTerceros, colorTexto: Colors.red),
+          _filaValorSolo(
+            'UTILIDAD DE TERCEROS',
+            utilidadTerceros,
+            colorTexto: Colors.red,
+          ),
           const SizedBox(height: 8),
           _filaUtilidadDerecha('UTILIDAD NETA', utilidadNeta),
         ],
@@ -230,12 +267,12 @@ class HojaLiquidacionExcel extends StatelessWidget {
         TableRow(
           decoration: const BoxDecoration(color: colorCelesteCabecera),
           children: [
-            const SizedBox.shrink(),
+            _celdaCabecera('MUELLE ${cuadre.muellePartida ?? ''}'),
             _celdaCabecera('PLACA ${cuadre.placa}'),
             const SizedBox.shrink(),
             _celdaCabecera('CAJAS: ${cuadre.cajasLlenas ?? 0}'),
-          ]
-        )
+          ],
+        ),
       ],
     );
   }
@@ -248,7 +285,10 @@ class HojaLiquidacionExcel extends StatelessWidget {
           color: colorCelesteTabla,
           padding: const EdgeInsets.symmetric(vertical: 4),
           alignment: Alignment.center,
-          child: const Text('COMPRA', style: TextStyle(fontWeight: FontWeight.bold)),
+          child: const Text(
+            'COMPRA',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
         Table(
           columnWidths: const {
@@ -285,7 +325,9 @@ class HojaLiquidacionExcel extends StatelessWidget {
 
   TableRow _construirFilaDatoCompra(CompraWebModelo c) {
     final fecha = cuadre.fechaZarpe != null
-        ? DateFormat('dd-MMM').format(DateTime.tryParse(cuadre.fechaZarpe!) ?? DateTime.now()).toUpperCase()
+        ? DateFormat('dd-MMM')
+              .format(DateTime.tryParse(cuadre.fechaZarpe!) ?? DateTime.now())
+              .toUpperCase()
         : '';
     return TableRow(
       children: [
@@ -320,7 +362,10 @@ class HojaLiquidacionExcel extends StatelessWidget {
           color: colorCelesteTabla,
           padding: const EdgeInsets.symmetric(vertical: 4),
           alignment: Alignment.center,
-          child: const Text('VENTA', style: TextStyle(fontWeight: FontWeight.bold)),
+          child: const Text(
+            'VENTA',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
         Table(
           columnWidths: const {
@@ -357,7 +402,9 @@ class HojaLiquidacionExcel extends StatelessWidget {
 
   TableRow _construirFilaDatoVenta(VentaWebModelo v) {
     final fecha = cuadre.fechaCuadre != null
-        ? DateFormat('dd-MMM').format(DateTime.tryParse(cuadre.fechaCuadre!) ?? DateTime.now()).toUpperCase()
+        ? DateFormat('dd-MMM')
+              .format(DateTime.tryParse(cuadre.fechaCuadre!) ?? DateTime.now())
+              .toUpperCase()
         : '';
     return TableRow(
       children: [
@@ -399,13 +446,17 @@ class HojaLiquidacionExcel extends StatelessWidget {
             _celdaCabecera('RENDIMIENTO', alineacion: Alignment.centerLeft),
             const SizedBox.shrink(),
             _celdaNumero(rendimiento, negrita: true),
-          ]
-        )
+          ],
+        ),
       ],
     );
   }
 
-  Widget _construirTablaGastos(String titulo, List<GastoWebModelo> gastos, double total) {
+  Widget _construirTablaGastos(
+    String titulo,
+    List<GastoWebModelo> gastos,
+    double total,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -413,13 +464,13 @@ class HojaLiquidacionExcel extends StatelessWidget {
           color: colorCelesteTabla,
           padding: const EdgeInsets.symmetric(vertical: 4),
           alignment: Alignment.center,
-          child: Text(titulo, style: const TextStyle(fontWeight: FontWeight.bold)),
+          child: Text(
+            titulo,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
         Table(
-          columnWidths: const {
-            0: FlexColumnWidth(2),
-            1: FixedColumnWidth(100),
-          },
+          columnWidths: const {0: FlexColumnWidth(2), 1: FixedColumnWidth(100)},
           border: TableBorder.all(color: colorBorde, width: 0.5),
           children: [
             _construirFilaCabeceraGastos(),
@@ -433,20 +484,12 @@ class HojaLiquidacionExcel extends StatelessWidget {
 
   TableRow _construirFilaCabeceraGastos() {
     return TableRow(
-      children: [
-        _celdaCabecera('DETALLE'),
-        _celdaCabecera('IMPORTE'),
-      ],
+      children: [_celdaCabecera('DETALLE'), _celdaCabecera('IMPORTE')],
     );
   }
 
   TableRow _construirFilaDatoGasto(GastoWebModelo g) {
-    return TableRow(
-      children: [
-        _celdaDato(g.concepto),
-        _celdaNumero(g.total),
-      ],
-    );
+    return TableRow(children: [_celdaDato(g.concepto), _celdaNumero(g.total)]);
   }
 
   TableRow _construirFilaTotalGastos(double total) {
@@ -458,12 +501,15 @@ class HojaLiquidacionExcel extends StatelessWidget {
     );
   }
 
-  Widget _construirTablaResumen(double v, double c, double gm, double ga, double neta) {
+  Widget _construirTablaResumen(
+    double v,
+    double c,
+    double gm,
+    double ga,
+    double neta,
+  ) {
     return Table(
-      columnWidths: const {
-        0: FlexColumnWidth(2),
-        1: FixedColumnWidth(100),
-      },
+      columnWidths: const {0: FlexColumnWidth(2), 1: FixedColumnWidth(100)},
       border: TableBorder.all(color: colorBorde, width: 1),
       children: [
         _construirFilaCabeceraResumen(),
@@ -482,14 +528,22 @@ class HojaLiquidacionExcel extends StatelessWidget {
       children: [
         Padding(
           padding: EdgeInsets.all(4.0),
-          child: Text('RESUMEN', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+          child: Text(
+            'RESUMEN',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
         ),
         SizedBox.shrink(),
       ],
     );
   }
 
-  TableRow _construirFilaResumenValor(String etiqueta, double valor, {bool negrita = false}) {
+  TableRow _construirFilaResumenValor(
+    String etiqueta,
+    double valor, {
+    bool negrita = false,
+  }) {
     return TableRow(
       children: [
         _celdaDato(etiqueta, negrita: negrita || etiqueta == 'TOTAL'),
@@ -512,14 +566,14 @@ class HojaLiquidacionExcel extends StatelessWidget {
             _celdaDato('50%', alineacion: Alignment.center),
             _celdaDato('EMPRESA', negrita: true),
             _celdaNumero(e),
-          ]
+          ],
         ),
         TableRow(
           children: [
             _celdaDato('50%', alineacion: Alignment.center),
             _celdaDato('DANIEL', negrita: true),
             _celdaNumero(d),
-          ]
+          ],
         ),
       ],
     );
@@ -538,15 +592,21 @@ class HojaLiquidacionExcel extends StatelessWidget {
           children: [
             _celdaCabecera('VENTA'),
             _celdaCabecera('COMPRA'),
-            Container(color: colorAmarillo, child: _celdaCabecera('RENDIMIENTO')),
-          ]
+            Container(
+              color: colorAmarillo,
+              child: _celdaCabecera('RENDIMIENTO'),
+            ),
+          ],
         ),
         TableRow(
           children: [
             _celdaNumero(v),
             _celdaNumero(c),
-            Container(color: colorAmarillo, child: _celdaNumero(r, negrita: true)),
-          ]
+            Container(
+              color: colorAmarillo,
+              child: _celdaNumero(r, negrita: true),
+            ),
+          ],
         ),
       ],
     );
@@ -562,27 +622,43 @@ class HojaLiquidacionExcel extends StatelessWidget {
           width: 200,
           color: colorAmarillo,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Text(etiqueta, style: const TextStyle(fontWeight: FontWeight.bold)),
+          child: Text(
+            etiqueta,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
         Container(
           width: 100,
           color: colorAmarillo,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           alignment: Alignment.centerRight,
-          child: Text(fmt.format(valor), style: TextStyle(fontWeight: FontWeight.bold, color: valor < 0 ? Colors.red : Colors.black)),
+          child: Text(
+            fmt.format(valor),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: valor < 0 ? Colors.red : Colors.black,
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _filaValorSolo(String etiqueta, double valor, {Color colorTexto = Colors.black}) {
+  Widget _filaValorSolo(
+    String etiqueta,
+    double valor, {
+    Color colorTexto = Colors.black,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
           width: 200,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Text(etiqueta, style: const TextStyle(fontWeight: FontWeight.bold)),
+          child: Text(
+            etiqueta,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
         Container(
           width: 100,
@@ -594,7 +670,11 @@ class HojaLiquidacionExcel extends StatelessWidget {
     );
   }
 
-  Widget _celdaIndependiente(String etiqueta, String valor, {Color colorFondo = Colors.white}) {
+  Widget _celdaIndependiente(
+    String etiqueta,
+    String valor, {
+    Color colorFondo = Colors.white,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -603,20 +683,32 @@ class HojaLiquidacionExcel extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           alignment: Alignment.centerLeft,
           decoration: BoxDecoration(border: Border.all(color: colorBorde)),
-          child: Text(etiqueta, style: const TextStyle(fontWeight: FontWeight.bold)),
+          child: Text(
+            etiqueta,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
         Container(
           width: 80,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           alignment: Alignment.centerRight,
-          decoration: BoxDecoration(color: colorFondo, border: Border.all(color: colorBorde)),
-          child: Text(valor, style: const TextStyle(fontWeight: FontWeight.bold)),
+          decoration: BoxDecoration(
+            color: colorFondo,
+            border: Border.all(color: colorBorde),
+          ),
+          child: Text(
+            valor,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
       ],
     );
   }
 
-  Widget _celdaCabecera(String texto, {Alignment alineacion = Alignment.center}) {
+  Widget _celdaCabecera(
+    String texto, {
+    Alignment alineacion = Alignment.center,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: Align(
@@ -626,12 +718,21 @@ class HojaLiquidacionExcel extends StatelessWidget {
     );
   }
 
-  Widget _celdaDato(String texto, {bool negrita = false, Alignment alineacion = Alignment.centerLeft}) {
+  Widget _celdaDato(
+    String texto, {
+    bool negrita = false,
+    Alignment alineacion = Alignment.centerLeft,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: Align(
         alignment: alineacion,
-        child: Text(texto, style: TextStyle(fontWeight: negrita ? FontWeight.bold : FontWeight.normal)),
+        child: Text(
+          texto,
+          style: TextStyle(
+            fontWeight: negrita ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
       ),
     );
   }
@@ -643,7 +744,9 @@ class HojaLiquidacionExcel extends StatelessWidget {
         alignment: Alignment.centerRight,
         child: Text(
           fmt.format(numero),
-          style: TextStyle(fontWeight: negrita ? FontWeight.bold : FontWeight.normal),
+          style: TextStyle(
+            fontWeight: negrita ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
       ),
     );

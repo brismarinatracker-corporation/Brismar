@@ -145,9 +145,7 @@ class DialogoCompra {
                                     const TextInputType.numberWithOptions(
                                       decimal: true,
                                     ),
-                                inputFormatters: [
-                                  FormateadorMiles(),
-                                ],
+                                inputFormatters: [FormateadorMiles()],
                                 decoration: _decoracionDialogo(
                                   '0',
                                   icono: Icons.scale_outlined,
@@ -173,9 +171,7 @@ class DialogoCompra {
                                     const TextInputType.numberWithOptions(
                                       decimal: true,
                                     ),
-                                inputFormatters: [
-                                  FormateadorMiles(),
-                                ],
+                                inputFormatters: [FormateadorMiles()],
                                 decoration: _decoracionDialogo(
                                   'S/ 0.00',
                                   icono: Icons.payments_outlined,
@@ -209,7 +205,7 @@ class DialogoCompra {
 
                     final String idAsignado =
                         (compra?.id == null || compra!.id.isEmpty)
-                        ? const Uuid().v4()
+                        ? Uuid().v4()
                         : compra.id;
 
                     final nueva = CompraWebModelo(

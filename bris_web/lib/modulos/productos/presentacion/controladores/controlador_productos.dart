@@ -5,9 +5,10 @@ import '../../datos/fuentes/fuente_datos_productos.dart';
 
 final fuenteDatosProductosProvider = Provider((ref) => FuenteDatosProductos());
 
-final controladorProductosProvider = AsyncNotifierProvider<ControladorProductos, List<Producto>>(() {
-  return ControladorProductos();
-});
+final controladorProductosProvider =
+    AsyncNotifierProvider<ControladorProductos, List<Producto>>(() {
+      return ControladorProductos();
+    });
 
 class ControladorProductos extends AsyncNotifier<List<Producto>> {
   late FuenteDatosProductos _fuenteDatos;
@@ -28,7 +29,9 @@ class ControladorProductos extends AsyncNotifier<List<Producto>> {
       } else {
         final actualizado = await _fuenteDatos.actualizarProducto(producto);
         if (state.hasValue) {
-          final listaActualizada = state.value!.map((e) => e.id == actualizado.id ? actualizado : e).toList();
+          final listaActualizada = state.value!
+              .map((e) => e.id == actualizado.id ? actualizado : e)
+              .toList();
           state = AsyncValue.data(listaActualizada);
         }
       }
@@ -40,7 +43,9 @@ class ControladorProductos extends AsyncNotifier<List<Producto>> {
 
   Future<void> alternarEstado(Producto producto) async {
     try {
-      final actualizado = producto.copyWith(estadoActivo: !producto.estadoActivo);
+      final actualizado = producto.copyWith(
+        estadoActivo: !producto.estadoActivo,
+      );
       await guardarProducto(actualizado);
     } catch (e) {
       rethrow;

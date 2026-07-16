@@ -65,8 +65,8 @@ class EstadoCuadresWeb {
     bool limpiarSeleccion = false,
   }) {
     final nuevosCuadres = cuadres ?? this.cuadres;
-    final nuevoIndice = cuadres != null 
-        ? {for (final c in nuevosCuadres) c.id: c} 
+    final nuevoIndice = cuadres != null
+        ? {for (final c in nuevosCuadres) c.id: c}
         : _indice;
 
     return EstadoCuadresWeb._conIndice(
@@ -77,10 +77,18 @@ class EstadoCuadresWeb {
       indice: nuevoIndice,
       paginaActual: paginaActual ?? this.paginaActual,
       hayMasPaginas: hayMasPaginas ?? this.hayMasPaginas,
-      filtroDesde: filtroDesde == _sentinel ? this.filtroDesde : filtroDesde as DateTime?,
-      filtroHasta: filtroHasta == _sentinel ? this.filtroHasta : filtroHasta as DateTime?,
-      filtroPlaca: filtroPlaca == _sentinel ? this.filtroPlaca : filtroPlaca as String?,
-      cuadreSeleccionadoId: limpiarSeleccion ? null : (cuadreSeleccionadoId ?? this.cuadreSeleccionadoId),
+      filtroDesde: filtroDesde == _sentinel
+          ? this.filtroDesde
+          : filtroDesde as DateTime?,
+      filtroHasta: filtroHasta == _sentinel
+          ? this.filtroHasta
+          : filtroHasta as DateTime?,
+      filtroPlaca: filtroPlaca == _sentinel
+          ? this.filtroPlaca
+          : filtroPlaca as String?,
+      cuadreSeleccionadoId: limpiarSeleccion
+          ? null
+          : (cuadreSeleccionadoId ?? this.cuadreSeleccionadoId),
     );
   }
 }
@@ -96,8 +104,8 @@ final fuenteCuadresWebProvider = Provider<FuenteDatosCuadresWeb>((ref) {
 
 final controladorCuadresWebProvider =
     NotifierProvider<ControladorCuadresWeb, EstadoCuadresWeb>(
-  ControladorCuadresWeb.new,
-);
+      ControladorCuadresWeb.new,
+    );
 
 // ─── Controlador ──────────────────────────────────────────────────────────────
 
@@ -132,11 +140,11 @@ class ControladorCuadresWeb extends Notifier<EstadoCuadresWeb> {
         limit: limit,
         offset: offset,
       );
-      
+
       final nuevosCuadres = esCargaMas ? [...state.cuadres, ...lista] : lista;
-      
+
       state = state.copiarCon(
-        cargando: false, 
+        cargando: false,
         cuadres: nuevosCuadres,
         paginaActual: nuevaPagina,
         hayMasPaginas: lista.length == limit,
@@ -160,7 +168,9 @@ class ControladorCuadresWeb extends Notifier<EstadoCuadresWeb> {
 
   /// Actualiza el filtro de placa y recarga.
   Future<void> aplicarFiltroPlaca(String? placa) async {
-    state = state.copiarCon(filtroPlaca: placa?.trim().isEmpty == true ? null : placa);
+    state = state.copiarCon(
+      filtroPlaca: placa?.trim().isEmpty == true ? null : placa,
+    );
     await cargarCuadres();
   }
 
@@ -180,7 +190,10 @@ class ControladorCuadresWeb extends Notifier<EstadoCuadresWeb> {
       await ServicioExportacion.exportarCuadreUnicoAExcel(cuadre);
       state = state.copiarCon(exportando: false);
     } on Exception catch (e) {
-      state = state.copiarCon(exportando: false, error: 'Error al exportar: $e');
+      state = state.copiarCon(
+        exportando: false,
+        error: 'Error al exportar: $e',
+      );
     }
   }
 }

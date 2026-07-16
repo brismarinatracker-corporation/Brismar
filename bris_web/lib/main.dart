@@ -31,7 +31,10 @@ void main() async {
           decoration: BoxDecoration(
             color: const Color(0xFF0F224A).withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3), width: 2),
+            border: Border.all(
+              color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+              width: 2,
+            ),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
@@ -43,11 +46,19 @@ void main() async {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.warning_rounded, color: Color(0xFF00E5FF), size: 64),
+              const Icon(
+                Icons.warning_rounded,
+                color: Color(0xFF00E5FF),
+                size: 64,
+              ),
               const SizedBox(height: 24),
               const Text(
                 'Ups, algo inesperado ocurrió',
-                style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -63,11 +74,7 @@ void main() async {
     );
   };
 
-  runApp(
-    const ProviderScope(
-      child: BrismarWebAdminApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: BrismarWebAdminApp()));
 }
 
 class BrismarWebAdminApp extends ConsumerWidget {
@@ -85,31 +92,66 @@ class BrismarWebAdminApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('es', 'ES'),
-        Locale('es'),
-      ],
+      supportedLocales: const [Locale('es', 'ES'), Locale('es')],
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF0E3E2C),
           brightness: Brightness.light,
         ),
-        textTheme: GoogleFonts.interTextTheme(baseTextTheme).copyWith(
-          displayLarge: GoogleFonts.sora(textStyle: baseTextTheme.displayLarge?.copyWith(color: const Color(0xFF15181A))),
-          displayMedium: GoogleFonts.sora(textStyle: baseTextTheme.displayMedium?.copyWith(color: const Color(0xFF15181A))),
-          displaySmall: GoogleFonts.sora(textStyle: baseTextTheme.displaySmall?.copyWith(color: const Color(0xFF15181A))),
-          headlineLarge: GoogleFonts.sora(textStyle: baseTextTheme.headlineLarge?.copyWith(color: const Color(0xFF15181A))),
-          headlineMedium: GoogleFonts.sora(textStyle: baseTextTheme.headlineMedium?.copyWith(color: const Color(0xFF15181A))),
-          headlineSmall: GoogleFonts.sora(textStyle: baseTextTheme.headlineSmall?.copyWith(color: const Color(0xFF15181A))),
-          titleLarge: GoogleFonts.sora(textStyle: baseTextTheme.titleLarge?.copyWith(color: const Color(0xFF15181A))),
-          titleMedium: GoogleFonts.sora(textStyle: baseTextTheme.titleMedium?.copyWith(color: const Color(0xFF15181A))),
-          titleSmall: GoogleFonts.sora(textStyle: baseTextTheme.titleSmall?.copyWith(color: const Color(0xFF15181A))),
-        ).apply(
-          bodyColor: const Color(0xFF15181A),
-          displayColor: const Color(0xFF15181A),
-        ),
-        scaffoldBackgroundColor: const Color(0xFFF2F6F3), 
+        textTheme: GoogleFonts.interTextTheme(baseTextTheme)
+            .copyWith(
+              displayLarge: GoogleFonts.sora(
+                textStyle: baseTextTheme.displayLarge?.copyWith(
+                  color: const Color(0xFF15181A),
+                ),
+              ),
+              displayMedium: GoogleFonts.sora(
+                textStyle: baseTextTheme.displayMedium?.copyWith(
+                  color: const Color(0xFF15181A),
+                ),
+              ),
+              displaySmall: GoogleFonts.sora(
+                textStyle: baseTextTheme.displaySmall?.copyWith(
+                  color: const Color(0xFF15181A),
+                ),
+              ),
+              headlineLarge: GoogleFonts.sora(
+                textStyle: baseTextTheme.headlineLarge?.copyWith(
+                  color: const Color(0xFF15181A),
+                ),
+              ),
+              headlineMedium: GoogleFonts.sora(
+                textStyle: baseTextTheme.headlineMedium?.copyWith(
+                  color: const Color(0xFF15181A),
+                ),
+              ),
+              headlineSmall: GoogleFonts.sora(
+                textStyle: baseTextTheme.headlineSmall?.copyWith(
+                  color: const Color(0xFF15181A),
+                ),
+              ),
+              titleLarge: GoogleFonts.sora(
+                textStyle: baseTextTheme.titleLarge?.copyWith(
+                  color: const Color(0xFF15181A),
+                ),
+              ),
+              titleMedium: GoogleFonts.sora(
+                textStyle: baseTextTheme.titleMedium?.copyWith(
+                  color: const Color(0xFF15181A),
+                ),
+              ),
+              titleSmall: GoogleFonts.sora(
+                textStyle: baseTextTheme.titleSmall?.copyWith(
+                  color: const Color(0xFF15181A),
+                ),
+              ),
+            )
+            .apply(
+              bodyColor: const Color(0xFF15181A),
+              displayColor: const Color(0xFF15181A),
+            ),
+        scaffoldBackgroundColor: const Color(0xFFF2F6F3),
       ),
       routerConfig: ref.watch(proveedorEnrutador),
     );

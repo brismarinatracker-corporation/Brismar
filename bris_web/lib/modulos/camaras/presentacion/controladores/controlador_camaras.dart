@@ -5,9 +5,10 @@ import '../../datos/fuentes/fuente_datos_camaras.dart';
 
 final fuenteDatosCamarasProvider = Provider((ref) => FuenteDatosCamaras());
 
-final controladorCamarasProvider = AsyncNotifierProvider<ControladorCamaras, List<Camara>>(() {
-  return ControladorCamaras();
-});
+final controladorCamarasProvider =
+    AsyncNotifierProvider<ControladorCamaras, List<Camara>>(() {
+      return ControladorCamaras();
+    });
 
 class ControladorCamaras extends AsyncNotifier<List<Camara>> {
   late FuenteDatosCamaras _fuenteDatos;
@@ -28,7 +29,9 @@ class ControladorCamaras extends AsyncNotifier<List<Camara>> {
       } else {
         final actualizado = await _fuenteDatos.actualizarCamara(camara);
         if (state.hasValue) {
-          final listaActualizada = state.value!.map((e) => e.id == actualizado.id ? actualizado : e).toList();
+          final listaActualizada = state.value!
+              .map((e) => e.id == actualizado.id ? actualizado : e)
+              .toList();
           state = AsyncValue.data(listaActualizada);
         }
       }

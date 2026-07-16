@@ -20,7 +20,9 @@ part 'enrutador.g.dart';
 final proveedorEnrutador = Provider<GoRouter>((ref) {
   // Usamos un ValueNotifier como refreshListenable para que GoRouter
   // evalúe el redirect SIN destruir y recrear toda la instancia del router.
-  final authNotifier = ValueNotifier<EstadoAutenticacion>(ref.read(proveedorAutenticacion));
+  final authNotifier = ValueNotifier<EstadoAutenticacion>(
+    ref.read(proveedorAutenticacion),
+  );
 
   ref.listen<EstadoAutenticacion>(proveedorAutenticacion, (_, next) {
     authNotifier.value = next;
@@ -48,12 +50,17 @@ final proveedorEnrutador = Provider<GoRouter>((ref) {
       // Si el rol es bahia, no tiene acceso al sistema web, lo devolvemos al login
       if (rol == 'bahia') {
         // Ejecutamos cierre de sesión automático de forma diferida para no interferir con el build
-        Future.microtask(() => ref.read(proveedorAutenticacion.notifier).cerrarSesion());
+        Future.microtask(
+          () => ref.read(proveedorAutenticacion.notifier).cerrarSesion(),
+        );
         return const RutaLogin().location;
       }
 
       // Si no es administrador y trata de acceder a rutas exclusivas, lo devolvemos al dashboard
-      if (rol != 'administrador' && (state.uri.path.startsWith('/usuarios') || state.uri.path.startsWith('/productos') || state.uri.path.startsWith('/camaras'))) {
+      if (rol != 'administrador' &&
+          (state.uri.path.startsWith('/usuarios') ||
+              state.uri.path.startsWith('/productos') ||
+              state.uri.path.startsWith('/camaras'))) {
         return const RutaDashboard().location;
       }
 
@@ -67,9 +74,7 @@ final proveedorEnrutador = Provider<GoRouter>((ref) {
     TypedGoRoute<RutaDashboard>(path: '/dashboard'),
     TypedGoRoute<RutaTransito>(
       path: '/transito',
-      routes: [
-        TypedGoRoute<RutaEdicionTransito>(path: 'editar/:id'),
-      ],
+      routes: [TypedGoRoute<RutaEdicionTransito>(path: 'editar/:id')],
     ),
     TypedGoRoute<RutaCuadres>(path: '/cuadres'),
     TypedGoRoute<RutaUsuarios>(path: '/usuarios'),

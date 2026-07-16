@@ -40,11 +40,11 @@ enum EstadoZarpe {
 
   /// Etiqueta legible para mostrar en la UI.
   String get etiqueta => switch (this) {
-        EstadoZarpe.despachado => 'En Tránsito',
-        EstadoZarpe.recibido => 'Recibido',
-        EstadoZarpe.pendiente => 'Pendiente',
-        EstadoZarpe.desconocido => 'Desconocido',
-      };
+    EstadoZarpe.despachado => 'En Tránsito',
+    EstadoZarpe.recibido => 'Recibido',
+    EstadoZarpe.pendiente => 'Pendiente',
+    EstadoZarpe.desconocido => 'Desconocido',
+  };
 
   /// Indica si el zarpe ya fue procesado en la planta.
   bool get estaFinalizado => this == EstadoZarpe.recibido;
@@ -69,7 +69,8 @@ enum EspeciePesca {
   const EspeciePesca(this.valor);
 
   /// Lista de todos los valores de string para DropdownButtonFormField.
-  static List<String> get todos => EspeciePesca.values.map((e) => e.valor).toList();
+  static List<String> get todos =>
+      EspeciePesca.values.map((e) => e.valor).toList();
 
   /// Construye desde string, retorna [EspeciePesca.pota] como defecto.
   factory EspeciePesca.desdeString(String? valor) {
@@ -91,12 +92,13 @@ enum TipoGasto {
   final String valor;
   const TipoGasto(this.valor);
 
-  static List<String> get todos => TipoGasto.values.map((e) => e.valor).toList();
+  static List<String> get todos =>
+      TipoGasto.values.map((e) => e.valor).toList();
 
   factory TipoGasto.desdeString(String? valor) => TipoGasto.values.firstWhere(
-        (e) => e.valor == valor?.toUpperCase(),
-        orElse: () => TipoGasto.otros,
-      );
+    (e) => e.valor == valor?.toUpperCase(),
+    orElse: () => TipoGasto.otros,
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -116,9 +118,11 @@ enum ConceptoGasto {
   final String valor;
   const ConceptoGasto(this.valor);
 
-  static List<String> get todos => ConceptoGasto.values.map((e) => e.valor).toList();
+  static List<String> get todos =>
+      ConceptoGasto.values.map((e) => e.valor).toList();
 
-  factory ConceptoGasto.desdeString(String? valor) => ConceptoGasto.values.firstWhere(
+  factory ConceptoGasto.desdeString(String? valor) =>
+      ConceptoGasto.values.firstWhere(
         (e) => e.valor == valor?.toUpperCase(),
         orElse: () => ConceptoGasto.otros,
       );

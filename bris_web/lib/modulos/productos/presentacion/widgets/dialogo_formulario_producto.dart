@@ -11,14 +11,17 @@ class DialogoFormularioProducto extends ConsumerStatefulWidget {
   const DialogoFormularioProducto({super.key, this.productoAEditar});
 
   @override
-  ConsumerState<DialogoFormularioProducto> createState() => _DialogoFormularioProductoState();
+  ConsumerState<DialogoFormularioProducto> createState() =>
+      _DialogoFormularioProductoState();
 }
 
-class _DialogoFormularioProductoState extends ConsumerState<DialogoFormularioProducto> with SingleTickerProviderStateMixin {
+class _DialogoFormularioProductoState
+    extends ConsumerState<DialogoFormularioProducto>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nombreCtrl;
   late TextEditingController _descripcionCtrl;
-  
+
   late AnimationController _animController;
   late Animation<Offset> _slideAnimation;
 
@@ -28,10 +31,14 @@ class _DialogoFormularioProductoState extends ConsumerState<DialogoFormularioPro
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 150));
-    _slideAnimation = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic)
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
     );
+    _slideAnimation = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+        );
     _animController.forward();
 
     final p = widget.productoAEditar;
@@ -69,7 +76,9 @@ class _DialogoFormularioProductoState extends ConsumerState<DialogoFormularioPro
         updatedAt: DateTime.now(),
       );
 
-      await ref.read(controladorProductosProvider.notifier).guardarProducto(producto);
+      await ref
+          .read(controladorProductosProvider.notifier)
+          .guardarProducto(producto);
       if (mounted) _cerrar();
     } catch (e) {
       if (mounted) {
@@ -82,8 +91,8 @@ class _DialogoFormularioProductoState extends ConsumerState<DialogoFormularioPro
   }
 
   Widget _construirCampo({
-    required String etiqueta, 
-    required TextEditingController controller, 
+    required String etiqueta,
+    required TextEditingController controller,
     int maxLines = 1,
     bool requerido = true,
   }) {
@@ -92,22 +101,63 @@ class _DialogoFormularioProductoState extends ConsumerState<DialogoFormularioPro
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(etiqueta.toUpperCase(), style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 11, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
+          Text(
+            etiqueta.toUpperCase(),
+            style: GoogleFonts.inter(
+              color: const Color(0xFF64748B),
+              fontSize: 11,
+              letterSpacing: 1.2,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
             maxLines: maxLines,
-            style: GoogleFonts.inter(color: const Color(0xFF15181A), fontSize: 15, fontWeight: FontWeight.w500),
+            style: GoogleFonts.inter(
+              color: const Color(0xFF15181A),
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0E3E2C), width: 2.0)),
-              errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
-              focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 2.0)),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 18,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Color(0xFFE2E8F0),
+                  width: 1.5,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Color(0xFF0E3E2C),
+                  width: 2.0,
+                ),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Colors.redAccent,
+                  width: 1.5,
+                ),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Colors.redAccent,
+                  width: 2.0,
+                ),
+              ),
             ),
-            validator: requerido ? (v) => v!.trim().isEmpty ? 'Requerido' : null : null,
+            validator: requerido
+                ? (v) => v!.trim().isEmpty ? 'Requerido' : null
+                : null,
           ),
         ],
       ),
@@ -137,9 +187,15 @@ class _DialogoFormularioProductoState extends ConsumerState<DialogoFormularioPro
                 height: double.infinity,
                 decoration: BoxDecoration(
                   color: const Color(0xFFF7F7F7),
-                  border: const Border(left: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+                  border: const Border(
+                    left: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                  ),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 24, offset: const Offset(-8, 0)),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 24,
+                      offset: const Offset(-8, 0),
+                    ),
                   ],
                 ),
                 child: Column(
@@ -147,16 +203,36 @@ class _DialogoFormularioProductoState extends ConsumerState<DialogoFormularioPro
                     // Header
                     Container(
                       padding: const EdgeInsets.all(32),
-                      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1))),
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Color(0xFFE2E8F0),
+                            width: 1,
+                          ),
+                        ),
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(esEdicion ? 'Editar Producto' : 'Nuevo Producto', style: GoogleFonts.sora(color: const Color(0xFF15181A), fontSize: 24, fontWeight: FontWeight.bold)),
-                          IconButton(icon: const Icon(Icons.close, color: Color(0xFF64748B)), onPressed: _cerrar),
+                          Text(
+                            esEdicion ? 'Editar Producto' : 'Nuevo Producto',
+                            style: GoogleFonts.sora(
+                              color: const Color(0xFF15181A),
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.close,
+                              color: Color(0xFF64748B),
+                            ),
+                            onPressed: _cerrar,
+                          ),
                         ],
                       ),
                     ),
-                    
+
                     // Form Content
                     Expanded(
                       child: SingleChildScrollView(
@@ -171,15 +247,36 @@ class _DialogoFormularioProductoState extends ConsumerState<DialogoFormularioPro
                                   margin: const EdgeInsets.only(bottom: 24),
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Colors.redAccent.withValues(alpha: 0.1),
-                                    border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                                    color: Colors.redAccent.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    border: Border.all(
+                                      color: Colors.redAccent.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                    ),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
-                                  child: Text(_mensajeError!, style: GoogleFonts.inter(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.w500)),
+                                  child: Text(
+                                    _mensajeError!,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.redAccent,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
                                 ),
-                              
-                              _construirCampo(etiqueta: 'Nombre del Producto', controller: _nombreCtrl),
-                              _construirCampo(etiqueta: 'Descripción', controller: _descripcionCtrl, maxLines: 3, requerido: false),
+
+                              _construirCampo(
+                                etiqueta: 'Nombre del Producto',
+                                controller: _nombreCtrl,
+                              ),
+                              _construirCampo(
+                                etiqueta: 'Descripción',
+                                controller: _descripcionCtrl,
+                                maxLines: 3,
+                                requerido: false,
+                              ),
                             ],
                           ),
                         ),
@@ -191,7 +288,9 @@ class _DialogoFormularioProductoState extends ConsumerState<DialogoFormularioPro
                       padding: const EdgeInsets.all(32),
                       decoration: const BoxDecoration(
                         color: Colors.white,
-                        border: Border(top: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+                        border: Border(
+                          top: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                        ),
                       ),
                       child: SizedBox(
                         width: double.infinity,
@@ -200,13 +299,22 @@ class _DialogoFormularioProductoState extends ConsumerState<DialogoFormularioPro
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF0E3E2C),
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             elevation: 0,
                           ),
                           onPressed: _guardando ? null : _guardar,
-                          child: _guardando 
+                          child: _guardando
                               ? const CargaOrbital(tamano: 24)
-                              : Text('Guardar Cambios', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                              : Text(
+                                  'Guardar Cambios',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                         ),
                       ),
                     ),

@@ -18,7 +18,12 @@ class EstadoDashboard {
     this.kpis = const DashboardKpis(),
   });
 
-  EstadoDashboard copiarCon({bool? cargando, String? error, DashboardKpis? kpis, bool limpiarError = false}) {
+  EstadoDashboard copiarCon({
+    bool? cargando,
+    String? error,
+    DashboardKpis? kpis,
+    bool limpiarError = false,
+  }) {
     return EstadoDashboard(
       cargando: cargando ?? this.cargando,
       error: limpiarError ? null : (error ?? this.error),
@@ -35,8 +40,8 @@ final fuenteDashboardProvider = Provider<FuenteDatosDashboard>((ref) {
 
 final controladorDashboardProvider =
     NotifierProvider<ControladorDashboard, EstadoDashboard>(
-  ControladorDashboard.new,
-);
+      ControladorDashboard.new,
+    );
 
 // ─── Controlador ──────────────────────────────────────────────────────────────
 
@@ -67,8 +72,10 @@ class ControladorDashboard extends Notifier<EstadoDashboard> {
       state = state.copiarCon(cargando: false, kpis: kpis);
     } catch (e, st) {
       debugPrint('=== ERROR EN DASHBOARD ===\n$e\n$st');
-      state = state.copiarCon(cargando: false, error: 'Ocurrió un error inesperado: $e');
+      state = state.copiarCon(
+        cargando: false,
+        error: 'Ocurrió un error inesperado: $e',
+      );
     }
   }
 }
-

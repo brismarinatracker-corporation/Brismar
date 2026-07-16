@@ -122,7 +122,18 @@ class _PantallaEdicionTransitoState
           _tipoCtrl.text = cuadre.tipo ?? '';
           _cuadrillaCtrl.text = cuadre.cuadrilla ?? '';
           _tipoProductoSeleccionado = cuadre.tipoProducto;
-          if (_tipoProductoSeleccionado != null && !['CATANA', 'POTA', '1a', '2a', 'Destare', 'Caballa', 'BONITO', 'JUREL', 'OTROS'].contains(_tipoProductoSeleccionado)) {
+          if (_tipoProductoSeleccionado != null &&
+              ![
+                'CATANA',
+                'POTA',
+                '1a',
+                '2a',
+                'Destare',
+                'Caballa',
+                'BONITO',
+                'JUREL',
+                'OTROS',
+              ].contains(_tipoProductoSeleccionado)) {
             _otroProductoCtrl.text = _tipoProductoSeleccionado!;
             _tipoProductoSeleccionado = 'OTROS';
           }
@@ -167,8 +178,12 @@ class _PantallaEdicionTransitoState
         pesoTotal: double.tryParse(_pesoTotalCtrl.text.trim()),
         cajasLlenas: int.tryParse(_cajasLlenasCtrl.text.trim()),
         cajasVacias: int.tryParse(_cajasVaciasCtrl.text) ?? 0,
-        tipoProducto: _tipoProductoSeleccionado == 'OTROS' ? _otroProductoCtrl.text.trim().toUpperCase() : _tipoProductoSeleccionado,
-        pesador: _pesadorCtrl.text.trim().isEmpty ? null : _pesadorCtrl.text.trim().toUpperCase(),
+        tipoProducto: _tipoProductoSeleccionado == 'OTROS'
+            ? _otroProductoCtrl.text.trim().toUpperCase()
+            : _tipoProductoSeleccionado,
+        pesador: _pesadorCtrl.text.trim().isEmpty
+            ? null
+            : _pesadorCtrl.text.trim().toUpperCase(),
         tipo: _tipoCtrl.text.trim(),
         cuadrilla: _cuadrillaCtrl.text.trim(),
         compras: _compras,
@@ -247,11 +262,217 @@ class _PantallaEdicionTransitoState
     }
   }
 
+  Future<void> _guardarParcial(String mensaje) async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _cargando = true);
+    try {
+      final repo = ref.read(proveedorRepositorioEdicionZarpe);
+      final params = EdicionZarpeParams(
+        id: widget.id,
+        placa: _placaCtrl.text.trim(),
+        chofer: _choferCtrl.text.trim(),
+        muellePartida: _muelleCtrl.text.trim(),
+        observaciones: _observacionesCtrl.text.trim(),
+        pesoTotal: double.tryParse(_pesoTotalCtrl.text.trim()),
+        cajasLlenas: int.tryParse(_cajasLlenasCtrl.text.trim()),
+        cajasVacias: int.tryParse(_cajasVaciasCtrl.text) ?? 0,
+        tipoProducto: _tipoProductoSeleccionado == 'OTROS'
+            ? _otroProductoCtrl.text.trim().toUpperCase()
+            : _tipoProductoSeleccionado,
+        pesador: _pesadorCtrl.text.trim().isEmpty
+            ? null
+            : _pesadorCtrl.text.trim().toUpperCase(),
+        tipo: _tipoCtrl.text.trim(),
+        cuadrilla: _cuadrillaCtrl.text.trim(),
+        compras: _compras,
+        gastos: _gastos,
+        ventas: _ventas,
+      );
+      await repo.guardarEdicion(params);
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (c) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 28),
+                SizedBox(width: 12),
+                Text(
+                  '¡Guardado!',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            content: Text(mensaje),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(c),
+                child: const Text(
+                  'Aceptar',
+                  style: TextStyle(
+                    color: Color(0xFF00796B),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (c) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Row(
+              children: [
+                Icon(Icons.error, color: Colors.red, size: 28),
+                SizedBox(width: 12),
+                Text('Error', style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: Text('No se pudo guardar: $e'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(c),
+                child: const Text(
+                  'Aceptar',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _cargando = false);
+    }
+  }
+
+  Future<void> _finalizarViaje() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Finalizar Viaje'),
+        content: const Text('¿Estás seguro que deseas finalizar este viaje?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text(
+              'Sí, Finalizar',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _cargando = true);
+    try {
+      final repo = ref.read(proveedorRepositorioEdicionZarpe);
+      final params = EdicionZarpeParams(
+        id: widget.id,
+        placa: _placaCtrl.text.trim(),
+        chofer: _choferCtrl.text.trim(),
+        muellePartida: _muelleCtrl.text.trim(),
+        observaciones: _observacionesCtrl.text.trim(),
+        pesoTotal: double.tryParse(_pesoTotalCtrl.text.trim()),
+        cajasLlenas: int.tryParse(_cajasLlenasCtrl.text.trim()),
+        cajasVacias: int.tryParse(_cajasVaciasCtrl.text) ?? 0,
+        tipoProducto: _tipoProductoSeleccionado == 'OTROS'
+            ? _otroProductoCtrl.text.trim().toUpperCase()
+            : _tipoProductoSeleccionado,
+        pesador: _pesadorCtrl.text.trim().isEmpty
+            ? null
+            : _pesadorCtrl.text.trim().toUpperCase(),
+        tipo: _tipoCtrl.text.trim(),
+        cuadrilla: _cuadrillaCtrl.text.trim(),
+        compras: _compras,
+        gastos: _gastos,
+        ventas: _ventas,
+      );
+      await repo.guardarEdicion(params);
+      await repo.finalizarViaje(widget.id);
+
+      if (mounted) {
+        await showDialog(
+          context: context,
+          builder: (c) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 28),
+                SizedBox(width: 12),
+                Text(
+                  '¡Finalizado!',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            content: const Text('El viaje se ha finalizado correctamente.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(c),
+                child: const Text(
+                  'Aceptar',
+                  style: TextStyle(
+                    color: Color(0xFF00796B),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+        ref.read(proveedorTransito.notifier).recargar();
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (c) => AlertDialog(
+            title: const Text('Error'),
+            content: Text('No se pudo finalizar: $e'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(c),
+                child: const Text('Aceptar'),
+              ),
+            ],
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _cargando = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(proveedorAutenticacion);
+    final estaFinalizado = _zarpeInfo?.estado.estaFinalizado ?? false;
     final esSoloLectura =
-        authState.rol == 'administrador' || authState.rol == 'supervisor';
+        authState.rol == 'administrador' ||
+        authState.rol == 'supervisor' ||
+        estaFinalizado;
 
     if (_cargando && _zarpeInfo == null) {
       return const Scaffold(
@@ -301,7 +522,10 @@ class _PantallaEdicionTransitoState
                             padding: const EdgeInsets.all(32),
                             child: AbsorbPointer(
                               absorbing: esSoloLectura,
-                              child: _construirContenidoPasoActual(urlsFotos),
+                              child: _construirContenidoPasoActual(
+                                urlsFotos,
+                                esSoloLectura,
+                              ),
                             ),
                           ),
                         ),
@@ -559,7 +783,10 @@ class _PantallaEdicionTransitoState
     );
   }
 
-  Widget _construirContenidoPasoActual(List<String> urlsFotos) {
+  Widget _construirContenidoPasoActual(
+    List<String> urlsFotos,
+    bool esSoloLectura,
+  ) {
     switch (_pasoActual) {
       case 0:
         return Column(
@@ -579,9 +806,16 @@ class _PantallaEdicionTransitoState
               tipoCtrl: _tipoCtrl,
               cuadrillaCtrl: _cuadrillaCtrl,
               observacionesCtrl: _observacionesCtrl,
-              tipoProductoActual: _tipoProductoSeleccionado == 'OTROS' ? _otroProductoCtrl.text : _tipoProductoSeleccionado,
+              tipoProductoActual: _tipoProductoSeleccionado == 'OTROS'
+                  ? _otroProductoCtrl.text
+                  : _tipoProductoSeleccionado,
               onTipoProductoCambiado: (v) =>
                   setState(() => _tipoProductoSeleccionado = v),
+            ),
+            _botonGuardarSeccion(
+              'Guardar Datos Iniciales',
+              '¡Datos iniciales de Zarpe guardados con éxito!',
+              esSoloLectura,
             ),
           ],
         );
@@ -619,6 +853,11 @@ class _PantallaEdicionTransitoState
               onEliminar: (id) =>
                   setState(() => _gastos.removeWhere((item) => item.id == id)),
             ),
+            _botonGuardarSeccion(
+              'Guardar Compras y Gastos Muelle',
+              '¡Compras y Gastos de Muelle guardados con éxito!',
+              esSoloLectura,
+            ),
           ],
         );
       case 2:
@@ -640,6 +879,11 @@ class _PantallaEdicionTransitoState
               onEliminar: (id) =>
                   setState(() => _ventas.removeWhere((item) => item.id == id)),
             ),
+            _botonGuardarSeccion(
+              'Guardar Ventas',
+              '¡Ventas guardadas con éxito!',
+              esSoloLectura,
+            ),
           ],
         );
       case 3:
@@ -649,6 +893,11 @@ class _PantallaEdicionTransitoState
             _tituloSeccion('Paso 4: Gastos Administrativos (Trabajador/Admin)'),
             SeccionGastosAdministrativos(
               gastos: _gastos,
+              onGuardarSeccion: esSoloLectura
+                  ? null
+                  : () => _guardarParcial(
+                      '¡Gastos Administrativos guardados con éxito!',
+                    ),
               onGuardar: (g) {
                 setState(() {
                   final idx = _gastos.indexWhere((item) => item.id == g.id);
@@ -661,11 +910,67 @@ class _PantallaEdicionTransitoState
               onEliminar: (id) =>
                   setState(() => _gastos.removeWhere((item) => item.id == id)),
             ),
+            _botonFinalizarViajeBtn(esSoloLectura),
           ],
         );
       default:
         return const SizedBox();
     }
+  }
+
+  Widget _botonGuardarSeccion(
+    String titulo,
+    String mensaje,
+    bool esSoloLectura,
+  ) {
+    if (esSoloLectura) return const SizedBox();
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 24),
+      child: ElevatedButton.icon(
+        icon: const Icon(Icons.save, size: 18, color: Colors.white),
+        label: Text(
+          titulo,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF00796B),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 2,
+        ),
+        onPressed: () => _guardarParcial(mensaje),
+      ),
+    );
+  }
+
+  Widget _botonFinalizarViajeBtn(bool esSoloLectura) {
+    if (esSoloLectura) return const SizedBox();
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 16),
+      child: ElevatedButton.icon(
+        icon: const Icon(Icons.lock, size: 18, color: Colors.white),
+        label: const Text(
+          'Finalizar Viaje (Cerrar Cuadre)',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red.shade600,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 2,
+        ),
+        onPressed: _finalizarViaje,
+      ),
+    );
   }
 
   Widget _tituloSeccion(String titulo) {

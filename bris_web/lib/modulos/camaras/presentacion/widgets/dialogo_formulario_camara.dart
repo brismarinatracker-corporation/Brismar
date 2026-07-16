@@ -12,16 +12,19 @@ class DialogoFormularioCamara extends ConsumerStatefulWidget {
   const DialogoFormularioCamara({super.key, this.camaraAEditar});
 
   @override
-  ConsumerState<DialogoFormularioCamara> createState() => _DialogoFormularioCamaraState();
+  ConsumerState<DialogoFormularioCamara> createState() =>
+      _DialogoFormularioCamaraState();
 }
 
-class _DialogoFormularioCamaraState extends ConsumerState<DialogoFormularioCamara> with SingleTickerProviderStateMixin {
+class _DialogoFormularioCamaraState
+    extends ConsumerState<DialogoFormularioCamara>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _placaCtrl;
   late TextEditingController _choferCtrl;
   late TextEditingController _marcaCtrl;
   late TextEditingController _capacidadCtrl;
-  
+
   late AnimationController _animController;
   late Animation<Offset> _slideAnimation;
 
@@ -31,17 +34,23 @@ class _DialogoFormularioCamaraState extends ConsumerState<DialogoFormularioCamar
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 150));
-    _slideAnimation = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic)
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
     );
+    _slideAnimation = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+        );
     _animController.forward();
 
     final c = widget.camaraAEditar;
     _placaCtrl = TextEditingController(text: c?.placa ?? '');
     _choferCtrl = TextEditingController(text: c?.chofer ?? '');
     _marcaCtrl = TextEditingController(text: c?.marca ?? '');
-    _capacidadCtrl = TextEditingController(text: c?.capacidadKg != null ? c!.capacidadKg.toString() : '');
+    _capacidadCtrl = TextEditingController(
+      text: c?.capacidadKg != null ? c!.capacidadKg.toString() : '',
+    );
   }
 
   @override
@@ -91,8 +100,8 @@ class _DialogoFormularioCamaraState extends ConsumerState<DialogoFormularioCamar
   }
 
   Widget _construirCampo({
-    required String etiqueta, 
-    required TextEditingController controller, 
+    required String etiqueta,
+    required TextEditingController controller,
     bool requerido = true,
     bool esNumero = false,
   }) {
@@ -101,23 +110,68 @@ class _DialogoFormularioCamaraState extends ConsumerState<DialogoFormularioCamar
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(etiqueta.toUpperCase(), style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 11, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
+          Text(
+            etiqueta.toUpperCase(),
+            style: GoogleFonts.inter(
+              color: const Color(0xFF64748B),
+              fontSize: 11,
+              letterSpacing: 1.2,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
-            keyboardType: esNumero ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
-            inputFormatters: esNumero ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))] : [],
-            style: GoogleFonts.inter(color: const Color(0xFF15181A), fontSize: 15, fontWeight: FontWeight.w500),
+            keyboardType: esNumero
+                ? const TextInputType.numberWithOptions(decimal: true)
+                : TextInputType.text,
+            inputFormatters: esNumero
+                ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
+                : [],
+            style: GoogleFonts.inter(
+              color: const Color(0xFF15181A),
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0E3E2C), width: 2.0)),
-              errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
-              focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 2.0)),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 18,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Color(0xFFE2E8F0),
+                  width: 1.5,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Color(0xFF0E3E2C),
+                  width: 2.0,
+                ),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Colors.redAccent,
+                  width: 1.5,
+                ),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Colors.redAccent,
+                  width: 2.0,
+                ),
+              ),
             ),
-            validator: requerido ? (v) => v!.trim().isEmpty ? 'Requerido' : null : null,
+            validator: requerido
+                ? (v) => v!.trim().isEmpty ? 'Requerido' : null
+                : null,
           ),
         ],
       ),
@@ -147,9 +201,15 @@ class _DialogoFormularioCamaraState extends ConsumerState<DialogoFormularioCamar
                 height: double.infinity,
                 decoration: BoxDecoration(
                   color: const Color(0xFFF7F7F7),
-                  border: const Border(left: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+                  border: const Border(
+                    left: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                  ),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 24, offset: const Offset(-8, 0)),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 24,
+                      offset: const Offset(-8, 0),
+                    ),
                   ],
                 ),
                 child: Column(
@@ -157,16 +217,36 @@ class _DialogoFormularioCamaraState extends ConsumerState<DialogoFormularioCamar
                     // Header
                     Container(
                       padding: const EdgeInsets.all(32),
-                      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1))),
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Color(0xFFE2E8F0),
+                            width: 1,
+                          ),
+                        ),
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(esEdicion ? 'Editar Cámara' : 'Nueva Cámara', style: GoogleFonts.sora(color: const Color(0xFF15181A), fontSize: 24, fontWeight: FontWeight.bold)),
-                          IconButton(icon: const Icon(Icons.close, color: Color(0xFF64748B)), onPressed: _cerrar),
+                          Text(
+                            esEdicion ? 'Editar Cámara' : 'Nueva Cámara',
+                            style: GoogleFonts.sora(
+                              color: const Color(0xFF15181A),
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.close,
+                              color: Color(0xFF64748B),
+                            ),
+                            onPressed: _cerrar,
+                          ),
                         ],
                       ),
                     ),
-                    
+
                     // Form Content
                     Expanded(
                       child: SingleChildScrollView(
@@ -181,17 +261,46 @@ class _DialogoFormularioCamaraState extends ConsumerState<DialogoFormularioCamar
                                   margin: const EdgeInsets.only(bottom: 24),
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Colors.redAccent.withValues(alpha: 0.1),
-                                    border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                                    color: Colors.redAccent.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    border: Border.all(
+                                      color: Colors.redAccent.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                    ),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
-                                  child: Text(_mensajeError!, style: GoogleFonts.inter(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.w500)),
+                                  child: Text(
+                                    _mensajeError!,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.redAccent,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
                                 ),
-                              
-                              _construirCampo(etiqueta: 'Placa', controller: _placaCtrl),
-                              _construirCampo(etiqueta: 'Nombre del Chofer', controller: _choferCtrl, requerido: false),
-                              _construirCampo(etiqueta: 'Marca', controller: _marcaCtrl, requerido: false),
-                              _construirCampo(etiqueta: 'Capacidad Total (KG)', controller: _capacidadCtrl, requerido: false, esNumero: true),
+
+                              _construirCampo(
+                                etiqueta: 'Placa',
+                                controller: _placaCtrl,
+                              ),
+                              _construirCampo(
+                                etiqueta: 'Nombre del Chofer',
+                                controller: _choferCtrl,
+                                requerido: false,
+                              ),
+                              _construirCampo(
+                                etiqueta: 'Marca',
+                                controller: _marcaCtrl,
+                                requerido: false,
+                              ),
+                              _construirCampo(
+                                etiqueta: 'Capacidad Total (KG)',
+                                controller: _capacidadCtrl,
+                                requerido: false,
+                                esNumero: true,
+                              ),
                             ],
                           ),
                         ),
@@ -203,7 +312,9 @@ class _DialogoFormularioCamaraState extends ConsumerState<DialogoFormularioCamar
                       padding: const EdgeInsets.all(32),
                       decoration: const BoxDecoration(
                         color: Colors.white,
-                        border: Border(top: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+                        border: Border(
+                          top: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                        ),
                       ),
                       child: SizedBox(
                         width: double.infinity,
@@ -212,13 +323,22 @@ class _DialogoFormularioCamaraState extends ConsumerState<DialogoFormularioCamar
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF0E3E2C),
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             elevation: 0,
                           ),
                           onPressed: _guardando ? null : _guardar,
-                          child: _guardando 
+                          child: _guardando
                               ? const CargaOrbital(tamano: 24)
-                              : Text('Guardar Cambios', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                              : Text(
+                                  'Guardar Cambios',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                         ),
                       ),
                     ),

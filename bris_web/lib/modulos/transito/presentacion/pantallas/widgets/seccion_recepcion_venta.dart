@@ -178,9 +178,7 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
-                            inputFormatters: [
-                              FormateadorMiles(),
-                            ],
+                            inputFormatters: [FormateadorMiles()],
                             decoration: _decoracionInput('0.00'),
                           ),
                         ],
@@ -197,9 +195,7 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
-                            inputFormatters: [
-                              FormateadorMiles(),
-                            ],
+                            inputFormatters: [FormateadorMiles()],
                             decoration: _decoracionInput('S/ 0.00'),
                           ),
                         ],

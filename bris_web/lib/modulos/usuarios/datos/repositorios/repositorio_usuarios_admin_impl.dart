@@ -18,8 +18,14 @@ class RepositorioUsuariosAdminImpl implements RepositorioUsuariosAdmin {
   }
 
   @override
-  Future<void> actualizarUsuario(UsuarioAdminModelo usuario, {String? nuevaPassword}) {
-    return _fuenteDatos.actualizarUsuario(usuario, nuevaPassword: nuevaPassword);
+  Future<void> actualizarUsuario(
+    UsuarioAdminModelo usuario, {
+    String? nuevaPassword,
+  }) {
+    return _fuenteDatos.actualizarUsuario(
+      usuario,
+      nuevaPassword: nuevaPassword,
+    );
   }
 
   @override
@@ -33,7 +39,11 @@ class RepositorioUsuariosAdminImpl implements RepositorioUsuariosAdmin {
   }
 
   @override
-  Future<String> subirAvatar(String idUnico, dynamic archivoBytes, String extension) {
+  Future<String> subirAvatar(
+    String idUnico,
+    dynamic archivoBytes,
+    String extension,
+  ) {
     return _fuenteDatos.subirAvatar(idUnico, archivoBytes, extension);
   }
 }

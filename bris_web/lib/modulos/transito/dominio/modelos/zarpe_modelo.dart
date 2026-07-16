@@ -64,7 +64,9 @@ class ZarpeModelo {
       numeroChofer: json['numero_chofer'] as String? ?? '-',
       muellePartida: json['muelle_partida'] as String? ?? '',
       muelleDestino: json['muelle_destino'] as String?,
-      estado: EstadoZarpe.desdeDb((json['estado_transito'] ?? json['estado']) as String?),
+      estado: EstadoZarpe.desdeDb(
+        (json['estado_transito'] ?? json['estado']) as String?,
+      ),
       fechaZarpe: _parsearFecha(json['fecha_zarpe']),
       fotoUrlEvidencia: json['foto_url_evidencia'] as String?,
       numeroCajas: (json['numero_cajas'] as num?)?.toInt(),
@@ -88,7 +90,8 @@ class ZarpeModelo {
       'muelle_partida': muellePartida,
       if (muelleDestino != null) 'muelle_destino': muelleDestino,
       'estado': estado.valorDb,
-      if (fechaZarpe != null) 'fecha_zarpe': fechaZarpe!.toIso8601String().substring(0, 10),
+      if (fechaZarpe != null)
+        'fecha_zarpe': fechaZarpe!.toIso8601String().substring(0, 10),
       if (observaciones != null) 'observaciones': observaciones,
     };
   }
@@ -145,5 +148,6 @@ class ZarpeModelo {
   int get hashCode => id.hashCode;
 
   @override
-  String toString() => 'ZarpeModelo(id: $id, placa: $placaCamara, estado: ${estado.valorDb})';
+  String toString() =>
+      'ZarpeModelo(id: $id, placa: $placaCamara, estado: ${estado.valorDb})';
 }

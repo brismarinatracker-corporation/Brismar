@@ -9,7 +9,7 @@ class FuenteDatosCamaras {
         .from('camaras')
         .select()
         .order('created_at', ascending: false);
-    
+
     return (respuesta as List)
         .map((e) => Camara.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -27,7 +27,7 @@ class FuenteDatosCamaras {
         })
         .select()
         .single();
-    
+
     return Camara.fromJson(respuesta);
   }
 
@@ -38,7 +38,7 @@ class FuenteDatosCamaras {
         .eq('id', camara.id)
         .select()
         .single();
-    
+
     return Camara.fromJson(respuesta);
   }
 

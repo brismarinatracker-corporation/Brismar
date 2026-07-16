@@ -20,14 +20,21 @@ class CabeceraPaginaWeb extends StatelessWidget {
     final esMovil = MediaQuery.of(context).size.width < 800;
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 40, vertical: esMovil ? 20 : 24),
+      padding: EdgeInsets.symmetric(
+        horizontal: esMovil ? 20 : 40,
+        vertical: esMovil ? 20 : 24,
+      ),
       child: esMovil
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   titulo,
-                  style: GoogleFonts.sora(color: const Color(0xFF0E3E2C), fontSize: 24, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.sora(
+                    color: const Color(0xFF0E3E2C),
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 if (subtitulo != null) ...[
                   const SizedBox(height: 8),
@@ -56,13 +63,20 @@ class CabeceraPaginaWeb extends StatelessWidget {
                     children: [
                       Text(
                         titulo,
-                        style: GoogleFonts.sora(color: const Color(0xFF0E3E2C), fontSize: 26, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.sora(
+                          color: const Color(0xFF0E3E2C),
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       if (subtitulo != null) ...[
                         const SizedBox(height: 8),
                         Text(
                           subtitulo!,
-                          style: const TextStyle(color: Colors.black54, fontSize: 15),
+                          style: const TextStyle(
+                            color: Colors.black54,
+                            fontSize: 15,
+                          ),
                         ),
                       ],
                       if (contenidoExtra != null) ...[

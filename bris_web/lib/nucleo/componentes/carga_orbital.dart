@@ -17,7 +17,8 @@ class CargaOrbital extends StatefulWidget {
   State<CargaOrbital> createState() => _CargaOrbitalState();
 }
 
-class _CargaOrbitalState extends State<CargaOrbital> with TickerProviderStateMixin {
+class _CargaOrbitalState extends State<CargaOrbital>
+    with TickerProviderStateMixin {
   late final AnimationController _rotacion;
   late final AnimationController _pulso;
 
@@ -99,8 +100,12 @@ class _CargaOrbitalState extends State<CargaOrbital> with TickerProviderStateMix
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: widget.colorPrimario.withValues(alpha: 0.3 + _pulso.value * 0.3),
-                          blurRadius: (widget.tamano * 0.14) + _pulso.value * (widget.tamano * 0.14),
+                          color: widget.colorPrimario.withValues(
+                            alpha: 0.3 + _pulso.value * 0.3,
+                          ),
+                          blurRadius:
+                              (widget.tamano * 0.14) +
+                              _pulso.value * (widget.tamano * 0.14),
                           spreadRadius: 2,
                         ),
                       ],
@@ -151,12 +156,12 @@ class _PintorOrbital extends CustomPainter {
       final angulo = (2 * pi / particulas) * i;
       final x = centro.dx + radio * cos(angulo);
       final y = centro.dy + radio * sin(angulo);
-      
+
       // Tamaño variado por posición proporcional al radio
       final maxTam = radio * 0.08;
       final minTam = radio * 0.05;
       final tam = (i % 2 == 0) ? maxTam : minTam;
-      
+
       canvas.drawCircle(Offset(x, y), tam.clamp(1.5, 8.0), pintorParticula);
     }
   }

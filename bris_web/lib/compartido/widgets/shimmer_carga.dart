@@ -17,7 +17,10 @@ class ShimmerTablaCarga extends StatelessWidget {
       color: bgColor,
       padding: const EdgeInsets.all(16.0),
       child: Column(
-        children: List.generate(filas, (index) => _construirFila(baseColor, highlightColor)),
+        children: List.generate(
+          filas,
+          (index) => _construirFila(baseColor, highlightColor),
+        ),
       ),
     );
   }
@@ -47,7 +50,14 @@ class ShimmerTablaCarga extends StatelessWidget {
             const SizedBox(width: 16),
             Expanded(
               flex: 1,
-              child: Container(height: 24, width: 24, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+              child: Container(
+                height: 24,
+                width: 24,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
             ),
           ],
         ),

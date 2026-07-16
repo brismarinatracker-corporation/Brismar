@@ -18,7 +18,9 @@ final proveedorFuenteDatosTransito = Provider<FuenteDatosTransito>((ref) {
 });
 
 /// Provider del repositorio de edición de zarpes.
-final proveedorRepositorioEdicionZarpe = Provider<RepositorioEdicionZarpe>((ref) {
+final proveedorRepositorioEdicionZarpe = Provider<RepositorioEdicionZarpe>((
+  ref,
+) {
   return RepositorioEdicionZarpe(ref.watch(_proveedorClienteSupabase));
 });
 
@@ -29,7 +31,9 @@ final proveedorRepositorioEdicionZarpe = Provider<RepositorioEdicionZarpe>((ref)
 /// Separado de [PantallaTransito] para respetar SRP: el estado del filtro
 /// pertenece a la capa de lógica, no a la vista.
 final proveedorFiltroTransito =
-    NotifierProvider<FiltroTransitoNotifier, String>(FiltroTransitoNotifier.new);
+    NotifierProvider<FiltroTransitoNotifier, String>(
+      FiltroTransitoNotifier.new,
+    );
 
 /// Notifier que gestiona el filtro temporal de zarpes.
 class FiltroTransitoNotifier extends Notifier<String> {
@@ -49,15 +53,14 @@ class FiltroTransitoNotifier extends Notifier<String> {
 /// y evitar re-fetches innecesarios a Supabase.
 final proveedorTransito =
     AsyncNotifierProvider<ControladorTransito, List<ZarpeModelo>>(
-  ControladorTransito.new,
-);
+      ControladorTransito.new,
+    );
 
 /// Controlador del módulo de Tránsito/Zarpes.
 ///
 /// Escucha el filtro activo ([proveedorFiltroTransito]) y recarga los datos
 /// automáticamente cuando cambia. Mantiene el estado vivo entre navegaciones.
-class ControladorTransito
-    extends AsyncNotifier<List<ZarpeModelo>> {
+class ControladorTransito extends AsyncNotifier<List<ZarpeModelo>> {
   late FuenteDatosTransito _fuente;
 
   @override
@@ -72,9 +75,7 @@ class ControladorTransito
   Future<void> recargar() async {
     state = const AsyncValue.loading();
     final filtro = ref.read(proveedorFiltroTransito);
-    state = await AsyncValue.guard(
-      () => _fuente.obtenerZarpes(filtro: filtro),
-    );
+    state = await AsyncValue.guard(() => _fuente.obtenerZarpes(filtro: filtro));
   }
 
   /// Registra la recepción de un zarpe en la planta procesadora.

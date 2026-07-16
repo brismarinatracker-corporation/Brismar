@@ -15,12 +15,15 @@ class ServicioDNI {
 
       if (respuesta.status == 200) {
         final datos = respuesta.data;
-        if (datos['nombres'] != null && datos['apellidoPaterno'] != null && datos['apellidoMaterno'] != null) {
+        if (datos['nombres'] != null &&
+            datos['apellidoPaterno'] != null &&
+            datos['apellidoMaterno'] != null) {
           return {
             'nombres': datos['nombres'].toString(),
             'apellidoPaterno': datos['apellidoPaterno'].toString(),
             'apellidoMaterno': datos['apellidoMaterno'].toString(),
-            'nombreCompleto': '${datos['nombres']} ${datos['apellidoPaterno']} ${datos['apellidoMaterno']}',
+            'nombreCompleto':
+                '${datos['nombres']} ${datos['apellidoPaterno']} ${datos['apellidoMaterno']}',
           };
         } else {
           throw Exception('Estructura de datos inesperada desde la API.');
@@ -29,9 +32,13 @@ class ServicioDNI {
         throw Exception('El DNI no fue encontrado o hubo un error.');
       }
     } on FunctionException catch (e) {
-      throw Exception('Error en el servidor al consultar DNI: ${e.details ?? e.reasonPhrase}');
+      throw Exception(
+        'Error en el servidor al consultar DNI: ${e.details ?? e.reasonPhrase}',
+      );
     } catch (e) {
-      throw Exception('No se pudo verificar el DNI. Revisa tu conexión a internet o ingresa el nombre manualmente.');
+      throw Exception(
+        'No se pudo verificar el DNI. Revisa tu conexión a internet o ingresa el nombre manualmente.',
+      );
     }
   }
 }

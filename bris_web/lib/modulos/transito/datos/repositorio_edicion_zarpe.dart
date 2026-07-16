@@ -65,7 +65,7 @@ class RepositorioEdicionZarpe {
   final Uuid _uuid;
 
   RepositorioEdicionZarpe(this._cliente, {Uuid? uuid})
-      : _uuid = uuid ?? const Uuid();
+    : _uuid = uuid ?? const Uuid();
 
   // ─── Consultas ────────────────────────────────────────────────────────────
 
@@ -89,7 +89,7 @@ class RepositorioEdicionZarpe {
         .select()
         .eq('id', id)
         .maybeSingle();
-        
+
     return datos != null ? CuadreWebModelo.desdeJson(datos) : null;
   }
 
@@ -100,7 +100,9 @@ class RepositorioEdicionZarpe {
         .select()
         .eq('cuadre_id', zarpeId);
 
-    return (datos as List).map((m) => CompraWebModelo.desdeJson(m as Map<String, dynamic>)).toList();
+    return (datos as List)
+        .map((m) => CompraWebModelo.desdeJson(m as Map<String, dynamic>))
+        .toList();
   }
 
   /// Carga los gastos actuales asociados al zarpe.
@@ -110,7 +112,9 @@ class RepositorioEdicionZarpe {
         .select()
         .eq('cuadre_id', zarpeId);
 
-    return (datos as List).map((m) => GastoWebModelo.desdeJson(m as Map<String, dynamic>)).toList();
+    return (datos as List)
+        .map((m) => GastoWebModelo.desdeJson(m as Map<String, dynamic>))
+        .toList();
   }
 
   /// Carga las ventas actuales asociadas al zarpe.
@@ -120,7 +124,9 @@ class RepositorioEdicionZarpe {
         .select()
         .eq('cuadre_id', zarpeId);
 
-    return (datos as List).map((m) => VentaWebModelo.desdeJson(m as Map<String, dynamic>)).toList();
+    return (datos as List)
+        .map((m) => VentaWebModelo.desdeJson(m as Map<String, dynamic>))
+        .toList();
   }
 
   // ─── Mutaciones ───────────────────────────────────────────────────────────
@@ -148,6 +154,30 @@ class RepositorioEdicionZarpe {
     }
   }
 
+  /// Finaliza el viaje cambiando el estado a RECIBIDO_LAMBAYEQUE en zarpes y COMPLETO en cuadres.
+  Future<void> finalizarViaje(String id) async {
+    try {
+      await _cliente
+          .from('zarpes')
+          .update({'estado': 'RECIBIDO_LAMBAYEQUE'})
+          .eq('id', id);
+
+      final existeCuadre = await _cliente
+          .from('cuadres')
+          .select('id')
+          .eq('id', id)
+          .maybeSingle();
+      if (existeCuadre != null) {
+        await _cliente
+            .from('cuadres')
+            .update({'estado': 'COMPLETO'})
+            .eq('id', id);
+      }
+    } on Exception catch (e) {
+      throw Exception('Error al finalizar el viaje $id: $e');
+    }
+  }
+
   // ─── Helpers privados ────────────────────────────────────────────────────
 
   Future<void> _actualizarZarpe(EdicionZarpeParams params) async {
@@ -156,8 +186,10 @@ class RepositorioEdicionZarpe {
       'chofer': params.chofer,
       'muelle_partida': params.muellePartida,
     };
-    if (params.muelleDestino != null) payload['muelle_destino'] = params.muelleDestino;
-    if (params.observaciones != null) payload['observaciones'] = params.observaciones;
+    if (params.muelleDestino != null)
+      payload['muelle_destino'] = params.muelleDestino;
+    if (params.observaciones != null)
+      payload['observaciones'] = params.observaciones;
 
     await _cliente.from('zarpes').update(payload).eq('id', params.id);
   }
@@ -166,20 +198,27 @@ class RepositorioEdicionZarpe {
     final payload = <String, dynamic>{
       'id': params.id, // Importante para el upsert
       'placa': params.placa.toUpperCase(),
-      if (params.muellePartida.isNotEmpty) 'planta_destino': params.muellePartida,
+      if (params.muellePartida.isNotEmpty)
+        'planta_destino': params.muellePartida,
       'estado': 'borrador', // Por defecto si se crea nuevo
       'usuario_id': _cliente.auth.currentUser?.id ?? '',
     };
-    
+
     if (params.pesoTotal != null) payload['peso_total'] = params.pesoTotal;
-    if (params.cajasLlenas != null) payload['cajas_llenas'] = params.cajasLlenas;
-    if (params.cajasVacias != null) payload['cajas_vacias'] = params.cajasVacias;
+    if (params.cajasLlenas != null)
+      payload['cajas_llenas'] = params.cajasLlenas;
+    if (params.cajasVacias != null)
+      payload['cajas_vacias'] = params.cajasVacias;
     if (params.tipoProducto != null) {
       payload['tipo_producto'] = params.tipoProducto;
     }
 
     // Usar un UPDATE en lugar de un UPSERT para no sobreescribir campos del Bahia
-    final existe = await _cliente.from('cuadres').select('id').eq('id', params.id).maybeSingle();
+    final existe = await _cliente
+        .from('cuadres')
+        .select('id')
+        .eq('id', params.id)
+        .maybeSingle();
     if (existe != null) {
       await _cliente.from('cuadres').update(payload).eq('id', params.id);
     } else {
@@ -187,7 +226,10 @@ class RepositorioEdicionZarpe {
     }
   }
 
-  Future<void> _reemplazarCompras(String zarpeId, List<CompraWebModelo> compras) async {
+  Future<void> _reemplazarCompras(
+    String zarpeId,
+    List<CompraWebModelo> compras,
+  ) async {
     await _cliente.from('compras').delete().eq('cuadre_id', zarpeId);
     if (compras.isEmpty) return;
 
@@ -195,7 +237,10 @@ class RepositorioEdicionZarpe {
     await _cliente.from('compras').insert(rows);
   }
 
-  Future<void> _reemplazarGastos(String zarpeId, List<GastoWebModelo> gastos) async {
+  Future<void> _reemplazarGastos(
+    String zarpeId,
+    List<GastoWebModelo> gastos,
+  ) async {
     await _cliente.from('gastos').delete().eq('cuadre_id', zarpeId);
     if (gastos.isEmpty) return;
 
@@ -203,7 +248,10 @@ class RepositorioEdicionZarpe {
     await _cliente.from('gastos').insert(rows);
   }
 
-  Future<void> _reemplazarVentas(String zarpeId, List<VentaWebModelo> ventas) async {
+  Future<void> _reemplazarVentas(
+    String zarpeId,
+    List<VentaWebModelo> ventas,
+  ) async {
     await _cliente.from('ventas').delete().eq('cuadre_id', zarpeId);
     if (ventas.isEmpty) return;
 

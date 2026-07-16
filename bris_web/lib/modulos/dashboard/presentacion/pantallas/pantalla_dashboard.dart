@@ -19,12 +19,11 @@ class PantallaDashboard extends ConsumerWidget {
     return Container(
       color: const Color(0xFFF2F6F3),
       child: estado.cargando
-          ? const Center(
-              child: CargaOrbital(tamano: 80),
-            )
+          ? const Center(child: CargaOrbital(tamano: 80))
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [                CabeceraPaginaWeb(
+              children: [
+                CabeceraPaginaWeb(
                   titulo: 'Dashboard general',
                   contenidoExtra: _indicadorEnVivo(mesActual),
                   widgetAccion: _botonActualizar(ref),
@@ -38,7 +37,8 @@ class PantallaDashboard extends ConsumerWidget {
                         padding: EdgeInsets.all(esMovil ? 20 : 40),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
-                            if (estado.error != null) _bannerError(estado.error!),
+                            if (estado.error != null)
+                              _bannerError(estado.error!),
                             _gridKpis(context, estado),
                             const SizedBox(height: 40),
                             _seccionRentabilidadGlobal(),
@@ -63,7 +63,11 @@ class PantallaDashboard extends ConsumerWidget {
             color: Color(0xFF14B8A6),
             shape: BoxShape.circle,
             boxShadow: [
-              BoxShadow(color: Color(0xFF14B8A6), blurRadius: 4, spreadRadius: 1),
+              BoxShadow(
+                color: Color(0xFF14B8A6),
+                blurRadius: 4,
+                spreadRadius: 1,
+              ),
             ],
           ),
         ),
@@ -87,8 +91,13 @@ class PantallaDashboard extends ConsumerWidget {
 
   Widget _botonActualizar(WidgetRef ref) {
     return OutlinedButton.icon(
-      onPressed: () => ref.read(controladorDashboardProvider.notifier).cargarKpis(),
-      icon: const Icon(Icons.refresh_rounded, size: 18, color: Color(0xFFF59E0B)),
+      onPressed: () =>
+          ref.read(controladorDashboardProvider.notifier).cargarKpis(),
+      icon: const Icon(
+        Icons.refresh_rounded,
+        size: 18,
+        color: Color(0xFFF59E0B),
+      ),
       label: Text(
         'Actualizar',
         style: GoogleFonts.inter(fontWeight: FontWeight.w600),
@@ -109,7 +118,9 @@ class PantallaDashboard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFEF4444).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
@@ -117,7 +128,10 @@ class PantallaDashboard extends ConsumerWidget {
           const SizedBox(width: 12),
           Text(
             'Error de conexión: $error',
-            style: GoogleFonts.inter(color: const Color(0xFFEF4444), fontWeight: FontWeight.w500),
+            style: GoogleFonts.inter(
+              color: const Color(0xFFEF4444),
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -127,11 +141,12 @@ class PantallaDashboard extends ConsumerWidget {
   Widget _gridKpis(BuildContext context, EstadoDashboard estado) {
     final fmt = NumberFormat('#,##0.0', 'es_PE');
     final kpis = estado.kpis;
-    
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
-        int columnas = 5; // Cambiado a 5 columnas para alojar todas las tarjetas en una sola línea si hay espacio
+        int columnas =
+            5; // Cambiado a 5 columnas para alojar todas las tarjetas en una sola línea si hay espacio
         if (availableWidth < 1400) columnas = 4;
         if (availableWidth < 1100) columnas = 3;
         if (availableWidth < 800) columnas = 2;
@@ -211,11 +226,9 @@ class PantallaDashboard extends ConsumerWidget {
           children: [
             // Líneas batimétricas tipo "ver bajo la superficie"
             Positioned.fill(
-              child: CustomPaint(
-                painter: DibujadorOndasDashboard(),
-              ),
+              child: CustomPaint(painter: DibujadorOndasDashboard()),
             ),
-            
+
             // Contenido
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -224,11 +237,16 @@ class PantallaDashboard extends ConsumerWidget {
                 children: [
                   // Badge "En Construcción"
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF7EBFC9).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: const Color(0xFF7EBFC9).withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: const Color(0xFF7EBFC9).withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Text(
                       'EN CONSTRUCCIÓN',
@@ -241,7 +259,7 @@ class PantallaDashboard extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   Text(
                     'Métricas financieras',
                     style: GoogleFonts.sora(
@@ -251,7 +269,7 @@ class PantallaDashboard extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  
+
                   Text(
                     'Rentabilidad por faena, flujo de caja y comparativos mensuales a nivel nacional.\nEsta sección se activa en cuanto conectemos el módulo de cuadres con el motor de reportes.',
                     style: GoogleFonts.inter(
@@ -261,25 +279,40 @@ class PantallaDashboard extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 36),
-                  
+
                   // CTA Button
                   OutlinedButton(
                     onPressed: () {},
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF15181A),
-                      side: const BorderSide(color: Color(0xFF334155), width: 1.5),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      side: const BorderSide(
+                        color: Color(0xFF334155),
+                        width: 1.5,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 18,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           'Ver cronograma de la integración',
-                          style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward_rounded, size: 16, color: Color(0xFF7EBFC9)),
+                        const Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 16,
+                          color: Color(0xFF7EBFC9),
+                        ),
                       ],
                     ),
                   ),
@@ -323,7 +356,7 @@ class _TarjetaKpiPremium extends StatelessWidget {
             color: Colors.black.withValues(alpha: 0.015),
             blurRadius: 8,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -340,7 +373,7 @@ class _TarjetaKpiPremium extends StatelessWidget {
             child: Icon(icono, color: colorTema, size: 18),
           ),
           const Spacer(),
-          
+
           // Título del KPI
           Text(
             titulo,
@@ -353,7 +386,7 @@ class _TarjetaKpiPremium extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          
+
           // Valor numérico (Fraunces)
           Text(
             valor,
@@ -364,12 +397,13 @@ class _TarjetaKpiPremium extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          
+
           // Subtítulo / Delta (IBM Plex Mono)
           Text(
             subtitulo,
             style: GoogleFonts.ibmPlexMono(
-              color: colorTema, // Resalta con el color semántico correspondiente
+              color:
+                  colorTema, // Resalta con el color semántico correspondiente
               fontSize: 11,
               fontWeight: FontWeight.w600,
             ),
@@ -385,7 +419,8 @@ class DibujadorOndasDashboard extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final pincel = Paint()
-      ..color = const Color(0xFF14B8A6).withValues(alpha: 0.03) // Sea green sutil
+      ..color = const Color(0xFF14B8A6)
+          .withValues(alpha: 0.03) // Sea green sutil
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 

@@ -25,7 +25,9 @@ class Camara {
       placa: json['placa'] as String,
       chofer: json['chofer'] as String?,
       marca: json['marca'] as String?,
-      capacidadKg: json['capacidad_kg'] != null ? (json['capacidad_kg'] as num).toDouble() : null,
+      capacidadKg: json['capacidad_kg'] != null
+          ? (json['capacidad_kg'] as num).toDouble()
+          : null,
       estadoActivo: json['estado_activo'] as bool? ?? true,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
