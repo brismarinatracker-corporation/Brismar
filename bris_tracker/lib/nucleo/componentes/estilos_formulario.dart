@@ -8,7 +8,10 @@ class EstilosFormulario {
     return InputDecoration(
       labelText: labelText,
       labelStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
-      floatingLabelStyle: const TextStyle(color: Color(0xFF006B54), fontWeight: FontWeight.bold),
+      floatingLabelStyle: const TextStyle(
+        color: Color(0xFF006B54),
+        fontWeight: FontWeight.bold,
+      ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),

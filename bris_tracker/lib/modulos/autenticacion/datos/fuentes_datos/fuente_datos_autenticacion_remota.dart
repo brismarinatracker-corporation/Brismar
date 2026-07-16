@@ -14,10 +14,9 @@ class FuenteDatosAutenticacionRemota {
     required String password,
   }) async {
     try {
-      final response = await _client.auth.signInWithPassword(
-        email: correo,
-        password: password,
-      ).timeout(const Duration(seconds: 10));
+      final response = await _client.auth
+          .signInWithPassword(email: correo, password: password)
+          .timeout(const Duration(seconds: 10));
 
       final user = response.user;
       if (user == null) {
@@ -65,9 +64,9 @@ class FuenteDatosAutenticacionRemota {
   Future<void> _guardarVersionAppSilencioso() async {
     try {
       final info = await PackageInfo.fromPlatform();
-      await _client.auth.updateUser(sb.UserAttributes(
-        data: {'app_version': info.version},
-      ));
+      await _client.auth.updateUser(
+        sb.UserAttributes(data: {'app_version': info.version}),
+      );
     } catch (_) {
       // Ignorar fallo de versión para no bloquear el login
     }

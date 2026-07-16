@@ -17,7 +17,7 @@ class FuenteDatosZarpesRemota {
       final zarpeJson = zarpe.toJsonSupabase();
       zarpeJson['foto_url_evidencia'] = urlFotoFinal;
       zarpeJson['creado_por'] = _cliente.auth.currentUser?.id;
-      
+
       await _cliente.from('zarpes').upsert(zarpeJson);
     } catch (e) {
       debugPrint('Error en FuenteDatosZarpesRemota: $e');
@@ -28,7 +28,11 @@ class FuenteDatosZarpesRemota {
   /// Sube de forma segura el archivo local de la foto de evidencia al Storage si existe.
   Future<String> _subirFotoZarpeSegura(ZarpeModelo zarpe) async {
     if (zarpe.fotoLocalPath != null && zarpe.fotoLocalPath!.isNotEmpty) {
-      final paths = zarpe.fotoLocalPath!.split(',').map((p) => p.trim()).where((p) => p.isNotEmpty).toList();
+      final paths = zarpe.fotoLocalPath!
+          .split(',')
+          .map((p) => p.trim())
+          .where((p) => p.isNotEmpty)
+          .toList();
       final List<String> urlsSubidas = [];
 
       for (int i = 0; i < paths.length; i++) {
@@ -38,15 +42,19 @@ class FuenteDatosZarpesRemota {
           final ext = path.split('.').last;
           final userId = _cliente.auth.currentUser?.id ?? 'desconocido';
           final nombreArchivo = '$userId/${zarpe.id}_zarpe_$i.$ext';
-          
+
           try {
-            await _cliente.storage.from('camaras-zarpes').upload(
-              nombreArchivo,
-              file,
-              fileOptions: const sb.FileOptions(upsert: true),
-            );
-            
-            final publicUrl = _cliente.storage.from('camaras-zarpes').getPublicUrl(nombreArchivo);
+            await _cliente.storage
+                .from('camaras-zarpes')
+                .upload(
+                  nombreArchivo,
+                  file,
+                  fileOptions: const sb.FileOptions(upsert: true),
+                );
+
+            final publicUrl = _cliente.storage
+                .from('camaras-zarpes')
+                .getPublicUrl(nombreArchivo);
             urlsSubidas.add(publicUrl);
           } catch (e) {
             debugPrint('Error subiendo foto $i: $e');
@@ -67,14 +75,16 @@ class FuenteDatosZarpesRemota {
   }
 
   /// Obtiene los zarpes que han sido actualizados en la base de datos central desde una fecha dada.
-  Future<List<Map<String, dynamic>>> obtenerZarpesActualizados(DateTime desde) async {
+  Future<List<Map<String, dynamic>>> obtenerZarpesActualizados(
+    DateTime desde,
+  ) async {
     try {
       final respuesta = await _cliente
           .from('zarpes')
           .select()
           .gte('updated_at', desde.toIso8601String())
           .order('updated_at', ascending: true);
-      
+
       return List<Map<String, dynamic>>.from(respuesta);
     } catch (e) {
       debugPrint('Error obteniendo zarpes actualizados: $e');

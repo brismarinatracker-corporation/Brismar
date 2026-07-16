@@ -12,10 +12,12 @@ class DashboardCuadresPantalla extends ConsumerStatefulWidget {
   const DashboardCuadresPantalla({super.key});
 
   @override
-  ConsumerState<DashboardCuadresPantalla> createState() => _DashboardCuadresPantallaState();
+  ConsumerState<DashboardCuadresPantalla> createState() =>
+      _DashboardCuadresPantallaState();
 }
 
-class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPantalla> {
+class _DashboardCuadresPantallaState
+    extends ConsumerState<DashboardCuadresPantalla> {
   int _pestanaSeleccionada = 0;
   final _searchCtrl = TextEditingController();
 
@@ -43,13 +45,11 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final estadoCuadres = ref.watch(cuadresProvider);
     final authState = ref.watch(proveedorControladorAutenticacion);
-    
+
     String userName = 'operador';
     if (authState is EstadoAutenticacionAutenticado) {
       userName = authState.usuario.nombreReal.split(' ').first;
@@ -58,9 +58,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
     return Scaffold(
       backgroundColor: const Color(0xFFF5F8F6),
       appBar: _buildAppBar(context),
-      body: SafeArea(
-        child: _buildBodyContent(estadoCuadres, userName),
-      ),
+      body: SafeArea(child: _buildBodyContent(estadoCuadres, userName)),
       floatingActionButton: _pestanaSeleccionada == 1
           ? FloatingActionButton(
               backgroundColor: const Color(0xFF006B54),
@@ -115,7 +113,11 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
               color: primaryIconBg,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(Icons.anchor_rounded, color: primaryIconColor, size: 20),
+            child: Icon(
+              Icons.anchor_rounded,
+              color: primaryIconColor,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 10),
           Column(
@@ -131,29 +133,29 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
               ),
               Text(
                 'Cuadres jerárquicos',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: subTextColor,
-                ),
+                style: TextStyle(fontSize: 11, color: subTextColor),
               ),
             ],
           ),
         ],
       ),
       actions: [
-          IconButton(
-            icon: Icon(Icons.sync_rounded, color: iconColor),
-            onPressed: () {
-              ref.read(cuadresProvider.notifier).cargarHistorial();
-              ref.read(proveedorZarpes.notifier).sincronizarZarpesPendientes();
-              CamarasRepositorioLocal().sincronizarCamaras();
-            },
-          ),
+        IconButton(
+          icon: Icon(Icons.sync_rounded, color: iconColor),
+          onPressed: () {
+            ref.read(cuadresProvider.notifier).cargarHistorial();
+            ref.read(proveedorZarpes.notifier).sincronizarZarpesPendientes();
+            CamarasRepositorioLocal().sincronizarCamaras();
+          },
+        ),
       ],
     );
   }
 
-  Widget _buildBodyContent(AsyncValue<List<CuadreEntidad>> estadoCuadres, String userName) {
+  Widget _buildBodyContent(
+    AsyncValue<List<CuadreEntidad>> estadoCuadres,
+    String userName,
+  ) {
     if (_pestanaSeleccionada == 0) {
       // Registrar
       return _buildVistaRegistrar(userName);
@@ -164,8 +166,8 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
   }
 
   Widget _buildVistaRegistrar(String userName) {
-    final capitalizedName = userName.isNotEmpty 
-        ? '${userName[0].toUpperCase()}${userName.substring(1).toLowerCase()}' 
+    final capitalizedName = userName.isNotEmpty
+        ? '${userName[0].toUpperCase()}${userName.substring(1).toLowerCase()}'
         : 'Operador';
 
     return Center(
@@ -181,7 +183,12 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
               children: [
                 Text(
                   'Hola, $capitalizedName',
-                  style: const TextStyle(color: Colors.black, fontSize: 36, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 36,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 const Text(
@@ -195,19 +202,21 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
             // Opción 1: Zarpe
             _buildTarjetaOperacion(
               title: 'Despacho de cámara (zarpe)',
-              description: 'Registra la salida rápida hacia la planta. Solo foto de evidencia y guía.',
+              description:
+                  'Registra la salida rápida hacia la planta. Solo foto de evidencia y guía.',
               icon: Icons.local_shipping_outlined,
               bgColor: const Color(0xFFE8F5E9),
               iconColor: const Color(0xFF00695C),
               onTap: () => context.push('/nuevo-zarpe'),
             ),
-            
+
             const SizedBox(height: 24),
 
             // Opción 2: Cuadre
             _buildTarjetaOperacion(
               title: 'Cuadre de pesca',
-              description: 'Reporte detallado del viaje: kilos, embarcaciones y gastos operativos.',
+              description:
+                  'Reporte detallado del viaje: kilos, embarcaciones y gastos operativos.',
               icon: Icons.assignment_outlined,
               bgColor: const Color(0xFFFFF3E0),
               iconColor: const Color(0xFFE65100),
@@ -234,10 +243,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: const Color(0xFFEEEEEE),
-            width: 1.5,
-          ),
+          border: Border.all(color: const Color(0xFFEEEEEE), width: 1.5),
         ),
         child: Row(
           children: [
@@ -257,8 +263,8 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                   Text(
                     title,
                     style: const TextStyle(
-                      color: Colors.black, 
-                      fontSize: 17, 
+                      color: Colors.black,
+                      fontSize: 17,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -266,8 +272,8 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                   Text(
                     description,
                     style: const TextStyle(
-                      color: Colors.black54, 
-                      fontSize: 14, 
+                      color: Colors.black54,
+                      fontSize: 14,
                       height: 1.3,
                     ),
                   ),
@@ -275,7 +281,11 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black26, size: 18),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: Colors.black26,
+              size: 18,
+            ),
           ],
         ),
       ),
@@ -294,17 +304,29 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: TextFormField(
                 controller: _searchCtrl,
                 style: const TextStyle(color: Colors.black87),
                 decoration: InputDecoration(
                   hintText: 'Buscar por cámara...',
-                  hintStyle: const TextStyle(color: Colors.black54, fontSize: 13),
-                  prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF006B54)),
+                  hintStyle: const TextStyle(
+                    color: Colors.black54,
+                    fontSize: 13,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: Color(0xFF006B54),
+                  ),
                   suffixIcon: _searchCtrl.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, color: Colors.black54),
+                          icon: const Icon(
+                            Icons.clear_rounded,
+                            color: Colors.black54,
+                          ),
                           onPressed: () {
                             setState(() {
                               _searchCtrl.clear();
@@ -314,14 +336,23 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                       : null,
                   filled: true,
                   fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.2),
+                    borderSide: const BorderSide(
+                      color: Color(0xFFE5E7EB),
+                      width: 1.2,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF006B54), width: 1.5),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF006B54),
+                      width: 1.5,
+                    ),
                   ),
                 ),
                 onChanged: (value) {
@@ -332,25 +363,33 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
             Expanded(
               child: filteredCuadres.isEmpty
                   ? const Center(
-                      child: Text('No se encontraron resultados.', style: TextStyle(color: Colors.black54)),
+                      child: Text(
+                        'No se encontraron resultados.',
+                        style: TextStyle(color: Colors.black54),
+                      ),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       itemCount: filteredCuadres.length,
                       itemBuilder: (context, index) {
                         final cuadre = filteredCuadres[index];
-                        
+
                         // Personalización visual del estado
                         Color badgeBg;
                         Color badgeText;
                         String labelEstado;
-                        
+
                         if (cuadre.estado == 'completo') {
                           badgeBg = Colors.green.withValues(alpha: 0.15);
                           badgeText = Colors.green;
                           labelEstado = 'COMPLETO';
                         } else if (cuadre.estado == 'zarpe') {
-                          badgeBg = const Color(0xFF006B54).withValues(alpha: 0.15);
+                          badgeBg = const Color(
+                            0xFF006B54,
+                          ).withValues(alpha: 0.15);
                           badgeText = const Color(0xFF006B54);
                           labelEstado = 'EN CAMINO';
                         } else {
@@ -371,14 +410,20 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                             title: Row(
                               children: [
                                 Icon(
-                                  Icons.local_shipping_rounded, 
-                                  color: cuadre.estado == 'zarpe' ? const Color(0xFF006B54) : const Color(0xFFD97706), 
-                                  size: 18
+                                  Icons.local_shipping_rounded,
+                                  color: cuadre.estado == 'zarpe'
+                                      ? const Color(0xFF006B54)
+                                      : const Color(0xFFD97706),
+                                  size: 18,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'CÁMARA: ${cuadre.placa.toUpperCase()}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: Colors.black87,
+                                  ),
                                 ),
                               ],
                             ),
@@ -388,15 +433,25 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    const Icon(Icons.date_range_rounded, color: Colors.black54, size: 14),
+                                    const Icon(
+                                      Icons.date_range_rounded,
+                                      color: Colors.black54,
+                                      size: 14,
+                                    ),
                                     const SizedBox(width: 4),
                                     Text(
                                       cuadre.fechaZarpe ?? 'Pendiente',
-                                      style: const TextStyle(color: Colors.black54, fontSize: 12),
+                                      style: const TextStyle(
+                                        color: Colors.black54,
+                                        fontSize: 12,
+                                      ),
                                     ),
                                     const SizedBox(width: 12),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: badgeBg,
                                         borderRadius: BorderRadius.circular(4),
@@ -412,7 +467,13 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                                     ),
                                     if (cuadre.fotoZarpeUrl != null) ...[
                                       const SizedBox(width: 8),
-                                      Icon(Icons.photo_camera_rounded, color: const Color(0xFF006B54).withValues(alpha: 0.8), size: 14),
+                                      Icon(
+                                        Icons.photo_camera_rounded,
+                                        color: const Color(
+                                          0xFF006B54,
+                                        ).withValues(alpha: 0.8),
+                                        size: 14,
+                                      ),
                                     ],
                                   ],
                                 ),
@@ -423,20 +484,38 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                               children: [
                                 if (cuadre.sincronizado) ...[
                                   if (cuadre.urlPdfCloud != null)
-                                    const Icon(Icons.picture_as_pdf, color: Colors.redAccent, size: 20),
+                                    const Icon(
+                                      Icons.picture_as_pdf,
+                                      color: Colors.redAccent,
+                                      size: 20,
+                                    ),
                                   if (cuadre.urlExcelCloud != null)
                                     const Padding(
                                       padding: EdgeInsets.only(left: 8.0),
-                                      child: Icon(Icons.table_chart, color: Colors.green, size: 20),
+                                      child: Icon(
+                                        Icons.table_chart,
+                                        color: Colors.green,
+                                        size: 20,
+                                      ),
                                     ),
-                                  if (cuadre.estado == 'zarpe' && cuadre.fotoZarpeUrl != null && cuadre.fotoZarpeUrl!.startsWith('http'))
+                                  if (cuadre.estado == 'zarpe' &&
+                                      cuadre.fotoZarpeUrl != null &&
+                                      cuadre.fotoZarpeUrl!.startsWith('http'))
                                     const Padding(
                                       padding: EdgeInsets.only(left: 8.0),
-                                      child: Icon(Icons.cloud_done_rounded, color: Color(0xFF006B54), size: 20),
+                                      child: Icon(
+                                        Icons.cloud_done_rounded,
+                                        color: Color(0xFF006B54),
+                                        size: 20,
+                                      ),
                                     ),
                                 ] else ...[
-                                  const Icon(Icons.cloud_off, color: Colors.grey, size: 20),
-                                ]
+                                  const Icon(
+                                    Icons.cloud_off,
+                                    color: Colors.grey,
+                                    size: 20,
+                                  ),
+                                ],
                               ],
                             ),
                             onTap: () {
@@ -451,7 +530,12 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
         );
       },
       loading: () => const Center(child: CargaOrbital(tamano: 80)),
-      error: (err, _) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.redAccent))),
+      error: (err, _) => Center(
+        child: Text(
+          'Error: $err',
+          style: const TextStyle(color: Colors.redAccent),
+        ),
+      ),
     );
   }
 }

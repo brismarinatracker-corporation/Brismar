@@ -241,7 +241,9 @@ class NotificadorAutenticacion extends StateNotifier<EstadoAutenticacion> {
     final estadoActual = state;
     if (estadoActual is EstadoAutenticacionAutenticado) {
       try {
-        final usuarioAct = await _repositorio.obtenerPerfilActualizado(estadoActual.usuario.id);
+        final usuarioAct = await _repositorio.obtenerPerfilActualizado(
+          estadoActual.usuario.id,
+        );
         state = EstadoAutenticacionAutenticado(usuarioAct);
       } catch (_) {
         // Silencioso

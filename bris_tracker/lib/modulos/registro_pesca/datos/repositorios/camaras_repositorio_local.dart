@@ -15,7 +15,7 @@ class CamarasRepositorioLocal {
         columns: ['placa'],
         orderBy: 'placa ASC',
       );
-      
+
       return resultado.map((e) => e['placa'] as String).toList();
     } catch (e) {
       // ignore
@@ -31,7 +31,7 @@ class CamarasRepositorioLocal {
 
     try {
       final db = await _bd.database;
-      
+
       // Verificar si ya existe
       final existente = await db.query(
         'camaras',
@@ -87,16 +87,12 @@ class CamarasRepositorioLocal {
       for (final r in (remotas as List)) {
         batch.insert(
           'camaras',
-          {
-            'id': r['id'],
-            'placa': r['placa'],
-            'sincronizado': 1,
-          },
-          conflictAlgorithm: ConflictAlgorithm.ignore, // Ignora si la placa ya existe
+          {'id': r['id'], 'placa': r['placa'], 'sincronizado': 1},
+          conflictAlgorithm:
+              ConflictAlgorithm.ignore, // Ignora si la placa ya existe
         );
       }
       await batch.commit(noResult: true);
-
     } catch (e) {
       // ignore
     }

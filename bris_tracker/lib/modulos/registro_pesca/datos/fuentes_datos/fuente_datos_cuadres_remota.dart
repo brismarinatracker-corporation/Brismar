@@ -18,8 +18,8 @@ class FuenteDatosCuadresRemota {
   Future<Map<String, String?>> subirCuadre(CuadreModelo cuadre) async {
     try {
       final String? urlFotoCloud = await _procesarYSubirFotosZarpe(
-        cuadre.fotoZarpeUrl, 
-        cuadre.id, 
+        cuadre.fotoZarpeUrl,
+        cuadre.id,
         cuadre.usuarioId,
       );
 
@@ -32,18 +32,20 @@ class FuenteDatosCuadresRemota {
       await _eliminarRelacionesAnteriores(cuadre.id);
       await _subirRelaciones(cuadre);
 
-      return {
-        'urlPdf': null,
-        'urlExcel': null,
-        'urlFoto': urlFotoCloud,
-      };
+      return {'urlPdf': null, 'urlExcel': null, 'urlFoto': urlFotoCloud};
     } catch (e) {
-      throw ExcepcionRed(mensaje: 'Error sincronizando cuadre con Supabase: $e');
+      throw ExcepcionRed(
+        mensaje: 'Error sincronizando cuadre con Supabase: $e',
+      );
     }
   }
 
   /// Procesa y sube todas las fotos locales de un zarpe de cámara.
-  Future<String?> _procesarYSubirFotosZarpe(String? urlFotoCloud, String cuadreId, String usuarioId) async {
+  Future<String?> _procesarYSubirFotosZarpe(
+    String? urlFotoCloud,
+    String cuadreId,
+    String usuarioId,
+  ) async {
     if (urlFotoCloud == null || urlFotoCloud.isEmpty) return null;
     final paths = urlFotoCloud.split(',');
     final List<String> urlsSubidas = [];
@@ -61,18 +63,27 @@ class FuenteDatosCuadresRemota {
   }
 
   /// Sube una foto única al almacenamiento seguro de Supabase.
-  Future<String?> _subirFotoUnica(String path, String cuadreId, String usuarioId, int indice) async {
+  Future<String?> _subirFotoUnica(
+    String path,
+    String cuadreId,
+    String usuarioId,
+    int indice,
+  ) async {
     try {
       final file = File(path);
       if (await file.exists()) {
         final ext = path.split('.').last;
         final nombreArchivo = '$usuarioId/${cuadreId}_zarpe_$indice.$ext';
-        await _cliente.storage.from('camaras-zarpes').upload(
-          nombreArchivo,
-          file,
-          fileOptions: const sb.FileOptions(upsert: true),
-        );
-        return _cliente.storage.from('camaras-zarpes').getPublicUrl(nombreArchivo);
+        await _cliente.storage
+            .from('camaras-zarpes')
+            .upload(
+              nombreArchivo,
+              file,
+              fileOptions: const sb.FileOptions(upsert: true),
+            );
+        return _cliente.storage
+            .from('camaras-zarpes')
+            .getPublicUrl(nombreArchivo);
       }
     } catch (e) {
       debugPrint('Error subiendo foto $indice de zarpe a Supabase: $e');
@@ -92,22 +103,36 @@ class FuenteDatosCuadresRemota {
   /// Sube de forma masiva (upsert) las compras, gastos y ventas de un cuadre.
   Future<void> _subirRelaciones(CuadreModelo cuadre) async {
     if (cuadre.compras.isNotEmpty) {
-      await _cliente.from('compras').upsert(cuadre.compras.map((c) {
-        final cModelo = c is CompraModelo ? c : CompraModelo.fromEntidad(c);
-        return cModelo.toJson();
-      }).toList());
+      await _cliente
+          .from('compras')
+          .upsert(
+            cuadre.compras.map((c) {
+              final cModelo = c is CompraModelo
+                  ? c
+                  : CompraModelo.fromEntidad(c);
+              return cModelo.toJson();
+            }).toList(),
+          );
     }
     if (cuadre.gastos.isNotEmpty) {
-      await _cliente.from('gastos').upsert(cuadre.gastos.map((g) {
-        final gModelo = g is GastoModelo ? g : GastoModelo.fromEntidad(g);
-        return gModelo.toJson();
-      }).toList());
+      await _cliente
+          .from('gastos')
+          .upsert(
+            cuadre.gastos.map((g) {
+              final gModelo = g is GastoModelo ? g : GastoModelo.fromEntidad(g);
+              return gModelo.toJson();
+            }).toList(),
+          );
     }
     if (cuadre.ventas.isNotEmpty) {
-      await _cliente.from('ventas').upsert(cuadre.ventas.map((v) {
-        final vModelo = v is VentaModelo ? v : VentaModelo.fromEntidad(v);
-        return vModelo.toJson();
-      }).toList());
+      await _cliente
+          .from('ventas')
+          .upsert(
+            cuadre.ventas.map((v) {
+              final vModelo = v is VentaModelo ? v : VentaModelo.fromEntidad(v);
+              return vModelo.toJson();
+            }).toList(),
+          );
     }
   }
 }

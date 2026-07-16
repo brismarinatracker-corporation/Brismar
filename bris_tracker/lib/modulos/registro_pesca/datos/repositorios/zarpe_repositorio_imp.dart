@@ -11,10 +11,7 @@ class ZarpeRepositorioImp implements ZarpeRepositorio {
   final FuenteDatosZarpesLocal local;
   final FuenteDatosZarpesRemota remota;
 
-  ZarpeRepositorioImp({
-    required this.local,
-    required this.remota,
-  });
+  ZarpeRepositorioImp({required this.local, required this.remota});
 
   @override
   Future<void> guardarZarpe(ZarpeEntidad zarpe) async {
@@ -24,7 +21,7 @@ class ZarpeRepositorioImp implements ZarpeRepositorio {
     } else {
       modelo = ZarpeModelo.fromEntidad(zarpe);
     }
-    
+
     // 1. Guardar localmente siempre primero (Offline-first)
     await local.guardarZarpeLocal(modelo);
 
@@ -41,23 +38,29 @@ class ZarpeRepositorioImp implements ZarpeRepositorio {
   @override
   Future<List<ZarpeEntidad>> obtenerHistorial(String usuarioId) async {
     final listaModelos = await local.obtenerZarpesLocales(usuarioId);
-    
-    return listaModelos.map((m) => ZarpeEntidad(
-      id: m.id,
-      placaCamara: m.placaCamara,
-      chofer: m.chofer,
-      numeroChofer: m.numeroChofer,
-      muellePartida: m.muellePartida,
-      fotoUrlEvidencia: m.fotoUrlEvidencia,
-      fotoLocalPath: m.fotoLocalPath,
-      fechaZarpe: m.fechaZarpe,
-      estado: m.estado,
-    )).toList();
+
+    return listaModelos
+        .map(
+          (m) => ZarpeEntidad(
+            id: m.id,
+            placaCamara: m.placaCamara,
+            chofer: m.chofer,
+            numeroChofer: m.numeroChofer,
+            muellePartida: m.muellePartida,
+            fotoUrlEvidencia: m.fotoUrlEvidencia,
+            fotoLocalPath: m.fotoLocalPath,
+            fechaZarpe: m.fechaZarpe,
+            estado: m.estado,
+          ),
+        )
+        .toList();
   }
 
   @override
   Future<void> sincronizarPendientes() async {
-    final zarpesLocales = await local.obtenerZarpesLocales(''); // Obtiene todos por ahora
+    final zarpesLocales = await local.obtenerZarpesLocales(
+      '',
+    ); // Obtiene todos por ahora
     final pendientes = zarpesLocales.where((z) => z.sincronizado == 0).toList();
 
     for (var zarpe in pendientes) {
@@ -73,7 +76,9 @@ class ZarpeRepositorioImp implements ZarpeRepositorio {
   @override
   Future<void> sincronizarZarpesDownstream() async {
     final haceUnaSemana = DateTime.now().subtract(const Duration(days: 7));
-    final zarpesActualizados = await remota.obtenerZarpesActualizados(haceUnaSemana);
+    final zarpesActualizados = await remota.obtenerZarpesActualizados(
+      haceUnaSemana,
+    );
 
     for (var z in zarpesActualizados) {
       // Usar sqlite o gestordb directo desde la fuente local

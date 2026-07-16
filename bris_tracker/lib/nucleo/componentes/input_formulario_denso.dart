@@ -42,7 +42,10 @@ class InputFormularioDenso extends StatelessWidget {
       decoration: InputDecoration(
         labelText: labelText,
         labelStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
-        floatingLabelStyle: const TextStyle(color: Color(0xFF006B54), fontWeight: FontWeight.bold),
+        floatingLabelStyle: const TextStyle(
+          color: Color(0xFF006B54),
+          fontWeight: FontWeight.bold,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
@@ -61,7 +64,10 @@ class InputFormularioDenso extends StatelessWidget {
         ),
         filled: true,
         fillColor: readOnly ? const Color(0xFFF3F4F6) : Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
         suffixIcon: suffixIcon,
       ),
     );

@@ -118,7 +118,18 @@ class _FormularioRegistroPescaState
       _tipoCtrl.text = widget.cuadreInicial!.tipo ?? '';
       _cuadrillaCtrl.text = widget.cuadreInicial!.cuadrilla ?? '';
       _tipoProductoSeleccionado = widget.cuadreInicial!.tipoProducto;
-      if (_tipoProductoSeleccionado != null && !['CATANA', 'POTA', '1a', '2a', 'Destare', 'Caballa', 'BONITO', 'JUREL', 'OTROS'].contains(_tipoProductoSeleccionado)) {
+      if (_tipoProductoSeleccionado != null &&
+          ![
+            'CATANA',
+            'POTA',
+            '1a',
+            '2a',
+            'Destare',
+            'Caballa',
+            'BONITO',
+            'JUREL',
+            'OTROS',
+          ].contains(_tipoProductoSeleccionado)) {
         _otroProductoCtrl.text = _tipoProductoSeleccionado!;
         _tipoProductoSeleccionado = 'OTROS';
       }
@@ -312,7 +323,9 @@ class _FormularioRegistroPescaState
           : (widget.cuadreInicial?.pesoTotal ?? 0),
       cajasLlenas: int.tryParse(_cajasLlenasCtrl.text) ?? 0,
       cajasVacias: int.tryParse(_cajasVaciasCtrl.text) ?? 0,
-      tipoProducto: _tipoProductoSeleccionado == 'OTROS' ? _otroProductoCtrl.text.trim().toUpperCase() : _tipoProductoSeleccionado,
+      tipoProducto: _tipoProductoSeleccionado == 'OTROS'
+          ? _otroProductoCtrl.text.trim().toUpperCase()
+          : _tipoProductoSeleccionado,
       muellePartida: _muellePartidaCtrl.text.trim().isEmpty
           ? null
           : _muellePartidaCtrl.text.trim(),
@@ -567,8 +580,12 @@ class _FormularioRegistroPescaState
                               if (!formKeyDialog.currentState!.validate()) {
                                 return;
                               }
-                              final k = FormateadorMiles.parseDouble(kilosNetosCtrl.text);
-                              final p = FormateadorMiles.parseDouble(precioCtrl.text);
+                              final k = FormateadorMiles.parseDouble(
+                                kilosNetosCtrl.text,
+                              );
+                              final p = FormateadorMiles.parseDouble(
+                                precioCtrl.text,
+                              );
 
                               setState(() {
                                 final item = CompraEntidad(
@@ -756,8 +773,8 @@ class _FormularioRegistroPescaState
       _zarpeSeleccionado = z;
       _cuadreId = z['id'] ?? '';
       _placaCtrl.text = z['placa_camara'] ?? '';
-      _fechaZarpeCtrl.text = z['fecha_zarpe'] != null 
-          ? (z['fecha_zarpe'] as DateTime).toIso8601String().substring(0, 10) 
+      _fechaZarpeCtrl.text = z['fecha_zarpe'] != null
+          ? (z['fecha_zarpe'] as DateTime).toIso8601String().substring(0, 10)
           : '';
     });
     Navigator.pop(context);
@@ -960,7 +977,9 @@ class _FormularioRegistroPescaState
                 controller: _otroProductoCtrl,
                 style: const TextStyle(color: Colors.black87),
                 textCapitalization: TextCapitalization.characters,
-                decoration: EstilosFormulario.construirInputDecoration(labelText: 'Especifique otro producto'),
+                decoration: EstilosFormulario.construirInputDecoration(
+                  labelText: 'Especifique otro producto',
+                ),
               ),
             ],
             const SizedBox(height: 16),

@@ -140,8 +140,9 @@ class _SplashCargaState extends State<SplashCarga>
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF00E5FF)
-                            .withValues(alpha: 0.3 + _pulso.value * 0.3),
+                        color: const Color(
+                          0xFF00E5FF,
+                        ).withValues(alpha: 0.3 + _pulso.value * 0.3),
                         blurRadius: 20 + _pulso.value * 20,
                         spreadRadius: 2,
                       ),

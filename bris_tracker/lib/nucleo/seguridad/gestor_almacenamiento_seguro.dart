@@ -56,7 +56,10 @@ class GestorAlmacenamientoSeguro {
   // ─── Credenciales Offline (Hash Contraseña + Datos Usuario) ─────────────
 
   /// Guarda el hash BCrypt de la contraseña y los datos del usuario para modo offline.
-  Future<void> guardarCredencialesOffline(String hash, String userDataJson) async {
+  Future<void> guardarCredencialesOffline(
+    String hash,
+    String userDataJson,
+  ) async {
     try {
       await _storage.write(key: _keyOfflineHash, value: hash);
       await _storage.write(key: _keyOfflineUser, value: userDataJson);

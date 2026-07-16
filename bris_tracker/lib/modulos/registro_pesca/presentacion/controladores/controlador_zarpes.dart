@@ -6,8 +6,8 @@ import 'package:flutter/foundation.dart';
 
 final proveedorZarpes =
     StateNotifierProvider<ControladorZarpes, AsyncValue<void>>((ref) {
-  return ControladorZarpes(ref.read(proveedorZarpeRepositorio));
-});
+      return ControladorZarpes(ref.read(proveedorZarpeRepositorio));
+    });
 
 /// Controlador de zarpes offline-first.
 ///

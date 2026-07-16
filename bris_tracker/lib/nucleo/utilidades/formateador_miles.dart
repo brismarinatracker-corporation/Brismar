@@ -11,7 +11,7 @@ class FormateadorMiles extends TextInputFormatter {
 
     // Solo números y puntos
     String newText = newValue.text.replaceAll(RegExp(r'[^0-9.]'), '');
-    
+
     // Evitar múltiples puntos
     if (newText.indexOf('.') != newText.lastIndexOf('.')) {
       newText = newText.substring(0, newText.lastIndexOf('.'));
@@ -29,7 +29,8 @@ class FormateadorMiles extends TextInputFormatter {
 
     String resultText = enteros + decimalesTexto;
 
-    int offset = newValue.selection.end + (resultText.length - newValue.text.length);
+    int offset =
+        newValue.selection.end + (resultText.length - newValue.text.length);
     if (offset < 0) offset = 0;
     if (offset > resultText.length) offset = resultText.length;
 

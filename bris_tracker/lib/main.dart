@@ -46,7 +46,9 @@ class _MyAppState extends ConsumerState<MyApp> {
   }
 
   void _iniciarAutoSincronizacion() {
-    _subscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> resultados) {
+    _subscription = Connectivity().onConnectivityChanged.listen((
+      List<ConnectivityResult> resultados,
+    ) {
       if (!resultados.contains(ConnectivityResult.none)) {
         // Retrasamos un segundo para asegurar que el SO ya estableció la red
         Future.delayed(const Duration(seconds: 1), () {
@@ -90,10 +92,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('es', 'ES'),
-        Locale('en', 'US'),
-      ],
+      supportedLocales: const [Locale('es', 'ES'), Locale('en', 'US')],
     );
   }
 }

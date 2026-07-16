@@ -45,7 +45,8 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
       _escucharEstado,
     );
 
-    final mostrarPin = widget.preferencia == PreferenciaAcceso.pin || _usarPinTemporalmente;
+    final mostrarPin =
+        widget.preferencia == PreferenciaAcceso.pin || _usarPinTemporalmente;
 
     return Scaffold(
       body: Container(
@@ -91,11 +92,12 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
 
   /// Construye el encabezado con saludo y nombre de la app.
   Widget _construirCabecera() {
-    final mostrarPin = widget.preferencia == PreferenciaAcceso.pin || _usarPinTemporalmente;
-    
+    final mostrarPin =
+        widget.preferencia == PreferenciaAcceso.pin || _usarPinTemporalmente;
+
     return Column(
       children: [
-        mostrarPin 
+        mostrarPin
             ? const Icon(Icons.lock_outline, color: Color(0xFF00E5FF), size: 48)
             : ClipRRect(
                 borderRadius: BorderRadius.circular(12),
@@ -159,8 +161,15 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
             height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF00E5FF).withValues(alpha: cargando ? 0.03 : 0.1),
-              border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: cargando ? 0.3 : 1.0), width: 2),
+              color: const Color(
+                0xFF00E5FF,
+              ).withValues(alpha: cargando ? 0.03 : 0.1),
+              border: Border.all(
+                color: const Color(
+                  0xFF00E5FF,
+                ).withValues(alpha: cargando ? 0.3 : 1.0),
+                width: 2,
+              ),
             ),
             child: cargando
                 ? const Padding(
@@ -185,7 +194,10 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
           onPressed: _cambiarAPin,
           child: Text(
             'Usar PIN en su lugar',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 13),
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 13,
+            ),
           ),
         ),
       ],
@@ -320,7 +332,9 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
 
   /// Envía el PIN al controlador para verificación.
   void _enviarPin() {
-    ref.read(proveedorControladorAutenticacion.notifier).verificarPin(_pinIngresado);
+    ref
+        .read(proveedorControladorAutenticacion.notifier)
+        .verificarPin(_pinIngresado);
   }
 
   /// Inicia el proceso de autenticación biométrica.
@@ -344,7 +358,10 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF0C1D3F),
-        title: const Text('¿Olvidaste tu PIN?', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          '¿Olvidaste tu PIN?',
+          style: TextStyle(color: Colors.white),
+        ),
         content: const Text(
           'Deberás iniciar sesión nuevamente con tu correo y contraseña.',
           style: TextStyle(color: Colors.white70),
@@ -352,11 +369,17 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar', style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Continuar', style: TextStyle(color: Color(0xFF00E5FF))),
+            child: const Text(
+              'Continuar',
+              style: TextStyle(color: Color(0xFF00E5FF)),
+            ),
           ),
         ],
       ),
@@ -388,4 +411,3 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
     });
   }
 }
-

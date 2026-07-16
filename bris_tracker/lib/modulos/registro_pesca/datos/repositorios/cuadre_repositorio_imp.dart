@@ -14,14 +14,13 @@ class CuadreRepositorioImp implements CuadreRepositorio {
   final FuenteDatosCuadresRemota remota;
 
   /// Constructor de [CuadreRepositorioImp].
-  CuadreRepositorioImp({
-    required this.local,
-    required this.remota,
-  });
+  CuadreRepositorioImp({required this.local, required this.remota});
 
   @override
   Future<void> guardarCuadre(CuadreEntidad cuadre) async {
-    final modelo = cuadre is CuadreModelo ? cuadre : CuadreModelo.fromEntidad(cuadre);
+    final modelo = cuadre is CuadreModelo
+        ? cuadre
+        : CuadreModelo.fromEntidad(cuadre);
     await local.guardarCuadreCompleto(modelo);
   }
 
@@ -39,8 +38,8 @@ class CuadreRepositorioImp implements CuadreRepositorio {
       try {
         final urls = await remota.subirCuadre(cuadre);
         await local.marcarComoSincronizado(
-          cuadre.id, 
-          urls['urlPdf'], 
+          cuadre.id,
+          urls['urlPdf'],
           urls['urlExcel'],
           urls['urlFoto'],
         );

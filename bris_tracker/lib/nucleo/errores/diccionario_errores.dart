@@ -115,7 +115,12 @@ class DiccionarioErrores {
   }
 
   static const Map<String, List<String>> _patronesErrores = {
-    'AUTH-001': ['contraseña incorrecta', 'incorrectos', 'invalid login credentials', 'invalid claim'],
+    'AUTH-001': [
+      'contraseña incorrecta',
+      'incorrectos',
+      'invalid login credentials',
+      'invalid claim',
+    ],
     'NET-003': ['sincronización', 'sync'],
     'NET-002': ['red', 'socketexception', 'network', 'connection'],
     'BIO-001': ['biomet', 'notavailable', 'no registered'],
@@ -149,11 +154,11 @@ class ExcepcionApp implements Exception {
 /// Excepción específica para errores de Base de Datos.
 class ExcepcionBaseDatos extends ExcepcionApp {
   const ExcepcionBaseDatos({required String mensaje, Object? causa})
-      : super('DB-002', mensajeTecnico: mensaje, causa: causa);
+    : super('DB-002', mensajeTecnico: mensaje, causa: causa);
 }
 
 /// Excepción específica para errores de Red.
 class ExcepcionRed extends ExcepcionApp {
   const ExcepcionRed({required String mensaje, Object? causa})
-      : super('NET-002', mensajeTecnico: mensaje, causa: causa);
+    : super('NET-002', mensajeTecnico: mensaje, causa: causa);
 }

@@ -159,7 +159,9 @@ class GestorBaseDatos {
       await _upgradeA7(db);
     }
     if (oldVersion < 8) {
-      await db.execute('ALTER TABLE compras ADD COLUMN adelanto REAL DEFAULT 0');
+      await db.execute(
+        'ALTER TABLE compras ADD COLUMN adelanto REAL DEFAULT 0',
+      );
     }
     if (oldVersion < 9) {
       await _upgradeA9(db);
@@ -207,7 +209,9 @@ class GestorBaseDatos {
 
   /// Migración: Separar estado de negocio de sincronización en zarpes.
   Future<void> _upgradeA7(Database db) async {
-    await db.execute('ALTER TABLE zarpes ADD COLUMN sincronizado INTEGER DEFAULT 0');
+    await db.execute(
+      'ALTER TABLE zarpes ADD COLUMN sincronizado INTEGER DEFAULT 0',
+    );
   }
 
   Future<void> _upgradeA9(Database db) async {
@@ -217,7 +221,9 @@ class GestorBaseDatos {
 
   /// Migración: Agregar columna numero_chofer en zarpes.
   Future<void> _upgradeA11(Database db) async {
-    await db.execute("ALTER TABLE zarpes ADD COLUMN numero_chofer TEXT NOT NULL DEFAULT '-'");
+    await db.execute(
+      "ALTER TABLE zarpes ADD COLUMN numero_chofer TEXT NOT NULL DEFAULT '-'",
+    );
   }
 
   /// Cierra la base de datos cuando ya no se requiere.

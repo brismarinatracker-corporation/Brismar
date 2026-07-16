@@ -48,7 +48,8 @@ class ConfigurarPinRoute extends GoRouteData with $ConfigurarPinRoute {
 
 /// Ruta de la pantalla de configuración de biometría (opcional).
 @TypedGoRoute<ConfigurarBiometriaRoute>(path: '/configurar-biometria')
-class ConfigurarBiometriaRoute extends GoRouteData with $ConfigurarBiometriaRoute {
+class ConfigurarBiometriaRoute extends GoRouteData
+    with $ConfigurarBiometriaRoute {
   const ConfigurarBiometriaRoute();
 
   @override
@@ -111,7 +112,7 @@ class NuevoCuadreRoute extends GoRouteData with $NuevoCuadreRoute {
 // class GastosRoute extends GoRouteData with $GastosRoute {
 //   final String cuadreId;
 //   const GastosRoute({required this.cuadreId});
-// 
+//
 //   @override
 //   Widget build(BuildContext context, GoRouterState state) =>
 //       PantallaGastos(cuadreId: cuadreId);
@@ -129,7 +130,9 @@ class PerfilRoute extends GoRouteData with $PerfilRoute {
 
 /// Configuración de rutas declarativas mediante GoRouter generadas y protegidas por Riverpod.
 final enrutadorProvider = Provider<GoRouter>((ref) {
-  final authNotifier = ValueNotifier<EstadoAutenticacion>(ref.read(proveedorControladorAutenticacion));
+  final authNotifier = ValueNotifier<EstadoAutenticacion>(
+    ref.read(proveedorControladorAutenticacion),
+  );
 
   ref.listen<EstadoAutenticacion>(proveedorControladorAutenticacion, (_, next) {
     authNotifier.value = next;
@@ -149,24 +152,34 @@ final enrutadorProvider = Provider<GoRouter>((ref) {
 /// Evalúa la redirección según el estado de autenticación actual.
 String? _evaluarRedireccion(EstadoAutenticacion authState, String path) {
   final rutaInicial = _evaluarEstadosInicialesYSinSesion(authState, path);
-  if (rutaInicial != null || authState is EstadoAutenticacionInicial || 
-      (authState is EstadoAutenticacionCargando && path == '/cargando') || 
-      authState is EstadoAutenticacionNoAutenticado || authState is EstadoAutenticacionError) {
+  if (rutaInicial != null ||
+      authState is EstadoAutenticacionInicial ||
+      (authState is EstadoAutenticacionCargando && path == '/cargando') ||
+      authState is EstadoAutenticacionNoAutenticado ||
+      authState is EstadoAutenticacionError) {
     return rutaInicial;
   }
   final rutaSetup = _evaluarEstadosSetup(authState, path);
   if (rutaSetup != null) return rutaSetup;
-  
+
   if (authState is EstadoAutenticacionAutenticado) {
-    const pantallasSetup = ['/login', '/configurar-pin', '/configurar-biometria', '/acceso-rapido'];
+    const pantallasSetup = [
+      '/login',
+      '/configurar-pin',
+      '/configurar-biometria',
+      '/acceso-rapido',
+    ];
     return pantallasSetup.contains(path) ? '/' : null;
   }
   return null;
 }
 
 /// Evalúa estados iniciales y sin sesión.
-String? _evaluarEstadosInicialesYSinSesion(EstadoAutenticacion authState, String path) {
-  if (authState is EstadoAutenticacionInicial || 
+String? _evaluarEstadosInicialesYSinSesion(
+  EstadoAutenticacion authState,
+  String path,
+) {
+  if (authState is EstadoAutenticacionInicial ||
       (authState is EstadoAutenticacionCargando && path == '/cargando')) {
     return path == '/cargando' ? null : '/cargando';
   }
