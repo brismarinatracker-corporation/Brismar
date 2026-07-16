@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -499,40 +500,6 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                                     ],
                                   ),
                                   const SizedBox(height: 32),
-
-                                  // Soporte Técnico
-                                  Center(
-                                    child: Text.rich(
-                                      TextSpan(
-                                        text: '¿Problemas para ingresar? ',
-                                        style: GoogleFonts.inter(
-                                          color: const Color(0xFF64748B),
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        children: [
-                                          WidgetSpan(
-                                            alignment:
-                                                PlaceholderAlignment.middle,
-                                            child: InkWell(
-                                              onTap: () {},
-                                              child: Text(
-                                                'Contacta a soporte',
-                                                style: GoogleFonts.inter(
-                                                  color: const Color(
-                                                    0xFF15181A,
-                                                  ),
-                                                  fontWeight: FontWeight.bold,
-                                                  decoration:
-                                                      TextDecoration.underline,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
                                 ],
                               ),
                             ),
@@ -559,6 +526,16 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                   color: const Color(0xFF0E3E2C), // Verde dominante
                   child: Stack(
                     children: [
+                      // Carrusel de fondo
+                      const Positioned.fill(child: CarruselFondoLogin()),
+                      // Overlay oscuro o verdoso para que el texto resalte
+                      Positioned.fill(
+                        child: Container(
+                          color: const Color(0xFF0E3E2C).withValues(
+                            alpha: 0.85,
+                          ), // Verde dominante transparente
+                        ),
+                      ),
                       // Líneas de contorno tipo batimetría / Carta Náutica
                       Positioned.fill(
                         child: CustomPaint(painter: DibujadorCartaNautica()),
@@ -575,12 +552,12 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                             children: [
                               const SizedBox(height: 12),
                               Text(
-                                'NEGOCIOS BRISMAR S.R.L.',
+                                'BRIS GROUP',
                                 style: GoogleFonts.inter(
                                   color: const Color(
                                     0xFF7EBFC9,
                                   ), // Celeste Accent
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 2.0,
                                 ),
@@ -599,7 +576,7 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                               Text(
                                 'Panel de gestión portuaria y logística pesquera:\nregistro de faenas, control de bahía y\ntrazabilidad en un solo lugar.',
                                 style: GoogleFonts.inter(
-                                  color: const Color(0xFF94A3B8),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   fontSize: 16,
                                   height: 1.55,
                                   fontWeight: FontWeight.w400,
@@ -848,4 +825,52 @@ class DibujadorCartaNautica extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class CarruselFondoLogin extends StatefulWidget {
+  const CarruselFondoLogin({super.key});
+
+  @override
+  State<CarruselFondoLogin> createState() => _CarruselFondoLoginState();
+}
+
+class _CarruselFondoLoginState extends State<CarruselFondoLogin> {
+  int _indice = 0;
+  Timer? _timer;
+  final _imagenes = ['assets/bg_1.jpg', 'assets/bg_2.jpg', 'assets/bg_3.jpg'];
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (mounted) {
+        setState(() {
+          _indice = (_indice + 1) % _imagenes.length;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 1500),
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+      child: Image.asset(
+        _imagenes[_indice],
+        key: ValueKey<int>(_indice),
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      ),
+    );
+  }
 }
