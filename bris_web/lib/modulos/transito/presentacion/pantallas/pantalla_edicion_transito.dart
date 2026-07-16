@@ -16,23 +16,24 @@ import 'widgets/seccion_gastos.dart';
 import 'widgets/seccion_gastos_administrativos.dart';
 import 'widgets/seccion_recepcion_venta.dart';
 
-
 class PantallaEdicionTransito extends ConsumerStatefulWidget {
   final String id;
   const PantallaEdicionTransito({super.key, required this.id});
 
   @override
-  ConsumerState<PantallaEdicionTransito> createState() => _PantallaEdicionTransitoState();
+  ConsumerState<PantallaEdicionTransito> createState() =>
+      _PantallaEdicionTransitoState();
 }
 
-class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransito> {
+class _PantallaEdicionTransitoState
+    extends ConsumerState<PantallaEdicionTransito> {
   final _formKey = GlobalKey<FormState>();
-  
+
   bool _cargando = true;
   String? _error;
-  
+
   ZarpeModelo? _zarpeInfo;
-  
+
   // Controladores Zarpe
   final _placaCtrl = TextEditingController();
   final _choferCtrl = TextEditingController();
@@ -53,7 +54,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   List<CompraWebModelo> _compras = [];
   List<GastoWebModelo> _gastos = [];
   List<VentaWebModelo> _ventas = [];
-  
+
   // Paso actual
   int _pasoActual = 0;
 
@@ -80,7 +81,10 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   }
 
   Future<void> _cargarDatos() async {
-    setState(() { _cargando = true; _error = null; });
+    setState(() {
+      _cargando = true;
+      _error = null;
+    });
     try {
       final repo = ref.read(proveedorRepositorioEdicionZarpe);
 
@@ -98,8 +102,9 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
       final gastos = resultados[3] as List<GastoWebModelo>;
       final ventas = resultados[4] as List<VentaWebModelo>;
 
-      if (zarpe == null) throw Exception('No se encontró el zarpe con ID ${widget.id}');
-      
+      if (zarpe == null)
+        throw Exception('No se encontró el zarpe con ID ${widget.id}');
+
       setState(() {
         _zarpeInfo = zarpe;
         _placaCtrl.text = zarpe.placaCamara;
@@ -107,7 +112,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         _numeroChoferCtrl.text = zarpe.numeroChofer;
         _muelleCtrl.text = zarpe.muellePartida;
         _observacionesCtrl.text = zarpe.observaciones ?? '';
-        
+
         if (cuadre != null) {
           _pesoTotalCtrl.text = cuadre.pesoTotal?.toString() ?? '';
           _cajasLlenasCtrl.text = cuadre.cajasLlenas?.toString() ?? '';
@@ -118,8 +123,14 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
           _tipoProductoSeleccionado = cuadre.tipoProducto ?? 1;
         } else {
           // If cuadre doesn't exist, we fall back to zarpe fields if any.
-          _pesoTotalCtrl.text = zarpe.pesoTotal?.toString() ?? zarpe.pesoAproximado?.toString() ?? '';
-          _cajasLlenasCtrl.text = zarpe.cajasLlenas?.toString() ?? zarpe.numeroCajas?.toString() ?? '';
+          _pesoTotalCtrl.text =
+              zarpe.pesoTotal?.toString() ??
+              zarpe.pesoAproximado?.toString() ??
+              '';
+          _cajasLlenasCtrl.text =
+              zarpe.cajasLlenas?.toString() ??
+              zarpe.numeroCajas?.toString() ??
+              '';
         }
 
         _compras = List.from(compras);
@@ -128,17 +139,20 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         _cargando = false;
       });
     } catch (e) {
-      setState(() { _error = e.toString(); _cargando = false; });
+      setState(() {
+        _error = e.toString();
+        _cargando = false;
+      });
     }
   }
 
   Future<void> _guardarCambios() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _cargando = true);
     try {
       final repo = ref.read(proveedorRepositorioEdicionZarpe);
-      
+
       final params = EdicionZarpeParams(
         id: widget.id,
         placa: _placaCtrl.text.trim(),
@@ -158,13 +172,15 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
       );
 
       await repo.guardarEdicion(params);
-      
+
       if (mounted) {
         await showDialog(
           context: context,
           barrierDismissible: false,
           builder: (c) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             title: const Row(
               children: [
                 Icon(Icons.check_circle, color: Colors.green, size: 28),
@@ -176,7 +192,13 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(c),
-                child: const Text('Aceptar', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Aceptar',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -189,7 +211,9 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         showDialog(
           context: context,
           builder: (c) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             title: const Row(
               children: [
                 Icon(Icons.error, color: Colors.red, size: 28),
@@ -201,7 +225,13 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(c),
-                child: const Text('Aceptar', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Aceptar',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -215,7 +245,8 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(proveedorAutenticacion);
-    final esSoloLectura = authState.rol == 'administrador' || authState.rol == 'supervisor';
+    final esSoloLectura =
+        authState.rol == 'administrador' || authState.rol == 'supervisor';
 
     if (_cargando && _zarpeInfo == null) {
       return const Scaffold(
@@ -223,11 +254,16 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         body: Center(child: CargaOrbital(tamano: 80)),
       );
     }
-    
+
     if (_error != null) {
       return Scaffold(
         backgroundColor: const Color(0xFFF8FAFC),
-        body: Center(child: Text('Error: $_error', style: const TextStyle(color: Colors.redAccent))),
+        body: Center(
+          child: Text(
+            'Error: $_error',
+            style: const TextStyle(color: Colors.redAccent),
+          ),
+        ),
       );
     }
 
@@ -240,7 +276,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      body: _cargando 
+      body: _cargando
           ? const Center(child: CargaOrbital(tamano: 80))
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,10 +313,13 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
     final esMovil = MediaQuery.of(context).size.width < 800;
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 32, vertical: esMovil ? 16 : 24),
+      padding: EdgeInsets.symmetric(
+        horizontal: esMovil ? 20 : 32,
+        vertical: esMovil ? 16 : 24,
+      ),
       decoration: const BoxDecoration(
-        color: Color(0xFF0E3E2C), // Dark green matching mockup
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
       ),
       child: esMovil
           ? Column(
@@ -289,7 +328,11 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 24),
+                      icon: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Color(0xFF15181A),
+                        size: 24,
+                      ),
                       onPressed: () => context.pop(),
                       tooltip: 'Volver',
                       padding: EdgeInsets.zero,
@@ -300,7 +343,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                       child: Text(
                         'Editor de Viaje / Cuadre',
                         style: GoogleFonts.sora(
-                          color: Colors.white,
+                          color: const Color(0xFF15181A),
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
@@ -313,15 +356,28 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                 if (!esSoloLectura)
                   Align(
                     alignment: Alignment.centerRight,
-                    child: OutlinedButton.icon(
+                    child: ElevatedButton.icon(
                       onPressed: _guardarCambios,
-                      icon: const Icon(Icons.save_rounded, color: Colors.white, size: 18),
-                      label: Text('Guardar', style: GoogleFonts.inter(color: Colors.white)),
-                      style: OutlinedButton.styleFrom(
+                      icon: const Icon(
+                        Icons.save_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      label: Text(
+                        'Guardar',
+                        style: GoogleFonts.inter(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0E3E2C),
                         foregroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.white30),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                   ),
@@ -333,7 +389,11 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 24),
+                      icon: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Color(0xFF15181A),
+                        size: 24,
+                      ),
                       onPressed: () => context.pop(),
                       tooltip: 'Volver',
                     ),
@@ -341,7 +401,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                     Text(
                       'Editor de Viaje / Cuadre',
                       style: GoogleFonts.sora(
-                        color: Colors.white,
+                        color: const Color(0xFF15181A),
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
                       ),
@@ -349,15 +409,28 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                   ],
                 ),
                 if (!esSoloLectura)
-                  OutlinedButton.icon(
+                  ElevatedButton.icon(
                     onPressed: _guardarCambios,
-                    icon: const Icon(Icons.save_rounded, color: Colors.white, size: 18),
-                    label: Text('Guardar', style: GoogleFonts.inter(color: Colors.white)),
-                    style: OutlinedButton.styleFrom(
+                    icon: const Icon(
+                      Icons.save_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    label: Text(
+                      'Guardar',
+                      style: GoogleFonts.inter(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0E3E2C),
                       foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white30),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
               ],
@@ -374,16 +447,46 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
       ),
       child: Column(
         children: [
-          _construirItemPaso(0, 'Zarpe Inicial', 'Datos de partida', Icons.directions_boat_outlined, esSoloLectura),
-          _construirItemPaso(1, 'Cuadre de Muelle', 'Gastos operativos y compras', Icons.receipt_long_outlined, esSoloLectura),
-          _construirItemPaso(2, 'Recepción y Venta', 'Destino, kilos y precio final', Icons.storefront_outlined, esSoloLectura),
-          _construirItemPaso(3, 'Gastos Administrativos', 'Fletes y comisiones', Icons.account_balance_wallet_outlined, esSoloLectura),
+          _construirItemPaso(
+            0,
+            'Zarpe Inicial',
+            'Datos de partida',
+            Icons.directions_boat_outlined,
+            esSoloLectura,
+          ),
+          _construirItemPaso(
+            1,
+            'Cuadre de Muelle',
+            'Gastos operativos y compras',
+            Icons.receipt_long_outlined,
+            esSoloLectura,
+          ),
+          _construirItemPaso(
+            2,
+            'Recepción y Venta',
+            'Destino, kilos y precio final',
+            Icons.storefront_outlined,
+            esSoloLectura,
+          ),
+          _construirItemPaso(
+            3,
+            'Gastos Administrativos',
+            'Fletes y comisiones',
+            Icons.account_balance_wallet_outlined,
+            esSoloLectura,
+          ),
         ],
       ),
     );
   }
 
-  Widget _construirItemPaso(int indice, String titulo, String subtitulo, IconData icono, bool esSoloLectura) {
+  Widget _construirItemPaso(
+    int indice,
+    String titulo,
+    String subtitulo,
+    IconData icono,
+    bool esSoloLectura,
+  ) {
     final seleccionado = _pasoActual == indice;
     return InkWell(
       onTap: () => setState(() => _pasoActual = indice),
@@ -393,7 +496,9 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
           color: seleccionado ? const Color(0xFFF0FDF4) : Colors.transparent,
           border: Border(
             left: BorderSide(
-              color: seleccionado ? const Color(0xFF00C853) : Colors.transparent,
+              color: seleccionado
+                  ? const Color(0xFF00C853)
+                  : Colors.transparent,
               width: 4,
             ),
             bottom: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -404,10 +509,16 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: seleccionado ? const Color(0xFF00C853) : const Color(0xFFF1F5F9),
+                color: seleccionado
+                    ? const Color(0xFF00C853)
+                    : const Color(0xFFF1F5F9),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icono, color: seleccionado ? Colors.white : const Color(0xFF64748B), size: 22),
+              child: Icon(
+                icono,
+                color: seleccionado ? Colors.white : const Color(0xFF64748B),
+                size: 22,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -417,15 +528,22 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                   Text(
                     titulo,
                     style: TextStyle(
-                      color: seleccionado ? const Color(0xFF15181A) : const Color(0xFF475569),
-                      fontWeight: seleccionado ? FontWeight.bold : FontWeight.w600,
+                      color: seleccionado
+                          ? const Color(0xFF15181A)
+                          : const Color(0xFF475569),
+                      fontWeight: seleccionado
+                          ? FontWeight.bold
+                          : FontWeight.w600,
                       fontSize: 15,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitulo,
-                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                    style: const TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -457,7 +575,8 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
               cuadrillaCtrl: _cuadrillaCtrl,
               observacionesCtrl: _observacionesCtrl,
               tipoProductoActual: _tipoProductoSeleccionado,
-              onTipoProductoCambiado: (v) => setState(() => _tipoProductoSeleccionado = v),
+              onTipoProductoCambiado: (v) =>
+                  setState(() => _tipoProductoSeleccionado = v),
             ),
           ],
         );
@@ -467,15 +586,18 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
           children: [
             _tituloSeccion('Paso 2: Cuadre de Muelle (Bahía)'),
             SeccionEmbarcaciones(
-              compras: _compras, 
+              compras: _compras,
               onGuardar: (c) {
                 setState(() {
                   final idx = _compras.indexWhere((item) => item.id == c.id);
-                  if (idx >= 0) _compras[idx] = c;
-                  else _compras.add(c);
+                  if (idx >= 0)
+                    _compras[idx] = c;
+                  else
+                    _compras.add(c);
                 });
               },
-              onEliminar: (id) => setState(() => _compras.removeWhere((item) => item.id == id)),
+              onEliminar: (id) =>
+                  setState(() => _compras.removeWhere((item) => item.id == id)),
             ),
             const SizedBox(height: 24),
             SeccionGastos(
@@ -483,11 +605,14 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
               onGuardar: (g) {
                 setState(() {
                   final idx = _gastos.indexWhere((item) => item.id == g.id);
-                  if (idx >= 0) _gastos[idx] = g;
-                  else _gastos.add(g);
+                  if (idx >= 0)
+                    _gastos[idx] = g;
+                  else
+                    _gastos.add(g);
                 });
               },
-              onEliminar: (id) => setState(() => _gastos.removeWhere((item) => item.id == id)),
+              onEliminar: (id) =>
+                  setState(() => _gastos.removeWhere((item) => item.id == id)),
             ),
           ],
         );
@@ -501,11 +626,14 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
               onGuardar: (v) {
                 setState(() {
                   final idx = _ventas.indexWhere((item) => item.id == v.id);
-                  if (idx >= 0) _ventas[idx] = v;
-                  else _ventas.add(v);
+                  if (idx >= 0)
+                    _ventas[idx] = v;
+                  else
+                    _ventas.add(v);
                 });
               },
-              onEliminar: (id) => setState(() => _ventas.removeWhere((item) => item.id == id)),
+              onEliminar: (id) =>
+                  setState(() => _ventas.removeWhere((item) => item.id == id)),
             ),
           ],
         );
@@ -519,11 +647,14 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
               onGuardar: (g) {
                 setState(() {
                   final idx = _gastos.indexWhere((item) => item.id == g.id);
-                  if (idx >= 0) _gastos[idx] = g;
-                  else _gastos.add(g);
+                  if (idx >= 0)
+                    _gastos[idx] = g;
+                  else
+                    _gastos.add(g);
                 });
               },
-              onEliminar: (id) => setState(() => _gastos.removeWhere((item) => item.id == id)),
+              onEliminar: (id) =>
+                  setState(() => _gastos.removeWhere((item) => item.id == id)),
             ),
           ],
         );
@@ -537,7 +668,11 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
       padding: const EdgeInsets.only(bottom: 24),
       child: Text(
         titulo,
-        style: GoogleFonts.sora(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF15181A)),
+        style: GoogleFonts.sora(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: const Color(0xFF15181A),
+        ),
       ),
     );
   }

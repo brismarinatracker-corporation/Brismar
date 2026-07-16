@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../cuadres/dominio/modelos/cuadre_web_modelo.dart';
+import '../../../../nucleo/utilidades/formateador_miles.dart';
 
 class SeccionGastosAdministrativos extends StatefulWidget {
   final List<GastoWebModelo> gastos;
@@ -69,8 +70,7 @@ class _SeccionGastosAdministrativosState extends State<SeccionGastosAdministrati
   }
 
   void _onFieldChangedFijo(String concepto, String val) {
-    final valorStr = val.replaceAll(',', '.').trim();
-    final total = double.tryParse(valorStr) ?? 0.0;
+    final total = FormateadorMiles.parseDouble(val);
 
     final idx = widget.gastos.indexWhere((g) => g.concepto.toUpperCase().trim() == concepto);
     
@@ -129,7 +129,7 @@ class _SeccionGastosAdministrativosState extends State<SeccionGastosAdministrati
               controller: montoCtrl,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                FormateadorMiles(),
               ],
               decoration: const InputDecoration(labelText: 'Monto (S/)', prefixText: 'S/ '),
             ),
@@ -144,8 +144,7 @@ class _SeccionGastosAdministrativosState extends State<SeccionGastosAdministrati
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00796B)),
             onPressed: () {
               final concepto = conceptoCtrl.text.toUpperCase().trim();
-              final valorStr = montoCtrl.text.replaceAll(',', '.').trim();
-              final total = double.tryParse(valorStr) ?? 0.0;
+              final total = FormateadorMiles.parseDouble(montoCtrl.text);
 
               if (concepto.isNotEmpty && total > 0) {
                 final nuevoGasto = GastoWebModelo(
@@ -217,7 +216,7 @@ class _SeccionGastosAdministrativosState extends State<SeccionGastosAdministrati
                 style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                  FormateadorMiles(),
                 ],
                 decoration: InputDecoration(
                   labelText: e.key,

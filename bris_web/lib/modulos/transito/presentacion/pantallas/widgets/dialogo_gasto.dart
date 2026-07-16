@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../cuadres/dominio/modelos/cuadre_web_modelo.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../maestros/presentacion/controladores/controlador_maestros.dart';
+import '../../../../nucleo/utilidades/formateador_miles.dart';
 
 class DialogoGasto {
   static void mostrar(
@@ -88,7 +89,7 @@ class DialogoGasto {
                             controller: cantidadCtrl,
                             style: const TextStyle(color: Color(0xFF15181A), fontSize: 14, fontWeight: FontWeight.w500),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
+                            inputFormatters: [FormateadorMiles()],
                             decoration: _decoracionDialogo('1', icono: Icons.numbers_outlined),
                           ),
                         ],
@@ -104,7 +105,7 @@ class DialogoGasto {
                             controller: costoCtrl,
                             style: const TextStyle(color: Color(0xFF15181A), fontSize: 14, fontWeight: FontWeight.w500),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
+                            inputFormatters: [FormateadorMiles()],
                             decoration: _decoracionDialogo('S/ 0.00', icono: Icons.payments_outlined),
                           ),
                         ],
@@ -122,8 +123,8 @@ class DialogoGasto {
             ),
             ElevatedButton(
               onPressed: () {
-                final c = double.tryParse(cantidadCtrl.text) ?? 1.0;
-                final costo = double.tryParse(costoCtrl.text) ?? 0;
+                final c = FormateadorMiles.parseDouble(cantidadCtrl.text);
+                final costo = FormateadorMiles.parseDouble(costoCtrl.text);
                 if (conceptoCtrl.text.isEmpty || c <= 0 || costo <= 0) return;
 
                 final String idAsignado = (gasto?.id == null || gasto!.id.isEmpty) 

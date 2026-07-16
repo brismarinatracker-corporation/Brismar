@@ -15,6 +15,7 @@ import '../../../autenticacion/presentacion/controladores/controlador_autenticac
 import 'package:bris_tracker/nucleo/componentes/carga_orbital.dart';
 import '../../datos/repositorios/zarpe_repositorio_imp.dart';
 import '../../datos/repositorios/camaras_repositorio_local.dart';
+import '../../../nucleo/utilidades/formateador_miles.dart';
 
 class FormularioZarpePantalla extends ConsumerStatefulWidget {
   const FormularioZarpePantalla({super.key});
@@ -225,7 +226,7 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
       await CamarasRepositorioLocal().guardarPlacaLocal(_placaCtrl.text);
 
       final idZarpe = const Uuid().v4();
-      final pesoTotal = double.tryParse(_pesoTotalCtrl.text) ?? 0.0;
+      final pesoTotal = FormateadorMiles.parseDouble(_pesoTotalCtrl.text);
       final cajasLlenas = int.tryParse(_cajasLlenasCtrl.text) ?? 0;
       final cajasVacias = int.tryParse(_cajasVaciasCtrl.text) ?? 0;
 
@@ -590,14 +591,14 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
                       style: const TextStyle(color: Colors.black87),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                        FormateadorMiles(),
                       ],
                       decoration: EstilosFormulario.construirInputDecoration(
                         labelText: 'Peso Total (Kg)',
                       ),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'El peso total es requerido';
-                        final valor = double.tryParse(v) ?? 0.0;
+                        final valor = FormateadorMiles.parseDouble(v);
                         if (valor <= 0) return 'El peso debe ser mayor a 0';
                         return null;
                       },
