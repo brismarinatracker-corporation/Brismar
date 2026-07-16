@@ -140,15 +140,21 @@ class _FormularioLoginState extends ConsumerState<FormularioLogin> {
           ),
         ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(e.paddingLogo),
-        child: Image.asset(
-          'assets/logo.png',
-          fit: BoxFit.contain,
-          errorBuilder: (_, _, _) => Icon(
-            Icons.directions_boat_rounded,
-            size: e.anchoLogo * 0.35,
-            color: const Color(0xFF0077C2),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(e.radiusLogo),
+        child: Padding(
+          padding: EdgeInsets.all(e.paddingLogo * 0.5),
+          child: Transform.scale(
+            scale: 1.8,
+            child: Image.asset(
+              'assets/logo.png',
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => Icon(
+                Icons.directions_boat_rounded,
+                size: e.anchoLogo * 0.35,
+                color: const Color(0xFF0077C2),
+              ),
+            ),
           ),
         ),
       ),

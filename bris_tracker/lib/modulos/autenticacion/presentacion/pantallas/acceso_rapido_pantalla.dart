@@ -97,7 +97,18 @@ class _AccesoRapidoPantallaState extends ConsumerState<AccesoRapidoPantalla> {
       children: [
         mostrarPin 
             ? const Icon(Icons.lock_outline, color: Color(0xFF00E5FF), size: 48)
-            : Image.asset('assets/logo.png', height: 60),
+            : ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  color: Colors.white,
+                  height: 60,
+                  width: 60,
+                  child: Transform.scale(
+                    scale: 1.8,
+                    child: Image.asset('assets/logo.png', fit: BoxFit.contain),
+                  ),
+                ),
+              ),
         const SizedBox(height: 16),
         const Text(
           'Bienvenido de vuelta',
