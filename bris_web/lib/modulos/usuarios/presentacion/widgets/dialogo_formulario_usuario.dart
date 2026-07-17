@@ -32,8 +32,8 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
   late AnimationController _animController;
   late Animation<Offset> _slideAnimation;
 
-  String _rolSeleccionado = 'supervisor';
-  String _sedeSeleccionada = 'Piura';
+  String _rolSeleccionado = 'empleado';
+  String _sedeSeleccionada = 'paita';
   bool _buscandoDNI = false;
   bool _ocultarPassword = true;
   String? _mensajeError;
@@ -66,11 +66,16 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
     _nombreCtrl = TextEditingController(text: u?.nombre ?? '');
     
     if (u != null) {
-      if (['supervisor', 'administrador', 'bahia'].contains(u.rol)) {
+      _correoCtrl.text = u.correo;
+      _nombreCtrl.text = u.nombre;
+      if (['empleado', 'administrador', 'bahia', 'supervisor'].contains(u.rol)) {
         _rolSeleccionado = u.rol;
       }
-      if (['Piura', 'Lambayeque'].contains(u.sede)) {
+      if (['paita', 'piura', 'lambayeque'].contains(u.sede)) {
         _sedeSeleccionada = u.sede;
+      } else if (u.sede != null && u.sede!.isNotEmpty) {
+        // Fallback for any other sede that might be in DB
+        _sedeSeleccionada = 'paita';
       }
       _fechaNacimientoSeleccionada = u.fechaNacimiento;
       _fotoPerfilUrl = u.fotoPerfil;
@@ -281,6 +286,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
     required TextEditingController controller, 
     bool esPassword = false,
     bool requerido = true,
+    bool readOnly = false,
     Widget? suffixIcon,
     String? Function(String?)? validadorPersonalizado,
   }) {
@@ -294,10 +300,11 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
           TextFormField(
             controller: controller,
             obscureText: esPassword ? _ocultarPassword : false,
-            style: GoogleFonts.inter(color: const Color(0xFF15181A), fontSize: 15, fontWeight: FontWeight.w500),
+            readOnly: readOnly,
+            style: GoogleFonts.inter(color: readOnly ? const Color(0xFF94A3B8) : const Color(0xFF15181A), fontSize: 15, fontWeight: FontWeight.w500),
             decoration: InputDecoration(
               filled: true,
-              fillColor: Colors.white,
+              fillColor: readOnly ? const Color(0xFFF8FAFC) : Colors.white,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0E3E2C), width: 2.0)),
@@ -440,11 +447,12 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                       _construirCampoAbs(
                                         etiqueta: 'DNI', 
                                         controller: _dniCtrl,
+                                        readOnly: esEdicion,
                                         suffixIcon: IconButton(
                                           icon: _buscandoDNI 
                                               ? const CargaOrbital(tamano: 14) 
                                               : const Icon(Icons.manage_search, color: Color(0xFF7EBFC9), size: 20),
-                                          onPressed: _buscandoDNI ? null : _buscarDNI,
+                                          onPressed: _buscandoDNI || esEdicion ? null : _buscarDNI,
                                         )
                                       ),
                                       _construirCampoRol(),
@@ -457,11 +465,12 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                         child: _construirCampoAbs(
                                           etiqueta: 'DNI', 
                                           controller: _dniCtrl,
+                                          readOnly: esEdicion,
                                           suffixIcon: IconButton(
                                             icon: _buscandoDNI 
                                                 ? const CargaOrbital(tamano: 14) 
                                                 : const Icon(Icons.manage_search, color: Color(0xFF7EBFC9), size: 20),
-                                            onPressed: _buscandoDNI ? null : _buscarDNI,
+                                            onPressed: _buscandoDNI || esEdicion ? null : _buscarDNI,
                                           )
                                         ),
                                       ),
@@ -473,7 +482,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
                                     ],
                                   ),
 
-                              _construirCampoAbs(etiqueta: 'Nombre Completo', controller: _nombreCtrl),
+                              _construirCampoAbs(etiqueta: 'Nombre Completo', controller: _nombreCtrl, readOnly: esEdicion),
                                 _construirCampoAbs(
                                   etiqueta: 'Correo Corporativo', 
                                   controller: _correoCtrl,
@@ -601,7 +610,7 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0E3E2C), width: 2.0)),
             ),
-            items: ['supervisor', 'administrador', 'bahia'].map((rol) {
+            items: ['empleado', 'administrador', 'bahia', 'supervisor'].map((rol) {
               return DropdownMenuItem(value: rol, child: Text(rol.toUpperCase()));
             }).toList(),
             onChanged: (v) => setState(() => _rolSeleccionado = v!),
@@ -632,8 +641,9 @@ class _DialogoFormularioUsuarioState extends ConsumerState<DialogoFormularioUsua
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0E3E2C), width: 2.0)),
             ),
-            items: ['Piura', 'Lambayeque'].map((sede) {
-              return DropdownMenuItem(value: sede, child: Text(sede));
+            items: ['paita', 'piura', 'lambayeque'].map((sede) {
+              final sedeMayuscula = sede[0].toUpperCase() + sede.substring(1);
+              return DropdownMenuItem(value: sede, child: Text(sedeMayuscula));
             }).toList(),
             onChanged: (v) => setState(() => _sedeSeleccionada = v!),
           ),

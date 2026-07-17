@@ -7,6 +7,7 @@ import '../../../autenticacion/presentacion/controladores/controlador_autenticac
 import '../controladores/controlador_cuadres.dart';
 import '../controladores/controlador_zarpes.dart';
 import '../controladores/controlador_logs.dart';
+import '../../datos/repositorios/camaras_repositorio_local.dart';
 import 'package:bris_tracker/nucleo/componentes/carga_orbital.dart';
 import '../widgets/timeline_audit_log.dart';
 
@@ -40,10 +41,12 @@ class _DashboardCuadresPantallaState
   void _onItemTapped(int index) {
     if (index == 2) {
       // Sincronizar
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Sincronizando cuadres...')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sincronizando datos...')),
+      );
       ref.read(cuadresProvider.notifier).cargarHistorial();
+      ref.read(proveedorZarpes.notifier).sincronizarZarpesPendientes();
+      CamarasRepositorioLocal().sincronizarCamaras();
     } else {
       setState(() {
         _pestanaSeleccionada = index;
@@ -213,6 +216,7 @@ class _DashboardCuadresPantallaState
           onPressed: () {
             ref.read(cuadresProvider.notifier).cargarHistorial();
             ref.read(proveedorZarpes.notifier).sincronizarZarpesPendientes();
+            CamarasRepositorioLocal().sincronizarCamaras();
             sincronizarLogsPendientes(ref);
           },
         ),

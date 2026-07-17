@@ -5,5 +5,6 @@ abstract class RepositorioUsuariosAdmin {
   Future<void> crearUsuario(UsuarioAdminModelo usuario, String password);
   Future<void> actualizarUsuario(UsuarioAdminModelo usuario, {String? nuevaPassword});
   Future<void> alternarEstadoUsuario(String uid, bool activar);
+  Future<void> eliminarUsuario(String uid);
   Future<String> subirAvatar(String idUnico, dynamic archivoBytes, String extension);
 }

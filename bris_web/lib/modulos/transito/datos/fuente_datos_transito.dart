@@ -77,6 +77,9 @@ class FuenteDatosTransito {
     String format(DateTime d) => "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
 
     return switch (filtro) {
+      'hoy' => query
+          .gte('fecha_zarpe', format(hoy))
+          .lt('fecha_zarpe', format(hoy.add(const Duration(days: 1)))),
       'ayer' => query
           .gte('fecha_zarpe', format(ayer))
           .lt('fecha_zarpe', format(hoy)),
@@ -88,7 +91,6 @@ class FuenteDatosTransito {
           'fecha_zarpe',
           format(DateTime(ahora.year, ahora.month, 1)), // Desde el inicio del mes
         ),
-      'anio' => query.gte('fecha_zarpe', format(DateTime(ahora.year, 1, 1))),
       _ => query,
     };
   }

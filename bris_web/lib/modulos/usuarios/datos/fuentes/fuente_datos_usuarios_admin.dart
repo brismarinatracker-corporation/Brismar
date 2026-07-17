@@ -102,6 +102,24 @@ class FuenteDatosUsuariosAdmin {
     }
   }
 
+  Future<void> eliminarUsuario(String uid) async {
+    try {
+      final response = await _supabaseClient.functions.invoke(
+        'admin_usuarios',
+        body: {
+          'action': 'delete_user',
+          'payload': {'uid': uid},
+        },
+      );
+
+      if (response.status != 200) {
+        throw Exception(response.data['error'] ?? 'Error al eliminar usuario');
+      }
+    } catch (e) {
+      throw Exception('No se pudo eliminar el usuario: $e');
+    }
+  }
+
   /// Sube un avatar al bucket "avatars" y devuelve la URL pública.
   Future<String> subirAvatar(String idUnico, dynamic archivoBytes, String extension) async {
     try {

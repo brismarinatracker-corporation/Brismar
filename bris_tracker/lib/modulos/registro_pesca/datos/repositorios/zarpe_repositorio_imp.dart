@@ -39,13 +39,13 @@ class ZarpeRepositorioImp implements ZarpeRepositorio {
   @override
   Future<List<ZarpeEntidad>> obtenerHistorial(String usuarioId) async {
     final listaModelos = await local.obtenerZarpesLocales(usuarioId);
-
     return listaModelos
         .map(
           (m) => ZarpeEntidad(
             id: m.id,
             placaCamara: m.placaCamara,
             chofer: m.chofer,
+            numeroChofer: m.numeroChofer,
             muellePartida: m.muellePartida,
             fotoUrlEvidencia: m.fotoUrlEvidencia,
             fotoLocalPath: m.fotoLocalPath,

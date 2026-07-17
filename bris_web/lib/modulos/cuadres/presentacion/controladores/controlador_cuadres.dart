@@ -19,6 +19,7 @@ class EstadoCuadresWeb {
   final bool hayMasPaginas;
   final DateTime? filtroDesde;
   final DateTime? filtroHasta;
+  final String? filtroPlaca;
   final String? cuadreSeleccionadoId;
 
   const EstadoCuadresWeb({
@@ -30,6 +31,7 @@ class EstadoCuadresWeb {
     this.hayMasPaginas = true,
     this.filtroDesde,
     this.filtroHasta,
+    this.filtroPlaca,
     this.cuadreSeleccionadoId,
   }) : _indice = const {};
 
@@ -43,6 +45,7 @@ class EstadoCuadresWeb {
     required this.hayMasPaginas,
     this.filtroDesde,
     this.filtroHasta,
+    this.filtroPlaca,
     this.cuadreSeleccionadoId,
   }) : _indice = indice;
 
@@ -57,6 +60,7 @@ class EstadoCuadresWeb {
     bool? hayMasPaginas,
     Object? filtroDesde = _sentinel,
     Object? filtroHasta = _sentinel,
+    Object? filtroPlaca = _sentinel,
     String? cuadreSeleccionadoId,
     bool limpiarError = false,
     bool limpiarSeleccion = false,
@@ -76,6 +80,7 @@ class EstadoCuadresWeb {
       hayMasPaginas: hayMasPaginas ?? this.hayMasPaginas,
       filtroDesde: filtroDesde == _sentinel ? this.filtroDesde : filtroDesde as DateTime?,
       filtroHasta: filtroHasta == _sentinel ? this.filtroHasta : filtroHasta as DateTime?,
+      filtroPlaca: filtroPlaca == _sentinel ? this.filtroPlaca : filtroPlaca as String?,
       cuadreSeleccionadoId: limpiarSeleccion ? null : (cuadreSeleccionadoId ?? this.cuadreSeleccionadoId),
     );
   }
@@ -124,6 +129,7 @@ class ControladorCuadresWeb extends Notifier<EstadoCuadresWeb> {
       final lista = await _fuente.obtenerTodos(
         desde: state.filtroDesde,
         hasta: state.filtroHasta,
+        placa: state.filtroPlaca,
         limit: limit,
         offset: offset,
       );
@@ -150,6 +156,12 @@ class ControladorCuadresWeb extends Notifier<EstadoCuadresWeb> {
   /// Actualiza el filtro de fecha fin y recarga.
   Future<void> aplicarFiltroHasta(DateTime? fecha) async {
     state = state.copiarCon(filtroHasta: fecha);
+    await cargarCuadres();
+  }
+
+  /// Actualiza el filtro de placa y recarga.
+  Future<void> aplicarFiltroPlaca(String? placa) async {
+    state = state.copiarCon(filtroPlaca: placa?.trim().isEmpty == true ? null : placa);
     await cargarCuadres();
   }
 

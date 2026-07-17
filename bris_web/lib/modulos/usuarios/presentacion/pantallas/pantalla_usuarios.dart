@@ -6,6 +6,7 @@ import '../widgets/dialogo_formulario_usuario.dart';
 import '../../dominio/modelos/usuario_admin_modelo.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bris_web/nucleo/componentes/carga_orbital.dart';
+import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 
 class PantallaUsuarios extends ConsumerWidget {
   const PantallaUsuarios({super.key});
@@ -14,6 +15,8 @@ class PantallaUsuarios extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(controladorUsuariosProvider);
     final ctrl = ref.read(controladorUsuariosProvider.notifier);
+    final authState = ref.watch(proveedorAutenticacion);
+    final esAdmin = authState.rol == 'administrador';
     final esMovil = MediaQuery.of(context).size.width < 800;
     
     return Container(
@@ -43,7 +46,8 @@ class PantallaUsuarios extends ConsumerWidget {
                           const SizedBox(height: 8),
                           const Text('Administra roles, sedes y estados de las cuentas de la plataforma.', style: TextStyle(color: Colors.white70, fontSize: 14)),
                           const SizedBox(height: 16),
-                          _botonNuevoAcceso(context),
+                          if (esAdmin)
+                            _botonNuevoAcceso(context),
                         ],
                       )
                     : Row(
@@ -59,8 +63,10 @@ class PantallaUsuarios extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          _botonNuevoAcceso(context),
+                          if (esAdmin) ...[
+                            const SizedBox(width: 16),
+                            _botonNuevoAcceso(context),
+                          ],
                         ],
                       ),
               ),
@@ -112,7 +118,7 @@ class PantallaUsuarios extends ConsumerWidget {
                                       separatorBuilder: (context, index) => Divider(color: const Color(0xFFE2E8F0), height: 1),
                                       itemBuilder: (context, index) {
                                         final u = estado.usuarios[index];
-                                        return _FilaTablaUsuarioPremium(usuario: u, controlador: ctrl, esMovil: esMovil);
+                                        return _FilaTablaUsuarioPremium(usuario: u, controlador: ctrl, esMovil: esMovil, esAdmin: esAdmin);
                                       },
                                     ),
                         ),
@@ -127,15 +133,16 @@ class PantallaUsuarios extends ConsumerWidget {
   }
 }
 
-class _FilaTablaUsuarioPremium extends StatelessWidget {
+class _FilaTablaUsuarioPremium extends ConsumerWidget {
   final UsuarioAdminModelo usuario;
   final ControladorUsuarios controlador;
   final bool esMovil;
+  final bool esAdmin;
 
-  const _FilaTablaUsuarioPremium({required this.usuario, required this.controlador, this.esMovil = false});
+  const _FilaTablaUsuarioPremium({required this.usuario, required this.controlador, this.esMovil = false, this.esAdmin = false});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorRol = usuario.rol == 'administrador' ? const Color(0xFF8B5CF6) : 
                      (usuario.rol == 'supervisor' ? const Color(0xFFF59E0B) : const Color(0xFF3B82F6));
     
@@ -246,7 +253,7 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
 
     final widgetAcciones = Row(
       mainAxisAlignment: MainAxisAlignment.end,
-      children: [
+      children: esAdmin ? [
         IconButton(
           icon: const Icon(Icons.edit_rounded, color: Color(0xFF64748B), size: 22),
           tooltip: 'Editar Perfil',
@@ -268,20 +275,61 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
             );
           },
         ),
-        IconButton(
-          icon: Icon(
-            usuario.activo ? Icons.block_rounded : Icons.check_circle_rounded, 
-            color: usuario.activo ? const Color(0xFFEF4444) : const Color(0xFF10B981), 
-            size: 22
+          IconButton(
+            icon: Icon(
+              usuario.activo ? Icons.block_rounded : Icons.check_circle_rounded, 
+              color: usuario.activo ? const Color(0xFFEF4444) : const Color(0xFF10B981), 
+              size: 22
+            ),
+            tooltip: usuario.activo ? 'Suspender Acceso' : 'Reactivar Acceso',
+            hoverColor: usuario.activo ? const Color(0xFFEF4444).withValues(alpha: 0.1) : const Color(0xFF10B981).withValues(alpha: 0.1),
+            onPressed: () {
+              controlador.alternarEstadoUsuario(usuario.uid, !usuario.activo);
+            },
           ),
-          tooltip: usuario.activo ? 'Suspender Acceso' : 'Reactivar Acceso',
-          hoverColor: usuario.activo ? const Color(0xFFEF4444).withValues(alpha: 0.1) : const Color(0xFF10B981).withValues(alpha: 0.1),
-          onPressed: () {
-            controlador.alternarEstadoUsuario(usuario.uid, !usuario.activo);
-          },
-        ),
-      ],
-    );
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 22),
+            tooltip: 'Eliminar Usuario',
+            hoverColor: const Color(0xFFEF4444).withValues(alpha: 0.1),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Eliminar Usuario', style: TextStyle(fontWeight: FontWeight.bold)),
+                  content: Text('¿Estás seguro de que deseas eliminar permanentemente a ${usuario.nombre}? Esta acción no se puede deshacer.'),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Cancelar', style: TextStyle(color: Color(0xFF64748B))),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFEF4444),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onPressed: () async {
+                        Navigator.pop(ctx);
+                        final exitoso = await controlador.eliminarUsuario(usuario.uid);
+                        if (!exitoso && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error al eliminar: ${ref.read(controladorUsuariosProvider).error ?? "Desconocido"}'),
+                              backgroundColor: Colors.redAccent,
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text('Eliminar'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ] : [const Text('Solo Lectura', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.bold))],
+      );
 
     if (esMovil) {
       return Padding(

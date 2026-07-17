@@ -34,7 +34,7 @@ class ServicioExportacion {
   static void _escribirHeadersCuadres(Sheet sheet) {
     final headers = [
       'ID Cuadre', 'Fecha Zarpe', 'Placa Cámara', 'Embarcación', 'Especie', 
-      'Kilos', 'Precio Unitario', 'Poder de Compra (Bruto)', 
+      'Kilos', 'Precio Unitario', 'Poder de Compra (Bruto)', 'Adelanto', 
       'Gastos Operativos (Prorrateo)', 'Utilidad Bahía (50%)', 'Estado'
     ];
     sheet.appendRow(headers.map((h) => TextCellValue(h)).toList());

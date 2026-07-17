@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controladores/controlador_autenticacion.dart';
 import 'package:bris_web/nucleo/componentes/carga_orbital.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PantallaLogin extends ConsumerStatefulWidget {
   const PantallaLogin({super.key});
@@ -21,6 +22,21 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
   bool _recordarme = false;
 
   @override
+  void initState() {
+    super.initState();
+    _cargarPreferencias();
+  }
+
+  Future<void> _cargarPreferencias() async {
+    final prefs = await SharedPreferences.getInstance();
+    final correoGuardado = prefs.getString('recordar_correo');
+    if (correoGuardado != null && correoGuardado.isNotEmpty) {
+      setState(() {
+        _correoController.text = correoGuardado;
+        _recordarme = true;
+      });
+    }
+  }
   void dispose() {
     _correoController.dispose();
     _contrasenaController.dispose();
@@ -40,6 +56,13 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
         _correoController.text.trim(),
         _contrasenaController.text,
       );
+
+      final prefs = await SharedPreferences.getInstance();
+      if (_recordarme) {
+        await prefs.setString('recordar_correo', _correoController.text.trim());
+      } else {
+        await prefs.remove('recordar_correo');
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -308,7 +331,7 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                                         ],
                                       ),
                                       TextButton(
-                                        onPressed: () {},
+                                        onPressed: () => _mostrarDialogoRecuperarContrasena(),
                                         style: TextButton.styleFrom(
                                           padding: EdgeInsets.zero,
                                           minimumSize: Size.zero,
@@ -477,6 +500,91 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
             ),
         ],
       ),
+    );
+  }
+
+  Future<void> _mostrarDialogoRecuperarContrasena() async {
+    final TextEditingController correoDialogController = TextEditingController(text: _correoController.text);
+    bool enviando = false;
+    String? errorLocal;
+
+    await showDialog(
+      context: context,
+      builder: (contextDialog) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Text('Recuperar contraseña', style: TextStyle(fontWeight: FontWeight.bold)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.', style: TextStyle(fontSize: 14)),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: correoDialogController,
+                    decoration: const InputDecoration(
+                      labelText: 'Correo electrónico',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.email_outlined),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  if (errorLocal != null) ...[
+                    const SizedBox(height: 12),
+                    Text(errorLocal!, style: const TextStyle(color: Colors.red, fontSize: 13)),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: enviando ? null : () => Navigator.pop(contextDialog),
+                  child: const Text('Cancelar', style: TextStyle(color: Color(0xFF64748B))),
+                ),
+                ElevatedButton(
+                  onPressed: enviando ? null : () async {
+                    if (correoDialogController.text.trim().isEmpty) {
+                      setStateDialog(() => errorLocal = 'Por favor ingresa un correo');
+                      return;
+                    }
+                    setStateDialog(() {
+                      enviando = true;
+                      errorLocal = null;
+                    });
+                    try {
+                      await ref.read(proveedorAutenticacion.notifier).enviarCorreoRecuperacion(correoDialogController.text.trim());
+                      if (contextDialog.mounted) {
+                        Navigator.pop(contextDialog);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Te hemos enviado un correo con instrucciones para restablecer tu contraseña.'),
+                            backgroundColor: Colors.green.shade600,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      setStateDialog(() {
+                        enviando = false;
+                        errorLocal = e.toString().replaceAll('Exception: ', '');
+                      });
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0F766E),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: enviando 
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) 
+                    : const Text('Enviar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

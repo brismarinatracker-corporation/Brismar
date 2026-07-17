@@ -102,6 +102,7 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
     final correo = estadoAuth.usuario?.email ?? 'Sin correo';
     final rol = (estadoAuth.rol ?? 'Rol no definido').toUpperCase();
     final sede = (estadoAuth.sede ?? 'Sede no definida').toUpperCase();
+    final esMovil = MediaQuery.of(context).size.width < 600;
 
     if (!_editando) {
       _nombreCtrl.text = nombre;
@@ -115,7 +116,7 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
           // Dark Blue Header Banner
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+            padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 40, vertical: esMovil ? 20 : 24),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.centerLeft,
@@ -152,13 +153,13 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
           // Main profile card
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(40.0),
+              padding: EdgeInsets.all(esMovil ? 16 : 40),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(32),
+                      padding: EdgeInsets.all(esMovil ? 20 : 32),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
@@ -171,8 +172,9 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
                           ),
                         ],
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Flex(
+                        direction: esMovil ? Axis.vertical : Axis.horizontal,
+                        crossAxisAlignment: esMovil ? CrossAxisAlignment.center : CrossAxisAlignment.start,
                         children: [
                           // Avatar Stack with Hover Camera Icon
                           Stack(
@@ -238,20 +240,23 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
                               ),
                             ],
                           ),
-                          const SizedBox(width: 32),
+                          SizedBox(width: esMovil ? 0 : 32, height: esMovil ? 24 : 0),
                           
                           // Details Section
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          Builder(builder: (ctx) {
+                            final details = Column(
+                              crossAxisAlignment: esMovil ? CrossAxisAlignment.center : CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                Flex(
+                                  direction: esMovil ? Axis.vertical : Axis.horizontal,
+                                  mainAxisAlignment: esMovil ? MainAxisAlignment.center : MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Expanded(
-                                      child: _editando
-                                          ? TextFormField(
+                                    _editando
+                                        ? SizedBox(
+                                            width: esMovil ? double.infinity : 300,
+                                            child: TextFormField(
                                               controller: _nombreCtrl,
+                                              textAlign: esMovil ? TextAlign.center : TextAlign.start,
                                               style: const TextStyle(color: Color(0xFF15181A), fontSize: 22, fontWeight: FontWeight.bold),
                                               decoration: InputDecoration(
                                                 hintText: 'Tu nombre',
@@ -261,17 +266,18 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
                                                 enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
                                                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF00796B))),
                                               ),
-                                            )
-                                          : Text(
-                                              nombre,
-                                              style: const TextStyle(
-                                                color: Color(0xFF15181A),
-                                                fontSize: 24,
-                                                fontWeight: FontWeight.bold,
-                                              ),
                                             ),
-                                    ),
-                                    const SizedBox(width: 16),
+                                          )
+                                        : Text(
+                                            nombre,
+                                            textAlign: esMovil ? TextAlign.center : TextAlign.start,
+                                            style: const TextStyle(
+                                              color: Color(0xFF15181A),
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                    SizedBox(height: esMovil ? 16 : 0, width: esMovil ? 0 : 16),
                                     if (!_editando)
                                       OutlinedButton.icon(
                                         onPressed: () => setState(() => _editando = true),
@@ -285,6 +291,7 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
                                       )
                                     else
                                       Row(
+                                        mainAxisAlignment: esMovil ? MainAxisAlignment.center : MainAxisAlignment.start,
                                         children: [
                                           TextButton(
                                             onPressed: () => setState(() => _editando = false),
@@ -307,22 +314,27 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
                                 const SizedBox(height: 8),
                                 Text(
                                   correo,
+                                  textAlign: esMovil ? TextAlign.center : TextAlign.start,
                                   style: const TextStyle(
                                     color: Color(0xFF475569),
                                     fontSize: 16,
                                   ),
                                 ),
                                 const SizedBox(height: 24),
-                                Row(
+                                Wrap(
+                                  spacing: 16,
+                                  runSpacing: 16,
+                                  alignment: esMovil ? WrapAlignment.center : WrapAlignment.start,
                                   children: [
                                     _InfoChip(icono: Icons.admin_panel_settings_rounded, titulo: 'Rol', valor: rol),
-                                    const SizedBox(width: 16),
                                     _InfoChip(icono: Icons.location_on_rounded, titulo: 'Sede', valor: sede),
                                   ],
                                 ),
                               ],
-                            ),
-                          ),
+                            );
+                            
+                            return esMovil ? details : Expanded(child: details);
+                          }),
                         ],
                       ),
                     ),

@@ -7,6 +7,7 @@ class SeccionDatosZarpe extends StatefulWidget {
   final List<String> urlsFotos;
   final TextEditingController placaCtrl;
   final TextEditingController choferCtrl;
+  final TextEditingController numeroChoferCtrl;
   final TextEditingController muelleCtrl;
   final TextEditingController pesoTotalCtrl;
   final TextEditingController cajasLlenasCtrl;
@@ -23,6 +24,7 @@ class SeccionDatosZarpe extends StatefulWidget {
     required this.urlsFotos,
     required this.placaCtrl,
     required this.choferCtrl,
+    required this.numeroChoferCtrl,
     required this.muelleCtrl,
     required this.pesoTotalCtrl,
     required this.cajasLlenasCtrl,
@@ -58,9 +60,29 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
           )
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final esPantallaPequena = constraints.maxWidth < 450;
+
+          Widget filaResponsiva(Widget a, Widget b) {
+            if (esPantallaPequena) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [a, const SizedBox(height: 16), b],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: a),
+                const SizedBox(width: 16),
+                Expanded(child: b),
+              ],
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           const Text('Datos del Zarpe (Cámara)', style: TextStyle(color: Color(0xFF15181A), fontSize: 18, fontWeight: FontWeight.bold)),
           const Divider(color: Color(0xFFF1F5F9), height: 32),
           
@@ -171,101 +193,99 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
           
           TextFormField(
             controller: widget.placaCtrl,
-            style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-            decoration: _decoracion('Placa Cámara', icono: Icons.directions_car_filled_outlined),
+            style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+            readOnly: true,
+            decoration: _decoracion('Placa Cámara', icono: Icons.directions_car_filled_outlined, esSoloLectura: true),
             validator: (v) => v!.isEmpty ? 'Requerido' : null,
           ),
           const SizedBox(height: 16),
-          TextFormField(
-            controller: widget.choferCtrl,
-            style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-            decoration: _decoracion('Chofer', icono: Icons.person_outline),
-            validator: (v) => v!.isEmpty ? 'Requerido' : null,
+          filaResponsiva(
+            TextFormField(
+              controller: widget.choferCtrl,
+              style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+              readOnly: true,
+              decoration: _decoracion('Chofer', icono: Icons.person_outline, esSoloLectura: true),
+              validator: (v) => v!.isEmpty ? 'Requerido' : null,
+            ),
+            TextFormField(
+              controller: widget.numeroChoferCtrl,
+              style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+              readOnly: true,
+              decoration: _decoracion('Número Chofer', icono: Icons.phone_outlined, esSoloLectura: true),
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return 'Requerido';
+                if (v.trim().length != 9) return 'Debe tener exactamente 9 dígitos';
+                return null;
+              },
+            ),
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: widget.muelleCtrl,
-            style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-            decoration: _decoracion('Muelle Partida', icono: Icons.anchor_outlined),
+            style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+            readOnly: true,
+            decoration: _decoracion('Muelle Partida', icono: Icons.anchor_outlined, esSoloLectura: true),
             validator: (v) => v!.isEmpty ? 'Requerido' : null,
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: widget.pesadorCtrl,
-            style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-            decoration: _decoracion('Pesador (Opcional)', icono: Icons.monitor_weight_outlined),
+            style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+            readOnly: true,
+            decoration: _decoracion('Pesador', icono: Icons.monitor_weight_outlined, esSoloLectura: true),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: widget.tipoCtrl,
-                  style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-                  decoration: _decoracion('Tipo (Opcional)', icono: Icons.category_outlined),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextFormField(
-                  controller: widget.cuadrillaCtrl,
-                  style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-                  decoration: _decoracion('Cuadrilla (Opcional)', icono: Icons.group_outlined),
-                ),
-              ),
-            ],
+          filaResponsiva(
+            TextFormField(
+              controller: widget.tipoCtrl,
+              style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+              decoration: _decoracion('Tipo', icono: Icons.category_outlined),
+            ),
+            TextFormField(
+              controller: widget.cuadrillaCtrl,
+              style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+              decoration: _decoracion('Cuadrilla', icono: Icons.group_outlined),
+            ),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: widget.pesoTotalCtrl,
-                  style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: _decoracion('Peso Total (Kg)', icono: Icons.scale_outlined),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: DropdownButtonFormField<int>(
-                  initialValue: widget.tipoProductoActual,
-                  decoration: _decoracion('Tipo Producto', icono: Icons.set_meal_outlined),
-                  items: const [
-                    DropdownMenuItem(value: 1, child: Text('Pota')),
-                    DropdownMenuItem(value: 2, child: Text('Bonito')),
-                    DropdownMenuItem(value: 3, child: Text('Caballa')),
-                    DropdownMenuItem(value: 4, child: Text('Jurel')),
-                    DropdownMenuItem(value: 5, child: Text('Otros')),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) widget.onTipoProductoCambiado(val);
-                  },
-                ),
-              ),
-            ],
+          filaResponsiva(
+            TextFormField(
+              controller: widget.pesoTotalCtrl,
+              style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              readOnly: true,
+              decoration: _decoracion('Peso Total (Kg)', icono: Icons.scale_outlined, esSoloLectura: true),
+            ),
+            DropdownButtonFormField<int>(
+              initialValue: widget.tipoProductoActual,
+              decoration: _decoracion('Tipo Producto', icono: Icons.set_meal_outlined, esSoloLectura: true),
+              items: const [
+                DropdownMenuItem(value: 0, child: Text('No definido')),
+                DropdownMenuItem(value: 1, child: Text('Pota')),
+                DropdownMenuItem(value: 2, child: Text('Bonito')),
+                DropdownMenuItem(value: 3, child: Text('Caballa')),
+                DropdownMenuItem(value: 4, child: Text('Jurel')),
+                DropdownMenuItem(value: 5, child: Text('Otros')),
+              ],
+              onChanged: null,
+            ),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: widget.cajasLlenasCtrl,
-                  style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-                  keyboardType: TextInputType.number,
-                  decoration: _decoracion('Cajas Llenas', icono: Icons.inventory_2_outlined),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextFormField(
-                  controller: widget.cajasVaciasCtrl,
-                  style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.w600),
-                  keyboardType: TextInputType.number,
-                  decoration: _decoracion('Cajas Vacías', icono: Icons.inventory_outlined),
-                ),
-              ),
-            ],
+          filaResponsiva(
+            TextFormField(
+              controller: widget.cajasLlenasCtrl,
+              style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+              keyboardType: TextInputType.number,
+              readOnly: true,
+              decoration: _decoracion('Cajas Llenas', icono: Icons.inventory_2_outlined, esSoloLectura: true),
+            ),
+            TextFormField(
+              controller: widget.cajasVaciasCtrl,
+              style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+              keyboardType: TextInputType.number,
+              readOnly: true,
+              decoration: _decoracion('Cajas Vacías', icono: Icons.inventory_outlined, esSoloLectura: true),
+            ),
           ),
           const SizedBox(height: 16),
           if (widget.observacionesCtrl != null) ...[
@@ -282,26 +302,34 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
             style: TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.4),
           ),
         ],
+      );
+      },
       ),
     );
   }
 
-  InputDecoration _decoracion(String label, {IconData? icono}) {
+  InputDecoration _decoracion(String label, {IconData? icono, bool esSoloLectura = false}) {
     return InputDecoration(
       labelText: label,
       labelStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.w500),
       floatingLabelStyle: const TextStyle(color: Color(0xFF7EBFC9), fontSize: 14, fontWeight: FontWeight.bold),
       filled: true,
-      fillColor: const Color(0xFFF8FAFC),
+      fillColor: esSoloLectura ? const Color(0xFFF1F5F9) : const Color(0xFFF8FAFC),
       prefixIcon: icono != null ? Icon(icono, color: const Color(0xFF94A3B8), size: 20) : null,
+      suffixIcon: esSoloLectura 
+          ? const Tooltip(
+              message: 'Este campo proviene de la App móvil y no puede ser modificado aquí.',
+              child: Icon(Icons.lock_outline, color: Color(0xFF94A3B8), size: 18),
+            )
+          : null,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.transparent),
+        borderSide: BorderSide(color: esSoloLectura ? const Color(0xFFE2E8F0) : Colors.transparent),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF7EBFC9), width: 1.5),
+        borderSide: BorderSide(color: esSoloLectura ? const Color(0xFFE2E8F0) : const Color(0xFF7EBFC9), width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

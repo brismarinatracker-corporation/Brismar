@@ -24,6 +24,8 @@ RouteBase get $rutaDashboardShell => ShellRouteData.$route(
     ),
     GoRouteData.$route(path: '/cuadres', factory: $RutaCuadres._fromState),
     GoRouteData.$route(path: '/usuarios', factory: $RutaUsuarios._fromState),
+    GoRouteData.$route(path: '/productos', factory: $RutaProductos._fromState),
+    GoRouteData.$route(path: '/camaras', factory: $RutaCamaras._fromState),
     GoRouteData.$route(path: '/perfil', factory: $RutaPerfil._fromState),
   ],
 );
@@ -130,6 +132,46 @@ mixin $RutaUsuarios on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/usuarios');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin $RutaProductos on GoRouteData {
+  static RutaProductos _fromState(GoRouterState state) => const RutaProductos();
+
+  @override
+  String get location => GoRouteData.$location('/productos');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin $RutaCamaras on GoRouteData {
+  static RutaCamaras _fromState(GoRouterState state) => const RutaCamaras();
+
+  @override
+  String get location => GoRouteData.$location('/camaras');
 
   @override
   void go(BuildContext context) => context.go(location);

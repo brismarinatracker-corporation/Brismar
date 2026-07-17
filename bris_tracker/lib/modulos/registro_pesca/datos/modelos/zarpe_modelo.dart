@@ -4,6 +4,7 @@ class ZarpeModelo {
   final String id;
   final String placaCamara;
   final String chofer;
+  final String numeroChofer;
   final String muellePartida;
   final String fotoUrlEvidencia;
   final String? fotoLocalPath;
@@ -19,6 +20,7 @@ class ZarpeModelo {
     required this.id,
     required this.placaCamara,
     required this.chofer,
+    required this.numeroChofer,
     required this.muellePartida,
     required this.fotoUrlEvidencia,
     this.fotoLocalPath,
@@ -33,6 +35,7 @@ class ZarpeModelo {
       id: map['id'] ?? '',
       placaCamara: map['placa_camara'] ?? '',
       chofer: map['chofer'] ?? '',
+      numeroChofer: map['numero_chofer'] ?? '-',
       muellePartida: map['muelle_partida'] ?? '',
       fotoUrlEvidencia: map['foto_url_evidencia'] ?? '',
       fotoLocalPath: map['foto_local_path'],
@@ -50,6 +53,7 @@ class ZarpeModelo {
       id: entidad.id,
       placaCamara: entidad.placaCamara,
       chofer: entidad.chofer,
+      numeroChofer: entidad.numeroChofer,
       muellePartida: entidad.muellePartida,
       fotoUrlEvidencia: entidad.fotoUrlEvidencia,
       fotoLocalPath: entidad.fotoLocalPath,
@@ -65,6 +69,7 @@ class ZarpeModelo {
       'id': id,
       'placa_camara': placaCamara,
       'chofer': chofer,
+      'numero_chofer': numeroChofer,
       'muelle_partida': muellePartida,
       'foto_url_evidencia': fotoUrlEvidencia,
       'foto_local_path': fotoLocalPath,
@@ -80,6 +85,7 @@ class ZarpeModelo {
       'id': id,
       'placa_camara': placaCamara,
       'chofer': chofer,
+      'numero_chofer': numeroChofer,
       'muelle_partida': muellePartida,
       'foto_url_evidencia': fotoUrlEvidencia,
       'fecha_zarpe': fechaZarpe.toIso8601String(),

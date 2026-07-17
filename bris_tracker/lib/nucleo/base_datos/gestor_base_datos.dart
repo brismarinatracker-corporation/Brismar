@@ -23,7 +23,7 @@ class GestorBaseDatos {
 
     return await openDatabase(
       path,
-      version: 10,
+      version: 11,
       password: 'BRISMAR_SECURE_KEY_2026',
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
@@ -37,7 +37,7 @@ class GestorBaseDatos {
     await _createTablaGastos(db);
     await _createTablaVentas(db);
     await _createTablaZarpes(db);
-    await _createTablaLogZarpe(db);
+    await _createTablaCamaras(db);
   }
 
   /// Crea la tabla 'cuadres' en SQLite local.
@@ -127,7 +127,19 @@ class GestorBaseDatos {
         foto_local_path TEXT,
         fecha_zarpe TEXT NOT NULL,
         estado TEXT DEFAULT 'DESPACHADO_PIURA',
-        sincronizado INTEGER DEFAULT 0
+        sincronizado INTEGER DEFAULT 0,
+        numero_chofer TEXT NOT NULL DEFAULT '-'
+      )
+    ''');
+  }
+
+  /// Crea la tabla 'camaras' en SQLite local (para autocompletado de placas).
+  Future<void> _createTablaCamaras(Database db) async {
+    await db.execute('''
+      CREATE TABLE camaras (
+        id TEXT PRIMARY KEY,
+        placa TEXT NOT NULL UNIQUE,
+        sincronizado INTEGER DEFAULT 1
       )
     ''');
   }
@@ -147,15 +159,16 @@ class GestorBaseDatos {
       await _upgradeA7(db);
     }
     if (oldVersion < 8) {
-      await db.execute(
-        'ALTER TABLE compras ADD COLUMN adelanto REAL DEFAULT 0',
-      );
+      await db.execute('ALTER TABLE compras ADD COLUMN adelanto REAL DEFAULT 0');
     }
     if (oldVersion < 9) {
       await _upgradeA9(db);
     }
     if (oldVersion < 10) {
-      await _createTablaLogZarpe(db);
+      await _createTablaCamaras(db);
+    }
+    if (oldVersion < 11) {
+      await _upgradeA11(db);
     }
   }
 
@@ -194,9 +207,7 @@ class GestorBaseDatos {
 
   /// Migración: Separar estado de negocio de sincronización en zarpes.
   Future<void> _upgradeA7(Database db) async {
-    await db.execute(
-      'ALTER TABLE zarpes ADD COLUMN sincronizado INTEGER DEFAULT 0',
-    );
+    await db.execute('ALTER TABLE zarpes ADD COLUMN sincronizado INTEGER DEFAULT 0');
   }
 
   Future<void> _upgradeA9(Database db) async {
@@ -204,25 +215,9 @@ class GestorBaseDatos {
     await db.execute('ALTER TABLE cuadres ADD COLUMN cuadrilla TEXT');
   }
 
-  /// Crea la tabla 'zarpe_log' para auditoría de cambios por zarpe/cuadre.
-  ///
-  /// Registra: quién, cuándo, desde dónde (app/web) y qué cambió.
-  /// Los logs viajan offline en SQLite y se sincronizan a Supabase.
-  Future<void> _createTablaLogZarpe(Database db) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS zarpe_log (
-        id TEXT PRIMARY KEY,
-        zarpe_id TEXT,
-        cuadre_id TEXT,
-        usuario_id TEXT NOT NULL,
-        nombre_usuario TEXT NOT NULL,
-        origen TEXT NOT NULL,
-        accion TEXT NOT NULL,
-        detalle TEXT,
-        timestamp TEXT NOT NULL,
-        sincronizado INTEGER DEFAULT 0
-      )
-    ''');
+  /// Migración: Agregar columna numero_chofer en zarpes.
+  Future<void> _upgradeA11(Database db) async {
+    await db.execute("ALTER TABLE zarpes ADD COLUMN numero_chofer TEXT NOT NULL DEFAULT '-'");
   }
 
   /// Cierra la base de datos cuando ya no se requiere.

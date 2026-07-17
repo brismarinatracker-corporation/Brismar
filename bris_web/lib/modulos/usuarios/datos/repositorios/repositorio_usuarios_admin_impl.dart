@@ -28,6 +28,11 @@ class RepositorioUsuariosAdminImpl implements RepositorioUsuariosAdmin {
   }
 
   @override
+  Future<void> eliminarUsuario(String uid) {
+    return _fuenteDatos.eliminarUsuario(uid);
+  }
+
+  @override
   Future<String> subirAvatar(String idUnico, dynamic archivoBytes, String extension) {
     return _fuenteDatos.subirAvatar(idUnico, archivoBytes, extension);
   }

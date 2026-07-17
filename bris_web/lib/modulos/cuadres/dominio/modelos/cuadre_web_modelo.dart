@@ -26,6 +26,8 @@ class CuadreWebModelo {
   final String? pesador;
   final String? tipo;
   final String? cuadrilla;
+  final String? chofer;
+  final String? numeroChofer;
   final String? plantaDestino;
 
   /// Nombre real del usuario (bahía) que registró el zarpe.
@@ -53,6 +55,8 @@ class CuadreWebModelo {
     this.pesador,
     this.tipo,
     this.cuadrilla,
+    this.chofer,
+    this.numeroChofer,
     this.plantaDestino,
     this.nombreBahia,
     this.compras = const [],
@@ -79,6 +83,8 @@ class CuadreWebModelo {
       pesador: json['pesador'] as String?,
       tipo: json['tipo'] as String?,
       cuadrilla: json['cuadrilla'] as String?,
+      chofer: json['chofer'] as String?,
+      numeroChofer: json['numero_chofer'] as String?,
       plantaDestino: json['planta_destino'] as String?,
       nombreBahia: (json['usuarios'] as Map<String, dynamic>?)?['nombre_real'] as String?,
     );
@@ -120,6 +126,10 @@ class CuadreWebModelo {
       cajasVacias: cajasVacias,
       tipoProducto: tipoProducto,
       pesador: pesador,
+      tipo: tipo,
+      cuadrilla: cuadrilla,
+      chofer: chofer,
+      numeroChofer: numeroChofer,
       plantaDestino: plantaDestino,
       nombreBahia: nombreBahia,
       compras: compras ?? this.compras,

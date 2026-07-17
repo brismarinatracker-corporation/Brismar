@@ -6,6 +6,9 @@ import 'package:bris_tracker/modulos/registro_pesca/dominio/entidades/estado_cua
 import 'package:bris_tracker/modulos/registro_pesca/dominio/entidades/estado_zarpe.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../dominio/entidades/zarpe_entidad.dart';
+import '../../datos/repositorios/zarpe_repositorio_imp.dart';
+import '../../datos/repositorios/camaras_repositorio_local.dart';
 import '../../dominio/entidades/cuadre_entidad.dart';
 import '../../dominio/entidades/log_zarpe_entidad.dart';
 import '../controladores/controlador_cuadres.dart';
@@ -89,10 +92,12 @@ class _FormularioRegistroPescaState
 
   // Constante de Negocio
   final double taraOficialCaja = 3.0;
+  List<String> _placasGuardadas = [];
 
   @override
   void initState() {
     super.initState();
+    _cargarPlacas();
     if (widget.cuadreInicial != null) {
       _cuadreId = widget.cuadreInicial!.id;
       _placaCtrl.text = widget.cuadreInicial!.placa;
@@ -218,6 +223,8 @@ class _FormularioRegistroPescaState
 
   Future<void> _guardarCuadre() async {
     if (!_formKey.currentState!.validate()) return;
+
+    await CamarasRepositorioLocal().guardarPlacaLocal(_placaCtrl.text);
 
     if (_compras.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -961,23 +968,68 @@ class _FormularioRegistroPescaState
             Row(
               children: [
                 Expanded(
-                  child: TextFormField(
-                    controller: _placaCtrl,
-                    style: const TextStyle(color: Color(0xFF1F2937)),
-                    textCapitalization: TextCapitalization.characters,
-                    inputFormatters: [_PlacaInputFormatter()],
-                    decoration: _construirInputDecoration(
-                      labelText: 'Placa (Ej: AAA-123)',
-                      suffixIcon: IconButton(
-                        icon: const Icon(
-                          Icons.search_rounded,
-                          color: Color(0xFF006B54),
+                  child: RawAutocomplete<String>(
+                    textEditingController: _placaCtrl,
+                    focusNode: FocusNode(),
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return _placasGuardadas;
+                      }
+                      return _placasGuardadas.where((String option) {
+                        return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                      });
+                    },
+                    fieldViewBuilder: (BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
+                      return TextFormField(
+                        controller: textEditingController,
+                        focusNode: focusNode,
+                        style: const TextStyle(color: Color(0xFF1F2937)),
+                        textCapitalization: TextCapitalization.characters,
+                        inputFormatters: [_PlacaInputFormatter()],
+                        decoration: _construirInputDecoration(
+                          labelText: 'Placa (Ej: AAA-123)',
+                          suffixIcon: IconButton(
+                            icon: const Icon(
+                              Icons.search_rounded,
+                              color: Color(0xFF006B54),
+                            ),
+                            onPressed: _mostrarSelectorZarpes,
+                          ),
                         ),
-                        onPressed: _mostrarSelectorZarpes,
-                      ),
-                    ),
-                    validator: (v) =>
-                        (v == null || v.isEmpty) ? 'Requerido' : null,
+                        validator: (v) =>
+                            (v == null || v.isEmpty) ? 'Requerido' : null,
+                      );
+                    },
+                    optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
+                      return Align(
+                        alignment: Alignment.topLeft,
+                        child: Material(
+                          elevation: 4.0,
+                          borderRadius: BorderRadius.circular(8),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxHeight: 200, maxWidth: 300),
+                            child: ListView.builder(
+                              padding: EdgeInsets.zero,
+                              shrinkWrap: true,
+                              itemCount: options.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                final String option = options.elementAt(index);
+                                return InkWell(
+                                  onTap: () {
+                                    onSelected(option);
+                                  },
+                                  child: Container(
+                                    color: Colors.white,
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Text(option, style: const TextStyle(color: Colors.black87)),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -1360,6 +1412,13 @@ class _FormularioRegistroPescaState
         };
       });
     }
+  }
+
+  Future<void> _cargarPlacas() async {
+    final placas = await CamarasRepositorioLocal().obtenerPlacasActivas();
+    setState(() {
+      _placasGuardadas = placas;
+    });
   }
 
   void _verFotoGrande(String path, bool esUrl) {

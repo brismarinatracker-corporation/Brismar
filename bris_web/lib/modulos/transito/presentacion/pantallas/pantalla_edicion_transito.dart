@@ -8,6 +8,7 @@ import '../../dominio/modelos/zarpe_modelo.dart';
 import '../../../cuadres/dominio/modelos/cuadre_web_modelo.dart';
 import 'package:bris_web/nucleo/componentes/carga_orbital.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 
 import 'widgets/seccion_datos_zarpe.dart';
 import 'widgets/seccion_embarcaciones.dart';
@@ -33,6 +34,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   // Controladores Zarpe
   final _placaCtrl = TextEditingController();
   final _choferCtrl = TextEditingController();
+  final _numeroChoferCtrl = TextEditingController();
   final _muelleCtrl = TextEditingController();
   final _observacionesCtrl = TextEditingController();
 
@@ -59,6 +61,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
   void dispose() {
     _placaCtrl.dispose();
     _choferCtrl.dispose();
+    _numeroChoferCtrl.dispose();
     _muelleCtrl.dispose();
     _observacionesCtrl.dispose();
     _pesoTotalCtrl.dispose();
@@ -97,6 +100,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         _zarpeInfo = zarpe;
         _placaCtrl.text = zarpe.placaCamara;
         _choferCtrl.text = zarpe.chofer;
+        _numeroChoferCtrl.text = zarpe.numeroChofer;
         _muelleCtrl.text = zarpe.muellePartida;
         _observacionesCtrl.text = zarpe.observaciones ?? '';
         
@@ -206,6 +210,9 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(proveedorAutenticacion);
+    final esSoloLectura = authState.rol == 'administrador' || authState.rol == 'supervisor';
+
     if (_cargando && _zarpeInfo == null) {
       return const Scaffold(
         backgroundColor: Color(0xFFF8FAFC),
@@ -234,7 +241,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _construirEncabezado(context),
+                _construirEncabezado(context, esSoloLectura),
                 Expanded(
                   child: Form(
                     key: _formKey,
@@ -243,15 +250,18 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                         final esPantallaPequena = constraints.maxWidth <= 1200;
                         return SingleChildScrollView(
                           padding: const EdgeInsets.all(32),
-                          child: esPantallaPequena
-                              ? Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: _construirSecciones(urlsFotos),
-                                )
-                              : Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: _construirSeccionesRow(urlsFotos),
-                                ),
+                          child: AbsorbPointer(
+                            absorbing: esSoloLectura,
+                            child: esPantallaPequena
+                                ? Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: _construirSecciones(urlsFotos),
+                                  )
+                                : Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: _construirSeccionesRow(urlsFotos),
+                                  ),
+                          ),
                         );
                       },
                     ),
@@ -262,7 +272,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
     );
   }
 
-  Widget _construirEncabezado(BuildContext context) {
+  Widget _construirEncabezado(BuildContext context, bool esSoloLectura) {
     final esMovil = MediaQuery.of(context).size.width < 800;
     return Container(
       width: double.infinity,
@@ -299,20 +309,21 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                   ],
                 ),
                 const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: OutlinedButton.icon(
-                    onPressed: _guardarCambios,
-                    icon: const Icon(Icons.save_rounded, color: Colors.white, size: 18),
-                    label: Text('Guardar', style: GoogleFonts.inter(color: Colors.white)),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white30),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                if (!esSoloLectura)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton.icon(
+                      onPressed: _guardarCambios,
+                      icon: const Icon(Icons.save_rounded, color: Colors.white, size: 18),
+                      label: Text('Guardar', style: GoogleFonts.inter(color: Colors.white)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white30),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
                     ),
                   ),
-                ),
               ],
             )
           : Row(
@@ -336,17 +347,18 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
                     ),
                   ],
                 ),
-                OutlinedButton.icon(
-                  onPressed: _guardarCambios,
-                  icon: const Icon(Icons.save_rounded, color: Colors.white, size: 18),
-                  label: Text('Guardar', style: GoogleFonts.inter(color: Colors.white)),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white30),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                if (!esSoloLectura)
+                  OutlinedButton.icon(
+                    onPressed: _guardarCambios,
+                    icon: const Icon(Icons.save_rounded, color: Colors.white, size: 18),
+                    label: Text('Guardar', style: GoogleFonts.inter(color: Colors.white)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white30),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
                   ),
-                ),
               ],
             ),
     );
@@ -358,6 +370,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
         urlsFotos: urlsFotos,
         placaCtrl: _placaCtrl,
         choferCtrl: _choferCtrl,
+        numeroChoferCtrl: _numeroChoferCtrl,
         muelleCtrl: _muelleCtrl,
         pesoTotalCtrl: _pesoTotalCtrl,
         cajasLlenasCtrl: _cajasLlenasCtrl,
@@ -425,6 +438,7 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
           urlsFotos: urlsFotos,
           placaCtrl: _placaCtrl,
           choferCtrl: _choferCtrl,
+          numeroChoferCtrl: _numeroChoferCtrl,
           muelleCtrl: _muelleCtrl,
           pesoTotalCtrl: _pesoTotalCtrl,
           cajasLlenasCtrl: _cajasLlenasCtrl,

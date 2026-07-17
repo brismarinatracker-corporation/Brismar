@@ -20,6 +20,8 @@ class PantallaCuadres extends ConsumerWidget {
     final estado = ref.watch(controladorCuadresWebProvider);
     final fmt = NumberFormat('#,##0.00', 'es_PE');
 
+    final esMovil = MediaQuery.of(context).size.width < 800;
+
     if (estado.cargando) {
       return const Center(
         child: CargaOrbital(tamano: 80),
@@ -32,7 +34,7 @@ class PantallaCuadres extends ConsumerWidget {
         // Dark Blue Header Banner
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 32, vertical: esMovil ? 20 : 24),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.centerLeft,
@@ -55,7 +57,7 @@ class PantallaCuadres extends ConsumerWidget {
                       'Cuadres de Pesca',
                       style: GoogleFonts.sora(
                         color: Colors.white,
-                        fontSize: 26,
+                        fontSize: esMovil ? 22 : 26,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -78,12 +80,12 @@ class PantallaCuadres extends ConsumerWidget {
                 icon: estado.cargando
                     ? const CargaOrbital(tamano: 16)
                     : const Icon(Icons.refresh_rounded, size: 18),
-                label: const Text('Actualizar'),
+                label: esMovil ? const SizedBox() : const Text('Actualizar'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
                   disabledForegroundColor: Colors.white30,
                   side: const BorderSide(color: Colors.white30),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: EdgeInsets.symmetric(horizontal: esMovil ? 12 : 20, vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
@@ -93,7 +95,7 @@ class PantallaCuadres extends ConsumerWidget {
         // Rest of the screen
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(esMovil ? 16 : 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -111,33 +113,96 @@ class PantallaCuadres extends ConsumerWidget {
 
 // ─── Barra de Filtros ─────────────────────────────────────────────────────────
 
-class _BarraFiltros extends ConsumerWidget {
+class _BarraFiltros extends ConsumerStatefulWidget {
   const _BarraFiltros({required this.estado});
   final EstadoCuadresWeb estado;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_BarraFiltros> createState() => _BarraFiltrosState();
+}
+
+class _BarraFiltrosState extends ConsumerState<_BarraFiltros> {
+  final _busquedaCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _busquedaCtrl.text = widget.estado.filtroPlaca ?? '';
+  }
+
+  @override
+  void didUpdateWidget(covariant _BarraFiltros oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.estado.filtroPlaca != oldWidget.estado.filtroPlaca) {
+      _busquedaCtrl.text = widget.estado.filtroPlaca ?? '';
+    }
+  }
+
+  @override
+  void dispose() {
+    _busquedaCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final ctrl = ref.read(controladorCuadresWebProvider.notifier);
     return Wrap(
       spacing: 12,
       runSpacing: 12,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
+        SizedBox(
+          width: 220,
+          child: TextField(
+            controller: _busquedaCtrl,
+            decoration: InputDecoration(
+              hintText: 'Buscar cámara (placa)',
+              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+              prefixIcon: const Icon(Icons.search, size: 18, color: Colors.grey),
+              suffixIcon: widget.estado.filtroPlaca != null
+                  ? IconButton(
+                      icon: const Icon(Icons.close, size: 16),
+                      onPressed: () {
+                        _busquedaCtrl.clear();
+                        ctrl.aplicarFiltroPlaca(null);
+                      },
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFF0E3E2C)),
+              ),
+            ),
+            onSubmitted: (val) => ctrl.aplicarFiltroPlaca(val),
+          ),
+        ),
         _BotoFiltroFecha(
           label: 'Desde',
-          fecha: estado.filtroDesde,
+          fecha: widget.estado.filtroDesde,
           onSeleccionar: (d) => ctrl.aplicarFiltroDesde(d),
           onLimpiar: () => ctrl.aplicarFiltroDesde(null),
         ),
         _BotoFiltroFecha(
           label: 'Hasta',
-          fecha: estado.filtroHasta,
+          fecha: widget.estado.filtroHasta,
           onSeleccionar: (d) => ctrl.aplicarFiltroHasta(d),
           onLimpiar: () => ctrl.aplicarFiltroHasta(null),
         ),
-        if (estado.filtroDesde != null || estado.filtroHasta != null)
+        if (widget.estado.filtroDesde != null || widget.estado.filtroHasta != null || widget.estado.filtroPlaca != null)
           TextButton.icon(
             onPressed: () async {
+              _busquedaCtrl.clear();
+              await ctrl.aplicarFiltroPlaca(null);
               await ctrl.aplicarFiltroDesde(null);
               await ctrl.aplicarFiltroHasta(null);
             },
@@ -222,6 +287,23 @@ class _CuerpoConDetalle extends StatelessWidget {
       );
     }
 
+    final esMovil = MediaQuery.of(context).size.width < 800;
+
+    if (esMovil) {
+      return Stack(
+        children: [
+          _TablaCuadres(cuadres: estado.cuadres, fmt: fmt, seleccionadoId: estado.cuadreSeleccionadoId),
+          if (estado.cuadreSeleccionado != null)
+            Positioned.fill(
+              child: Container(
+                color: Colors.white.withValues(alpha: 0.9),
+                child: _PanelDetalle(cuadre: estado.cuadreSeleccionado!, fmt: fmt),
+              ),
+            ),
+        ],
+      );
+    }
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -246,6 +328,75 @@ class _TablaCuadres extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ctrl = ref.read(controladorCuadresWebProvider.notifier);
+    final esMovil = MediaQuery.of(context).size.width < 800;
+
+    if (esMovil) {
+      return ListView.separated(
+        itemCount: cuadres.length,
+        separatorBuilder: (ctx, i) => const SizedBox(height: 12),
+        itemBuilder: (ctx, i) {
+          final c = cuadres[i];
+          final color = _colorEstado(c.estado);
+          final utilColor = c.utilidadNeta >= 0 ? const Color(0xFF2E7D32) : const Color(0xFFC62828);
+          final esSel = c.id == seleccionadoId;
+          
+          return InkWell(
+            onTap: () => ctrl.seleccionarCuadre(c.id),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: esSel ? const Color(0xFF00838F).withValues(alpha: 0.06) : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: esSel ? const Color(0xFF00838F) : const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2)),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(c.placa, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF15181A))),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
+                        child: Text(c.estado.toUpperCase(), style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Zarpe: ${c.fechaZarpe != null ? DateFormat('dd/MM/yyyy').format(DateTime.tryParse(c.fechaZarpe!)!) : '-'}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Ventas', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                          Text('S/ ${fmt.format(c.totalVentas)}', style: const TextStyle(color: Color(0xFF15181A), fontSize: 14, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Text('Utilidad', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                          Text('S/ ${fmt.format(c.utilidadNeta)}', style: TextStyle(color: utilColor, fontSize: 14, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -262,22 +413,26 @@ class _TablaCuadres extends ConsumerWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: SingleChildScrollView(
-          child: Table(
-            border: const TableBorder(
-              horizontalInside: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width * 0.6),
+            child: Table(
+              border: const TableBorder(
+                horizontalInside: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+              ),
+              columnWidths: const {
+                0: FlexColumnWidth(2),
+                1: FlexColumnWidth(2),
+                2: FlexColumnWidth(1.5),
+                3: FlexColumnWidth(1.2),
+                4: FlexColumnWidth(1.2),
+                5: FlexColumnWidth(1),
+              },
+              children: [
+                _filaTitulo(['Placa', 'Fecha Zarpe', 'Estado', 'Ventas', 'Utilidad', '']),
+                ...cuadres.map((c) => _filaData(c, ctrl)),
+              ],
             ),
-            columnWidths: const {
-              0: FlexColumnWidth(2),
-              1: FlexColumnWidth(2),
-              2: FlexColumnWidth(1.5),
-              3: FlexColumnWidth(1.2),
-              4: FlexColumnWidth(1.2),
-              5: FlexColumnWidth(1),
-            },
-            children: [
-              _filaTitulo(['Placa', 'Fecha Zarpe', 'Estado', 'Ventas', 'Utilidad', '']),
-              ...cuadres.map((c) => _filaData(c, ctrl)),
-            ],
           ),
         ),
       ),
@@ -506,12 +661,28 @@ class _PanelDetalle extends ConsumerWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Text('Resumen', style: TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold)),
       const Divider(color: Color(0xFFE2E8F0)),
-      _itemInfo('Fecha Zarpe', cuadre.fechaZarpe ?? '-'),
-      _itemInfo('Planta Destino', cuadre.plantaDestino ?? '-'),
+      _itemInfo('Chofer', cuadre.chofer ?? '-'),
+      _itemInfo('Número de Chofer', cuadre.numeroChofer ?? '-'),
+      _itemInfo('Fecha Zarpe', cuadre.fechaZarpe != null ? DateFormat('dd/MM/yyyy').format(DateTime.tryParse(cuadre.fechaZarpe!)!) : '-'),
+      _itemInfo('Muelle de Partida', cuadre.plantaDestino ?? '-'),
       _itemInfo('Peso Total', cuadre.pesoTotal != null ? '${cuadre.pesoTotal} kg' : '-'),
-      _itemInfo('Cajas Llenas / Vacías',
-          '${cuadre.cajasLlenas ?? 0} / ${cuadre.cajasVacias ?? 0}'),
+      _itemInfo('Cajas (Llenas/Vacías)', '${cuadre.cajasLlenas ?? 0} / ${cuadre.cajasVacias ?? 0}'),
+      _itemInfo('Tipo Producto', _nombreTipoProducto(cuadre.tipoProducto)),
+      _itemInfo('Pesador de Muelle', cuadre.pesador ?? '-'),
+      _itemInfo('Tipo', cuadre.tipo ?? '-'),
+      _itemInfo('Cuadrilla', cuadre.cuadrilla ?? '-'),
     ]);
+  }
+
+  String _nombreTipoProducto(int? tipo) {
+    switch(tipo) {
+      case 1: return 'Pota';
+      case 2: return 'Bonito';
+      case 3: return 'Caballa';
+      case 4: return 'Jurel';
+      case 5: return 'Otros';
+      default: return 'No definido';
+    }
   }
 
   Widget _itemInfo(String label, String valor) {
