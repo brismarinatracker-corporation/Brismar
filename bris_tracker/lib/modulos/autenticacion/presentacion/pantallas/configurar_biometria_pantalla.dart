@@ -57,7 +57,9 @@ class _ConfigurarBiometriaPantallaState
                     child: Text(
                       _error!,
                       style: const TextStyle(
-                          color: Colors.redAccent, fontSize: 13),
+                        color: Colors.redAccent,
+                        fontSize: 13,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -87,11 +89,7 @@ class _ConfigurarBiometriaPantallaState
               padding: EdgeInsets.all(32.0),
               child: CargaOrbital(tamano: 80),
             )
-          : const Icon(
-              Icons.fingerprint,
-              size: 64,
-              color: Color(0xFF00E5FF),
-            ),
+          : const Icon(Icons.fingerprint, size: 64, color: Color(0xFF00E5FF)),
     );
   }
 
@@ -130,8 +128,9 @@ class _ConfigurarBiometriaPantallaState
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF00E5FF),
           foregroundColor: const Color(0xFF040B1E),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
         icon: const Icon(Icons.fingerprint, size: 22),
         label: Text(
@@ -146,7 +145,9 @@ class _ConfigurarBiometriaPantallaState
   /// Construye el botón para omitir y usar solo PIN.
   Widget _construirBotonOmitir() {
     return TextButton(
-      onPressed: _verificando ? null : () => _seleccionarPreferencia(PreferenciaAcceso.pin),
+      onPressed: _verificando
+          ? null
+          : () => _seleccionarPreferencia(PreferenciaAcceso.pin),
       child: Text(
         'Omitir, usaré solo mi PIN',
         style: TextStyle(
@@ -177,7 +178,8 @@ class _ConfigurarBiometriaPantallaState
       }
 
       final authenticated = await _auth.authenticate(
-        localizedReason: 'Confirma tu huella para activar el acceso rápido a BRISMAR.',
+        localizedReason:
+            'Confirma tu huella para activar el acceso rápido a BRISMAR.',
         options: const AuthenticationOptions(
           biometricOnly: true,
           stickyAuth: true,

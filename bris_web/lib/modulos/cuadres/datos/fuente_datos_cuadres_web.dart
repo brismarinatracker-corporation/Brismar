@@ -45,9 +45,14 @@ class FuenteDatosCuadresWeb {
   }
 
   /// Obtiene un cuadre específico por su ID junto con todas sus relaciones.
+  /// Incluye JOIN con `public.usuarios` para obtener el nombre real del bahía registrador.
   Future<CuadreWebModelo?> obtenerPorId(String id) async {
     try {
-      final cuadreRaw = await _cliente.from('cuadres').select().eq('id', id).maybeSingle();
+      final cuadreRaw = await _cliente
+          .from('cuadres')
+          .select('*, usuarios!usuario_id(nombre_real)')
+          .eq('id', id)
+          .maybeSingle();
       if (cuadreRaw == null) return null;
 
       final relaciones = await _cargarRelaciones([id]);
@@ -61,13 +66,14 @@ class FuenteDatosCuadresWeb {
   // ─── Privados ─────────────────────────────────────────────
 
   /// Consulta la tabla `cuadres` con filtros opcionales de rango de fecha.
+  /// Incluye JOIN con `public.usuarios` para obtener el nombre real del bahía registrador.
   Future<List<Map<String, dynamic>>> _consultarCuadresFiltrados(
     DateTime? desde,
     DateTime? hasta,
     int? limit,
     int? offset,
   ) async {
-    var query = _cliente.from('cuadres').select();
+    var query = _cliente.from('cuadres').select('*, usuarios!usuario_id(nombre_real)');
     if (desde != null) {
       query = query.gte('fecha_zarpe', desde.toIso8601String());
     }

@@ -377,7 +377,10 @@ class _EscritorCuadreExcel {
     
     filaResumen += 3;
     _escribirCelda('B$filaResumen', '50%'); _escribirCelda('C$filaResumen', 'EMPRESA'); _escribirCelda('D$filaResumen', '=D$celdaResumenTotal*0.5'); filaResumen++;
-    _escribirCelda('B$filaResumen', '50%'); _escribirCelda('C$filaResumen', 'DANIEL'); _escribirCelda('D$filaResumen', '=D$celdaResumenTotal*0.5');
+    final etiquetaBahia = (cuadre.nombreBahia?.trim().isNotEmpty == true)
+        ? cuadre.nombreBahia!.toUpperCase()
+        : 'BAHÍA';
+    _escribirCelda('B$filaResumen', '50%'); _escribirCelda('C$filaResumen', etiquetaBahia); _escribirCelda('D$filaResumen', '=D$celdaResumenTotal*0.5');
   }
 
   Future<void> _guardarArchivo() async {

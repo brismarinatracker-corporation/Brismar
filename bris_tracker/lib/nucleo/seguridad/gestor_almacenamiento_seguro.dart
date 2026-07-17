@@ -56,7 +56,10 @@ class GestorAlmacenamientoSeguro {
   // ─── Credenciales Offline (Hash Contraseña + Datos Usuario) ─────────────
 
   /// Guarda el hash BCrypt de la contraseña y los datos del usuario para modo offline.
-  Future<void> guardarCredencialesOffline(String hash, String userDataJson) async {
+  Future<void> guardarCredencialesOffline(
+    String hash,
+    String userDataJson,
+  ) async {
     try {
       await _storage.write(key: _keyOfflineHash, value: hash);
       await _storage.write(key: _keyOfflineUser, value: userDataJson);
@@ -121,7 +124,11 @@ class GestorAlmacenamientoSeguro {
     try {
       final raw = await _storage.read(key: _keyTimestamp);
       if (raw == null) return null;
-      return DateTime.fromMillisecondsSinceEpoch(int.parse(raw));
+      // Usamos tryParse para protegernos de valores corruptos en SecureStorage.
+      // Si el valor no es parseable, lo tratamos como "sin timestamp".
+      final ms = int.tryParse(raw);
+      if (ms == null) return null;
+      return DateTime.fromMillisecondsSinceEpoch(ms);
     } catch (e) {
       throw Exception('Error al leer el timestamp de verificación: $e');
     }

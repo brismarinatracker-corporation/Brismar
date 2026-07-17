@@ -34,27 +34,50 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
       decoration: BoxDecoration(
         color: const Color(0xFF00E5FF).withValues(alpha: 0.2),
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.5), width: 3),
-        image: tieneFoto ? DecorationImage(image: NetworkImage(fotoUrl), fit: BoxFit.cover) : null,
+        border: Border.all(
+          color: const Color(0xFF00E5FF).withValues(alpha: 0.5),
+          width: 3,
+        ),
+        image: tieneFoto
+            ? DecorationImage(image: NetworkImage(fotoUrl), fit: BoxFit.cover)
+            : null,
       ),
       child: !tieneFoto ? Center(child: _buildAvatarLetra(nombreReal)) : null,
     );
   }
 
   Widget _buildAvatarLetra(String nombreReal) {
-    final letra = nombreReal.isNotEmpty ? nombreReal.substring(0, 1).toUpperCase() : 'U';
+    final letra = nombreReal.isNotEmpty
+        ? nombreReal.substring(0, 1).toUpperCase()
+        : 'U';
     return Text(
       letra,
-      style: const TextStyle(color: Color(0xFF00E5FF), fontSize: 48, fontWeight: FontWeight.bold),
+      style: const TextStyle(
+        color: Color(0xFF00E5FF),
+        fontSize: 48,
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 
   Widget _buildHeader(String nombreReal, String correo) {
     return Column(
       children: [
-        Text(nombreReal, style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+        Text(
+          nombreReal,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 8),
-        Text(correo, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 16), textAlign: TextAlign.center),
+        Text(
+          correo,
+          style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 16),
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }
@@ -69,9 +92,17 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
       ),
       child: Column(
         children: [
-          _InfoTile(icono: Icons.admin_panel_settings_rounded, titulo: 'Rol', valor: rol.toUpperCase()),
+          _InfoTile(
+            icono: Icons.admin_panel_settings_rounded,
+            titulo: 'Rol',
+            valor: rol.toUpperCase(),
+          ),
           const Divider(color: Color(0xFF143068), height: 32),
-          _InfoTile(icono: Icons.location_on_rounded, titulo: 'Sede/Bahía', valor: sede.toUpperCase()),
+          _InfoTile(
+            icono: Icons.location_on_rounded,
+            titulo: 'Sede/Bahía',
+            valor: sede.toUpperCase(),
+          ),
         ],
       ),
     );
@@ -85,7 +116,14 @@ class _PantallaPerfilState extends ConsumerState<PantallaPerfil> {
         icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
         onPressed: () => context.pop(),
       ),
-      title: const Text('Mi Perfil', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
+      title: const Text(
+        'Mi Perfil',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
       centerTitle: true,
     );
   }
@@ -127,12 +165,19 @@ class _InfoTile extends StatelessWidget {
   final String titulo;
   final String valor;
 
-  const _InfoTile({required this.icono, required this.titulo, required this.valor});
+  const _InfoTile({
+    required this.icono,
+    required this.titulo,
+    required this.valor,
+  });
 
   Widget _buildIcon() {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: const Color(0xFF040B1E), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: const Color(0xFF040B1E),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Icon(icono, color: const Color(0xFF00E5FF), size: 24),
     );
   }
@@ -141,9 +186,24 @@ class _InfoTile extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(titulo, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
+        Text(
+          titulo,
+          style: const TextStyle(
+            color: Color(0xFF94A3B8),
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.0,
+          ),
+        ),
         const SizedBox(height: 4),
-        Text(valor, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+        Text(
+          valor,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }

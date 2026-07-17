@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'galeria_lightbox.dart';
+import '../../../../../nucleo/utils/optimizador_imagenes.dart';
 
 class SeccionDatosZarpe extends StatefulWidget {
   final List<String> urlsFotos;
@@ -89,8 +90,9 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
                         child: MouseRegion(
                           cursor: SystemMouseCursors.click,
                           child: CachedNetworkImage(
-                            imageUrl: widget.urlsFotos[_indiceFotoActiva],
+                            imageUrl: OptimizadorImagenes.optimizarSupabaseUrl(widget.urlsFotos[_indiceFotoActiva], width: 800),
                             fit: BoxFit.cover,
+                            memCacheWidth: 800,
                             placeholder: (c, u) => const Center(child: CircularProgressIndicator()),
                             errorWidget: (c, u, e) => const Center(
                               child: Icon(Icons.broken_image_rounded, color: Color(0xFF94A3B8), size: 40),

@@ -1,3 +1,4 @@
+import 'package:bris_tracker/modulos/registro_pesca/dominio/entidades/estado_cuadre.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,16 +6,20 @@ import '../../dominio/entidades/cuadre_entidad.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../controladores/controlador_zarpes.dart';
+import '../controladores/controlador_logs.dart';
 import 'package:bris_tracker/nucleo/componentes/carga_orbital.dart';
+import '../widgets/timeline_audit_log.dart';
 
 class DashboardCuadresPantalla extends ConsumerStatefulWidget {
   const DashboardCuadresPantalla({super.key});
 
   @override
-  ConsumerState<DashboardCuadresPantalla> createState() => _DashboardCuadresPantallaState();
+  ConsumerState<DashboardCuadresPantalla> createState() =>
+      _DashboardCuadresPantallaState();
 }
 
-class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPantalla> {
+class _DashboardCuadresPantallaState
+    extends ConsumerState<DashboardCuadresPantalla> {
   int _pestanaSeleccionada = 0;
   final _searchCtrl = TextEditingController();
 
@@ -35,9 +40,9 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
   void _onItemTapped(int index) {
     if (index == 2) {
       // Sincronizar
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sincronizando cuadres...')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Sincronizando cuadres...')));
       ref.read(cuadresProvider.notifier).cargarHistorial();
     } else {
       setState(() {
@@ -51,17 +56,32 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF0F224A),
-        title: const Text('Cerrar Sesión', style: TextStyle(color: Colors.white)),
-        content: const Text('¿Estás seguro de salir de tu cuenta?', style: TextStyle(color: Colors.white70)),
+        title: const Text(
+          'Cerrar Sesión',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          '¿Estás seguro de salir de tu cuenta?',
+          style: TextStyle(color: Colors.white70),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar', style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () async {
               Navigator.pop(ctx);
+
+              // Limpiar toda la caché de datos de Riverpod local
+              ref.invalidate(cuadresProvider);
+              ref.invalidate(proveedorZarpes);
+              ref.invalidate(proveedorLogZarpe);
+
               // El redirect del enrutadorProvider navega a /login automáticamente
               // cuando el estado cambia a EstadoAutenticacionNoAutenticado.
               await ref
@@ -77,7 +97,8 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
 
   @override
   Widget build(BuildContext context) {
-    final esHorizontal = MediaQuery.of(context).orientation == Orientation.landscape;
+    final esHorizontal =
+        MediaQuery.of(context).orientation == Orientation.landscape;
     final estadoCuadres = ref.watch(cuadresProvider);
 
     return Scaffold(
@@ -93,11 +114,17 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                   child: Stack(
                     children: [
                       _construirFondoGradiente(),
-                      _construirEsferaBrillo(top: -100, left: -50, color: const Color(0x2200E5FF)),
-                      _construirEsferaBrillo(bottom: -150, right: -100, color: const Color(0x1B0D47A1)),
-                      SafeArea(
-                        child: _buildBodyContent(estadoCuadres),
+                      _construirEsferaBrillo(
+                        top: -100,
+                        left: -50,
+                        color: const Color(0x2200E5FF),
                       ),
+                      _construirEsferaBrillo(
+                        bottom: -150,
+                        right: -100,
+                        color: const Color(0x1B0D47A1),
+                      ),
+                      SafeArea(child: _buildBodyContent(estadoCuadres)),
                     ],
                   ),
                 ),
@@ -106,14 +133,22 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
           : Stack(
               children: [
                 _construirFondoGradiente(),
-                _construirEsferaBrillo(top: -100, left: -50, color: const Color(0x2200E5FF)),
-                _construirEsferaBrillo(bottom: -150, right: -100, color: const Color(0x1B0D47A1)),
-                SafeArea(
-                  child: _buildBodyContent(estadoCuadres),
+                _construirEsferaBrillo(
+                  top: -100,
+                  left: -50,
+                  color: const Color(0x2200E5FF),
                 ),
+                _construirEsferaBrillo(
+                  bottom: -150,
+                  right: -100,
+                  color: const Color(0x1B0D47A1),
+                ),
+                SafeArea(child: _buildBodyContent(estadoCuadres)),
               ],
             ),
-      floatingActionButton: _pestanaSeleccionada == 1 // Si estamos en historial, mostramos FAB para crear
+      floatingActionButton:
+          _pestanaSeleccionada ==
+              1 // Si estamos en historial, mostramos FAB para crear
           ? FloatingActionButton(
               backgroundColor: const Color(0xFF00E5FF),
               onPressed: () {
@@ -140,7 +175,11 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
               color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.directions_boat_rounded, color: Color(0xFF00E5FF), size: 20),
+            child: const Icon(
+              Icons.directions_boat_rounded,
+              color: Color(0xFF00E5FF),
+              size: 20,
+            ),
           ),
           const SizedBox(width: 10),
           const Column(
@@ -174,6 +213,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
           onPressed: () {
             ref.read(cuadresProvider.notifier).cargarHistorial();
             ref.read(proveedorZarpes.notifier).sincronizarZarpesPendientes();
+            sincronizarLogsPendientes(ref);
           },
         ),
       ],
@@ -206,14 +246,22 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                   color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.dashboard_customize_rounded, size: 48, color: Color(0xFF00E5FF)),
+                child: const Icon(
+                  Icons.dashboard_customize_rounded,
+                  size: 48,
+                  color: Color(0xFF00E5FF),
+                ),
               ),
             ),
             const SizedBox(height: 16),
             const Center(
               child: Text(
                 'Operaciones de Bahía',
-                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 6),
@@ -228,7 +276,8 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
             // Opción 1: Zarpe de Cámara
             _buildActionCard(
               title: 'Registrar Zarpe de Cámara',
-              description: 'Registra la salida del muelle con foto de evidencia y datos de carga básicos.',
+              description:
+                  'Registra la salida del muelle con foto de evidencia y datos de carga básicos.',
               icon: Icons.local_shipping_rounded,
               color: const Color(0xFF00E5FF),
               onTap: () {
@@ -240,7 +289,8 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
             // Opción 2: Cuadre de Caja
             _buildActionCard(
               title: 'Iniciar Cuadre de Caja',
-              description: 'Reporte completo detallando compras de pesca, gastos de muelle/chofer y ventas.',
+              description:
+                  'Reporte completo detallando compras de pesca, gastos de muelle/chofer y ventas.',
               icon: Icons.assignment_rounded,
               color: const Color(0xFFFFD54F),
               onTap: () {
@@ -264,7 +314,10 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
       decoration: BoxDecoration(
         color: const Color(0xFF0F224A).withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06), width: 1.2),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.06),
+          width: 1.2,
+        ),
       ),
       child: Material(
         color: Colors.transparent,
@@ -290,17 +343,29 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         description,
-                        style: const TextStyle(color: Colors.white54, fontSize: 11.5, height: 1.3),
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 11.5,
+                          height: 1.3,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.white.withValues(alpha: 0.3)),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: Colors.white.withValues(alpha: 0.3),
+                ),
               ],
             ),
           ),
@@ -321,17 +386,29 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: TextFormField(
                 controller: _searchCtrl,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Buscar por cámara...',
-                  hintStyle: const TextStyle(color: Colors.white54, fontSize: 13),
-                  prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF00E5FF)),
+                  hintStyle: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 13,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: Color(0xFF00E5FF),
+                  ),
                   suffixIcon: _searchCtrl.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, color: Colors.white70),
+                          icon: const Icon(
+                            Icons.clear_rounded,
+                            color: Colors.white70,
+                          ),
                           onPressed: () {
                             setState(() {
                               _searchCtrl.clear();
@@ -341,14 +418,23 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                       : null,
                   filled: true,
                   fillColor: const Color(0xFF0F224A).withValues(alpha: 0.6),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12), width: 1.2),
+                    borderSide: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      width: 1.2,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF00E5FF),
+                      width: 1.5,
+                    ),
                   ),
                 ),
                 onChanged: (value) {
@@ -359,53 +445,59 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
             Expanded(
               child: filteredCuadres.isEmpty
                   ? const Center(
-                      child: Text('No se encontraron resultados.', style: TextStyle(color: Colors.white54)),
+                      child: Text(
+                        'No se encontraron resultados.',
+                        style: TextStyle(color: Colors.white54),
+                      ),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       itemCount: filteredCuadres.length,
                       itemBuilder: (context, index) {
                         final cuadre = filteredCuadres[index];
-                        
+
                         // Personalización visual del estado
                         Color badgeBg;
                         Color badgeText;
                         String labelEstado;
-                        
-                        if (cuadre.estado == 'completo') {
-                          badgeBg = Colors.green.withValues(alpha: 0.15);
-                          badgeText = Colors.greenAccent;
-                          labelEstado = 'COMPLETO';
-                        } else if (cuadre.estado == 'zarpe') {
-                          badgeBg = const Color(0xFF00E5FF).withValues(alpha: 0.15);
-                          badgeText = const Color(0xFF00E5FF);
-                          labelEstado = 'EN CAMINO';
-                        } else {
-                          badgeBg = Colors.orange.withValues(alpha: 0.15);
-                          badgeText = Colors.orangeAccent;
-                          labelEstado = 'BORRADOR';
-                        }
+
+                        badgeBg = cuadre.estado.badgeBg;
+                        badgeText = cuadre.estado.colorUi;
+                        labelEstado = cuadre.estado.etiquetaUi(
+                          cuadre.estado.valor,
+                        );
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0F224A).withValues(alpha: 0.6),
+                            color: const Color(
+                              0xFF0F224A,
+                            ).withValues(alpha: 0.6),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.05),
+                            ),
                           ),
                           child: ListTile(
                             contentPadding: const EdgeInsets.all(16),
                             title: Row(
                               children: [
                                 Icon(
-                                  Icons.local_shipping_rounded, 
-                                  color: cuadre.estado == 'zarpe' ? const Color(0xFF00E5FF) : const Color(0xFFFFD54F), 
-                                  size: 18
+                                  Icons.local_shipping_rounded,
+                                  color: cuadre.estado.colorUi,
+                                  size: 18,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'CÁMARA: ${cuadre.placa.toUpperCase()}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ],
                             ),
@@ -415,15 +507,25 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    const Icon(Icons.date_range_rounded, color: Colors.white54, size: 14),
+                                    const Icon(
+                                      Icons.date_range_rounded,
+                                      color: Colors.white54,
+                                      size: 14,
+                                    ),
                                     const SizedBox(width: 4),
                                     Text(
                                       cuadre.fechaZarpe ?? 'Pendiente',
-                                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                      ),
                                     ),
                                     const SizedBox(width: 12),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: badgeBg,
                                         borderRadius: BorderRadius.circular(4),
@@ -439,7 +541,13 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                                     ),
                                     if (cuadre.fotoZarpeUrl != null) ...[
                                       const SizedBox(width: 8),
-                                      Icon(Icons.photo_camera_rounded, color: const Color(0xFF00E5FF).withValues(alpha: 0.8), size: 14),
+                                      Icon(
+                                        Icons.photo_camera_rounded,
+                                        color: const Color(
+                                          0xFF00E5FF,
+                                        ).withValues(alpha: 0.8),
+                                        size: 14,
+                                      ),
                                     ],
                                   ],
                                 ),
@@ -450,25 +558,73 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
                               children: [
                                 if (cuadre.sincronizado) ...[
                                   if (cuadre.urlPdfCloud != null)
-                                    const Icon(Icons.picture_as_pdf, color: Colors.redAccent, size: 20),
+                                    const Icon(
+                                      Icons.picture_as_pdf,
+                                      color: Colors.redAccent,
+                                      size: 20,
+                                    ),
                                   if (cuadre.urlExcelCloud != null)
                                     const Padding(
                                       padding: EdgeInsets.only(left: 8.0),
-                                      child: Icon(Icons.table_chart, color: Colors.green, size: 20),
+                                      child: Icon(
+                                        Icons.table_chart,
+                                        color: Colors.green,
+                                        size: 20,
+                                      ),
                                     ),
-                                  if (cuadre.estado == 'zarpe' && cuadre.fotoZarpeUrl != null && cuadre.fotoZarpeUrl!.startsWith('http'))
+                                  if (cuadre.estado == EstadoCuadre.zarpe &&
+                                      cuadre.fotoZarpeUrl != null &&
+                                      cuadre.fotoZarpeUrl!.startsWith('http'))
                                     const Padding(
                                       padding: EdgeInsets.only(left: 8.0),
-                                      child: Icon(Icons.cloud_done_rounded, color: Color(0xFF00E5FF), size: 20),
+                                      child: Icon(
+                                        Icons.cloud_done_rounded,
+                                        color: Color(0xFF00E5FF),
+                                        size: 20,
+                                      ),
                                     ),
                                 ] else ...[
-                                  const Icon(Icons.cloud_off, color: Colors.grey, size: 20),
-                                ]
+                                  const Icon(
+                                    Icons.cloud_off,
+                                    color: Colors.grey,
+                                    size: 20,
+                                  ),
+                                ],
                               ],
                             ),
                             onTap: () {
                               // Editar/Completar cuadre
                               context.push('/nuevo-cuadre', extra: cuadre);
+                            },
+                            onLongPress: () {
+                              final authState = ref.read(
+                                proveedorControladorAutenticacion,
+                              );
+                              if (authState is EstadoAutenticacionAutenticado &&
+                                  (authState.usuario.rol == 'admin' ||
+                                      authState.usuario.rol == 'supervisor')) {
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  builder: (context) => Container(
+                                    height:
+                                        MediaQuery.of(context).size.height *
+                                        0.7,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFF9FAFB),
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(20),
+                                      ),
+                                    ),
+                                    child: SingleChildScrollView(
+                                      child: TimelineAuditLog(
+                                        cuadreId: cuadre.id,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
                             },
                           ),
                         );
@@ -479,16 +635,32 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
         );
       },
       loading: () => const Center(child: CargaOrbital(tamano: 80)),
-      error: (err, _) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.redAccent))),
+      error: (err, _) => Center(
+        child: Text(
+          'Error: $err',
+          style: const TextStyle(color: Colors.redAccent),
+        ),
+      ),
     );
   }
 
-  Widget _buildDrawerItem(int index, IconData icon, String label, bool isPermanent) {
+  Widget _buildDrawerItem(
+    int index,
+    IconData icon,
+    String label,
+    bool isPermanent,
+  ) {
     final isSelected = _pestanaSeleccionada == index;
     final color = isSelected ? const Color(0xFF00E5FF) : Colors.white54;
     return ListTile(
       leading: Icon(icon, color: color),
-      title: Text(label, style: TextStyle(color: color, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+      title: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       selected: isSelected,
       selectedTileColor: const Color(0xFF00E5FF).withValues(alpha: 0.1),
@@ -552,16 +724,39 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
-                  _buildDrawerItem(0, Icons.assignment_turned_in_rounded, "Registrar Despacho", isPermanent),
+                  _buildDrawerItem(
+                    0,
+                    Icons.assignment_turned_in_rounded,
+                    "Registrar Despacho",
+                    isPermanent,
+                  ),
                   const SizedBox(height: 8),
-                  _buildDrawerItem(1, Icons.history_rounded, "Historial y Registros", isPermanent),
+                  _buildDrawerItem(
+                    1,
+                    Icons.history_rounded,
+                    "Historial y Registros",
+                    isPermanent,
+                  ),
                   const SizedBox(height: 8),
-                  _buildDrawerItem(2, Icons.sync_rounded, "Sincronizar Datos", isPermanent),
+                  _buildDrawerItem(
+                    2,
+                    Icons.sync_rounded,
+                    "Sincronizar Datos",
+                    isPermanent,
+                  ),
                   const SizedBox(height: 8),
                   ListTile(
-                    leading: const Icon(Icons.person_rounded, color: Colors.white54),
-                    title: const Text('Mi Perfil', style: TextStyle(color: Colors.white54, fontSize: 14)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    leading: const Icon(
+                      Icons.person_rounded,
+                      color: Colors.white54,
+                    ),
+                    title: const Text(
+                      'Mi Perfil',
+                      style: TextStyle(color: Colors.white54, fontSize: 14),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     onTap: () {
                       if (!isPermanent) Navigator.pop(context);
                       context.push('/perfil');
@@ -572,8 +767,14 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
             ),
             // Logout Item
             ListTile(
-              leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),
-              title: const Text('Salir', style: TextStyle(color: Colors.redAccent, fontSize: 14)),
+              leading: const Icon(
+                Icons.logout_rounded,
+                color: Colors.redAccent,
+              ),
+              title: const Text(
+                'Salir',
+                style: TextStyle(color: Colors.redAccent, fontSize: 14),
+              ),
               onTap: _mostrarConfirmacionCerrarSesion,
             ),
             const SizedBox(height: 16),
@@ -589,11 +790,7 @@ class _DashboardCuadresPantallaState extends ConsumerState<DashboardCuadresPanta
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF040B1E),
-            Color(0xFF0C1D3F),
-            Color(0xFF143068),
-          ],
+          colors: [Color(0xFF040B1E), Color(0xFF0C1D3F), Color(0xFF143068)],
         ),
       ),
     );

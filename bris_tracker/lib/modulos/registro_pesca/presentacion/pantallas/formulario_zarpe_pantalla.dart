@@ -5,11 +5,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import 'package:bris_tracker/modulos/registro_pesca/dominio/entidades/zarpe_entidad.dart';
+import 'package:bris_tracker/modulos/registro_pesca/dominio/entidades/estado_cuadre.dart';
+import 'package:bris_tracker/modulos/registro_pesca/dominio/entidades/estado_zarpe.dart';
 
 import '../../dominio/entidades/cuadre_entidad.dart';
-import '../../dominio/entidades/zarpe_entidad.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../controladores/controlador_zarpes.dart';
+import '../controladores/controlador_logs.dart';
+import '../../dominio/entidades/log_zarpe_entidad.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import 'package:bris_tracker/nucleo/componentes/carga_orbital.dart';
 
@@ -17,10 +21,12 @@ class FormularioZarpePantalla extends ConsumerStatefulWidget {
   const FormularioZarpePantalla({super.key});
 
   @override
-  ConsumerState<FormularioZarpePantalla> createState() => _FormularioZarpePantallaState();
+  ConsumerState<FormularioZarpePantalla> createState() =>
+      _FormularioZarpePantallaState();
 }
 
-class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantalla> {
+class _FormularioZarpePantallaState
+    extends ConsumerState<FormularioZarpePantalla> {
   final _formKey = GlobalKey<FormState>();
   final _placaCtrl = TextEditingController();
   final _choferCtrl = TextEditingController();
@@ -32,7 +38,8 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
   final _tipoCtrl = TextEditingController();
   final _cuadrillaCtrl = TextEditingController();
 
-  int _tipoProductoSeleccionado = 1; // 1: Pota, 2: Bonito, 3: Caballa, 4: Jurel, 5: Otros
+  int _tipoProductoSeleccionado =
+      1; // 1: Pota, 2: Bonito, 3: Caballa, 4: Jurel, 5: Otros
   final List<XFile> _fotosEvidencia = [];
   bool _guardando = false;
 
@@ -153,16 +160,28 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.camera_alt_rounded, color: Color(0xFF00E5FF)),
-              title: const Text('Tomar Foto', style: TextStyle(color: Colors.white)),
+              leading: const Icon(
+                Icons.camera_alt_rounded,
+                color: Color(0xFF00E5FF),
+              ),
+              title: const Text(
+                'Tomar Foto',
+                style: TextStyle(color: Colors.white),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
                 _tomarFoto();
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library_rounded, color: Color(0xFF00E5FF)),
-              title: const Text('Seleccionar de Galería', style: TextStyle(color: Colors.white)),
+              leading: const Icon(
+                Icons.photo_library_rounded,
+                color: Color(0xFF00E5FF),
+              ),
+              title: const Text(
+                'Seleccionar de Galería',
+                style: TextStyle(color: Colors.white),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
                 _seleccionarFotoGaleria();
@@ -180,7 +199,9 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
     if (_fotosEvidencia.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Debe tomar al menos una fotografía de evidencia para registrar el zarpe'),
+          content: Text(
+            'Debe tomar al menos una fotografía de evidencia para registrar el zarpe',
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -189,14 +210,18 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
 
     final authState = ref.read(proveedorControladorAutenticacion);
     String usuarioActualId = '';
+    String nombreUsuarioActual = '';
     if (authState is EstadoAutenticacionAutenticado) {
       usuarioActualId = authState.usuario.id;
+      nombreUsuarioActual = authState.usuario.nombreReal;
     }
 
     if (usuarioActualId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Error de sesión: No se puede guardar el zarpe sin una sesión activa'),
+          content: Text(
+            'Error de sesión: No se puede guardar el zarpe sin una sesión activa',
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -218,16 +243,24 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         usuarioId: usuarioActualId,
         placa: _placaCtrl.text.toUpperCase(),
         fechaZarpe: fechaActual,
-        estado: 'zarpe', // Estado especial de zarpe de cámara
+        estado: EstadoCuadre.zarpe, // Estado especial de zarpe de cámara
         fotoZarpeUrl: _fotosEvidencia.map((f) => f.path).join(','),
         pesoTotal: pesoTotal,
         cajasLlenas: cajasLlenas,
         cajasVacias: cajasVacias,
         tipoProducto: _tipoProductoSeleccionado,
-        muellePartida: _muellePartidaCtrl.text.trim().isEmpty ? null : _muellePartidaCtrl.text.trim().toUpperCase(),
-        pesador: _pesadorCtrl.text.trim().toUpperCase().isEmpty ? null : _pesadorCtrl.text.trim().toUpperCase(),
-        tipo: _tipoCtrl.text.trim().toUpperCase().isEmpty ? null : _tipoCtrl.text.trim().toUpperCase(),
-        cuadrilla: _cuadrillaCtrl.text.trim().toUpperCase().isEmpty ? null : _cuadrillaCtrl.text.trim().toUpperCase(),
+        muellePartida: _muellePartidaCtrl.text.trim().isEmpty
+            ? null
+            : _muellePartidaCtrl.text.trim().toUpperCase(),
+        pesador: _pesadorCtrl.text.trim().toUpperCase().isEmpty
+            ? null
+            : _pesadorCtrl.text.trim().toUpperCase(),
+        tipo: _tipoCtrl.text.trim().toUpperCase().isEmpty
+            ? null
+            : _tipoCtrl.text.trim().toUpperCase(),
+        cuadrilla: _cuadrillaCtrl.text.trim().toUpperCase().isEmpty
+            ? null
+            : _cuadrillaCtrl.text.trim().toUpperCase(),
         sincronizado: false,
         compras: const [],
         gastos: const [],
@@ -246,10 +279,24 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         fotoUrlEvidencia: _fotosEvidencia.map((f) => f.path).join(','),
         fotoLocalPath: _fotosEvidencia.map((f) => f.path).join(','),
         fechaZarpe: DateTime.now(),
-        estado: 'DESPACHADO_PIURA',
+        estado: EstadoZarpe.despachadoPiura,
       );
 
       await ref.read(proveedorZarpes.notifier).registrarZarpe(nuevoZarpe);
+
+      // Registrar evento de auditoría
+      await registrarEventoZarpe(
+        ref: ref,
+        zarpeId: idZarpe,
+        usuarioId: usuarioActualId,
+        nombreUsuario: nombreUsuarioActual,
+        accion: AccionLog.zarpeCreado,
+        detalle: {
+          'placa': _placaCtrl.text,
+          'chofer': _choferCtrl.text,
+          'fecha_zarpe': fechaActual,
+        },
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -276,11 +323,17 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
     }
   }
 
-  InputDecoration _construirInputDecoration({required String labelText, Widget? suffixIcon}) {
+  InputDecoration _construirInputDecoration({
+    required String labelText,
+    Widget? suffixIcon,
+  }) {
     return InputDecoration(
       labelText: labelText,
       labelStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
-      floatingLabelStyle: const TextStyle(color: Color(0xFF006B54), fontWeight: FontWeight.bold),
+      floatingLabelStyle: const TextStyle(
+        color: Color(0xFF006B54),
+        fontWeight: FontWeight.bold,
+      ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
@@ -317,383 +370,434 @@ class _FormularioZarpePantallaState extends ConsumerState<FormularioZarpePantall
         ),
         title: const Text(
           'Registrar zarpe',
-          style: TextStyle(color: Color(0xFF004D40), fontSize: 18, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: Color(0xFF004D40),
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         centerTitle: false,
         titleSpacing: 0,
       ),
       body: SafeArea(
-            child: Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Card de Fotografía de Evidencia
+                // Card de Fotografía de Evidencia
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Card de Fotografía de Evidencia
-                    // Card de Fotografía de Evidencia
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Fotos de evidencia',
-                              style: TextStyle(color: Color(0xFF006B54), fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              '(${_fotosEvidencia.length}/3)',
-                              style: const TextStyle(color: Color(0xFF006B54), fontSize: 14, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        if (_fotosEvidencia.isEmpty)
-                          GestureDetector(
-                            onTap: _mostrarOpcionesImagen,
-                            child: Container(
-                              height: 150,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: const Color(0xFFA8D5BA),
-                                  width: 1.5,
-                                  style: BorderStyle.solid,
-                                ),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.camera_alt_outlined, size: 40, color: Color(0xFF006B54)),
-                                  const SizedBox(height: 8),
-                                  const Text(
-                                    'Tomar foto',
-                                    style: TextStyle(color: Color(0xFF006B54), fontSize: 15, fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  const Text(
-                                    'Al menos 1 foto requerida',
-                                    style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        else
-                          SizedBox(
-                            height: 130,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _fotosEvidencia.length + (_fotosEvidencia.length < 3 ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index == _fotosEvidencia.length) {
-                                  // Botón de Añadir otra foto
-                                  return GestureDetector(
-                                    onTap: _mostrarOpcionesImagen,
-                                    child: Container(
-                                      width: 110,
-                                      margin: const EdgeInsets.only(right: 12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: const Color(0xFFA8D5BA),
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                      child: const Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.add_a_photo_outlined, color: Color(0xFF006B54), size: 28),
-                                          SizedBox(height: 8),
-                                          Text(
-                                            'Añadir',
-                                            style: TextStyle(color: Color(0xFF006B54), fontSize: 13, fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                }
-
-                                final foto = _fotosEvidencia[index];
-                                return Stack(
-                                  children: [
-                                    SizedBox(
-                                      width: 110,
-                                      height: 130,
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(right: 12),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(16),
-                                          child: kIsWeb
-                                              ? Image.network(
-                                                  foto.path,
-                                                  fit: BoxFit.cover,
-                                                )
-                                              : Image.file(
-                                                  File(foto.path),
-                                                  fit: BoxFit.cover,
-                                                ),
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 4,
-                                      right: 16,
-                                      child: GestureDetector(
-                                        onTap: () => _eliminarFoto(index),
-                                        child: Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: const BoxDecoration(
-                                            color: Colors.black54,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(
-                                            Icons.close_rounded,
-                                            color: Colors.redAccent,
-                                            size: 16,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Inputs de datos básicos
-                    const Text(
-                      'Datos de la camara',
-                      style: TextStyle(color: Color(0xFF006B54), fontSize: 15, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Placa
-                    TextFormField(
-                      controller: _placaCtrl,
-                      style: const TextStyle(color: Colors.black87),
-                      textCapitalization: TextCapitalization.characters,
-                      inputFormatters: [
-                        _PlacaInputFormatter(),
-                      ],
-                      decoration: _construirInputDecoration(
-                        labelText: 'Placa (Ej: AAA-123)',
-                      ),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'La placa es requerida';
-                        final clean = v.replaceAll('-', '');
-                        if (clean.length != 6) return 'La placa debe tener exactamente 6 caracteres (Ej: AAA-123)';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Chofer
-                    TextFormField(
-                      controller: _choferCtrl,
-                      style: const TextStyle(color: Colors.black87),
-                      textCapitalization: TextCapitalization.characters,
-                      inputFormatters: [
-                        _UpperCaseInputFormatter(),
-                      ],
-                      decoration: _construirInputDecoration(
-                        labelText: 'Nombre del chofer',
-                      ),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'El nombre del chofer es requerido';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Peso Total
-                    TextFormField(
-                      controller: _pesoTotalCtrl,
-                      style: const TextStyle(color: Colors.black87),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                      ],
-                      decoration: _construirInputDecoration(
-                        labelText: 'Peso Total (Kg)',
-                      ),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'El peso total es requerido';
-                        final valor = double.tryParse(v) ?? 0.0;
-                        if (valor <= 0) return 'El peso debe ser mayor a 0';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Fila Cajas Llenas y Vacías
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _cajasLlenasCtrl,
-                            style: const TextStyle(color: Colors.black87),
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                            decoration: _construirInputDecoration(labelText: 'Cajas Llenas'),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return 'Requerido';
-                              final valor = int.tryParse(v) ?? -1;
-                              if (valor < 0) return 'Mínimo 0';
-                              return null;
-                            },
+                        const Text(
+                          'Fotos de evidencia',
+                          style: TextStyle(
+                            color: Color(0xFF006B54),
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _cajasVaciasCtrl,
-                            style: const TextStyle(color: Colors.black87),
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                            decoration: _construirInputDecoration(labelText: 'Cajas vacias'),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return 'Requerido';
-                              final valor = int.tryParse(v) ?? -1;
-                              if (valor < 0) return 'Mínimo 0';
-                              return null;
-                            },
+                        Text(
+                          '(${_fotosEvidencia.length}/3)',
+                          style: const TextStyle(
+                            color: Color(0xFF006B54),
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    DropdownButtonFormField<int>(
-                      initialValue: _tipoProductoSeleccionado,
-                      dropdownColor: Colors.white,
-                      style: const TextStyle(color: Colors.black87),
-                      iconEnabledColor: const Color(0xFF006B54),
-                      decoration: _construirInputDecoration(labelText: 'Tipo de Producto'),
-                      items: const [
-                        DropdownMenuItem(value: 1, child: Text('Pota')),
-                        DropdownMenuItem(value: 2, child: Text('Bonito')),
-                        DropdownMenuItem(value: 3, child: Text('Caballa')),
-                        DropdownMenuItem(value: 4, child: Text('Jurel')),
-                        DropdownMenuItem(value: 5, child: Text('Otros')),
-                      ],
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() {
-                            _tipoProductoSeleccionado = val;
-                          });
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Muelle de Partida
-                    TextFormField(
-                      controller: _muellePartidaCtrl,
-                      style: const TextStyle(color: Colors.black87),
-                      textCapitalization: TextCapitalization.characters,
-                      inputFormatters: [
-                        _UpperCaseInputFormatter(),
-                      ],
-                      decoration: _construirInputDecoration(
-                        labelText: 'Muelle de Partida',
-                      ),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'El muelle de partida es requerido';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Pesador de Muelle
-                    TextFormField(
-                      controller: _pesadorCtrl,
-                      style: const TextStyle(color: Colors.black87),
-                      textCapitalization: TextCapitalization.characters,
-                      inputFormatters: [
-                        _UpperCaseInputFormatter(),
-                      ],
-                      decoration: _construirInputDecoration(
-                        labelText: 'Pesador de Muelle',
-                      ),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'El nombre del pesador es requerido';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Tipo
-                    TextFormField(
-                      controller: _tipoCtrl,
-                      style: const TextStyle(color: Colors.black87),
-                      textCapitalization: TextCapitalization.characters,
-                      inputFormatters: [
-                        _UpperCaseInputFormatter(),
-                      ],
-                      decoration: _construirInputDecoration(
-                        labelText: 'Tipo',
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Cuadrilla
-                    TextFormField(
-                      controller: _cuadrillaCtrl,
-                      style: const TextStyle(color: Colors.black87),
-                      textCapitalization: TextCapitalization.characters,
-                      inputFormatters: [
-                        _UpperCaseInputFormatter(),
-                      ],
-                      decoration: _construirInputDecoration(
-                        labelText: 'Cuadrilla',
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Botón para Guardar
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF004236),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        elevation: 0,
-                      ),
-                      onPressed: _guardando ? null : _guardarZarpe,
-                      child: _guardando
-                          ? const CargaOrbital(tamano: 20)
-                          : const Text(
-                              'Guardar registro',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
                     ),
                     const SizedBox(height: 12),
-                    if (_guardando)
-                      const LinearProgressIndicator(
-                        color: Color(0xFF006B54),
-                        backgroundColor: Colors.transparent,
+                    if (_fotosEvidencia.isEmpty)
+                      GestureDetector(
+                        onTap: _mostrarOpcionesImagen,
+                        child: Container(
+                          height: 150,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFA8D5BA),
+                              width: 1.5,
+                              style: BorderStyle.solid,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.camera_alt_outlined,
+                                size: 40,
+                                color: Color(0xFF006B54),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Tomar foto',
+                                style: TextStyle(
+                                  color: Color(0xFF006B54),
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Al menos 1 foto requerida',
+                                style: TextStyle(
+                                  color: Color(0xFF6B7280),
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      SizedBox(
+                        height: 130,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount:
+                              _fotosEvidencia.length +
+                              (_fotosEvidencia.length < 3 ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index == _fotosEvidencia.length) {
+                              // Botón de Añadir otra foto
+                              return GestureDetector(
+                                onTap: _mostrarOpcionesImagen,
+                                child: Container(
+                                  width: 110,
+                                  margin: const EdgeInsets.only(right: 12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: const Color(0xFFA8D5BA),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.add_a_photo_outlined,
+                                        color: Color(0xFF006B54),
+                                        size: 28,
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'Añadir',
+                                        style: TextStyle(
+                                          color: Color(0xFF006B54),
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+
+                            final foto = _fotosEvidencia[index];
+                            return Stack(
+                              children: [
+                                SizedBox(
+                                  width: 110,
+                                  height: 130,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right: 12),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: kIsWeb
+                                          ? Image.network(
+                                              foto.path,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : Image.file(
+                                              File(foto.path),
+                                              fit: BoxFit.cover,
+                                            ),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 4,
+                                  right: 16,
+                                  child: GestureDetector(
+                                    onTap: () => _eliminarFoto(index),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.black54,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.close_rounded,
+                                        color: Colors.redAccent,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 24),
+
+                // Inputs de datos básicos
+                const Text(
+                  'Datos de la camara',
+                  style: TextStyle(
+                    color: Color(0xFF006B54),
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Placa
+                TextFormField(
+                  controller: _placaCtrl,
+                  style: const TextStyle(color: Colors.black87),
+                  textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [_PlacaInputFormatter()],
+                  decoration: _construirInputDecoration(
+                    labelText: 'Placa (Ej: AAA-123)',
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'La placa es requerida';
+                    final clean = v.replaceAll('-', '');
+                    if (clean.length != 6)
+                      return 'La placa debe tener exactamente 6 caracteres (Ej: AAA-123)';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Chofer
+                TextFormField(
+                  controller: _choferCtrl,
+                  style: const TextStyle(color: Colors.black87),
+                  textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [_UpperCaseInputFormatter()],
+                  decoration: _construirInputDecoration(
+                    labelText: 'Nombre del chofer',
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty)
+                      return 'El nombre del chofer es requerido';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Peso Total
+                TextFormField(
+                  controller: _pesoTotalCtrl,
+                  style: const TextStyle(color: Colors.black87),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                  ],
+                  decoration: _construirInputDecoration(
+                    labelText: 'Peso Total (Kg)',
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty)
+                      return 'El peso total es requerido';
+                    final valor = double.tryParse(v) ?? 0.0;
+                    if (valor <= 0) return 'El peso debe ser mayor a 0';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Fila Cajas Llenas y Vacías
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _cajasLlenasCtrl,
+                        style: const TextStyle(color: Colors.black87),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: _construirInputDecoration(
+                          labelText: 'Cajas Llenas',
+                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'Requerido';
+                          final valor = int.tryParse(v) ?? -1;
+                          if (valor < 0) return 'Mínimo 0';
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _cajasVaciasCtrl,
+                        style: const TextStyle(color: Colors.black87),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: _construirInputDecoration(
+                          labelText: 'Cajas vacias',
+                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'Requerido';
+                          final valor = int.tryParse(v) ?? -1;
+                          if (valor < 0) return 'Mínimo 0';
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                DropdownButtonFormField<int>(
+                  initialValue:
+                      [1, 2, 3, 4, 5].contains(_tipoProductoSeleccionado)
+                      ? _tipoProductoSeleccionado
+                      : 1,
+                  dropdownColor: Colors.white,
+                  style: const TextStyle(color: Colors.black87),
+                  iconEnabledColor: const Color(0xFF006B54),
+                  decoration: _construirInputDecoration(
+                    labelText: 'Tipo de Producto',
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 1, child: Text('Pota')),
+                    DropdownMenuItem(value: 2, child: Text('Bonito')),
+                    DropdownMenuItem(value: 3, child: Text('Caballa')),
+                    DropdownMenuItem(value: 4, child: Text('Jurel')),
+                    DropdownMenuItem(value: 5, child: Text('Otros')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() {
+                        _tipoProductoSeleccionado = val;
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Muelle de Partida
+                TextFormField(
+                  controller: _muellePartidaCtrl,
+                  style: const TextStyle(color: Colors.black87),
+                  textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [_UpperCaseInputFormatter()],
+                  decoration: _construirInputDecoration(
+                    labelText: 'Muelle de Partida',
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty)
+                      return 'El muelle de partida es requerido';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Pesador de Muelle
+                TextFormField(
+                  controller: _pesadorCtrl,
+                  style: const TextStyle(color: Colors.black87),
+                  textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [_UpperCaseInputFormatter()],
+                  decoration: _construirInputDecoration(
+                    labelText: 'Pesador de Muelle',
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty)
+                      return 'El nombre del pesador es requerido';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Tipo
+                TextFormField(
+                  controller: _tipoCtrl,
+                  style: const TextStyle(color: Colors.black87),
+                  textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [_UpperCaseInputFormatter()],
+                  decoration: _construirInputDecoration(labelText: 'Tipo'),
+                ),
+                const SizedBox(height: 16),
+
+                // Cuadrilla
+                TextFormField(
+                  controller: _cuadrillaCtrl,
+                  style: const TextStyle(color: Colors.black87),
+                  textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [_UpperCaseInputFormatter()],
+                  decoration: _construirInputDecoration(labelText: 'Cuadrilla'),
+                ),
+                const SizedBox(height: 32),
+
+                // Botón para Guardar
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF004236),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 0,
+                  ),
+                  onPressed: _guardando ? null : _guardarZarpe,
+                  child: _guardando
+                      ? const CargaOrbital(tamano: 20)
+                      : const Text(
+                          'Guardar registro',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 12),
+                if (_guardando)
+                  const LinearProgressIndicator(
+                    color: Color(0xFF006B54),
+                    backgroundColor: Colors.transparent,
+                  ),
+              ],
             ),
           ),
+        ),
+      ),
     );
   }
 }
 
 class _PlacaInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    final text = newValue.text.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toUpperCase();
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text
+        .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')
+        .toUpperCase();
     if (text.length > 6) {
       return oldValue;
     }
@@ -710,7 +814,10 @@ class _PlacaInputFormatter extends TextInputFormatter {
 
 class _UpperCaseInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     return TextEditingValue(
       text: newValue.text.toUpperCase(),
       selection: newValue.selection,

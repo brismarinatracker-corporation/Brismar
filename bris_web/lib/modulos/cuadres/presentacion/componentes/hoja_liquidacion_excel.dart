@@ -102,8 +102,9 @@ class HojaLiquidacionExcel extends StatelessWidget {
   /// Reparto de utilidad correspondiente a la empresa (50%).
   double get repartoEmpresa => utilidadNeta * 0.50;
 
-  /// Reparto de utilidad correspondiente al bahía Daniel (50%).
-  double get repartoDaniel => utilidadNeta * 0.50;
+  /// Reparto de utilidad correspondiente al bahía registrador (50%).
+  /// El nombre se obtiene dinámicamente desde [CuadreWebModelo.nombreBahia].
+  double get repartoBahia => utilidadNeta * 0.50;
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +187,7 @@ class HojaLiquidacionExcel extends StatelessWidget {
             children: [
               _construirTablaResumen(totalVenta, totalCompra, totalGastosMuelle, totalGastosAdmin, utilidadNeta),
               const SizedBox(height: 24),
-              _construirTablaReparto(repartoEmpresa, repartoDaniel),
+              _construirTablaReparto(repartoEmpresa, repartoBahia),
               const SizedBox(height: 32),
               _construirRendimientoFooter(kilosVenta, kilosCompra, rendimientoKilos),
             ],
@@ -498,7 +499,12 @@ class HojaLiquidacionExcel extends StatelessWidget {
     );
   }
 
+  /// Construye la tabla de reparto de utilidad entre Empresa y Bahía.
+  /// El nombre del bahía se toma dinámicamente del [CuadreWebModelo.nombreBahia].
   Widget _construirTablaReparto(double e, double d) {
+    final etiquetaBahia = (cuadre.nombreBahia?.toUpperCase().trim().isNotEmpty == true)
+        ? cuadre.nombreBahia!.toUpperCase()
+        : 'BAHÍA';
     return Table(
       columnWidths: const {
         0: FixedColumnWidth(50),
@@ -517,7 +523,7 @@ class HojaLiquidacionExcel extends StatelessWidget {
         TableRow(
           children: [
             _celdaDato('50%', alineacion: Alignment.center),
-            _celdaDato('DANIEL', negrita: true),
+            _celdaDato(etiquetaBahia, negrita: true),
             _celdaNumero(d),
           ]
         ),

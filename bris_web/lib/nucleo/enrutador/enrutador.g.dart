@@ -13,7 +13,7 @@ RouteBase get $rutaDashboardShell => ShellRouteData.$route(
   routes: [
     GoRouteData.$route(path: '/dashboard', factory: $RutaDashboard._fromState),
     GoRouteData.$route(
-      path: '/transito',
+      path: '/transito/:sector',
       factory: $RutaTransito._fromState,
       routes: [
         GoRouteData.$route(
@@ -54,10 +54,14 @@ mixin $RutaDashboard on GoRouteData {
 }
 
 mixin $RutaTransito on GoRouteData {
-  static RutaTransito _fromState(GoRouterState state) => const RutaTransito();
+  static RutaTransito _fromState(GoRouterState state) =>
+      RutaTransito(sector: state.pathParameters['sector'] ?? 'pendientes');
+
+  RutaTransito get _self => this as RutaTransito;
 
   @override
-  String get location => GoRouteData.$location('/transito');
+  String get location =>
+      GoRouteData.$location('/transito/${Uri.encodeComponent(_self.sector)}');
 
   @override
   void go(BuildContext context) => context.go(location);
@@ -75,13 +79,16 @@ mixin $RutaTransito on GoRouteData {
 
 mixin $RutaEdicionTransito on GoRouteData {
   static RutaEdicionTransito _fromState(GoRouterState state) =>
-      RutaEdicionTransito(id: state.pathParameters['id']!);
+      RutaEdicionTransito(
+        sector: state.pathParameters['sector']!,
+        id: state.pathParameters['id']!,
+      );
 
   RutaEdicionTransito get _self => this as RutaEdicionTransito;
 
   @override
   String get location => GoRouteData.$location(
-    '/transito/editar/${Uri.encodeComponent(_self.id)}',
+    '/transito/${Uri.encodeComponent(_self.sector)}/editar/${Uri.encodeComponent(_self.id)}',
   );
 
   @override

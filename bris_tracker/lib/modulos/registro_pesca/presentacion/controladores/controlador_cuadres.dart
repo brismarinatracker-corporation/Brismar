@@ -8,20 +8,24 @@ import '../../../../nucleo/red/verificador_conexion.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../../registro_pesca_inyeccion.dart';
 
-final cuadresProvider = StateNotifierProvider<CuadresNotifier, AsyncValue<List<CuadreEntidad>>>((ref) {
-  final authState = ref.watch(proveedorControladorAutenticacion);
-  String usuarioId = '';
-  if (authState is EstadoAutenticacionAutenticado) {
-    usuarioId = authState.usuario.id;
-  }
-  return CuadresNotifier(ref.watch(cuadreRepositorioProvider), usuarioId);
-});
+final cuadresProvider =
+    StateNotifierProvider<CuadresNotifier, AsyncValue<List<CuadreEntidad>>>((
+      ref,
+    ) {
+      final authState = ref.watch(proveedorControladorAutenticacion);
+      String usuarioId = '';
+      if (authState is EstadoAutenticacionAutenticado) {
+        usuarioId = authState.usuario.id;
+      }
+      return CuadresNotifier(ref.watch(cuadreRepositorioProvider), usuarioId);
+    });
 
 class CuadresNotifier extends StateNotifier<AsyncValue<List<CuadreEntidad>>> {
   final CuadreRepositorioImp _repositorio;
   final String _usuarioId;
 
-  CuadresNotifier(this._repositorio, this._usuarioId) : super(const AsyncValue.loading()) {
+  CuadresNotifier(this._repositorio, this._usuarioId)
+    : super(const AsyncValue.loading()) {
     if (_usuarioId.isNotEmpty) {
       cargarHistorial();
     } else {
@@ -35,11 +39,11 @@ class CuadresNotifier extends StateNotifier<AsyncValue<List<CuadreEntidad>>> {
       state = const AsyncValue.loading();
       final cuadres = await _repositorio.obtenerHistorial(_usuarioId);
       state = AsyncValue.data(cuadres);
-      
+
       // Auto-sincronizar si hay internet
       // Sincronizar en la nube si hay red
       final verificador = VerificadorConexionImpl();
-    if (await verificador.hayConexion()) {
+      if (await verificador.hayConexion()) {
         await _repositorio.sincronizarPendientes(_usuarioId);
         final actualizados = await _repositorio.obtenerHistorial(_usuarioId);
         state = AsyncValue.data(actualizados);
@@ -64,8 +68,9 @@ class CuadresNotifier extends StateNotifier<AsyncValue<List<CuadreEntidad>>> {
       final idx = cuadres.indexWhere((c) => c.id == cuadreId);
       if (idx != -1) {
         final cuadre = cuadres[idx];
-        final nuevosGastos = List<GastoEntidad>.from(cuadre.gastos)..add(nuevoGasto);
-        
+        final nuevosGastos = List<GastoEntidad>.from(cuadre.gastos)
+          ..add(nuevoGasto);
+
         final cuadreActualizado = CuadreModelo(
           id: cuadre.id,
           usuarioId: cuadre.usuarioId,
@@ -87,7 +92,7 @@ class CuadresNotifier extends StateNotifier<AsyncValue<List<CuadreEntidad>>> {
           gastos: nuevosGastos,
           ventas: cuadre.ventas,
         );
-        
+
         await guardarCuadre(cuadreActualizado);
       }
     }

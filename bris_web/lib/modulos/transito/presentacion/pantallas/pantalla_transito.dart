@@ -6,19 +6,54 @@ import 'package:intl/intl.dart';
 import '../controladores/controlador_transito.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../compartido/widgets/shimmer_carga.dart';
+import '../../../../nucleo/utils/optimizador_imagenes.dart';
 
 // Esta pantalla es FRONTEND PURO. Solo dibuja. No sabe de Supabase.
 // El filtro y los datos vienen del ControladorTransito (capa de lógica).
 class PantallaTransito extends ConsumerStatefulWidget {
-  const PantallaTransito({super.key});
+  final String sector;
+  
+  const PantallaTransito({
+    super.key,
+    this.sector = 'pendientes',
+  });
 
   @override
   ConsumerState<PantallaTransito> createState() => _PantallaTransitoState();
 }
 
-class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
+class _PantallaTransitoState extends ConsumerState<PantallaTransito> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   int _paginaActual = 0;
   static const int _elementosPorPagina = 6;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(
+      length: 2, 
+      vsync: this,
+      initialIndex: widget.sector == 'finalizados' ? 1 : 0,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant PantallaTransito oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.sector != oldWidget.sector) {
+      final newIndex = widget.sector == 'finalizados' ? 1 : 0;
+      if (_tabController.index != newIndex) {
+        _tabController.animateTo(newIndex);
+        _paginaActual = 0;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -140,42 +175,45 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
 
         // Main list container
         Expanded(
-          child: DefaultTabController(
-            length: 2,
-            child: Column(
-              children: [
-                // Tab Bar
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: esMovil ? 20.0 : 32.0, vertical: 8.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: TabBar(
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    indicator: BoxDecoration(
-                      color: const Color(0xFF0E3E2C),
-                      borderRadius: BorderRadius.circular(11),
-                    ),
-                    labelColor: Colors.white,
-                    unselectedLabelColor: const Color(0xFF64748B),
-                    labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                    unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
-                    dividerColor: Colors.transparent,
-                    onTap: (_) => setState(() => _paginaActual = 0),
-                    tabs: const [
-                      Tab(text: 'Pendientes (En Tránsito)'),
-                      Tab(text: 'Finalizados (Recibidos)'),
-                    ],
-                  ),
+          child: Column(
+            children: [
+              // Tab Bar
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: esMovil ? 20.0 : 32.0, vertical: 8.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
-                
-                // Tab Bar View
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: esMovil ? 20.0 : 32.0, vertical: 8.0),
-                    child: (() {
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicator: BoxDecoration(
+                    color: const Color(0xFF0E3E2C),
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  labelColor: Colors.white,
+                  unselectedLabelColor: const Color(0xFF64748B),
+                  labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                  dividerColor: Colors.transparent,
+                  onTap: (index) {
+                    setState(() => _paginaActual = 0);
+                    final route = index == 0 ? 'pendientes' : 'finalizados';
+                    context.go('/transito/$route');
+                  },
+                  tabs: const [
+                    Tab(text: 'Pendientes (En Tránsito)'),
+                    Tab(text: 'Finalizados (Recibidos)'),
+                  ],
+                ),
+              ),
+              
+              // Contenido Activo (simulando TabBarView sin animaciones que rompan estado)
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: esMovil ? 20.0 : 32.0, vertical: 8.0),
+                  child: (() {
                       final hasData = estadoZarpes.hasValue && estadoZarpes.value!.isNotEmpty;
                       if (estadoZarpes.isLoading && !hasData) {
                         return const ShimmerTablaCarga(oscuro: false, filas: 5);
@@ -202,14 +240,15 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                             ? zarpesFiltrados.length
                             : startIndex + _elementosPorPagina;
                         
-                        // Si la página actual es mayor a las páginas disponibles (por cambiar de tab)
-                        if (startIndex >= zarpesFiltrados.length) {
-                          Future.microtask(() => setState(() => _paginaActual = 0));
+                        final totalPaginas = (zarpesFiltrados.length / _elementosPorPagina).ceil();
+
+                        // Si la página actual es mayor a las páginas disponibles (porque se eliminó un elemento o se cambió de tab)
+                        if (startIndex >= zarpesFiltrados.length && zarpesFiltrados.isNotEmpty) {
+                          Future.microtask(() => setState(() => _paginaActual = totalPaginas > 0 ? totalPaginas - 1 : 0));
                           return const SizedBox();
                         }
 
                         final zarpesPaginados = zarpesFiltrados.sublist(startIndex, endIndex);
-                        final totalPaginas = (zarpesFiltrados.length / _elementosPorPagina).ceil();
 
                         return Column(
                           children: [
@@ -263,7 +302,7 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                                                         if (urlFoto.toString().isNotEmpty)
                                                           ClipRRect(
                                                             borderRadius: BorderRadius.circular(8),
-                                                            child: Image.network(urlFoto, width: 64, height: 64, fit: BoxFit.cover, errorBuilder: (c, e, s) => Container(width: 64, height: 64, color: const Color(0xFFE6F0FA), child: const Icon(Icons.broken_image, color: Color(0xFF1E88E5), size: 24))),
+                                                            child: Image.network(OptimizadorImagenes.optimizarSupabaseUrl(urlFoto, width: 200), width: 64, height: 64, cacheWidth: 128, cacheHeight: 128, fit: BoxFit.cover, errorBuilder: (c, e, s) => Container(width: 64, height: 64, color: const Color(0xFFE6F0FA), child: const Icon(Icons.broken_image, color: Color(0xFF1E88E5), size: 24))),
                                                           )
                                                         else
                                                           Container(
@@ -310,7 +349,7 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                                                     ),
                                                     if (esMovil) ...[
                                                       const SizedBox(height: 16),
-                                                      _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, onMarcarRecibido: (zId, emb, peso) => _mostrarDialogoRecepcion(context, ref, zId, emb, peso)),
+                                                      _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, sector: widget.sector, onMarcarRecibido: (zId, emb, peso) => _mostrarDialogoRecepcion(context, ref, zId, emb, peso)),
                                                     ]
                                                   ],
                                                 ),
@@ -321,7 +360,7 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                                                 padding: const EdgeInsets.only(right: 20, top: 16, bottom: 16),
                                                 child: SizedBox(
                                                   width: 170,
-                                                  child: _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, onMarcarRecibido: (zId, emb, peso) => _mostrarDialogoRecepcion(context, ref, zId, emb, peso)),
+                                                  child: _BotonesAccionTransito(z: z, estaRecibido: estaRecibido, sector: widget.sector, onMarcarRecibido: (zId, emb, peso) => _mostrarDialogoRecepcion(context, ref, zId, emb, peso)),
                                                 ),
                                               ),
                                           ],
@@ -357,6 +396,18 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                                           ? () => setState(() => _paginaActual++)
                                           : null,
                                     ),
+                                    if (_paginaActual == totalPaginas - 1 && zarpesFiltrados.length >= 30)
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 16),
+                                        child: TextButton.icon(
+                                          onPressed: () async {
+                                            await ref.read(proveedorTransito.notifier).cargarMas();
+                                            setState(() {});
+                                          },
+                                          icon: const Icon(Icons.cloud_download, size: 18),
+                                          label: const Text('Cargar más antiguos'),
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),
@@ -364,20 +415,16 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                         );
                       }
 
-                      return TabBarView(
-                        children: [
-                          construirListaPaginada(false), // Pendientes (En Tránsito)
-                          construirListaPaginada(true),  // Finalizados (Recibidos)
-                        ],
-                      );
+                      return widget.sector == 'finalizados' 
+                          ? construirListaPaginada(true)
+                          : construirListaPaginada(false);
                     })(),
                   ),
                 ),
               ],
             ),
           ),
-        ),
-      ],
+        ],
     ),
    );
   }
@@ -679,8 +726,9 @@ class _BotonesAccionTransito extends StatelessWidget {
   final dynamic z;
   final bool estaRecibido;
   final Function(String, String, double) onMarcarRecibido;
+  final String sector;
 
-  const _BotonesAccionTransito({required this.z, required this.estaRecibido, required this.onMarcarRecibido});
+  const _BotonesAccionTransito({required this.z, required this.estaRecibido, required this.onMarcarRecibido, required this.sector});
 
   @override
   Widget build(BuildContext context) {
@@ -703,7 +751,7 @@ class _BotonesAccionTransito extends StatelessWidget {
 
   Widget _botonVerEditar(BuildContext context) {
     return OutlinedButton.icon(
-      onPressed: () => context.go('/transito/editar/${z.id}'),
+      onPressed: () => context.go('/transito/$sector/editar/${z.id}'),
       icon: const Icon(Icons.edit_outlined, size: 16),
       label: const Text('Ver / editar'),
       style: OutlinedButton.styleFrom(

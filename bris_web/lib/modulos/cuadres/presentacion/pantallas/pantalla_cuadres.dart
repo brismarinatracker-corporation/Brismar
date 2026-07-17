@@ -354,7 +354,12 @@ class _TablaCuadres extends ConsumerWidget {
     switch (estado.toLowerCase()) {
       case 'completo': return const Color(0xFF2E7D32);
       case 'borrador': return const Color(0xFFE65100);
-      default: return Colors.blueAccent;
+      case 'zarpe': return const Color(0xFF00E5FF);
+      case 'borrado':
+      case 'anulado':
+      case 'eliminado':
+        return Colors.redAccent;
+      default: return Colors.grey;
     }
   }
 }

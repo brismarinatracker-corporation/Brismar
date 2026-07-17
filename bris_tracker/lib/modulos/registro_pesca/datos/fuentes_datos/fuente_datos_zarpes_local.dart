@@ -21,27 +21,24 @@ class FuenteDatosZarpesLocal {
   /// Obtiene todos los zarpes locales de un usuario.
   Future<List<ZarpeModelo>> obtenerZarpesLocales(String usuarioId) async {
     final db = await _gestorDb.database;
-    // Asumiendo que hay un campo usuario_id, aunque el modelo no lo exponga explícitamente, 
-    // en la BD de GestorBaseDatos la tabla zarpes tiene 'creado_por' o no? 
+    // Asumiendo que hay un campo usuario_id, aunque el modelo no lo exponga explícitamente,
+    // en la BD de GestorBaseDatos la tabla zarpes tiene 'creado_por' o no?
     // Wait, let's check GestorBaseDatos to see if it has usuario_id.
     // If not, we just fetch all zarpes for now.
-    final result = await db.query(
-      'zarpes',
-      orderBy: 'fecha_zarpe DESC',
-    );
+    final result = await db.query('zarpes', orderBy: 'fecha_zarpe DESC');
 
     return result.map((map) => ZarpeModelo.fromMap(map)).toList();
   }
 
   /// Actualiza un zarpe como sincronizado.
-  Future<void> marcarComoSincronizado(String zarpeId, String fotoUrlEvidencia) async {
+  Future<void> marcarComoSincronizado(
+    String zarpeId,
+    String fotoUrlEvidencia,
+  ) async {
     final db = await _gestorDb.database;
     await db.update(
       'zarpes',
-      {
-        'sincronizado': 1,
-        'foto_url_evidencia': fotoUrlEvidencia,
-      },
+      {'sincronizado': 1, 'foto_url_evidencia': fotoUrlEvidencia},
       where: 'id = ?',
       whereArgs: [zarpeId],
     );

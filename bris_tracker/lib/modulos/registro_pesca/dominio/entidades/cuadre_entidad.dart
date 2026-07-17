@@ -1,3 +1,5 @@
+import 'package:bris_tracker/modulos/registro_pesca/dominio/entidades/estado_cuadre.dart';
+
 /// Entidad que representa la compra de pescado a una embarcación.
 class CompraEntidad {
   /// Identificador único de la compra.
@@ -124,8 +126,8 @@ class CuadreEntidad {
   /// Fecha y hora del cuadre final.
   final String? fechaCuadre;
 
-  /// Estado del cuadre (ej. 'borrador', 'completo', 'zarpe').
-  final String estado;
+  /// Estado del cuadre (ej. EstadoCuadre.borrador, EstadoCuadre.completo).
+  final EstadoCuadre estado;
 
   /// URL del PDF de reporte generado y subido a la nube.
   final String? urlPdfCloud;
@@ -135,7 +137,7 @@ class CuadreEntidad {
 
   /// Indica si el cuadre ha sido sincronizado con Supabase.
   final bool sincronizado;
-  
+
   /// URL de la foto de zarpe de cámara subida.
   final String? fotoZarpeUrl;
 
@@ -179,7 +181,7 @@ class CuadreEntidad {
     required this.placa,
     this.fechaZarpe,
     this.fechaCuadre,
-    this.estado = 'borrador',
+    this.estado = EstadoCuadre.borrador,
     this.urlPdfCloud,
     this.urlExcelCloud,
     this.sincronizado = false,

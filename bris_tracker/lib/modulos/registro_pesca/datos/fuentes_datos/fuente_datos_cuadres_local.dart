@@ -26,12 +26,17 @@ class FuenteDatosCuadresLocal {
         await _insertarRelaciones(txn, cuadre);
       });
     } catch (e) {
-      throw const ExcepcionBaseDatos(mensaje: 'Error guardando cuadre en SQLite');
+      throw const ExcepcionBaseDatos(
+        mensaje: 'Error guardando cuadre en SQLite',
+      );
     }
   }
 
   /// Limpia las relaciones existentes asociadas a un cuadre.
-  Future<void> _limpiarTablasRelacionadas(Transaction txn, String cuadreId) async {
+  Future<void> _limpiarTablasRelacionadas(
+    Transaction txn,
+    String cuadreId,
+  ) async {
     await txn.delete('compras', where: 'cuadre_id = ?', whereArgs: [cuadreId]);
     await txn.delete('gastos', where: 'cuadre_id = ?', whereArgs: [cuadreId]);
     await txn.delete('ventas', where: 'cuadre_id = ?', whereArgs: [cuadreId]);
@@ -40,17 +45,23 @@ class FuenteDatosCuadresLocal {
   /// Inserta las relaciones de compras, gastos y ventas asociadas a un cuadre.
   Future<void> _insertarRelaciones(Transaction txn, CuadreModelo cuadre) async {
     for (var compra in cuadre.compras) {
-      final cModelo = compra is CompraModelo ? compra : CompraModelo.fromEntidad(compra);
+      final cModelo = compra is CompraModelo
+          ? compra
+          : CompraModelo.fromEntidad(compra);
       await txn.insert('compras', cModelo.toSqlite());
     }
 
     for (var gasto in cuadre.gastos) {
-      final gModelo = gasto is GastoModelo ? gasto : GastoModelo.fromEntidad(gasto);
+      final gModelo = gasto is GastoModelo
+          ? gasto
+          : GastoModelo.fromEntidad(gasto);
       await txn.insert('gastos', gModelo.toSqlite());
     }
 
     for (var venta in cuadre.ventas) {
-      final vModelo = venta is VentaModelo ? venta : VentaModelo.fromEntidad(venta);
+      final vModelo = venta is VentaModelo
+          ? venta
+          : VentaModelo.fromEntidad(venta);
       await txn.insert('ventas', vModelo.toSqlite());
     }
   }
@@ -60,10 +71,10 @@ class FuenteDatosCuadresLocal {
     try {
       final db = await _gestorBD.database;
       final cuadresMaps = await db.query(
-        'cuadres', 
-        where: 'usuario_id = ?', 
-        whereArgs: [usuarioId], 
-        orderBy: 'fecha_zarpe DESC'
+        'cuadres',
+        where: 'usuario_id = ?',
+        whereArgs: [usuarioId],
+        orderBy: 'fecha_zarpe DESC',
       );
 
       List<CuadreModelo> cuadres = [];
@@ -72,17 +83,34 @@ class FuenteDatosCuadresLocal {
       }
       return cuadres;
     } catch (e) {
-      throw const ExcepcionBaseDatos(mensaje: 'Error leyendo cuadres de SQLite');
+      throw const ExcepcionBaseDatos(
+        mensaje: 'Error leyendo cuadres de SQLite',
+      );
     }
   }
 
   /// Carga y llena las listas de compras, gastos y ventas de un cuadre.
-  Future<CuadreModelo> _cargarRelacionesCuadre(Database db, Map<String, dynamic> map) async {
+  Future<CuadreModelo> _cargarRelacionesCuadre(
+    Database db,
+    Map<String, dynamic> map,
+  ) async {
     final id = map['id'] as String;
 
-    final comprasMaps = await db.query('compras', where: 'cuadre_id = ?', whereArgs: [id]);
-    final gastosMaps = await db.query('gastos', where: 'cuadre_id = ?', whereArgs: [id]);
-    final ventasMaps = await db.query('ventas', where: 'cuadre_id = ?', whereArgs: [id]);
+    final comprasMaps = await db.query(
+      'compras',
+      where: 'cuadre_id = ?',
+      whereArgs: [id],
+    );
+    final gastosMaps = await db.query(
+      'gastos',
+      where: 'cuadre_id = ?',
+      whereArgs: [id],
+    );
+    final ventasMaps = await db.query(
+      'ventas',
+      where: 'cuadre_id = ?',
+      whereArgs: [id],
+    );
 
     final compras = comprasMaps.map((c) => CompraModelo.fromSqlite(c)).toList();
     final gastos = gastosMaps.map((g) => GastoModelo.fromSqlite(g)).toList();
@@ -114,9 +142,9 @@ class FuenteDatosCuadresLocal {
 
   /// Actualiza los metadatos de sincronización de un cuadre local.
   Future<void> marcarComoSincronizado(
-    String id, 
-    String? urlPdf, 
-    String? urlExcel, 
+    String id,
+    String? urlPdf,
+    String? urlExcel,
     String? urlFotoZarpe,
   ) async {
     try {
@@ -133,7 +161,9 @@ class FuenteDatosCuadresLocal {
         whereArgs: [id],
       );
     } catch (e) {
-      throw const ExcepcionBaseDatos(mensaje: 'Error actualizando estado de sincronización');
+      throw const ExcepcionBaseDatos(
+        mensaje: 'Error actualizando estado de sincronización',
+      );
     }
   }
 }

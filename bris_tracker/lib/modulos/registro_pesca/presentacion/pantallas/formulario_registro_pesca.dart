@@ -2,10 +2,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:bris_tracker/modulos/registro_pesca/dominio/entidades/estado_cuadre.dart';
+import 'package:bris_tracker/modulos/registro_pesca/dominio/entidades/estado_zarpe.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../dominio/entidades/cuadre_entidad.dart';
+import '../../dominio/entidades/log_zarpe_entidad.dart';
 import '../controladores/controlador_cuadres.dart';
+import '../controladores/controlador_logs.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../widgets/panel_calculo_vivo.dart';
 import '../../registro_pesca_inyeccion.dart';
@@ -262,8 +266,7 @@ class _FormularioRegistroPescaState
       usuarioId: usuarioActualId,
       placa: _placaCtrl.text,
       fechaZarpe: _fechaZarpeCtrl.text,
-      estado:
-          'borrador', // En móvil siempre es borrador porque la venta se cierra en planta.
+      estado: EstadoCuadre.borrador,
       fotoZarpeUrl: widget.cuadreInicial?.fotoZarpeUrl,
       pesoTotal: totalKilosCompras > 0
           ? totalKilosCompras
@@ -280,8 +283,43 @@ class _FormularioRegistroPescaState
     );
 
     await ref.read(cuadresProvider.notifier).guardarCuadre(nuevoCuadre);
+
+    // Registrar evento de auditoría (offline-first, silencioso).
+    final esNuevo = widget.cuadreInicial == null;
+    await registrarEventoCuadre(
+      ref: ref,
+      cuadreId: _cuadreId,
+      zarpeId: _zarpeSeleccionado?['id']?.toString() ?? '',
+      usuarioId: usuarioActualId,
+      nombreUsuario: authState.usuario.nombreReal,
+      accion: esNuevo ? AccionLog.cuadreCreado : AccionLog.cuadreActualizado,
+      detalle: {
+        'placa': _placaCtrl.text,
+        'fecha_zarpe': _fechaZarpeCtrl.text,
+        'total_compras': _compras.length,
+        'total_gastos': _gastos.length,
+        'kilos_totales': totalKilosCompras,
+      },
+    );
+
     if (mounted) {
       setState(() => _guardando = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              SizedBox(width: 10),
+              Text(
+                'Despacho registrado correctamente',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          backgroundColor: Color(0xFF006B54),
+          duration: Duration(seconds: 2),
+        ),
+      );
       Navigator.of(context).pop();
     }
   }
@@ -312,7 +350,10 @@ class _FormularioRegistroPescaState
     return InputDecoration(
       labelText: labelText,
       labelStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
-      floatingLabelStyle: const TextStyle(color: Color(0xFF006B54), fontWeight: FontWeight.bold),
+      floatingLabelStyle: const TextStyle(
+        color: Color(0xFF006B54),
+        fontWeight: FontWeight.bold,
+      ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
@@ -363,10 +404,7 @@ class _FormularioRegistroPescaState
             backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              side: BorderSide(
-                color: Color(0x1A1F2937),
-                width: 1.2,
-              ),
+              side: BorderSide(color: Color(0x1A1F2937), width: 1.2),
             ),
             insetPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -438,7 +476,16 @@ class _FormularioRegistroPescaState
                           ),
                           const SizedBox(height: 16),
                           DropdownButtonFormField<String>(
-                            initialValue: productoSeleccionado,
+                            initialValue:
+                                [
+                                  "POTA",
+                                  "JUREL",
+                                  "BONITO",
+                                  "CABALLA",
+                                  "PERICO",
+                                ].contains(productoSeleccionado)
+                                ? productoSeleccionado
+                                : "POTA",
                             dropdownColor: Colors.white,
                             style: const TextStyle(
                               color: Color(0xFF1F2937),
@@ -502,7 +549,16 @@ class _FormularioRegistroPescaState
                               Expanded(
                                 flex: 1,
                                 child: DropdownButtonFormField<String>(
-                                  initialValue: productoSeleccionado,
+                                  initialValue:
+                                      [
+                                        "POTA",
+                                        "JUREL",
+                                        "BONITO",
+                                        "CABALLA",
+                                        "PERICO",
+                                      ].contains(productoSeleccionado)
+                                      ? productoSeleccionado
+                                      : "POTA",
                                   dropdownColor: Colors.white,
                                   style: const TextStyle(
                                     color: Color(0xFF1F2937),
@@ -551,9 +607,7 @@ class _FormularioRegistroPescaState
                           decoration: BoxDecoration(
                             color: Color(0x4D000000),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Color(0x1F1F2937),
-                            ),
+                            border: Border.all(color: Color(0x1F1F2937)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -677,12 +731,19 @@ class _FormularioRegistroPescaState
                               if (!formKeyDialog.currentState!.validate()) {
                                 return;
                               }
-                              final k = double.parse(
-                                kilosNetosCtrl.text.replaceAll(',', ''),
-                              );
-                              final p = double.parse(
-                                precioCtrl.text.replaceAll(',', ''),
-                              );
+                              // Usamos tryParse con fallback defensivo.
+                              // El validator ya garantiza que los valores son numéricos válidos,
+                              // pero añadimos una segunda capa de seguridad.
+                              final k =
+                                  double.tryParse(
+                                    kilosNetosCtrl.text.replaceAll(',', ''),
+                                  ) ??
+                                  0.0;
+                              final p =
+                                  double.tryParse(
+                                    precioCtrl.text.replaceAll(',', ''),
+                                  ) ??
+                                  0.0;
 
                               setState(() {
                                 final item = CompraEntidad(
@@ -745,23 +806,27 @@ class _FormularioRegistroPescaState
   Future<List<Map<String, dynamic>>> _obtenerZarpesDisponibles() async {
     final repo = ref.read(proveedorZarpeRepositorio);
     final historial = await repo.obtenerHistorial('');
-    
+
     // Filtrar zarpes y convertirlos a Map para compatibilidad temporal con el UI
     final zarpes = historial
-        .where((z) => z.estado != 'RECIBIDO_LAMBAYEQUE')
+        .where((z) => z.estado != EstadoZarpe.recibidoLambayeque)
         .toList();
-    
+
     // Ordenar por fecha_zarpe DESC
     zarpes.sort((a, b) => b.fechaZarpe.compareTo(a.fechaZarpe));
-    
-    return zarpes.map((z) => {
-      'id': z.id,
-      'placa_camara': z.placaCamara,
-      'chofer': z.chofer,
-      'muelle_partida': z.muellePartida,
-      'fecha_zarpe': z.fechaZarpe,
-      'estado': z.estado,
-    }).toList();
+
+    return zarpes
+        .map(
+          (z) => {
+            'id': z.id,
+            'placa_camara': z.placaCamara,
+            'chofer': z.chofer,
+            'muelle_partida': z.muellePartida,
+            'fecha_zarpe': z.fechaZarpe,
+            'estado': z.estado.valor,
+          },
+        )
+        .toList();
   }
 
   Future<void> _mostrarSelectorZarpes() async {
@@ -845,10 +910,7 @@ class _FormularioRegistroPescaState
         ),
         subtitle: Text(
           info,
-          style: const TextStyle(
-            color: Color(0xB31F2937),
-            fontSize: 13,
-          ),
+          style: const TextStyle(color: Color(0xB31F2937), fontSize: 13),
         ),
         isThreeLine: true,
         trailing: const Icon(Icons.chevron_right, color: Color(0xFF006B54)),
@@ -998,9 +1060,7 @@ class _FormularioRegistroPescaState
                   padding: EdgeInsets.all(20.0),
                   child: Text(
                     'No hay embarcaciones registradas.',
-                    style: TextStyle(
-                      color: Color(0x8A1F2937),
-                    ),
+                    style: TextStyle(color: Color(0x8A1F2937)),
                   ),
                 ),
               )
@@ -1016,9 +1076,7 @@ class _FormularioRegistroPescaState
                     decoration: BoxDecoration(
                       color: Color(0x33000000),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Color(0x1F1F2937),
-                      ),
+                      border: Border.all(color: Color(0x1F1F2937)),
                     ),
                     child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(
@@ -1037,9 +1095,7 @@ class _FormularioRegistroPescaState
                         children: [
                           Text(
                             '${c.producto} • ${_formatearNumero(c.kilos)} kg a S/ ${_formatearNumero(c.precioUnitario)}',
-                            style: const TextStyle(
-                              color: Color(0xB31F2937),
-                            ),
+                            style: const TextStyle(color: Color(0xB31F2937)),
                           ),
                           if (c.adelanto > 0)
                             Text(
@@ -1167,10 +1223,7 @@ class _FormularioRegistroPescaState
       onChanged: (_) => setState(() {}), // Dispara recálculo en vivo
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(
-          color: Color(0x8A1F2937),
-          fontSize: 12,
-        ),
+        labelStyle: const TextStyle(color: Color(0x8A1F2937), fontSize: 12),
         prefixText: 'S/ ',
         prefixStyle: const TextStyle(
           color: Colors.orangeAccent,
@@ -1181,9 +1234,7 @@ class _FormularioRegistroPescaState
         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Color(0x141F2937),
-          ),
+          borderSide: BorderSide(color: Color(0x141F2937)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -1267,7 +1318,11 @@ class _FormularioRegistroPescaState
         ),
         title: const Text(
           'Punto de Venta - Muelle',
-          style: TextStyle(color: Color(0xFF004D40), fontSize: 18, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: Color(0xFF004D40),
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         centerTitle: false,
         titleSpacing: 0,
@@ -1291,7 +1346,7 @@ class _FormularioRegistroPescaState
     final repo = ref.read(proveedorZarpeRepositorio);
     final historial = await repo.obtenerHistorial('');
     final zarpes = historial.where((z) => z.id == id).toList();
-    
+
     if (zarpes.isNotEmpty && mounted) {
       setState(() {
         final z = zarpes.first;
@@ -1384,9 +1439,7 @@ class _FormularioRegistroPescaState
                   height: 80,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Color(0x3D1F2937),
-                    ),
+                    border: Border.all(color: Color(0x3D1F2937)),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),

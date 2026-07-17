@@ -97,9 +97,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
     return Center(
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(
-          vertical: esTablet ? 48.0 : 24.0,
-        ),
+        padding: EdgeInsets.symmetric(vertical: esTablet ? 48.0 : 24.0),
         child: SizedBox(
           width: anchoFormulario,
           child: esTablet
@@ -202,9 +200,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -216,11 +212,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF040B1E),
-            Color(0xFF0C1D3F),
-            Color(0xFF143068),
-          ],
+          colors: [Color(0xFF040B1E), Color(0xFF0C1D3F), Color(0xFF143068)],
         ),
       ),
     );

@@ -80,35 +80,16 @@ class RepositorioEdicionZarpe {
     return datos != null ? ZarpeModelo.desdeJson(datos) : null;
   }
 
-  /// Carga los datos del cuadre asociado (pesos, cajas, etc.)
-  Future<CuadreWebModelo?> cargarCuadre(String id) async {
+  /// Carga el cuadre y sus relaciones (compras y gastos) en una sola petición.
+  /// Esto reduce los round-trips a la red y optimiza los tiempos de carga.
+  Future<Map<String, dynamic>> cargarCuadreCompleto(String id) async {
     final datos = await _cliente
         .from('cuadres')
-        .select()
+        .select('*, compras(*), gastos(*)')
         .eq('id', id)
         .maybeSingle();
         
-    return datos != null ? CuadreWebModelo.desdeJson(datos) : null;
-  }
-
-  /// Carga las compras actuales asociadas al zarpe.
-  Future<List<CompraWebModelo>> cargarCompras(String zarpeId) async {
-    final datos = await _cliente
-        .from('compras')
-        .select()
-        .eq('cuadre_id', zarpeId);
-
-    return (datos as List).map((m) => CompraWebModelo.desdeJson(m as Map<String, dynamic>)).toList();
-  }
-
-  /// Carga los gastos actuales asociados al zarpe.
-  Future<List<GastoWebModelo>> cargarGastos(String zarpeId) async {
-    final datos = await _cliente
-        .from('gastos')
-        .select()
-        .eq('cuadre_id', zarpeId);
-
-    return (datos as List).map((m) => GastoWebModelo.desdeJson(m as Map<String, dynamic>)).toList();
+    return datos ?? {};
   }
 
   // ─── Mutaciones ───────────────────────────────────────────────────────────
@@ -130,12 +111,42 @@ class RepositorioEdicionZarpe {
       await _actualizarCuadre(params);
       await _reemplazarCompras(params.id, params.compras);
       await _reemplazarGastos(params.id, params.gastos);
+      await _registrarLogAuditoria(params);
     } on Exception catch (e) {
       throw Exception('Error al guardar la edición del zarpe ${params.id}: $e');
     }
   }
 
   // ─── Helpers privados ────────────────────────────────────────────────────
+
+  Future<void> _registrarLogAuditoria(EdicionZarpeParams params) async {
+    final usuarioId = _cliente.auth.currentUser?.id;
+    if (usuarioId == null) return; // No hay sesión
+
+    // Buscar nombre real del usuario (caché o query rápida, aquí query rápida)
+    final res = await _cliente.from('usuarios').select('nombre_real').eq('id', usuarioId).single();
+    final nombreUsuario = res['nombre_real'] as String? ?? 'Admin Web';
+
+    final payload = {
+      'id': const Uuid().v4(),
+      'zarpe_id': params.id,
+      'cuadre_id': params.id, // En web, zarpe y cuadre comparten ID en esta vista
+      'usuario_id': usuarioId,
+      'nombre_usuario': nombreUsuario,
+      'origen': 'WEB',
+      'accion': 'CUADRE_EDITADO_WEB',
+      'timestamp': DateTime.now().toUtc().toIso8601String(),
+      'sincronizado': true,
+      'detalle': {
+        'placa': params.placa,
+        'chofer': params.chofer,
+        'compras': params.compras.length,
+        'gastos': params.gastos.length,
+        'peso_total': params.pesoTotal,
+      }
+    };
+    await _cliente.from('zarpe_log').insert(payload);
+  }
 
   Future<void> _actualizarZarpe(EdicionZarpeParams params) async {
     final payload = <String, dynamic>{

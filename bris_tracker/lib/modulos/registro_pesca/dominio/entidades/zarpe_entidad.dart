@@ -1,3 +1,5 @@
+import 'package:bris_tracker/modulos/registro_pesca/dominio/entidades/estado_zarpe.dart';
+
 /// Entidad que representa el Zarpe de una cámara transportadora.
 class ZarpeEntidad {
   /// Identificador único del zarpe.
@@ -21,8 +23,8 @@ class ZarpeEntidad {
   /// Fecha y hora del zarpe.
   final DateTime fechaZarpe;
 
-  /// Estado de negocio del zarpe (ej: 'DESPACHADO_PIURA').
-  final String estado;
+  /// Estado de negocio del zarpe.
+  final EstadoZarpe estado;
 
   /// Constructor de [ZarpeEntidad].
   ZarpeEntidad({
@@ -45,7 +47,7 @@ class ZarpeEntidad {
     String? fotoUrlEvidencia,
     String? fotoLocalPath,
     DateTime? fechaZarpe,
-    String? estado,
+    EstadoZarpe? estado,
   }) {
     return ZarpeEntidad(
       id: id ?? this.id,

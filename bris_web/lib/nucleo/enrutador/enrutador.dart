@@ -64,7 +64,7 @@ final proveedorEnrutador = Provider<GoRouter>((ref) {
   routes: [
     TypedGoRoute<RutaDashboard>(path: '/dashboard'),
     TypedGoRoute<RutaTransito>(
-      path: '/transito',
+      path: '/transito/:sector',
       routes: [
         TypedGoRoute<RutaEdicionTransito>(path: 'editar/:id'),
       ],
@@ -93,17 +93,20 @@ class RutaDashboard extends GoRouteData with $RutaDashboard {
 }
 
 class RutaTransito extends GoRouteData with $RutaTransito {
-  const RutaTransito();
+  const RutaTransito({this.sector = 'pendientes'});
+
+  final String sector;
 
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) {
-    return const NoTransitionPage(child: PantallaTransito());
+    return NoTransitionPage(child: PantallaTransito(sector: sector));
   }
 }
 
 class RutaEdicionTransito extends GoRouteData with $RutaEdicionTransito {
+  final String sector;
   final String id;
-  const RutaEdicionTransito({required this.id});
+  const RutaEdicionTransito({required this.sector, required this.id});
 
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) {

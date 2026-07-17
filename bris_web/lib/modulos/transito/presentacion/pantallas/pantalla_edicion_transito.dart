@@ -77,15 +77,19 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
 
       final resultados = await Future.wait([
         repo.cargarZarpe(widget.id),
-        repo.cargarCuadre(widget.id),
-        repo.cargarCompras(widget.id),
-        repo.cargarGastos(widget.id),
+        repo.cargarCuadreCompleto(widget.id),
       ]);
 
       final zarpe = resultados[0] as ZarpeModelo?;
-      final cuadre = resultados[1] as CuadreWebModelo?;
-      final compras = resultados[2] as List<CompraWebModelo>;
-      final gastos = resultados[3] as List<GastoWebModelo>;
+      final cuadreData = resultados[1] as Map<String, dynamic>;
+      
+      final cuadre = cuadreData.isNotEmpty ? CuadreWebModelo.desdeJson(cuadreData) : null;
+      
+      final comprasRaw = cuadreData['compras'] as List? ?? [];
+      final compras = comprasRaw.map((m) => CompraWebModelo.desdeJson(m as Map<String, dynamic>)).toList();
+      
+      final gastosRaw = cuadreData['gastos'] as List? ?? [];
+      final gastos = gastosRaw.map((m) => GastoWebModelo.desdeJson(m as Map<String, dynamic>)).toList();
 
       if (zarpe == null) throw Exception('No se encontró el zarpe con ID ${widget.id}');
       
@@ -103,9 +107,11 @@ class _PantallaEdicionTransitoState extends ConsumerState<PantallaEdicionTransit
           _pesadorCtrl.text = cuadre.pesador ?? '';
           _tipoCtrl.text = cuadre.tipo ?? '';
           _cuadrillaCtrl.text = cuadre.cuadrilla ?? '';
-          _tipoProductoSeleccionado = cuadre.tipoProducto ?? 1;
+          _tipoProductoSeleccionado = (cuadre.tipoProducto != null && cuadre.tipoProducto! >= 1 && cuadre.tipoProducto! <= 5) ? cuadre.tipoProducto! : 1;
         } else {
-          // If cuadre doesn't exist, we fall back to zarpe fields if any.
+          // Cuadre aún no existe: pre-llenar con los campos disponibles en el zarpe.
+          // Nota: pesador, tipo, cuadrilla y tipoProducto solo existen en el cuadre,
+          // no en el zarpe — se dejan vacíos para que el admin los complete.
           _pesoTotalCtrl.text = zarpe.pesoTotal?.toString() ?? zarpe.pesoAproximado?.toString() ?? '';
           _cajasLlenasCtrl.text = zarpe.cajasLlenas?.toString() ?? zarpe.numeroCajas?.toString() ?? '';
         }

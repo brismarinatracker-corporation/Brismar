@@ -27,6 +27,11 @@ class CuadreWebModelo {
   final String? tipo;
   final String? cuadrilla;
   final String? plantaDestino;
+
+  /// Nombre real del usuario (bahía) que registró el zarpe.
+  /// Obtenido mediante JOIN con public.usuarios en la fuente de datos.
+  final String? nombreBahia;
+
   final List<CompraWebModelo> compras;
   final List<GastoWebModelo> gastos;
   final List<VentaWebModelo> ventas;
@@ -49,6 +54,7 @@ class CuadreWebModelo {
     this.tipo,
     this.cuadrilla,
     this.plantaDestino,
+    this.nombreBahia,
     this.compras = const [],
     this.gastos = const [],
     this.ventas = const [],
@@ -74,6 +80,7 @@ class CuadreWebModelo {
       tipo: json['tipo'] as String?,
       cuadrilla: json['cuadrilla'] as String?,
       plantaDestino: json['planta_destino'] as String?,
+      nombreBahia: (json['usuarios'] as Map<String, dynamic>?)?['nombre_real'] as String?,
     );
   }
 
@@ -114,9 +121,37 @@ class CuadreWebModelo {
       tipoProducto: tipoProducto,
       pesador: pesador,
       plantaDestino: plantaDestino,
+      nombreBahia: nombreBahia,
       compras: compras ?? this.compras,
       gastos: gastos ?? this.gastos,
       ventas: ventas ?? this.ventas,
+    );
+  }
+
+  /// Crea una copia inmutable con el [nombre] del bahía registrador sobrescrito.
+  /// Útil como fallback cuando el JOIN con usuarios no retornó datos
+  /// (e.g., cuadres históricos anteriores al JOIN).
+  CuadreWebModelo conNombreBahia(String? nombre) {
+    return CuadreWebModelo(
+      id: id,
+      usuarioId: usuarioId,
+      placa: placa,
+      fechaZarpe: fechaZarpe,
+      fechaCuadre: fechaCuadre,
+      estado: estado,
+      urlPdfCloud: urlPdfCloud,
+      urlExcelCloud: urlExcelCloud,
+      fotoZarpeUrl: fotoZarpeUrl,
+      pesoTotal: pesoTotal,
+      cajasLlenas: cajasLlenas,
+      cajasVacias: cajasVacias,
+      tipoProducto: tipoProducto,
+      pesador: pesador,
+      plantaDestino: plantaDestino,
+      nombreBahia: nombre,
+      compras: compras,
+      gastos: gastos,
+      ventas: ventas,
     );
   }
 }

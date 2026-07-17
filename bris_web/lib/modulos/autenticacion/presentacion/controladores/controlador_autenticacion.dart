@@ -1,6 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../transito/presentacion/controladores/controlador_transito.dart';
+import '../../../usuarios/presentacion/controladores/controlador_usuarios.dart';
+import '../../../maestros/presentacion/controladores/controlador_maestros.dart';
+import '../../../dashboard/presentacion/controladores/controlador_dashboard.dart';
+import '../../../cuadres/presentacion/controladores/controlador_cuadres.dart';
 class EstadoAutenticacion {
   final User? usuario;
   final String? rol;
@@ -93,6 +98,18 @@ class ControladorAutenticacion extends Notifier<EstadoAutenticacion> {
   }
 
   Future<void> cerrarSesion() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+    } catch (_) {}
+
+    ref.invalidate(proveedorTransito);
+    ref.invalidate(proveedorFiltroTransito);
+    ref.invalidate(controladorUsuariosProvider);
+    ref.invalidate(controladorMaestrosProvider);
+    ref.invalidate(controladorDashboardProvider);
+    ref.invalidate(controladorCuadresWebProvider);
+
     await Supabase.instance.client.auth.signOut();
     state = EstadoAutenticacion(usuario: null, rol: null, cargando: false);
   }

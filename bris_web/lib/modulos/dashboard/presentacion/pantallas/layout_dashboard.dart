@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../nucleo/enrutador/enrutador.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
@@ -13,7 +14,17 @@ class LayoutDashboard extends ConsumerStatefulWidget {
 }
 
 class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
-  int _indiceSeleccionado = 0;
+  /// Deriva el índice activo directamente desde la ruta actual del GoRouter.
+  /// Esta es la ÚNICA fuente de verdad para el estado de navegación.
+  /// Así se elimina el bug donde el sidebar siempre mostraba "Dashboard" activo.
+  int _calcularIndiceActivo(String rutaActual, bool esAdmin) {
+    if (rutaActual.startsWith('/dashboard')) return 0;
+    if (rutaActual.startsWith('/transito')) return 1;
+    if (rutaActual.startsWith('/cuadres')) return 2;
+    if (esAdmin && rutaActual.startsWith('/usuarios')) return 3;
+    if (rutaActual.startsWith('/perfil')) return esAdmin ? 4 : 3;
+    return 0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +37,12 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
     final esExtendido = anchoPantalla >= 1200;
     final anchoSidebar = esExtendido ? 260.0 : 80.0;
 
+    // Leer la ruta actual desde GoRouter como fuente de verdad.
+    final rutaActual = GoRouterState.of(context).uri.path;
+    final indiceActivo = _calcularIndiceActivo(rutaActual, esAdmin);
+
     return Scaffold(
-      bottomNavigationBar: esMovil ? _construirBottomNavigationBar(esAdmin) : null,
+      bottomNavigationBar: esMovil ? _construirBottomNavigationBar(esAdmin, indiceActivo) : null,
       body: Row(
         children: [
           if (!esMovil)
@@ -82,59 +97,49 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                       children: [
                         _itemMenu(
                           index: 0,
+                          indiceActivo: indiceActivo,
                           icono: Icons.dashboard_outlined,
                           iconoSeleccionado: Icons.dashboard_rounded,
                           etiqueta: 'Dashboard',
                           esExtendido: esExtendido,
-                          onTap: () {
-                            setState(() => _indiceSeleccionado = 0);
-                            const RutaDashboard().go(context);
-                          },
+                          onTap: () => const RutaDashboard().go(context),
                         ),
                         _itemMenu(
                           index: 1,
+                          indiceActivo: indiceActivo,
                           icono: Icons.local_shipping_outlined,
                           iconoSeleccionado: Icons.local_shipping_rounded,
                           etiqueta: 'Tránsito',
                           esExtendido: esExtendido,
-                          onTap: () {
-                            setState(() => _indiceSeleccionado = 1);
-                            const RutaTransito().go(context);
-                          },
+                          onTap: () => const RutaTransito().go(context),
                         ),
                         _itemMenu(
                           index: 2,
+                          indiceActivo: indiceActivo,
                           icono: Icons.table_view_outlined,
                           iconoSeleccionado: Icons.table_view_rounded,
                           etiqueta: 'Cuadres',
                           esExtendido: esExtendido,
-                          onTap: () {
-                            setState(() => _indiceSeleccionado = 2);
-                            const RutaCuadres().go(context);
-                          },
+                          onTap: () => const RutaCuadres().go(context),
                         ),
                         if (esAdmin)
                           _itemMenu(
                             index: 3,
+                            indiceActivo: indiceActivo,
                             icono: Icons.people_alt_outlined,
                             iconoSeleccionado: Icons.people_alt_rounded,
                             etiqueta: 'Usuarios',
                             esExtendido: esExtendido,
-                            onTap: () {
-                              setState(() => _indiceSeleccionado = 3);
-                              const RutaUsuarios().go(context);
-                            },
+                            onTap: () => const RutaUsuarios().go(context),
                           ),
                         _itemMenu(
                           index: esAdmin ? 4 : 3,
+                          indiceActivo: indiceActivo,
                           icono: Icons.person_outline,
                           iconoSeleccionado: Icons.person_rounded,
                           etiqueta: 'Perfil',
                           esExtendido: esExtendido,
-                          onTap: () {
-                            setState(() => _indiceSeleccionado = esAdmin ? 4 : 3);
-                            const RutaPerfil().go(context);
-                          },
+                          onTap: () => const RutaPerfil().go(context),
                         ),
                       ],
                     ),
@@ -148,10 +153,7 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                       children: [
                         if (esExtendido)
                           InkWell(
-                            onTap: () {
-                              setState(() => _indiceSeleccionado = esAdmin ? 4 : 3);
-                              const RutaPerfil().go(context);
-                            },
+                            onTap: () => const RutaPerfil().go(context),
                             borderRadius: BorderRadius.circular(16),
                             child: Container(
                               padding: const EdgeInsets.all(12),
@@ -246,16 +248,17 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
     );
   }
 
-  Widget _construirBottomNavigationBar(bool esAdmin) {
+  /// Construye la barra de navegación inferior para móvil.
+  /// Recibe [indiceActivo] calculado desde la URL para mantener sincronía con el sidebar.
+  Widget _construirBottomNavigationBar(bool esAdmin, int indiceActivo) {
     return Theme(
       data: Theme.of(context).copyWith(
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
       ),
       child: BottomNavigationBar(
-        currentIndex: _indiceSeleccionado,
+        currentIndex: indiceActivo,
         onTap: (index) {
-          setState(() => _indiceSeleccionado = index);
           if (index == 0) const RutaDashboard().go(context);
           if (index == 1) const RutaTransito().go(context);
           if (index == 2) const RutaCuadres().go(context);
@@ -284,19 +287,19 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
     );
   }
 
-  // Widget para construir los ítems del menú con estilo personalizado y animación Hover
+  /// Construye un ítem del menú lateral.
+  /// Compara [index] con [indiceActivo] (derivado de la URL) para determinar si está seleccionado.
   Widget _itemMenu({
     required int index,
+    required int indiceActivo,
     required IconData icono,
     required IconData iconoSeleccionado,
     required String etiqueta,
     required bool esExtendido,
     required VoidCallback onTap,
   }) {
-    final esActivo = _indiceSeleccionado == index;
-
     return _ItemMenuHover(
-      esActivo: esActivo,
+      esActivo: indiceActivo == index,
       icono: icono,
       iconoSeleccionado: iconoSeleccionado,
       etiqueta: etiqueta,
