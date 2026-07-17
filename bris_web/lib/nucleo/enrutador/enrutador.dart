@@ -103,7 +103,7 @@ class RutaTransito extends GoRouteData with $RutaTransito {
 
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) {
-    return NoTransitionPage(child: PantallaTransito(sector: sector));
+    return const NoTransitionPage(child: PantallaTransito());
   }
 }
 
