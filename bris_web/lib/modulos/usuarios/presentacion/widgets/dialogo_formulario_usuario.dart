@@ -223,6 +223,13 @@ class _DialogoFormularioUsuarioState
       return;
     }
 
+    final usuariosActuales = ref.read(controladorUsuariosProvider).usuarios;
+    final dniDuplicado = usuariosActuales.any((u) => u.dni == _dniCtrl.text.trim() && u.uid != widget.usuarioAEditar?.uid);
+    if (dniDuplicado) {
+      _mostrarErrorInline('Este DNI ya se encuentra registrado en otro usuario.');
+      return;
+    }
+
     setState(() {
       _mensajeError = null;
     });

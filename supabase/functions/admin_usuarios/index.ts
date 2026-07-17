@@ -164,7 +164,6 @@ async function _alternarEstado(client: any, payload: any, activar: boolean): Pro
 /** Elimina un usuario permanentemente de Auth (y en cascada de la tabla usuarios). */
 async function _eliminarUsuario(client: any, payload: any): Promise<Response> {
   const { uid } = payload;
-  await client.from('usuarios').delete().eq('id', uid);
   const { error } = await client.auth.admin.deleteUser(uid);
   if (error) throw error;
   return successResponse({ success: true });

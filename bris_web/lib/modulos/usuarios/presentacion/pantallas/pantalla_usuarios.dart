@@ -460,18 +460,24 @@ class _FilaTablaUsuarioPremium extends ConsumerWidget {
                           ),
                           onPressed: () async {
                             Navigator.pop(ctx);
-                            final exitoso = await controlador.eliminarUsuario(
-                              usuario.uid,
-                            );
+                            final exitoso = await controlador.eliminarUsuario(usuario.uid);
                             if (!exitoso && context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Error al eliminar: ${ref.read(controladorUsuariosProvider).error ?? "Desconocido"}',
+                              final errorActual = ref.read(controladorUsuariosProvider).error ?? "";
+                              if (errorActual.contains("violates foreign key constraint") || errorActual.toLowerCase().contains("foreign key")) {
+                                 ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('No se puede eliminar el usuario porque tiene registros asociados en el sistema. Te recomendamos desactivarlo.'),
+                                    backgroundColor: Colors.orange,
                                   ),
-                                  backgroundColor: Colors.redAccent,
-                                ),
-                              );
+                                );
+                              } else {
+                                 ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error al eliminar: $errorActual'),
+                                    backgroundColor: Colors.redAccent,
+                                  ),
+                                );
+                              }
                             }
                           },
                           child: const Text('Eliminar'),
