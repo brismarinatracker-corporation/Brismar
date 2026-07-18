@@ -43,8 +43,8 @@ class ControladorZarpes extends StateNotifier<AsyncValue<void>> {
   Future<void> sincronizarZarpesDownstream() async {
     try {
       await _repositorio.sincronizarZarpesDownstream();
-    } catch (e) {
-      debugPrint('Error sincronizando downstream Zarpes: $e');
+    } catch (e, st) {
+      debugPrint('Error sincronizando downstream Zarpes: $e\n$st');
     }
   }
 }

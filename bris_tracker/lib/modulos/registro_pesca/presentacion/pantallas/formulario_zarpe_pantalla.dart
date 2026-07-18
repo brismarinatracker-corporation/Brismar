@@ -9,6 +9,8 @@ import 'package:uuid/uuid.dart';
 
 import '../../dominio/entidades/cuadre_entidad.dart';
 import '../../dominio/entidades/zarpe_entidad.dart';
+import '../../dominio/entidades/estado_cuadre.dart';
+import '../../dominio/entidades/estado_zarpe.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../controladores/controlador_zarpes.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
@@ -272,7 +274,7 @@ class _FormularioZarpePantallaState
         usuarioId: usuarioActualId,
         placa: _placaCtrl.text.toUpperCase(),
         fechaZarpe: fechaActual,
-        estado: 'zarpe', // Estado especial de zarpe de cámara
+        estado: EstadoCuadre.zarpe, // Estado especial de zarpe de cámara
         fotoZarpeUrl: _fotosEvidencia.map((f) => f.path).join(','),
         pesoTotal: pesoTotal,
         cajasLlenas: cajasLlenas,
@@ -305,7 +307,7 @@ class _FormularioZarpePantallaState
         fotoUrlEvidencia: _fotosEvidencia.map((f) => f.path).join(','),
         fotoLocalPath: _fotosEvidencia.map((f) => f.path).join(','),
         fechaZarpe: DateTime.now(),
-        estado: 'DESPACHADO_PIURA',
+        estado: EstadoZarpe.despachadoPiura,
       );
 
       await ref.read(proveedorZarpes.notifier).registrarZarpe(nuevoZarpe);

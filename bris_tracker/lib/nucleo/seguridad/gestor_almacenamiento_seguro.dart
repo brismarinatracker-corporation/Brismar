@@ -124,7 +124,11 @@ class GestorAlmacenamientoSeguro {
     try {
       final raw = await _storage.read(key: _keyTimestamp);
       if (raw == null) return null;
-      return DateTime.fromMillisecondsSinceEpoch(int.parse(raw));
+      // Usamos tryParse para protegernos de valores corruptos en SecureStorage.
+      // Si el valor no es parseable, lo tratamos como "sin timestamp".
+      final ms = int.tryParse(raw);
+      if (ms == null) return null;
+      return DateTime.fromMillisecondsSinceEpoch(ms);
     } catch (e) {
       throw Exception('Error al leer el timestamp de verificación: $e');
     }
