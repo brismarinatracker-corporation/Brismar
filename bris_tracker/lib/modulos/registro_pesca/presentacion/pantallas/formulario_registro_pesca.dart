@@ -9,6 +9,8 @@ import '../../dominio/entidades/zarpe_entidad.dart';
 import '../../datos/repositorios/zarpe_repositorio_imp.dart';
 import '../../datos/repositorios/camaras_repositorio_local.dart';
 import '../../dominio/entidades/cuadre_entidad.dart';
+import '../../dominio/entidades/estado_cuadre.dart';
+import '../../dominio/entidades/estado_zarpe.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../widgets/panel_calculo_vivo.dart';
@@ -316,7 +318,7 @@ class _FormularioRegistroPescaState
       placa: _placaCtrl.text,
       fechaZarpe: _fechaZarpeCtrl.text,
       estado:
-          'borrador', // En móvil siempre es borrador porque la venta se cierra en planta.
+          EstadoCuadre.borrador, // En móvil siempre es borrador porque la venta se cierra en planta.
       fotoZarpeUrl: widget.cuadreInicial?.fotoZarpeUrl,
       pesoTotal: totalKilosCompras > 0
           ? totalKilosCompras
@@ -651,7 +653,7 @@ class _FormularioRegistroPescaState
 
     // Filtrar zarpes y convertirlos a Map para compatibilidad temporal con el UI
     final zarpes = historial
-        .where((z) => z.estado != 'RECIBIDO_LAMBAYEQUE')
+        .where((z) => z.estado != EstadoZarpe.recibidoLambayeque)
         .toList();
 
     // Ordenar por fecha_zarpe DESC

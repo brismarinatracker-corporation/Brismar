@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../dominio/entidades/cuadre_entidad.dart';
+import '../../dominio/entidades/estado_cuadre.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../controladores/controlador_zarpes.dart';
@@ -382,11 +383,11 @@ class _DashboardCuadresPantallaState
                         Color badgeText;
                         String labelEstado;
 
-                        if (cuadre.estado == 'completo') {
+                        if (cuadre.estado == EstadoCuadre.completo) {
                           badgeBg = Colors.green.withValues(alpha: 0.15);
                           badgeText = Colors.green;
                           labelEstado = 'COMPLETO';
-                        } else if (cuadre.estado == 'zarpe') {
+                        } else if (cuadre.estado == EstadoCuadre.zarpe) {
                           badgeBg = const Color(
                             0xFF006B54,
                           ).withValues(alpha: 0.15);
@@ -411,7 +412,7 @@ class _DashboardCuadresPantallaState
                               children: [
                                 Icon(
                                   Icons.local_shipping_rounded,
-                                  color: cuadre.estado == 'zarpe'
+                                  color: cuadre.estado == EstadoCuadre.zarpe
                                       ? const Color(0xFF006B54)
                                       : const Color(0xFFD97706),
                                   size: 18,
@@ -498,7 +499,7 @@ class _DashboardCuadresPantallaState
                                         size: 20,
                                       ),
                                     ),
-                                  if (cuadre.estado == 'zarpe' &&
+                                  if (cuadre.estado == EstadoCuadre.zarpe &&
                                       cuadre.fotoZarpeUrl != null &&
                                       cuadre.fotoZarpeUrl!.startsWith('http'))
                                     const Padding(
