@@ -8,12 +8,14 @@ class SeccionRecepcionVenta extends StatefulWidget {
   final List<VentaWebModelo> ventas;
   final Function(VentaWebModelo) onGuardar;
   final Function(String) onEliminar;
+  final bool esSoloLectura;
 
   const SeccionRecepcionVenta({
     super.key,
     required this.ventas,
     required this.onGuardar,
     required this.onEliminar,
+    this.esSoloLectura = false,
   });
 
   @override
@@ -330,16 +332,17 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
                     ),
                   ],
                 ),
-                ElevatedButton.icon(
-                  onPressed: () => _mostrarDialogoVenta(),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Agregar'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0D5C75),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
+                if (!widget.esSoloLectura)
+                  ElevatedButton.icon(
+                    onPressed: () => _mostrarDialogoVenta(),
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('Agregar'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0D5C75),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -414,22 +417,24 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          IconButton(
-                            icon: const Icon(
-                              Icons.edit_outlined,
-                              color: Color(0xFF64748B),
-                              size: 20,
+                          if (!widget.esSoloLectura) ...[
+                            IconButton(
+                              icon: const Icon(
+                                Icons.edit_outlined,
+                                color: Color(0xFF64748B),
+                                size: 20,
+                              ),
+                              onPressed: () => _mostrarDialogoVenta(v),
                             ),
-                            onPressed: () => _mostrarDialogoVenta(v),
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.delete_outline,
-                              color: Colors.redAccent,
-                              size: 20,
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.redAccent,
+                                size: 20,
+                              ),
+                              onPressed: () => widget.onEliminar(v.id),
                             ),
-                            onPressed: () => widget.onEliminar(v.id),
-                          ),
+                          ],
                         ],
                       ),
                     ],

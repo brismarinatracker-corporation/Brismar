@@ -219,16 +219,25 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
                         Positioned(
                           top: 8,
                           right: 8,
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.6),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.fullscreen_rounded,
-                              color: Colors.white,
-                              size: 16,
+                          child: GestureDetector(
+                            onTap: () {
+                              GaleriaLightbox.mostrar(
+                                context,
+                                widget.urlsFotos,
+                                _indiceFotoActiva,
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.6),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.fullscreen_rounded,
+                                color: Colors.white,
+                                size: 16,
+                              ),
                             ),
                           ),
                         ),

@@ -570,7 +570,9 @@ class _PantallaEdicionTransitoState
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Editor de Viaje / Cuadre',
+                        esSoloLectura
+                            ? 'Detalles de Viaje (Finalizado)'
+                            : 'Editor de Viaje / Cuadre',
                         style: GoogleFonts.sora(
                           color: const Color(0xFF15181A),
                           fontSize: 20,
@@ -628,7 +630,9 @@ class _PantallaEdicionTransitoState
                     ),
                     const SizedBox(width: 16),
                     Text(
-                      'Editor de Viaje / Cuadre',
+                      esSoloLectura
+                          ? 'Detalles de Viaje (Finalizado)'
+                          : 'Editor de Viaje / Cuadre',
                       style: GoogleFonts.sora(
                         color: const Color(0xFF15181A),
                         fontSize: 26,
@@ -826,6 +830,7 @@ class _PantallaEdicionTransitoState
             _tituloSeccion('Paso 2: Cuadre de Muelle (Bahía)'),
             SeccionEmbarcaciones(
               compras: _compras,
+              esSoloLectura: esSoloLectura,
               onGuardar: (c) {
                 setState(() {
                   final idx = _compras.indexWhere((item) => item.id == c.id);
@@ -841,6 +846,7 @@ class _PantallaEdicionTransitoState
             const SizedBox(height: 24),
             SeccionGastos(
               gastos: _gastos,
+              esSoloLectura: esSoloLectura,
               onGuardar: (g) {
                 setState(() {
                   final idx = _gastos.indexWhere((item) => item.id == g.id);
@@ -867,6 +873,7 @@ class _PantallaEdicionTransitoState
             _tituloSeccion('Paso 3: Recepción y Venta (Trabajador de Planta)'),
             SeccionRecepcionVenta(
               ventas: _ventas,
+              esSoloLectura: esSoloLectura,
               onGuardar: (v) {
                 setState(() {
                   final idx = _ventas.indexWhere((item) => item.id == v.id);
@@ -893,6 +900,7 @@ class _PantallaEdicionTransitoState
             _tituloSeccion('Paso 4: Gastos Administrativos (Trabajador/Admin)'),
             SeccionGastosAdministrativos(
               gastos: _gastos,
+              esSoloLectura: esSoloLectura,
               onGuardarSeccion: esSoloLectura
                   ? null
                   : () => _guardarParcial(
