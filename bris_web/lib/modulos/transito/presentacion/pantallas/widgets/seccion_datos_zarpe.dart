@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'galeria_lightbox.dart';
 
@@ -427,6 +428,9 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
                     color: Color(0xFF15181A),
                     fontWeight: FontWeight.w600,
                   ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]')),
+                  ],
                   decoration: _decoracion(
                     'Observaciones (Opcional)',
                     icono: Icons.notes_outlined,

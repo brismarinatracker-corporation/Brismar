@@ -268,7 +268,7 @@ class HojaLiquidacionExcel extends StatelessWidget {
         TableRow(
           decoration: const BoxDecoration(color: colorCelesteCabecera),
           children: [
-            _celdaCabecera('MUELLE ${cuadre.muellePartida ?? ''}'),
+            _celdaCabecera('MUELLE ${cuadre.muellePartida ?? cuadre.plantaDestino ?? ''}'),
             _celdaCabecera('PLACA ${cuadre.placa}'),
             const SizedBox.shrink(),
             _celdaCabecera('CAJAS: ${cuadre.cajasLlenas ?? 0}'),
@@ -557,7 +557,7 @@ class HojaLiquidacionExcel extends StatelessWidget {
   /// El nombre del bahía se toma dinámicamente del [CuadreWebModelo.nombreBahia].
   Widget _construirTablaReparto(double e, double d) {
     final etiquetaBahia = (cuadre.nombreBahia?.toUpperCase().trim().isNotEmpty == true)
-        ? cuadre.nombreBahia!.toUpperCase()
+        ? 'BAHÍA ${cuadre.nombreBahia!.toUpperCase()}'
         : 'BAHÍA';
     return Table(
       columnWidths: const {

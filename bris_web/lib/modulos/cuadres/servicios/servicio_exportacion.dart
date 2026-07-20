@@ -151,11 +151,11 @@ class _EscritorCuadreExcel {
   int filaTotalVenta = 0;
   int filaTotalGM = 0;
   int filaTotalGA = 0;
-  int cellUB = 18;
-  int cellUO = 20;
-  int cellUAR = 22;
-  int cellUT = 23;
-  int cellUN = 25;
+  int cellUB = 3;
+  int cellUO = 5;
+  int cellUAR = 7;
+  int cellUT = 8;
+  int cellUN = 10;
 
   _EscritorCuadreExcel(this.cuadre) : excel = Excel.createExcel() {
     hoja = excel['Liquidación'];
@@ -250,7 +250,7 @@ class _EscritorCuadreExcel {
   void _escribirCabeceraInicial() {
     _escribirCelda(
       'A1',
-      'MUELLE ${cuadre.muellePartida}',
+      'MUELLE ${cuadre.muellePartida ?? cuadre.plantaDestino ?? ''}',
       estiloCelesteCabecera,
     );
     _escribirCelda('B1', 'PLACA ${cuadre.placa}', estiloCelesteCabecera);
@@ -278,11 +278,12 @@ class _EscritorCuadreExcel {
 
     final filaInicio = fila;
     for (var c in cuadre.compras) {
-      final fecha = cuadre.fechaZarpe != null
+      final fechaStr = cuadre.fechaZarpe ?? cuadre.fechaCuadre;
+      final fecha = fechaStr != null
           ? DateFormat('dd-MMM')
-                .format(DateTime.tryParse(cuadre.fechaZarpe!) ?? DateTime.now())
+                .format(DateTime.tryParse(fechaStr) ?? DateTime.now())
                 .toUpperCase()
-          : '';
+          : DateFormat('dd-MMM').format(DateTime.now()).toUpperCase();
       _escribirCelda('A$fila', fecha);
       _escribirCelda('B$fila', c.embarcacion);
       _escribirCelda('C$fila', c.producto);
@@ -325,13 +326,12 @@ class _EscritorCuadreExcel {
 
     final filaInicio = fila;
     for (var v in cuadre.ventas) {
-      final fecha = cuadre.fechaCuadre != null
+      final fechaStr = cuadre.fechaCuadre ?? cuadre.fechaZarpe;
+      final fecha = fechaStr != null
           ? DateFormat('dd-MMM')
-                .format(
-                  DateTime.tryParse(cuadre.fechaCuadre!) ?? DateTime.now(),
-                )
+                .format(DateTime.tryParse(fechaStr) ?? DateTime.now())
                 .toUpperCase()
-          : '';
+          : DateFormat('dd-MMM').format(DateTime.now()).toUpperCase();
       _escribirCelda('A$fila', fecha);
       _escribirCelda('B$fila', v.lugar);
       _escribirCelda('C$fila', v.producto);
@@ -543,9 +543,11 @@ class _EscritorCuadreExcel {
     _escribirCelda('B$filaResumen', '50%');
     _escribirCelda('C$filaResumen', 'EMPRESA');
     _escribirCelda('D$filaResumen', '=D$celdaResumenTotal*0.5');
-    filaResumen++;
+    final etiquetaBahia = (cuadre.nombreBahia?.toUpperCase().trim().isNotEmpty == true)
+        ? 'BAHÍA ${cuadre.nombreBahia!.toUpperCase()}'
+        : 'BAHÍA';
     _escribirCelda('B$filaResumen', '50%');
-    _escribirCelda('C$filaResumen', 'DANIEL');
+    _escribirCelda('C$filaResumen', etiquetaBahia);
     _escribirCelda('D$filaResumen', '=D$celdaResumenTotal*0.5');
   }
 

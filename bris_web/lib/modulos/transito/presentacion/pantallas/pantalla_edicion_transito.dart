@@ -112,7 +112,10 @@ class _PantallaEdicionTransitoState
         _choferCtrl.text = zarpe.chofer;
         _numeroChoferCtrl.text = zarpe.numeroChofer;
         _muelleCtrl.text = zarpe.muellePartida;
-        _observacionesCtrl.text = zarpe.observaciones ?? '';
+        final obsGasto = gastos.where((g) => g.concepto.toUpperCase().trim() == 'OBSERVACIONES').firstOrNull;
+        _observacionesCtrl.text = (zarpe.observaciones != null && zarpe.observaciones!.isNotEmpty) 
+            ? zarpe.observaciones! 
+            : (obsGasto?.tipo ?? '');
 
         if (cuadre != null) {
           _pesoTotalCtrl.text = cuadre.pesoTotal?.toString() ?? '';
@@ -150,7 +153,7 @@ class _PantallaEdicionTransitoState
         }
 
         _compras = List.from(compras);
-        _gastos = List.from(gastos);
+        _gastos = List.from(gastos)..removeWhere((g) => g.concepto.toUpperCase().trim() == 'OBSERVACIONES');
         _ventas = List.from(ventas);
         _cargando = false;
       });

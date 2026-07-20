@@ -233,21 +233,13 @@ class _FormularioRegistroPescaState
     return sum;
   }
 
-  void _guardarGastosEstablecidos() {
+  void _guardarGastosEstablecidos(CuadreEntidad? cuadreExistente) {
     _gastos.clear();
 
-    if (_observacionesCtrl.text.trim().isNotEmpty) {
-      _gastos.add(
-        GastoEntidad(
-          id: const Uuid().v4(),
-          cuadreId: _cuadreId,
-          tipo: _observacionesCtrl.text.trim(),
-          concepto: 'OBSERVACIONES',
-          cantidad: 1,
-          costoUnitario: 0,
-          total: 0,
-        ),
-      );
+    // Restaurar OBSERVACIONES original si existe, ya que el campo se eliminó de la UI
+    if (cuadreExistente != null) {
+      final obs = cuadreExistente.gastos.where((g) => g.concepto.toUpperCase().trim() == 'OBSERVACIONES');
+      _gastos.addAll(obs);
     }
 
     final conceptosMap = {
@@ -296,7 +288,19 @@ class _FormularioRegistroPescaState
       return;
     }
 
-    _guardarGastosEstablecidos();
+    final estadoCuadres = ref.read(cuadresProvider);
+    CuadreEntidad? cuadreExistente;
+    if (estadoCuadres.value != null) {
+      try {
+        cuadreExistente = estadoCuadres.value!.firstWhere((c) => c.id == _cuadreId);
+      } catch (_) {
+        cuadreExistente = widget.cuadreInicial;
+      }
+    } else {
+      cuadreExistente = widget.cuadreInicial;
+    }
+
+    _guardarGastosEstablecidos(cuadreExistente);
 
     final authState = ref.read(proveedorControladorAutenticacion);
     if (authState is! EstadoAutenticacionAutenticado) {
@@ -319,27 +323,17 @@ class _FormularioRegistroPescaState
       fechaZarpe: _fechaZarpeCtrl.text,
       estado:
           EstadoCuadre.borrador, // En móvil siempre es borrador porque la venta se cierra en planta.
-      fotoZarpeUrl: widget.cuadreInicial?.fotoZarpeUrl,
+      fotoZarpeUrl: widget.cuadreInicial?.fotoZarpeUrl ?? cuadreExistente?.fotoZarpeUrl,
       pesoTotal: totalKilosCompras > 0
           ? totalKilosCompras
-          : (widget.cuadreInicial?.pesoTotal ?? 0),
-      cajasLlenas: int.tryParse(_cajasLlenasCtrl.text) ?? 0,
-      cajasVacias: int.tryParse(_cajasVaciasCtrl.text) ?? 0,
-      tipoProducto: _tipoProductoSeleccionado == 'OTROS'
-          ? _otroProductoCtrl.text.trim().toUpperCase()
-          : _tipoProductoSeleccionado,
-      muellePartida: _muellePartidaCtrl.text.trim().isEmpty
-          ? null
-          : _muellePartidaCtrl.text.trim(),
-      pesador: _nombrePesadorCtrl.text.trim().isEmpty
-          ? null
-          : _nombrePesadorCtrl.text.trim().toUpperCase(),
-      tipo: _tipoCtrl.text.trim().isEmpty
-          ? null
-          : _tipoCtrl.text.trim().toUpperCase(),
-      cuadrilla: _cuadrillaCtrl.text.trim().isEmpty
-          ? null
-          : _cuadrillaCtrl.text.trim().toUpperCase(),
+          : (cuadreExistente?.pesoTotal ?? 0),
+      cajasLlenas: cuadreExistente?.cajasLlenas ?? 0,
+      cajasVacias: cuadreExistente?.cajasVacias ?? 0,
+      tipoProducto: cuadreExistente?.tipoProducto,
+      muellePartida: cuadreExistente?.muellePartida,
+      pesador: cuadreExistente?.pesador,
+      tipo: cuadreExistente?.tipo,
+      cuadrilla: cuadreExistente?.cuadrilla,
       compras: _compras,
       gastos: _gastos,
       ventas: [],
@@ -915,118 +909,6 @@ class _FormularioRegistroPescaState
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _cajasLlenasCtrl,
-                    style: const TextStyle(color: Color(0xFF1F2937)),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: EstilosFormulario.construirInputDecoration(
-                      labelText: 'Cajas Llenas',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextFormField(
-                    controller: _cajasVaciasCtrl,
-                    style: const TextStyle(color: Color(0xFF1F2937)),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: EstilosFormulario.construirInputDecoration(
-                      labelText: 'Cajas Vacías',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _tipoProductoSeleccionado,
-              dropdownColor: Colors.white,
-              style: const TextStyle(color: Colors.black87),
-              iconEnabledColor: const Color(0xFF006B54),
-              decoration: EstilosFormulario.construirInputDecoration(
-                labelText: 'Tipo de Producto',
-              ),
-              items: const [
-                DropdownMenuItem(value: 'CATANA', child: Text('CATANA')),
-                DropdownMenuItem(value: 'POTA', child: Text('POTA')),
-                DropdownMenuItem(value: '1a', child: Text('1a')),
-                DropdownMenuItem(value: '2a', child: Text('2a')),
-                DropdownMenuItem(value: 'Destare', child: Text('Destare')),
-                DropdownMenuItem(value: 'Caballa', child: Text('Caballa')),
-                DropdownMenuItem(value: 'BONITO', child: Text('BONITO')),
-                DropdownMenuItem(value: 'JUREL', child: Text('JUREL')),
-                DropdownMenuItem(value: 'OTROS', child: Text('OTROS')),
-              ],
-              onChanged: (val) {
-                if (val != null) {
-                  setState(() {
-                    _tipoProductoSeleccionado = val;
-                    if (val != 'OTROS') _otroProductoCtrl.clear();
-                  });
-                }
-              },
-            ),
-            if (_tipoProductoSeleccionado == 'OTROS') ...[
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _otroProductoCtrl,
-                style: const TextStyle(color: Colors.black87),
-                textCapitalization: TextCapitalization.characters,
-                decoration: EstilosFormulario.construirInputDecoration(
-                  labelText: 'Especifique otro producto',
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _nombrePesadorCtrl,
-              style: const TextStyle(color: Colors.black87),
-              textCapitalization: TextCapitalization.characters,
-              decoration: EstilosFormulario.construirInputDecoration(
-                labelText: 'Pesador de Muelle',
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _tipoCtrl,
-                    style: const TextStyle(color: Colors.black87),
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: EstilosFormulario.construirInputDecoration(
-                      labelText: 'Tipo',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextFormField(
-                    controller: _cuadrillaCtrl,
-                    style: const TextStyle(color: Colors.black87),
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: EstilosFormulario.construirInputDecoration(
-                      labelText: 'Cuadrilla',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _observacionesCtrl,
-              style: const TextStyle(color: Colors.black87),
-              maxLines: 2,
-              decoration: EstilosFormulario.construirInputDecoration(
-                labelText: 'Observaciones / Notas de Bahía (Opcional)',
-              ),
             ),
             const SizedBox(height: 16),
             _buildFotosZarpeEvidencia(),

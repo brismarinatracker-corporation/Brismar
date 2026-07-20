@@ -639,7 +639,10 @@ class _FormularioZarpePantallaState
                   controller: _choferCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [_UpperCaseInputFormatter()],
+                  inputFormatters: [
+                    _UpperCaseInputFormatter(),
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]')),
+                  ],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Nombre del chofer',
                   ),
@@ -792,7 +795,10 @@ class _FormularioZarpePantallaState
                   controller: _muellePartidaCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [_UpperCaseInputFormatter()],
+                  inputFormatters: [
+                    _UpperCaseInputFormatter(),
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]')),
+                  ],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Muelle de Partida',
                   ),
@@ -809,7 +815,10 @@ class _FormularioZarpePantallaState
                   controller: _pesadorCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [_UpperCaseInputFormatter()],
+                  inputFormatters: [
+                    _UpperCaseInputFormatter(),
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]')),
+                  ],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Pesador de Muelle',
                   ),
@@ -826,7 +835,10 @@ class _FormularioZarpePantallaState
                   controller: _tipoCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [_UpperCaseInputFormatter()],
+                  inputFormatters: [
+                    _UpperCaseInputFormatter(),
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]')),
+                  ],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Tipo',
                   ),
@@ -843,7 +855,10 @@ class _FormularioZarpePantallaState
                   controller: _cuadrillaCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [_UpperCaseInputFormatter()],
+                  inputFormatters: [
+                    _UpperCaseInputFormatter(),
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]')),
+                  ],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Cuadrilla',
                   ),
@@ -859,6 +874,10 @@ class _FormularioZarpePantallaState
                 TextFormField(
                   controller: _observacionesCtrl,
                   style: const TextStyle(color: Colors.black87),
+                  textCapitalization: TextCapitalization.sentences,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]')),
+                  ],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Observaciones / Notas (Opcional)',
                   ),
