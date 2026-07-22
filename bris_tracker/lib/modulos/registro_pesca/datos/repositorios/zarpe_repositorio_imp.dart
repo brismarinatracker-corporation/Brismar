@@ -6,7 +6,10 @@ import '../fuentes_datos/fuente_datos_zarpes_remota.dart';
 import '../modelos/zarpe_modelo.dart';
 
 /// Implementación concreta de [ZarpeRepositorio].
-/// Maneja la lógica Offline-First.
+///
+/// Aplica estrategia **Offline-First**: toda escritura se persiste localmente
+/// antes de intentar sincronizar con Supabase. Si no hay red, el zarpe queda
+/// en cola (`sincronizado = 0`) para el próximo ciclo de sincronización.
 class ZarpeRepositorioImp implements ZarpeRepositorio {
   final FuenteDatosZarpesLocal local;
   final FuenteDatosZarpesRemota remota;
@@ -36,8 +39,12 @@ class ZarpeRepositorioImp implements ZarpeRepositorio {
   }
 
   @override
+  /// Retorna todos los zarpes almacenados localmente en el dispositivo.
+  ///
+  /// El parámetro [usuarioId] está reservado para filtrado futuro si la
+  /// tabla local incorpora el campo. Hoy el aislamiento lo hace Supabase RLS.
   Future<List<ZarpeEntidad>> obtenerHistorial(String usuarioId) async {
-    final listaModelos = await local.obtenerZarpesLocales(usuarioId);
+    final listaModelos = await local.obtenerZarpesLocales();
 
     return listaModelos
         .map(
@@ -57,10 +64,12 @@ class ZarpeRepositorioImp implements ZarpeRepositorio {
   }
 
   @override
+  /// Sube a Supabase todos los zarpes locales con [sincronizado == 0].
+  ///
+  /// Opera sobre todos los zarpes del dispositivo. Si un zarpe falla,
+  /// se registra en debug y se continúa con el siguiente (no bloquea la cola).
   Future<void> sincronizarPendientes() async {
-    final zarpesLocales = await local.obtenerZarpesLocales(
-      '',
-    ); // Obtiene todos por ahora
+    final zarpesLocales = await local.obtenerZarpesLocales();
     final pendientes = zarpesLocales.where((z) => z.sincronizado == 0).toList();
 
     for (var zarpe in pendientes) {

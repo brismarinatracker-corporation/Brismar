@@ -322,8 +322,7 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                                                       children: [
                                                         Expanded(
                                                           child: Text(
-                                                            z.placaCamara ??
-                                                                'Sin Placa',
+                                                            z.placaCamara,
                                                             style:
                                                                 const TextStyle(
                                                                   color: Color(

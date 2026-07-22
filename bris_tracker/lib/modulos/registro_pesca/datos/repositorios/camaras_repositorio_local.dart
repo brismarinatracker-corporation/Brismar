@@ -1,6 +1,7 @@
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart';
 import '../../../../nucleo/base_datos/gestor_base_datos.dart';
 
 class CamarasRepositorioLocal {
@@ -18,7 +19,11 @@ class CamarasRepositorioLocal {
 
       return resultado.map((e) => e['placa'] as String).toList();
     } catch (e) {
-      // ignore
+      // Fallo tolerado: si SQLite no responde, el autocompletado queda vacío.
+      // No se propaga para no interrumpir el flujo del formulario de zarpe.
+      if (kDebugMode) {
+        debugPrint('[CamarasRepo] obtenerPlacasActivas falló: $e');
+      }
       return [];
     }
   }
@@ -47,7 +52,11 @@ class CamarasRepositorioLocal {
         });
       }
     } catch (e) {
-      // ignore
+      // Fallo tolerado: si la placa ya existe o SQLite falla, se descarta
+      // silenciosamente. La placa se creará en el próximo intento.
+      if (kDebugMode) {
+        debugPrint('[CamarasRepo] guardarPlacaLocal falló para "$cleanPlaca": $e');
+      }
     }
   }
 
@@ -73,7 +82,11 @@ class CamarasRepositorioLocal {
             whereArgs: [p['id']],
           );
         } catch (e) {
-          // Ignorar error individual si ya existe o falla red
+          // Fallo individual tolerado: la placa ya puede existir en Supabase
+          // (conflicto de duplicado) o no hay red. Se reintenta en el siguiente sync.
+          if (kDebugMode) {
+            debugPrint('[CamarasRepo] Push placa "${p['placa']}" falló: $e');
+          }
         }
       }
 
@@ -94,7 +107,11 @@ class CamarasRepositorioLocal {
       }
       await batch.commit(noResult: true);
     } catch (e) {
-      // ignore
+      // Fallo del ciclo completo de sincronización.
+      // No se propaga: la app sigue funcionando en modo local hasta el próximo ciclo.
+      if (kDebugMode) {
+        debugPrint('[CamarasRepo] sincronizarCamaras falló: $e');
+      }
     }
   }
 }

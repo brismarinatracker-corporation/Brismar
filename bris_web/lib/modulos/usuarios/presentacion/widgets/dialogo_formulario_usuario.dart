@@ -8,6 +8,7 @@ import '../controladores/controlador_usuarios.dart';
 import '../../infraestructura/servicios/servicio_dni.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bris_web/nucleo/componentes/carga_orbital.dart';
+import 'package:bris_web/nucleo/constantes/app_constants.dart';
 
 class DialogoFormularioUsuario extends ConsumerStatefulWidget {
   final UsuarioAdminModelo? usuarioAEditar;
@@ -83,11 +84,11 @@ class _DialogoFormularioUsuarioState
       ].contains(u.rol)) {
         _rolSeleccionado = u.rol;
       }
-      if (['paita', 'piura', 'lambayeque'].contains(u.sede)) {
+      if (AppConstants.sedesValidas.contains(u.sede)) {
         _sedeSeleccionada = u.sede;
-      } else if (u.sede != null && u.sede!.isNotEmpty) {
-        // Fallback for any other sede that might be in DB
-        _sedeSeleccionada = 'paita';
+      } else if (u.sede.isNotEmpty) {
+        // Sede desconocida en BD: usar sede por defecto para evitar valor inválido en el dropdown.
+        _sedeSeleccionada = AppConstants.sedePorDefecto;
       }
       _fechaNacimientoSeleccionada = u.fechaNacimiento;
       _fotoPerfilUrl = u.fotoPerfil;
@@ -105,8 +106,11 @@ class _DialogoFormularioUsuarioState
   @override
   void dispose() {
     _animController.dispose();
-    _nombreCtrl.dispose();
     _dniCtrl.dispose();
+    _nombresCtrl.dispose();
+    _apellidoPaternoCtrl.dispose();
+    _apellidoMaternoCtrl.dispose();
+    _nombreCtrl.dispose();
     _correoCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
@@ -669,22 +673,17 @@ class _DialogoFormularioUsuarioState
                                     return 'Requerido';
                                   final correo = v.trim();
 
-                                  // 1. Validar formato general de correo
+                                  // Validar formato general de correo electrónico.
                                   if (!RegExp(
                                     r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                                   ).hasMatch(correo)) {
                                     return 'Formato de correo inválido (ej: usuario@empresa.com)';
                                   }
 
-                                  // 2. Control de Acceso: Cerrado a dominio corporativo o Abierto
-                                  const bool soloDominioCorporativo =
-                                      true; // Cambiar a false si se desea permitir @gmail, @outlook, etc.
-                                  const String dominioEsperado =
-                                      '@brismar.com.pe';
-
-                                  if (soloDominioCorporativo &&
-                                      !correo.endsWith(dominioEsperado)) {
-                                    return 'Solo se permite el dominio corporativo ($dominioEsperado)';
+                                  // Restricción de dominio corporativo (configurable en AppConstants).
+                                  if (AppConstants.soloDominioCorporativo &&
+                                      !correo.endsWith(AppConstants.dominioCorporativo)) {
+                                    return 'Solo se permite el dominio corporativo (${AppConstants.dominioCorporativo})';
                                   }
 
                                   return null;

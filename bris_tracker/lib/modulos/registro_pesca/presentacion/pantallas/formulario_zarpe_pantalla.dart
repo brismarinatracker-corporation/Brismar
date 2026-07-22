@@ -13,9 +13,10 @@ import '../controladores/controlador_cuadres.dart';
 import '../controladores/controlador_zarpes.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import 'package:bris_tracker/nucleo/componentes/carga_orbital.dart';
-import '../../datos/repositorios/zarpe_repositorio_imp.dart';
 import '../../datos/repositorios/camaras_repositorio_local.dart';
 import '../../../../nucleo/utilidades/formateador_miles.dart';
+import '../../../../nucleo/utilidades/formateadores_texto.dart';
+import '../widgets/seccion_fotos_evidencia.dart';
 
 class FormularioZarpePantalla extends ConsumerStatefulWidget {
   const FormularioZarpePantalla({super.key});
@@ -365,170 +366,10 @@ class _FormularioZarpePantallaState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Card de Fotografía de Evidencia
-                // Card de Fotografía de Evidencia
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Fotos de evidencia',
-                          style: TextStyle(
-                            color: Color(0xFF006B54),
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '(${_fotosEvidencia.length}/3)',
-                          style: const TextStyle(
-                            color: Color(0xFF006B54),
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    if (_fotosEvidencia.isEmpty)
-                      GestureDetector(
-                        onTap: _mostrarOpcionesImagen,
-                        child: Container(
-                          height: 150,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color(0xFFA8D5BA),
-                              width: 1.5,
-                              style: BorderStyle.solid,
-                            ),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.camera_alt_outlined,
-                                size: 40,
-                                color: Color(0xFF006B54),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Tomar foto',
-                                style: TextStyle(
-                                  color: Color(0xFF006B54),
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                'Al menos 1 foto requerida',
-                                style: TextStyle(
-                                  color: Color(0xFF6B7280),
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    else
-                      SizedBox(
-                        height: 130,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount:
-                              _fotosEvidencia.length +
-                              (_fotosEvidencia.length < 3 ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index == _fotosEvidencia.length) {
-                              // Botón de Añadir otra foto
-                              return GestureDetector(
-                                onTap: _mostrarOpcionesImagen,
-                                child: Container(
-                                  width: 110,
-                                  margin: const EdgeInsets.only(right: 12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: const Color(0xFFA8D5BA),
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  child: const Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.add_a_photo_outlined,
-                                        color: Color(0xFF006B54),
-                                        size: 28,
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        'Añadir',
-                                        style: TextStyle(
-                                          color: Color(0xFF006B54),
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }
-
-                            final foto = _fotosEvidencia[index];
-                            return Stack(
-                              children: [
-                                SizedBox(
-                                  width: 110,
-                                  height: 130,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(right: 12),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: kIsWeb
-                                          ? Image.network(
-                                              foto.path,
-                                              fit: BoxFit.cover,
-                                            )
-                                          : Image.file(
-                                              File(foto.path),
-                                              fit: BoxFit.cover,
-                                            ),
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 4,
-                                  right: 16,
-                                  child: GestureDetector(
-                                    onTap: () => _eliminarFoto(index),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.black54,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.close_rounded,
-                                        color: Colors.redAccent,
-                                        size: 16,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                  ],
+                SeccionFotosEvidencia(
+                  fotosEvidencia: _fotosEvidencia,
+                  onMostrarOpciones: _mostrarOpcionesImagen,
+                  onEliminarFoto: _eliminarFoto,
                 ),
                 const SizedBox(height: 24),
 
@@ -569,7 +410,7 @@ class _FormularioZarpePantallaState
                           focusNode: focusNode,
                           style: const TextStyle(color: Colors.black87),
                           textCapitalization: TextCapitalization.characters,
-                          inputFormatters: [_PlacaInputFormatter()],
+                          inputFormatters: [PlacaInputFormatter()],
                           decoration:
                               EstilosFormulario.construirInputDecoration(
                                 labelText: 'Placa (Ej: AAA-123)',
@@ -637,7 +478,7 @@ class _FormularioZarpePantallaState
                   controller: _choferCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [_UpperCaseInputFormatter()],
+                  inputFormatters: [UpperCaseInputFormatter()],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Nombre del chofer',
                   ),
@@ -790,7 +631,7 @@ class _FormularioZarpePantallaState
                   controller: _muellePartidaCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [_UpperCaseInputFormatter()],
+                  inputFormatters: [UpperCaseInputFormatter()],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Muelle de Partida',
                   ),
@@ -807,7 +648,7 @@ class _FormularioZarpePantallaState
                   controller: _pesadorCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [_UpperCaseInputFormatter()],
+                  inputFormatters: [UpperCaseInputFormatter()],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Pesador de Muelle',
                   ),
@@ -824,7 +665,7 @@ class _FormularioZarpePantallaState
                   controller: _tipoCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [_UpperCaseInputFormatter()],
+                  inputFormatters: [UpperCaseInputFormatter()],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Tipo',
                   ),
@@ -841,7 +682,7 @@ class _FormularioZarpePantallaState
                   controller: _cuadrillaCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [_UpperCaseInputFormatter()],
+                  inputFormatters: [UpperCaseInputFormatter()],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Cuadrilla',
                   ),
@@ -900,38 +741,3 @@ class _FormularioZarpePantallaState
   }
 }
 
-class _PlacaInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final text = newValue.text
-        .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')
-        .toUpperCase();
-    if (text.length > 6) {
-      return oldValue;
-    }
-    String formatted = text;
-    if (text.length > 3) {
-      formatted = '${text.substring(0, 3)}-${text.substring(3)}';
-    }
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
-  }
-}
-
-class _UpperCaseInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    return TextEditingValue(
-      text: newValue.text.toUpperCase(),
-      selection: newValue.selection,
-    );
-  }
-}

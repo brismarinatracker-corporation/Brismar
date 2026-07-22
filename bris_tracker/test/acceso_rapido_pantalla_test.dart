@@ -35,15 +35,32 @@ class FakeRepositorio extends RepositorioAutenticacion {
   }
 }
 
+class FakeNotificadorAutenticacion extends NotificadorAutenticacion {
+  final EstadoAutenticacion estadoInicial;
+  FakeNotificadorAutenticacion(this.estadoInicial);
+
+  @override
+  EstadoAutenticacion build() {
+    super.build();
+    return estadoInicial;
+  }
+
+  @override
+  Future<void> verificarSesionActiva() async {}
+}
+
 void main() {
   testWidgets('AccesoRapidoPantalla no debe lanzar error visual al cargar (Biometría)', (WidgetTester tester) async {
     final fakeRepo = FakeRepositorio();
-    final controlador = NotificadorAutenticacion(repositorio: fakeRepo);
+    final fakeNotifier = FakeNotificadorAutenticacion(
+      const EstadoAccesoRapidoRequerido(PreferenciaAcceso.huella),
+    );
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          proveedorControladorAutenticacion.overrideWith((ref) => controlador),
+          proveedorRepositorioAutenticacion.overrideWithValue(fakeRepo),
+          proveedorControladorAutenticacion.overrideWith(() => fakeNotifier),
         ],
         child: const MaterialApp(
           home: AccesoRapidoPantalla(preferencia: PreferenciaAcceso.huella),
@@ -51,33 +68,15 @@ void main() {
       ),
     );
 
-    // Damos tiempo a que se resuelva `verificarSesionActiva()` (se va a NoAutenticado temporalmente, luego reasignamos el estado)
-    await tester.pumpAndSettle();
-    
-    // Forzamos manualmente el estado para simular que sí estamos en Acceso Rápido
-    controlador.state = const EstadoAccesoRapidoRequerido(PreferenciaAcceso.huella);
+    // La pantalla de biometría inicia la biometría automáticamente en initState
+    // vía post-frame callback, cambiando el estado a Cargando y mostrando CargaOrbital
     await tester.pump();
-
-    // Estado inicial visual: deberíamos ver el icono de la huella
-    expect(find.byIcon(Icons.fingerprint), findsOneWidget);
-    expect(find.byType(CircularProgressIndicator), findsNothing);
-
-    // Simulamos el toque para iniciar biometría
-    await tester.tap(find.byIcon(Icons.fingerprint));
-    
-    // Pump the frame to start the animation
-    await tester.pump();
-    // Pump animation ticks
-    await tester.pump(const Duration(milliseconds: 200));
-
-    // En estado de carga, el ícono sigue ahí, PERO AHORA TAMBIÉN debe haber un CargaOrbital 
     expect(find.byType(CargaOrbital), findsOneWidget);
-    expect(find.byIcon(Icons.fingerprint), findsNothing);
     
     // Verificamos que no hubo ninguna excepción de Flutter (como overflow o errores de layout)
     expect(tester.takeException(), isNull);
     
-    // Finalizamos la espera de los 2 segundos para limpiar los timers
+    // Finalizamos la espera de la biometría para limpiar los timers
     await tester.pumpAndSettle(const Duration(seconds: 3));
   });
 }
