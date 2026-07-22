@@ -307,32 +307,37 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE8F5E9),
-                        borderRadius: BorderRadius.circular(8),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.storefront_outlined,
+                          color: Color(0xFF1B5E20),
+                          size: 20,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.storefront_outlined,
-                        color: Color(0xFF1B5E20),
-                        size: 20,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Recepción en Planta',
+                          style: GoogleFonts.sora(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF15181A),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Recepción en Planta',
-                      style: GoogleFonts.sora(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF15181A),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                if (!widget.esSoloLectura)
+                if (!widget.esSoloLectura) ...[
+                  const SizedBox(width: 8),
                   ElevatedButton.icon(
                     onPressed: () => _mostrarDialogoVenta(),
                     icon: const Icon(Icons.add, size: 18),
