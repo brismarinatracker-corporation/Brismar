@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:uuid/uuid.dart';
 import '../controladores/controlador_transito.dart';
 import '../../datos/repositorio_edicion_zarpe.dart';
 import '../../dominio/modelos/zarpe_modelo.dart';
@@ -162,6 +162,55 @@ class _PantallaEdicionTransitoState
         _error = e.toString();
         _cargando = false;
       });
+    }
+  }
+
+  void _recalcularGastosAdministrativos() {
+    double totalKilos = 0;
+    double totalVenta = 0;
+    for (var v in _ventas) {
+      totalKilos += v.kilos;
+      totalVenta += v.total;
+    }
+
+    // Crear una nueva referencia para que el widget hijo detecte el cambio
+    _gastos = List.from(_gastos);
+
+    // 1. FACTURACION_PLANTA = totalKilos * 0.1
+    _actualizarGastoFijo('FACTURACION_PLANTA', totalKilos * 0.1);
+    
+    // 2. IMPUESTO DE RENTA = totalVenta * 0.03
+    _actualizarGastoFijo('IMPUESTO DE RENTA', totalVenta * 0.03);
+  }
+
+  void _actualizarGastoFijo(String concepto, double totalCalculado) {
+    final idx = _gastos.indexWhere((g) => g.concepto.toUpperCase().trim() == concepto);
+    if (totalCalculado > 0) {
+      if (idx >= 0) {
+        _gastos[idx] = GastoWebModelo(
+          id: _gastos[idx].id,
+          cuadreId: _gastos[idx].cuadreId,
+          tipo: 'Administrativo',
+          concepto: concepto,
+          cantidad: 1,
+          costoUnitario: totalCalculado,
+          total: totalCalculado,
+        );
+      } else {
+        _gastos.add(GastoWebModelo(
+          id: const Uuid().v4(),
+          cuadreId: widget.id,
+          tipo: 'Administrativo',
+          concepto: concepto,
+          cantidad: 1,
+          costoUnitario: totalCalculado,
+          total: totalCalculado,
+        ));
+      }
+    } else {
+      if (idx >= 0) {
+        _gastos.removeAt(idx);
+      }
     }
   }
 
@@ -884,10 +933,15 @@ class _PantallaEdicionTransitoState
                     _ventas[idx] = v;
                   else
                     _ventas.add(v);
+                  _recalcularGastosAdministrativos();
                 });
               },
-              onEliminar: (id) =>
-                  setState(() => _ventas.removeWhere((item) => item.id == id)),
+              onEliminar: (id) {
+                setState(() {
+                  _ventas.removeWhere((item) => item.id == id);
+                  _recalcularGastosAdministrativos();
+                });
+              },
             ),
             _botonGuardarSeccion(
               'Guardar Ventas',
