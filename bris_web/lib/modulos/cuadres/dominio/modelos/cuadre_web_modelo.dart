@@ -22,10 +22,13 @@ class CuadreWebModelo {
   final double? pesoTotal;
   final int? cajasLlenas;
   final int? cajasVacias;
-  final int? tipoProducto;
+  final String? tipoProducto;
+  final String? muellePartida;
   final String? pesador;
   final String? tipo;
   final String? cuadrilla;
+  final String? chofer;
+  final String? numeroChofer;
   final String? plantaDestino;
   final List<CompraWebModelo> compras;
   final List<GastoWebModelo> gastos;
@@ -45,9 +48,12 @@ class CuadreWebModelo {
     this.cajasLlenas,
     this.cajasVacias,
     this.tipoProducto,
+    this.muellePartida,
     this.pesador,
     this.tipo,
     this.cuadrilla,
+    this.chofer,
+    this.numeroChofer,
     this.plantaDestino,
     this.compras = const [],
     this.gastos = const [],
@@ -69,10 +75,13 @@ class CuadreWebModelo {
       pesoTotal: (json['peso_total'] as num?)?.toDouble(),
       cajasLlenas: json['cajas_llenas'] as int?,
       cajasVacias: json['cajas_vacias'] as int?,
-      tipoProducto: json['tipo_producto'] as int?,
+      tipoProducto: json['tipo_producto']?.toString(),
+      muellePartida: json['muelle_partida'] as String?,
       pesador: json['pesador'] as String?,
       tipo: json['tipo'] as String?,
       cuadrilla: json['cuadrilla'] as String?,
+      chofer: json['chofer'] as String?,
+      numeroChofer: json['numero_chofer'] as String?,
       plantaDestino: json['planta_destino'] as String?,
     );
   }
@@ -113,6 +122,10 @@ class CuadreWebModelo {
       cajasVacias: cajasVacias,
       tipoProducto: tipoProducto,
       pesador: pesador,
+      tipo: tipo,
+      cuadrilla: cuadrilla,
+      chofer: chofer,
+      numeroChofer: numeroChofer,
       plantaDestino: plantaDestino,
       compras: compras ?? this.compras,
       gastos: gastos ?? this.gastos,

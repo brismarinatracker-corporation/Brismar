@@ -1,8 +1,15 @@
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:path/path.dart';
 
-/// Clase auxiliar para la gestión de la base de datos local SQLite.
-/// Implementa el patrón Singleton.
+/// Gestor central de la base de datos SQLite local (cifrada con SQLCipher).
+///
+/// **Patrón:** Singleton — solo existe una instancia de la BD por sesión.
+/// **Tablas administradas:** `cuadres`, `compras`, `gastos`, `ventas`, `zarpes`, `camaras`.
+/// **Versión actual del esquema:** 11 (ver método [_upgradeDB] para el historial de migraciones).
+/// **Cifrado:** AES-256 via `sqflite_sqlcipher` con clave fija de compilación.
+///
+/// Al abrir la BD, si la versión del esquema instalado es menor a la actual,
+/// [_upgradeDB] aplica las migraciones incrementales necesarias de forma automática.
 class GestorBaseDatos {
   static final GestorBaseDatos instance = GestorBaseDatos._init();
   static Database? _database;
@@ -23,7 +30,7 @@ class GestorBaseDatos {
 
     return await openDatabase(
       path,
-      version: 9,
+      version: 11,
       password: 'BRISMAR_SECURE_KEY_2026',
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
@@ -37,6 +44,7 @@ class GestorBaseDatos {
     await _createTablaGastos(db);
     await _createTablaVentas(db);
     await _createTablaZarpes(db);
+    await _createTablaCamaras(db);
   }
 
   /// Crea la tabla 'cuadres' en SQLite local.
@@ -126,7 +134,19 @@ class GestorBaseDatos {
         foto_local_path TEXT,
         fecha_zarpe TEXT NOT NULL,
         estado TEXT DEFAULT 'DESPACHADO_PIURA',
-        sincronizado INTEGER DEFAULT 0
+        sincronizado INTEGER DEFAULT 0,
+        numero_chofer TEXT NOT NULL DEFAULT '-'
+      )
+    ''');
+  }
+
+  /// Crea la tabla 'camaras' en SQLite local (para autocompletado de placas).
+  Future<void> _createTablaCamaras(Database db) async {
+    await db.execute('''
+      CREATE TABLE camaras (
+        id TEXT PRIMARY KEY,
+        placa TEXT NOT NULL UNIQUE,
+        sincronizado INTEGER DEFAULT 1
       )
     ''');
   }
@@ -146,10 +166,18 @@ class GestorBaseDatos {
       await _upgradeA7(db);
     }
     if (oldVersion < 8) {
-      await db.execute('ALTER TABLE compras ADD COLUMN adelanto REAL DEFAULT 0');
+      await db.execute(
+        'ALTER TABLE compras ADD COLUMN adelanto REAL DEFAULT 0',
+      );
     }
     if (oldVersion < 9) {
       await _upgradeA9(db);
+    }
+    if (oldVersion < 10) {
+      await _createTablaCamaras(db);
+    }
+    if (oldVersion < 11) {
+      await _upgradeA11(db);
     }
   }
 
@@ -188,12 +216,21 @@ class GestorBaseDatos {
 
   /// Migración: Separar estado de negocio de sincronización en zarpes.
   Future<void> _upgradeA7(Database db) async {
-    await db.execute('ALTER TABLE zarpes ADD COLUMN sincronizado INTEGER DEFAULT 0');
+    await db.execute(
+      'ALTER TABLE zarpes ADD COLUMN sincronizado INTEGER DEFAULT 0',
+    );
   }
 
   Future<void> _upgradeA9(Database db) async {
     await db.execute('ALTER TABLE cuadres ADD COLUMN tipo TEXT');
     await db.execute('ALTER TABLE cuadres ADD COLUMN cuadrilla TEXT');
+  }
+
+  /// Migración: Agregar columna numero_chofer en zarpes.
+  Future<void> _upgradeA11(Database db) async {
+    await db.execute(
+      "ALTER TABLE zarpes ADD COLUMN numero_chofer TEXT NOT NULL DEFAULT '-'",
+    );
   }
 
   /// Cierra la base de datos cuando ya no se requiere.

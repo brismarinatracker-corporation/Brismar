@@ -37,20 +37,24 @@ class FuenteDatosUsuariosAdmin {
             'sede': usuario.sede,
             'foto_perfil': usuario.fotoPerfil,
             'fecha_nacimiento': usuario.fechaNacimiento?.toIso8601String(),
-          }
+          },
         },
       );
 
       if (response.status != 200) {
-        throw Exception(response.data['error'] ?? 'Error desconocido en Edge Function');
+        throw Exception(
+          response.data['error'] ?? 'Error desconocido en Edge Function',
+        );
       }
-
     } catch (e) {
       throw Exception('No se pudo crear el usuario: $e');
     }
   }
 
-  Future<void> actualizarUsuario(UsuarioAdminModelo usuario, {String? nuevaPassword}) async {
+  Future<void> actualizarUsuario(
+    UsuarioAdminModelo usuario, {
+    String? nuevaPassword,
+  }) async {
     try {
       final payload = {
         'uid': usuario.uid,
@@ -69,16 +73,14 @@ class FuenteDatosUsuariosAdmin {
 
       final response = await _supabaseClient.functions.invoke(
         'admin_usuarios',
-        body: {
-          'action': 'update_user',
-          'payload': payload,
-        },
+        body: {'action': 'update_user', 'payload': payload},
       );
 
       if (response.status != 200) {
-        throw Exception(response.data['error'] ?? 'Error al actualizar usuario');
+        throw Exception(
+          response.data['error'] ?? 'Error al actualizar usuario',
+        );
       }
-
     } catch (e) {
       throw Exception('No se pudo actualizar el usuario: $e');
     }
@@ -95,23 +97,51 @@ class FuenteDatosUsuariosAdmin {
       );
 
       if (response.status != 200) {
-        throw Exception(response.data['error'] ?? 'Error al cambiar estado del usuario');
+        throw Exception(
+          response.data['error'] ?? 'Error al cambiar estado del usuario',
+        );
       }
     } catch (e) {
       throw Exception('No se pudo cambiar el estado del usuario: $e');
     }
   }
 
+  Future<void> eliminarUsuario(String uid) async {
+    try {
+      final response = await _supabaseClient.functions.invoke(
+        'admin_usuarios',
+        body: {
+          'action': 'delete_user',
+          'payload': {'uid': uid},
+        },
+      );
+
+      if (response.status != 200) {
+        throw Exception(response.data['error'] ?? 'Error al eliminar usuario');
+      }
+    } catch (e) {
+      throw Exception('No se pudo eliminar el usuario: $e');
+    }
+  }
+
   /// Sube un avatar al bucket "avatars" y devuelve la URL pública.
-  Future<String> subirAvatar(String idUnico, dynamic archivoBytes, String extension) async {
+  Future<String> subirAvatar(
+    String idUnico,
+    dynamic archivoBytes,
+    String extension,
+  ) async {
     try {
       final ruta = 'avatar_$idUnico.$extension';
-      await _supabaseClient.storage.from('avatars').uploadBinary(
-        ruta,
-        archivoBytes,
-        fileOptions: const FileOptions(upsert: true),
-      );
-      final urlPublica = _supabaseClient.storage.from('avatars').getPublicUrl(ruta);
+      await _supabaseClient.storage
+          .from('avatars')
+          .uploadBinary(
+            ruta,
+            archivoBytes,
+            fileOptions: const FileOptions(upsert: true),
+          );
+      final urlPublica = _supabaseClient.storage
+          .from('avatars')
+          .getPublicUrl(ruta);
       // Evitar cache del navegador añadiendo un timestamp
       return '$urlPublica?t=${DateTime.now().millisecondsSinceEpoch}';
     } catch (e) {

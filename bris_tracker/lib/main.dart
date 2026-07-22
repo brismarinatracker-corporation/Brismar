@@ -46,17 +46,23 @@ class _MyAppState extends ConsumerState<MyApp> {
   }
 
   void _iniciarAutoSincronizacion() {
-    _subscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> resultados) {
+    _subscription = Connectivity().onConnectivityChanged.listen((
+      List<ConnectivityResult> resultados,
+    ) {
       if (!resultados.contains(ConnectivityResult.none)) {
         // Retrasamos un segundo para asegurar que el SO ya estableció la red
         Future.delayed(const Duration(seconds: 1), () {
           try {
-            // Se ejecuta la sincronización silenciosa (ignora si están listos)
+            // Sincronización silenciosa: si los providers aún no están listos
+            // o el token venció, el error se descarta y se reintenta en el
+            // próximo evento de conectividad.
             ref.read(cuadresProvider.notifier).cargarHistorial();
             ref.read(proveedorZarpes.notifier).sincronizarZarpesPendientes();
             ref.read(proveedorZarpes.notifier).sincronizarZarpesDownstream();
           } catch (e) {
-            debugPrint("Auto-Sync falló, se reintentará luego: $e");
+            if (kDebugMode) {
+              debugPrint('[AutoSync] Falló, se reintentará en el próximo evento de red: $e');
+            }
           }
         });
       }
@@ -90,10 +96,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('es', 'ES'),
-        Locale('en', 'US'),
-      ],
+      supportedLocales: const [Locale('es', 'ES'), Locale('en', 'US')],
     );
   }
 }

@@ -18,6 +18,7 @@ class EstadoCuadresWeb {
   final bool hayMasPaginas;
   final DateTime? filtroDesde;
   final DateTime? filtroHasta;
+  final String? filtroPlaca;
   final String? cuadreSeleccionadoId;
 
   const EstadoCuadresWeb({
@@ -29,6 +30,7 @@ class EstadoCuadresWeb {
     this.hayMasPaginas = true,
     this.filtroDesde,
     this.filtroHasta,
+    this.filtroPlaca,
     this.cuadreSeleccionadoId,
   }) : _indice = const {};
 
@@ -42,6 +44,7 @@ class EstadoCuadresWeb {
     required this.hayMasPaginas,
     this.filtroDesde,
     this.filtroHasta,
+    this.filtroPlaca,
     this.cuadreSeleccionadoId,
   }) : _indice = indice;
 
@@ -56,13 +59,14 @@ class EstadoCuadresWeb {
     bool? hayMasPaginas,
     Object? filtroDesde = _sentinel,
     Object? filtroHasta = _sentinel,
+    Object? filtroPlaca = _sentinel,
     String? cuadreSeleccionadoId,
     bool limpiarError = false,
     bool limpiarSeleccion = false,
   }) {
     final nuevosCuadres = cuadres ?? this.cuadres;
-    final nuevoIndice = cuadres != null 
-        ? {for (final c in nuevosCuadres) c.id: c} 
+    final nuevoIndice = cuadres != null
+        ? {for (final c in nuevosCuadres) c.id: c}
         : _indice;
 
     return EstadoCuadresWeb._conIndice(
@@ -73,9 +77,18 @@ class EstadoCuadresWeb {
       indice: nuevoIndice,
       paginaActual: paginaActual ?? this.paginaActual,
       hayMasPaginas: hayMasPaginas ?? this.hayMasPaginas,
-      filtroDesde: filtroDesde == _sentinel ? this.filtroDesde : filtroDesde as DateTime?,
-      filtroHasta: filtroHasta == _sentinel ? this.filtroHasta : filtroHasta as DateTime?,
-      cuadreSeleccionadoId: limpiarSeleccion ? null : (cuadreSeleccionadoId ?? this.cuadreSeleccionadoId),
+      filtroDesde: filtroDesde == _sentinel
+          ? this.filtroDesde
+          : filtroDesde as DateTime?,
+      filtroHasta: filtroHasta == _sentinel
+          ? this.filtroHasta
+          : filtroHasta as DateTime?,
+      filtroPlaca: filtroPlaca == _sentinel
+          ? this.filtroPlaca
+          : filtroPlaca as String?,
+      cuadreSeleccionadoId: limpiarSeleccion
+          ? null
+          : (cuadreSeleccionadoId ?? this.cuadreSeleccionadoId),
     );
   }
 }
@@ -91,8 +104,8 @@ final fuenteCuadresWebProvider = Provider<FuenteDatosCuadresWeb>((ref) {
 
 final controladorCuadresWebProvider =
     NotifierProvider<ControladorCuadresWeb, EstadoCuadresWeb>(
-  ControladorCuadresWeb.new,
-);
+      ControladorCuadresWeb.new,
+    );
 
 // ─── Controlador ──────────────────────────────────────────────────────────────
 
@@ -123,14 +136,15 @@ class ControladorCuadresWeb extends Notifier<EstadoCuadresWeb> {
       final lista = await _fuente.obtenerTodos(
         desde: state.filtroDesde,
         hasta: state.filtroHasta,
+        placa: state.filtroPlaca,
         limit: limit,
         offset: offset,
       );
-      
+
       final nuevosCuadres = esCargaMas ? [...state.cuadres, ...lista] : lista;
-      
+
       state = state.copiarCon(
-        cargando: false, 
+        cargando: false,
         cuadres: nuevosCuadres,
         paginaActual: nuevaPagina,
         hayMasPaginas: lista.length == limit,
@@ -152,6 +166,14 @@ class ControladorCuadresWeb extends Notifier<EstadoCuadresWeb> {
     await cargarCuadres();
   }
 
+  /// Actualiza el filtro de placa y recarga.
+  Future<void> aplicarFiltroPlaca(String? placa) async {
+    state = state.copiarCon(
+      filtroPlaca: placa?.trim().isEmpty == true ? null : placa,
+    );
+    await cargarCuadres();
+  }
+
   /// Selecciona o deselecciona un cuadre para ver su detalle lateral.
   void seleccionarCuadre(String? id) {
     if (id == null || state.cuadreSeleccionadoId == id) {
@@ -168,7 +190,10 @@ class ControladorCuadresWeb extends Notifier<EstadoCuadresWeb> {
       await ServicioExportacion.exportarCuadreUnicoAExcel(cuadre);
       state = state.copiarCon(exportando: false);
     } on Exception catch (e) {
-      state = state.copiarCon(exportando: false, error: 'Error al exportar: $e');
+      state = state.copiarCon(
+        exportando: false,
+        error: 'Error al exportar: $e',
+      );
     }
   }
 }

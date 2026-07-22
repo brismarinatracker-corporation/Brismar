@@ -1,10 +1,15 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../dominio/modelos/maestros_modelo.dart';
 
+/// Fuente de datos remota para las tablas maestras de BRISMAR.
+///
+/// Consulta Supabase para obtener catálogos de negocio que cambian poco:
+/// especies de pesca y tipos de gasto. Estos datos alimentan los dropdowns
+/// y selectores en toda la Web Admin.
 class FuenteDatosMaestros {
   final SupabaseClient _cliente;
 
-  FuenteDatosMaestros(this._cliente);
+  const FuenteDatosMaestros(this._cliente);
 
   Future<List<EspecieModelo>> obtenerEspecies() async {
     try {
@@ -13,7 +18,7 @@ class FuenteDatosMaestros {
           .select()
           .eq('activo', true)
           .order('orden', ascending: true);
-          
+
       return (respuesta as List)
           .map((json) => EspecieModelo.desdeJson(json))
           .toList();
@@ -29,7 +34,7 @@ class FuenteDatosMaestros {
           .select()
           .eq('activo', true)
           .order('orden', ascending: true);
-          
+
       return (respuesta as List)
           .map((json) => TipoGastoModelo.desdeJson(json))
           .toList();

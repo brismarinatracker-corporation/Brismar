@@ -2,46 +2,20 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../nucleo/componentes/estilos_formulario.dart';
 import 'package:uuid/uuid.dart';
 
+
+import '../../datos/repositorios/camaras_repositorio_local.dart';
 import '../../dominio/entidades/cuadre_entidad.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../widgets/panel_calculo_vivo.dart';
-import '../../../../nucleo/base_datos/gestor_base_datos.dart';
+import '../../registro_pesca_inyeccion.dart';
+import '../../../../nucleo/utilidades/formateador_miles.dart';
+import '../../../../nucleo/utilidades/formateadores_texto.dart';
 
-class _UpperCaseTextFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    return newValue.copyWith(text: newValue.text.toUpperCase());
-  }
-}
 
-class _PlacaInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final text = newValue.text
-        .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')
-        .toUpperCase();
-    if (text.length > 6) {
-      return oldValue;
-    }
-    String formatted = text;
-    if (text.length > 3) {
-      formatted = '${text.substring(0, 3)}-${text.substring(3)}';
-    }
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
-  }
-}
 
 class FormularioRegistroPesca extends ConsumerStatefulWidget {
   final CuadreEntidad? cuadreInicial;
@@ -65,12 +39,20 @@ class _FormularioRegistroPescaState
   final _fechaZarpeCtrl = TextEditingController();
   final _muellePartidaCtrl = TextEditingController();
 
-  // Controladores de Observaciones
+  // Controladores de info del Zarpe
+  final _cajasLlenasCtrl = TextEditingController();
+  final _cajasVaciasCtrl = TextEditingController();
+  final _nombrePesadorCtrl = TextEditingController();
+  final _tipoCtrl = TextEditingController();
+  final _cuadrillaCtrl = TextEditingController();
   final _observacionesCtrl = TextEditingController();
+  final _otroProductoCtrl = TextEditingController();
+  String? _tipoProductoSeleccionado;
 
   // Controladores de Gastos Operativos Establecidos
   final _fleteCtrl = TextEditingController();
-  final _facturacionCtrl = TextEditingController();
+  final _facturacionServicioCtrl = TextEditingController();
+  final _balanzaCtrl = TextEditingController();
   final _personalCtrl = TextEditingController();
   final _apoyoCtrl = TextEditingController();
   final _aguaCtrl = TextEditingController();
@@ -85,55 +67,87 @@ class _FormularioRegistroPescaState
 
   // Constante de Negocio
   final double taraOficialCaja = 3.0;
+  List<String> _placasGuardadas = [];
 
   @override
   void initState() {
     super.initState();
+    _cargarPlacas();
     if (widget.cuadreInicial != null) {
       _cuadreId = widget.cuadreInicial!.id;
       _placaCtrl.text = widget.cuadreInicial!.placa;
       _fechaZarpeCtrl.text = widget.cuadreInicial!.fechaZarpe ?? '';
       _muellePartidaCtrl.text = widget.cuadreInicial!.muellePartida ?? '';
+
+      _cajasLlenasCtrl.text = (widget.cuadreInicial!.cajasLlenas ?? 0)
+          .toString();
+      _cajasVaciasCtrl.text = (widget.cuadreInicial!.cajasVacias ?? 0)
+          .toString();
+      _nombrePesadorCtrl.text = widget.cuadreInicial!.pesador ?? '';
+      _tipoCtrl.text = widget.cuadreInicial!.tipo ?? '';
+      _cuadrillaCtrl.text = widget.cuadreInicial!.cuadrilla ?? '';
+      _tipoProductoSeleccionado = widget.cuadreInicial!.tipoProducto;
+      if (_tipoProductoSeleccionado != null &&
+          ![
+            'CATANA',
+            'POTA',
+            '1a',
+            '2a',
+            'Destare',
+            'Caballa',
+            'BONITO',
+            'JUREL',
+            'OTROS',
+          ].contains(_tipoProductoSeleccionado)) {
+        _otroProductoCtrl.text = _tipoProductoSeleccionado!;
+        _tipoProductoSeleccionado = 'OTROS';
+      }
+
       _compras.addAll(widget.cuadreInicial!.compras);
       _gastos.addAll(widget.cuadreInicial!.gastos);
       _cargarZarpeAsociado(widget.cuadreInicial!.id);
 
       for (final g in widget.cuadreInicial!.gastos) {
-        if (g.concepto == 'OBSERVACIONES') {
+        final conceptoUpper = g.concepto.toUpperCase().trim();
+        if (conceptoUpper == 'OBSERVACIONES') {
           _observacionesCtrl.text = g.tipo;
-        } else {
-          final conceptoUpper = g.concepto.toUpperCase().trim();
-          final totalStr = g.total > 0 ? g.total.toString() : '';
-          switch (conceptoUpper) {
-            case 'FLETE':
-              _fleteCtrl.text = totalStr;
-              break;
-            case 'FACTURACION':
-            case 'FACTURACIÓN':
-              _facturacionCtrl.text = totalStr;
-              break;
-            case 'PERSONAL':
-              _personalCtrl.text = totalStr;
-              break;
-            case 'APOYO':
-              _apoyoCtrl.text = totalStr;
-              break;
-            case 'AGUA':
-              _aguaCtrl.text = totalStr;
-              break;
-            case 'PESADOR':
-              _pesadorCtrl.text = totalStr;
-              break;
-            case 'CLOROX':
-              _cloroxCtrl.text = totalStr;
-              break;
-            case 'HIELO':
-              _hieloCtrl.text = totalStr;
-              break;
-            case 'OTROS':
-              _otrosCtrl.text = totalStr;
-              break;
-          }
+          continue;
+        }
+
+        final totalStr = g.total > 0 ? g.total.toString() : '';
+        switch (conceptoUpper) {
+          case 'FLETE':
+            _fleteCtrl.text = totalStr;
+            break;
+          case 'FACTURACION':
+          case 'FACTURACIÓN':
+          case 'FACTURACION/SERVICIO':
+            _facturacionServicioCtrl.text = totalStr;
+            break;
+          case 'BALANZA':
+            _balanzaCtrl.text = totalStr;
+            break;
+          case 'PERSONAL':
+            _personalCtrl.text = totalStr;
+            break;
+          case 'APOYO':
+            _apoyoCtrl.text = totalStr;
+            break;
+          case 'AGUA':
+            _aguaCtrl.text = totalStr;
+            break;
+          case 'PESADOR':
+            _pesadorCtrl.text = totalStr;
+            break;
+          case 'CLOROX':
+            _cloroxCtrl.text = totalStr;
+            break;
+          case 'HIELO':
+            _hieloCtrl.text = totalStr;
+            break;
+          case 'OTROS':
+            _otrosCtrl.text = totalStr;
+            break;
         }
       }
     } else {
@@ -149,9 +163,15 @@ class _FormularioRegistroPescaState
     _placaCtrl.dispose();
     _fechaZarpeCtrl.dispose();
     _muellePartidaCtrl.dispose();
+    _cajasLlenasCtrl.dispose();
+    _cajasVaciasCtrl.dispose();
+    _nombrePesadorCtrl.dispose();
+    _tipoCtrl.dispose();
+    _cuadrillaCtrl.dispose();
     _observacionesCtrl.dispose();
     _fleteCtrl.dispose();
-    _facturacionCtrl.dispose();
+    _facturacionServicioCtrl.dispose();
+    _balanzaCtrl.dispose();
     _personalCtrl.dispose();
     _apoyoCtrl.dispose();
     _aguaCtrl.dispose();
@@ -164,28 +184,43 @@ class _FormularioRegistroPescaState
 
   double get totalKilosCompras => _compras.fold(0.0, (sum, c) => sum + c.kilos);
   double get totalCostoCompras => _compras.fold(0.0, (sum, c) => sum + c.total);
-  double get totalAdelantos => _compras.fold(0.0, (sum, c) => sum + c.adelanto);
 
   double get totalGastosOperativos {
     double sum = 0.0;
-    sum += double.tryParse(_fleteCtrl.text) ?? 0.0;
-    sum += double.tryParse(_facturacionCtrl.text) ?? 0.0;
-    sum += double.tryParse(_personalCtrl.text) ?? 0.0;
-    sum += double.tryParse(_apoyoCtrl.text) ?? 0.0;
-    sum += double.tryParse(_aguaCtrl.text) ?? 0.0;
-    sum += double.tryParse(_pesadorCtrl.text) ?? 0.0;
-    sum += double.tryParse(_cloroxCtrl.text) ?? 0.0;
-    sum += double.tryParse(_hieloCtrl.text) ?? 0.0;
-    sum += double.tryParse(_otrosCtrl.text) ?? 0.0;
+    sum += FormateadorMiles.parseDouble(_fleteCtrl.text);
+    sum += FormateadorMiles.parseDouble(_facturacionServicioCtrl.text);
+    sum += FormateadorMiles.parseDouble(_balanzaCtrl.text);
+    sum += FormateadorMiles.parseDouble(_personalCtrl.text);
+    sum += FormateadorMiles.parseDouble(_apoyoCtrl.text);
+    sum += FormateadorMiles.parseDouble(_aguaCtrl.text);
+    sum += FormateadorMiles.parseDouble(_pesadorCtrl.text);
+    sum += FormateadorMiles.parseDouble(_cloroxCtrl.text);
+    sum += FormateadorMiles.parseDouble(_hieloCtrl.text);
+    sum += FormateadorMiles.parseDouble(_otrosCtrl.text);
     return sum;
   }
 
   void _guardarGastosEstablecidos() {
-    _gastos.removeWhere((g) => g.concepto != 'OBSERVACIONES');
+    _gastos.clear();
+
+    if (_observacionesCtrl.text.trim().isNotEmpty) {
+      _gastos.add(
+        GastoEntidad(
+          id: const Uuid().v4(),
+          cuadreId: _cuadreId,
+          tipo: _observacionesCtrl.text.trim(),
+          concepto: 'OBSERVACIONES',
+          cantidad: 1,
+          costoUnitario: 0,
+          total: 0,
+        ),
+      );
+    }
 
     final conceptosMap = {
       'FLETE': _fleteCtrl,
-      'FACTURACION': _facturacionCtrl,
+      'FACTURACION/SERVICIO': _facturacionServicioCtrl,
+      'BALANZA': _balanzaCtrl,
       'PERSONAL': _personalCtrl,
       'APOYO': _apoyoCtrl,
       'AGUA': _aguaCtrl,
@@ -196,7 +231,7 @@ class _FormularioRegistroPescaState
     };
 
     conceptosMap.forEach((concepto, controller) {
-      final valor = double.tryParse(controller.text) ?? 0.0;
+      final valor = FormateadorMiles.parseDouble(controller.text);
       if (valor > 0) {
         _gastos.add(
           GastoEntidad(
@@ -216,6 +251,8 @@ class _FormularioRegistroPescaState
   Future<void> _guardarCuadre() async {
     if (!_formKey.currentState!.validate()) return;
 
+    await CamarasRepositorioLocal().guardarPlacaLocal(_placaCtrl.text);
+
     if (_compras.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -227,22 +264,6 @@ class _FormularioRegistroPescaState
     }
 
     _guardarGastosEstablecidos();
-
-    // Remover observación previa si existe antes de agregar la nueva
-    _gastos.removeWhere((g) => g.concepto == 'OBSERVACIONES');
-    if (_observacionesCtrl.text.trim().isNotEmpty) {
-      _gastos.add(
-        GastoEntidad(
-          id: const Uuid().v4(),
-          cuadreId: _cuadreId,
-          tipo: _observacionesCtrl.text.trim(),
-          concepto: 'OBSERVACIONES',
-          cantidad: 1,
-          costoUnitario: 0,
-          total: 0,
-        ),
-      );
-    }
 
     final authState = ref.read(proveedorControladorAutenticacion);
     if (authState is! EstadoAutenticacionAutenticado) {
@@ -269,12 +290,23 @@ class _FormularioRegistroPescaState
       pesoTotal: totalKilosCompras > 0
           ? totalKilosCompras
           : (widget.cuadreInicial?.pesoTotal ?? 0),
-      cajasLlenas: widget.cuadreInicial?.cajasLlenas ?? 0,
-      cajasVacias: widget.cuadreInicial?.cajasVacias ?? 0,
-      tipoProducto: widget.cuadreInicial?.tipoProducto ?? 0,
+      cajasLlenas: int.tryParse(_cajasLlenasCtrl.text) ?? 0,
+      cajasVacias: int.tryParse(_cajasVaciasCtrl.text) ?? 0,
+      tipoProducto: _tipoProductoSeleccionado == 'OTROS'
+          ? _otroProductoCtrl.text.trim().toUpperCase()
+          : _tipoProductoSeleccionado,
       muellePartida: _muellePartidaCtrl.text.trim().isEmpty
           ? null
           : _muellePartidaCtrl.text.trim(),
+      pesador: _nombrePesadorCtrl.text.trim().isEmpty
+          ? null
+          : _nombrePesadorCtrl.text.trim().toUpperCase(),
+      tipo: _tipoCtrl.text.trim().isEmpty
+          ? null
+          : _tipoCtrl.text.trim().toUpperCase(),
+      cuadrilla: _cuadrillaCtrl.text.trim().isEmpty
+          ? null
+          : _cuadrillaCtrl.text.trim().toUpperCase(),
       compras: _compras,
       gastos: _gastos,
       ventas: [],
@@ -306,37 +338,6 @@ class _FormularioRegistroPescaState
     return enteraFormateada;
   }
 
-  InputDecoration _construirInputDecoration({
-    required String labelText,
-    Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      labelText: labelText,
-      labelStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
-      floatingLabelStyle: const TextStyle(color: Color(0xFF006B54), fontWeight: FontWeight.bold),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF006B54), width: 1.5),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Colors.redAccent, width: 1.0),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
-      ),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      suffixIcon: suffixIcon,
-    );
-  }
-
   void _agregarCompraDialog({
     CompraEntidad? compraAEditar,
     int? indiceAEditar,
@@ -354,25 +355,16 @@ class _FormularioRegistroPescaState
           ? compraAEditar.precioUnitario.toString()
           : '',
     );
-    final adelantoCtrl = TextEditingController(
-      text: compraAEditar != null && compraAEditar.adelanto > 0
-          ? compraAEditar.adelanto.toString()
-          : '',
-    );
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setStateDialog) {
-          final isMobile = MediaQuery.of(context).size.width < 600;
           return Dialog(
             backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              side: BorderSide(
-                color: Color(0x1A1F2937),
-                width: 1.2,
-              ),
+              side: BorderSide(color: Color(0x1A1F2937), width: 1.2),
             ),
             insetPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -396,7 +388,7 @@ class _FormularioRegistroPescaState
                             const Icon(
                               Icons.directions_boat,
                               color: Color(0xFF006B54),
-                              size: 32,
+                              size: 28,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -405,336 +397,163 @@ class _FormularioRegistroPescaState
                                     ? 'EDITAR EMBARCACIÓN'
                                     : 'NUEVA EMBARCACIÓN',
                                 style: const TextStyle(
-                                  color: Color(0xFF1F2937),
+                                  color: Color(0xFF006B54),
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 22,
+                                  fontSize: 18,
                                 ),
                               ),
                             ),
                             IconButton(
                               icon: const Icon(
                                 Icons.close,
-                                color: Color(0x8A1F2937),
-                                size: 32,
+                                color: Color(0xFF6B7280),
+                                size: 28,
                               ),
                               onPressed: () => Navigator.pop(ctx),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
-                        if (isMobile) ...[
-                          TextFormField(
-                            controller: embCtrl,
-                            style: const TextStyle(
-                              color: Color(0xFF1F2937),
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textCapitalization: TextCapitalization.characters,
-                            inputFormatters: [_UpperCaseTextFormatter()],
-                            decoration:
-                                _construirInputDecoration(
-                                  labelText: 'Nombre de Embarcación',
-                                ).copyWith(
-                                  contentPadding: const EdgeInsets.all(20),
-                                ),
-                            validator: (v) => (v == null || v.trim().isEmpty)
-                                ? 'Requerido'
-                                : null,
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          controller: embCtrl,
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 16,
                           ),
-                          const SizedBox(height: 16),
-                          DropdownButtonFormField<String>(
-                            initialValue: productoSeleccionado,
-                            dropdownColor: Colors.white,
-                            style: const TextStyle(
-                              color: Color(0xFF1F2937),
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            decoration:
-                                _construirInputDecoration(
-                                  labelText: 'Especie (Producto)',
-                                ).copyWith(
-                                  contentPadding: const EdgeInsets.all(20),
-                                ),
-                            items:
-                                ["POTA", "JUREL", "BONITO", "CABALLA", "PERICO"]
-                                    .map(
-                                      (String value) =>
-                                          DropdownMenuItem<String>(
-                                            value: value,
-                                            child: Text(value),
-                                          ),
-                                    )
-                                    .toList(),
-                            onChanged: (val) {
-                              if (val != null) {
-                                setStateDialog(
-                                  () => productoSeleccionado = val,
-                                );
-                              }
-                            },
-                          ),
-                        ] else ...[
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: TextFormField(
-                                  controller: embCtrl,
-                                  style: const TextStyle(
-                                    color: Color(0xFF1F2937),
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textCapitalization:
-                                      TextCapitalization.characters,
-                                  inputFormatters: [_UpperCaseTextFormatter()],
-                                  decoration:
-                                      _construirInputDecoration(
-                                        labelText: 'Nombre de Embarcación',
-                                      ).copyWith(
-                                        contentPadding: const EdgeInsets.all(
-                                          20,
-                                        ),
-                                      ),
-                                  validator: (v) =>
-                                      (v == null || v.trim().isEmpty)
-                                      ? 'Requerido'
-                                      : null,
-                                ),
+                          textCapitalization: TextCapitalization.characters,
+                          inputFormatters: [UpperCaseInputFormatter()],
+                          decoration:
+                              EstilosFormulario.construirInputDecoration(
+                                labelText: 'Nombre de Embarcación',
                               ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                flex: 1,
-                                child: DropdownButtonFormField<String>(
-                                  initialValue: productoSeleccionado,
-                                  dropdownColor: Colors.white,
-                                  style: const TextStyle(
-                                    color: Color(0xFF1F2937),
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  decoration:
-                                      _construirInputDecoration(
-                                        labelText: 'Especie (Producto)',
-                                      ).copyWith(
-                                        contentPadding: const EdgeInsets.all(
-                                          20,
-                                        ),
-                                      ),
-                                  items:
-                                      [
-                                            "POTA",
-                                            "JUREL",
-                                            "BONITO",
-                                            "CABALLA",
-                                            "PERICO",
-                                          ]
-                                          .map(
-                                            (String value) =>
-                                                DropdownMenuItem<String>(
-                                                  value: value,
-                                                  child: Text(value),
-                                                ),
-                                          )
-                                          .toList(),
-                                  onChanged: (val) {
-                                    if (val != null) {
-                                      setStateDialog(
-                                        () => productoSeleccionado = val,
-                                      );
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Requerido'
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          initialValue: productoSeleccionado,
+                          dropdownColor: Colors.white,
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 16,
                           ),
-                        ],
-                        const SizedBox(height: 24),
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Color(0x4D000000),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Color(0x1F1F2937),
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Datos de Pesaje',
-                                style: TextStyle(
-                                  color: Color(0x8A1F2937),
-                                  fontSize: 14,
-                                ),
+                          decoration:
+                              EstilosFormulario.construirInputDecoration(
+                                labelText: 'Especie (Producto)',
                               ),
-                              const SizedBox(height: 16),
-                              TextFormField(
+                          items:
+                              [
+                                    "CATANA",
+                                    "POTA",
+                                    "1A",
+                                    "2A",
+                                    "DESTARE",
+                                    "CABALLA",
+                                    "BONITO",
+                                    "JUREL",
+                                  ]
+                                  .map(
+                                    (String value) => DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setStateDialog(() => productoSeleccionado = val);
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: TextFormField(
                                 controller: kilosNetosCtrl,
                                 style: const TextStyle(
                                   color: Color(0xFF059669),
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
                                 ),
                                 decoration:
-                                    _construirInputDecoration(
-                                      labelText: 'KILOS (PESO TOTAL)',
-                                    ).copyWith(
-                                      contentPadding: const EdgeInsets.all(24),
+                                    EstilosFormulario.construirInputDecoration(
+                                      labelText: 'Kilos (Total)',
                                     ),
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
                                       decimal: true,
                                     ),
+                                inputFormatters: [FormateadorMiles()],
                                 validator: (v) {
                                   if (v == null || v.isEmpty) {
                                     return 'Requerido';
                                   }
-                                  final k = double.tryParse(
-                                    v.replaceAll(',', ''),
-                                  );
-                                  if (k == null || k <= 0) return 'Mayor a 0';
+                                  final k = FormateadorMiles.parseDouble(v);
+                                  if (k <= 0) return 'Mayor a 0';
                                   return null;
                                 },
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: TextFormField(
+                                controller: precioCtrl,
+                                style: const TextStyle(
+                                  color: Color(0xFF006B54),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                                decoration:
+                                    EstilosFormulario.construirInputDecoration(
+                                      labelText: 'S/ Precio x Kg',
+                                    ),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                                inputFormatters: [FormateadorMiles()],
+                                validator: (v) {
+                                  if (v == null || v.isEmpty) {
+                                    return 'Requerido';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 24),
-                        if (isMobile) ...[
-                          TextFormField(
-                            controller: precioCtrl,
-                            style: const TextStyle(
-                              color: Color(0xFF1F2937),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24,
-                            ),
-                            decoration:
-                                _construirInputDecoration(
-                                  labelText: 'S/ Precio x Kg',
-                                ).copyWith(
-                                  contentPadding: const EdgeInsets.all(20),
-                                ),
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return 'Requerido';
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: adelantoCtrl,
-                            style: const TextStyle(
-                              color: Color(0xFFD97706),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24,
-                            ),
-                            decoration:
-                                _construirInputDecoration(
-                                  labelText: 'S/ Adelanto Efectivo (Opcional)',
-                                ).copyWith(
-                                  contentPadding: const EdgeInsets.all(20),
-                                ),
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                          ),
-                        ] else ...[
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  controller: precioCtrl,
-                                  style: const TextStyle(
-                                    color: Color(0xFF1F2937),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 28,
-                                  ),
-                                  decoration:
-                                      _construirInputDecoration(
-                                        labelText: 'S/ Precio x Kg',
-                                      ).copyWith(
-                                        contentPadding: const EdgeInsets.all(
-                                          24,
-                                        ),
-                                      ),
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                      ),
-                                  validator: (v) {
-                                    if (v == null || v.isEmpty) {
-                                      return 'Requerido';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: TextFormField(
-                                  controller: adelantoCtrl,
-                                  style: const TextStyle(
-                                    color: Color(0xFFD97706),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 28,
-                                  ),
-                                  decoration:
-                                      _construirInputDecoration(
-                                        labelText: 'S/ Adelanto Efectivo',
-                                      ).copyWith(
-                                        contentPadding: const EdgeInsets.all(
-                                          24,
-                                        ),
-                                      ),
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                      ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        const SizedBox(height: 32),
                         SizedBox(
-                          height: 64, // Botón super gigante POS
+                          height: 54,
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF006B54),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            icon: const Icon(Icons.check, size: 32),
+                            icon: const Icon(Icons.check, size: 24),
                             label: const Text(
                               'CONFIRMAR EMBARCACIÓN',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                                fontSize: 16,
                               ),
                             ),
                             onPressed: () {
                               if (!formKeyDialog.currentState!.validate()) {
                                 return;
                               }
-                              final k = double.parse(
-                                kilosNetosCtrl.text.replaceAll(',', ''),
+                              final k = FormateadorMiles.parseDouble(
+                                kilosNetosCtrl.text,
                               );
-                              final p = double.parse(
-                                precioCtrl.text.replaceAll(',', ''),
+                              final p = FormateadorMiles.parseDouble(
+                                precioCtrl.text,
                               );
-                              final a =
-                                  double.tryParse(
-                                    adelantoCtrl.text.replaceAll(',', ''),
-                                  ) ??
-                                  0.0;
 
                               setState(() {
                                 final item = CompraEntidad(
@@ -744,7 +563,6 @@ class _FormularioRegistroPescaState
                                   producto: productoSeleccionado,
                                   kilos: k,
                                   precioUnitario: p,
-                                  adelanto: a,
                                   total: k * p,
                                 );
                                 if (compraAEditar != null &&
@@ -796,12 +614,29 @@ class _FormularioRegistroPescaState
   }
 
   Future<List<Map<String, dynamic>>> _obtenerZarpesDisponibles() async {
-    final db = await GestorBaseDatos.instance.database;
-    return await db.query(
-      'zarpes',
-      where: "estado != 'RECIBIDO_LAMBAYEQUE'",
-      orderBy: 'fecha_zarpe DESC',
-    );
+    final repo = ref.read(proveedorZarpeRepositorio);
+    final historial = await repo.obtenerHistorial('');
+
+    // Filtrar zarpes y convertirlos a Map para compatibilidad temporal con el UI
+    final zarpes = historial
+        .where((z) => z.estado != 'RECIBIDO_LAMBAYEQUE')
+        .toList();
+
+    // Ordenar por fecha_zarpe DESC
+    zarpes.sort((a, b) => b.fechaZarpe.compareTo(a.fechaZarpe));
+
+    return zarpes
+        .map(
+          (z) => {
+            'id': z.id,
+            'placa_camara': z.placaCamara,
+            'chofer': z.chofer,
+            'muelle_partida': z.muellePartida,
+            'fecha_zarpe': z.fechaZarpe,
+            'estado': z.estado,
+          },
+        )
+        .toList();
   }
 
   Future<void> _mostrarSelectorZarpes() async {
@@ -885,10 +720,7 @@ class _FormularioRegistroPescaState
         ),
         subtitle: Text(
           info,
-          style: const TextStyle(
-            color: Color(0xB31F2937),
-            fontSize: 13,
-          ),
+          style: const TextStyle(color: Color(0xB31F2937), fontSize: 13),
         ),
         isThreeLine: true,
         trailing: const Icon(Icons.chevron_right, color: Color(0xFF006B54)),
@@ -909,7 +741,9 @@ class _FormularioRegistroPescaState
       _zarpeSeleccionado = z;
       _cuadreId = z['id'] ?? '';
       _placaCtrl.text = z['placa_camara'] ?? '';
-      _fechaZarpeCtrl.text = z['fecha_zarpe'] ?? '';
+      _fechaZarpeCtrl.text = z['fecha_zarpe'] != null
+          ? (z['fecha_zarpe'] as DateTime).toIso8601String().substring(0, 10)
+          : '';
     });
     Navigator.pop(context);
   }
@@ -917,10 +751,11 @@ class _FormularioRegistroPescaState
   // Vistas Parciales
   Widget _buildSeccionGeneral() {
     return Card(
-      color: const Color(0xB30E3E2C),
+      color: Colors.white,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Color(0x0D1F2937)),
+        side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -930,7 +765,7 @@ class _FormularioRegistroPescaState
             const Text(
               'Información de Cámara',
               style: TextStyle(
-                color: Color(0xFF1F2937),
+                color: Color(0xFF006B54),
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -939,23 +774,93 @@ class _FormularioRegistroPescaState
             Row(
               children: [
                 Expanded(
-                  child: TextFormField(
-                    controller: _placaCtrl,
-                    style: const TextStyle(color: Color(0xFF1F2937)),
-                    textCapitalization: TextCapitalization.characters,
-                    inputFormatters: [_PlacaInputFormatter()],
-                    decoration: _construirInputDecoration(
-                      labelText: 'Placa (Ej: AAA-123)',
-                      suffixIcon: IconButton(
-                        icon: const Icon(
-                          Icons.search_rounded,
-                          color: Color(0xFF006B54),
-                        ),
-                        onPressed: _mostrarSelectorZarpes,
-                      ),
-                    ),
-                    validator: (v) =>
-                        (v == null || v.isEmpty) ? 'Requerido' : null,
+                  child: RawAutocomplete<String>(
+                    textEditingController: _placaCtrl,
+                    focusNode: FocusNode(),
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return _placasGuardadas;
+                      }
+                      return _placasGuardadas.where((String option) {
+                        return option.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
+                      });
+                    },
+                    fieldViewBuilder:
+                        (
+                          BuildContext context,
+                          TextEditingController textEditingController,
+                          FocusNode focusNode,
+                          VoidCallback onFieldSubmitted,
+                        ) {
+                          return TextFormField(
+                            controller: textEditingController,
+                            focusNode: focusNode,
+                            style: const TextStyle(color: Color(0xFF1F2937)),
+                            textCapitalization: TextCapitalization.characters,
+                            inputFormatters: [PlacaInputFormatter()],
+                            decoration:
+                                EstilosFormulario.construirInputDecoration(
+                                  labelText: 'Placa (Ej: AAA-123)',
+                                  suffixIcon: IconButton(
+                                    icon: const Icon(
+                                      Icons.search_rounded,
+                                      color: Color(0xFF006B54),
+                                    ),
+                                    onPressed: _mostrarSelectorZarpes,
+                                  ),
+                                ),
+                            validator: (v) =>
+                                (v == null || v.isEmpty) ? 'Requerido' : null,
+                          );
+                        },
+                    optionsViewBuilder:
+                        (
+                          BuildContext context,
+                          AutocompleteOnSelected<String> onSelected,
+                          Iterable<String> options,
+                        ) {
+                          return Align(
+                            alignment: Alignment.topLeft,
+                            child: Material(
+                              elevation: 4.0,
+                              borderRadius: BorderRadius.circular(8),
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxHeight: 200,
+                                  maxWidth: 300,
+                                ),
+                                child: ListView.builder(
+                                  padding: EdgeInsets.zero,
+                                  shrinkWrap: true,
+                                  itemCount: options.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                        final String option = options.elementAt(
+                                          index,
+                                        );
+                                        return InkWell(
+                                          onTap: () {
+                                            onSelected(option);
+                                          },
+                                          child: Container(
+                                            color: Colors.white,
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Text(
+                                              option,
+                                              style: const TextStyle(
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -964,7 +869,7 @@ class _FormularioRegistroPescaState
                     controller: _fechaZarpeCtrl,
                     readOnly: true,
                     style: const TextStyle(color: Color(0xFF1F2937)),
-                    decoration: _construirInputDecoration(
+                    decoration: EstilosFormulario.construirInputDecoration(
                       labelText: 'Fecha',
                       suffixIcon: const Icon(
                         Icons.calendar_today,
@@ -977,6 +882,119 @@ class _FormularioRegistroPescaState
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _cajasLlenasCtrl,
+                    style: const TextStyle(color: Color(0xFF1F2937)),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: EstilosFormulario.construirInputDecoration(
+                      labelText: 'Cajas Llenas',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextFormField(
+                    controller: _cajasVaciasCtrl,
+                    style: const TextStyle(color: Color(0xFF1F2937)),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: EstilosFormulario.construirInputDecoration(
+                      labelText: 'Cajas Vacías',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: _tipoProductoSeleccionado,
+              dropdownColor: Colors.white,
+              style: const TextStyle(color: Colors.black87),
+              iconEnabledColor: const Color(0xFF006B54),
+              decoration: EstilosFormulario.construirInputDecoration(
+                labelText: 'Tipo de Producto',
+              ),
+              items: const [
+                DropdownMenuItem(value: 'CATANA', child: Text('CATANA')),
+                DropdownMenuItem(value: 'POTA', child: Text('POTA')),
+                DropdownMenuItem(value: '1a', child: Text('1a')),
+                DropdownMenuItem(value: '2a', child: Text('2a')),
+                DropdownMenuItem(value: 'Destare', child: Text('Destare')),
+                DropdownMenuItem(value: 'Caballa', child: Text('Caballa')),
+                DropdownMenuItem(value: 'BONITO', child: Text('BONITO')),
+                DropdownMenuItem(value: 'JUREL', child: Text('JUREL')),
+                DropdownMenuItem(value: 'OTROS', child: Text('OTROS')),
+              ],
+              onChanged: (val) {
+                if (val != null) {
+                  setState(() {
+                    _tipoProductoSeleccionado = val;
+                    if (val != 'OTROS') _otroProductoCtrl.clear();
+                  });
+                }
+              },
+            ),
+            if (_tipoProductoSeleccionado == 'OTROS') ...[
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _otroProductoCtrl,
+                style: const TextStyle(color: Colors.black87),
+                textCapitalization: TextCapitalization.characters,
+                decoration: EstilosFormulario.construirInputDecoration(
+                  labelText: 'Especifique otro producto',
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _nombrePesadorCtrl,
+              style: const TextStyle(color: Colors.black87),
+              textCapitalization: TextCapitalization.characters,
+              decoration: EstilosFormulario.construirInputDecoration(
+                labelText: 'Pesador de Muelle',
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _tipoCtrl,
+                    style: const TextStyle(color: Colors.black87),
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: EstilosFormulario.construirInputDecoration(
+                      labelText: 'Tipo',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextFormField(
+                    controller: _cuadrillaCtrl,
+                    style: const TextStyle(color: Colors.black87),
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: EstilosFormulario.construirInputDecoration(
+                      labelText: 'Cuadrilla',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _observacionesCtrl,
+              style: const TextStyle(color: Colors.black87),
+              maxLines: 2,
+              decoration: EstilosFormulario.construirInputDecoration(
+                labelText: 'Observaciones / Notas de Bahía (Opcional)',
+              ),
+            ),
+            const SizedBox(height: 16),
             _buildFotosZarpeEvidencia(),
           ],
         ),
@@ -986,10 +1004,11 @@ class _FormularioRegistroPescaState
 
   Widget _buildSeccionEmbarcaciones() {
     return Card(
-      color: const Color(0xB30E3E2C),
+      color: Colors.white,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Color(0x0D1F2937)),
+        side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -1003,7 +1022,7 @@ class _FormularioRegistroPescaState
                   child: Text(
                     'Embarcaciones',
                     style: TextStyle(
-                      color: Color(0xFF1F2937),
+                      color: Color(0xFF006B54),
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1038,9 +1057,7 @@ class _FormularioRegistroPescaState
                   padding: EdgeInsets.all(20.0),
                   child: Text(
                     'No hay embarcaciones registradas.',
-                    style: TextStyle(
-                      color: Color(0x8A1F2937),
-                    ),
+                    style: TextStyle(color: Color(0x8A1F2937)),
                   ),
                 ),
               )
@@ -1054,10 +1071,11 @@ class _FormularioRegistroPescaState
                   return Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
-                      color: Color(0x33000000),
+                      color: const Color(0xFFF9FAFB),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Color(0x1F1F2937),
+                        color: const Color(0xFFE5E7EB),
+                        width: 1.5,
                       ),
                     ),
                     child: ListTile(
@@ -1077,9 +1095,7 @@ class _FormularioRegistroPescaState
                         children: [
                           Text(
                             '${c.producto} • ${_formatearNumero(c.kilos)} kg a S/ ${_formatearNumero(c.precioUnitario)}',
-                            style: const TextStyle(
-                              color: Color(0xB31F2937),
-                            ),
+                            style: const TextStyle(color: Color(0xFF6B7280)),
                           ),
                           if (c.adelanto > 0)
                             Text(
@@ -1106,7 +1122,7 @@ class _FormularioRegistroPescaState
                           IconButton(
                             icon: const Icon(
                               Icons.edit,
-                              color: Color(0x8A1F2937),
+                              color: Color(0xFF006B54),
                               size: 20,
                             ),
                             onPressed: () => _agregarCompraDialog(
@@ -1116,7 +1132,7 @@ class _FormularioRegistroPescaState
                           ),
                           IconButton(
                             icon: const Icon(
-                              Icons.delete,
+                              Icons.delete_outline,
                               color: Colors.redAccent,
                               size: 20,
                             ),
@@ -1137,10 +1153,11 @@ class _FormularioRegistroPescaState
 
   Widget _buildSeccionGastos() {
     return Card(
-      color: const Color(0xB30E3E2C),
+      color: Colors.white,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Color(0x0D1F2937)),
+        side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -1150,7 +1167,7 @@ class _FormularioRegistroPescaState
             const Text(
               'Gastos Operativos',
               style: TextStyle(
-                color: Color(0xFF1F2937),
+                color: Color(0xFF006B54),
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -1169,9 +1186,10 @@ class _FormularioRegistroPescaState
               children: [
                 _buildCampoGasto(label: 'Flete', controller: _fleteCtrl),
                 _buildCampoGasto(
-                  label: 'Facturación',
-                  controller: _facturacionCtrl,
+                  label: 'Facturación/Servicio',
+                  controller: _facturacionServicioCtrl,
                 ),
+                _buildCampoGasto(label: 'Balanza', controller: _balanzaCtrl),
                 _buildCampoGasto(label: 'Personal', controller: _personalCtrl),
                 _buildCampoGasto(label: 'Apoyo', controller: _apoyoCtrl),
                 _buildCampoGasto(label: 'Agua', controller: _aguaCtrl),
@@ -1180,15 +1198,6 @@ class _FormularioRegistroPescaState
                 _buildCampoGasto(label: 'Hielo', controller: _hieloCtrl),
                 _buildCampoGasto(label: 'Otros', controller: _otrosCtrl),
               ],
-            ),
-
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _observacionesCtrl,
-              style: const TextStyle(color: Color(0xFF1F2937)),
-              decoration: _construirInputDecoration(
-                labelText: 'Observaciones / Notas (Opcional)',
-              ),
             ),
           ],
         ),
@@ -1204,30 +1213,26 @@ class _FormularioRegistroPescaState
       controller: controller,
       style: const TextStyle(color: Color(0xFF1F2937), fontSize: 14),
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [FormateadorMiles()],
       onChanged: (_) => setState(() {}), // Dispara recálculo en vivo
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(
-          color: Color(0x8A1F2937),
-          fontSize: 12,
-        ),
+        labelStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
         prefixText: 'S/ ',
         prefixStyle: const TextStyle(
-          color: Colors.orangeAccent,
+          color: Color(0xFF006B54),
           fontWeight: FontWeight.bold,
         ),
         filled: true,
-        fillColor: const Color(0x80F2F6F3),
+        fillColor: const Color(0xFFF9FAFB),
         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Color(0x141F2937),
-          ),
+          borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.orangeAccent),
+          borderSide: const BorderSide(color: Color(0xFF006B54), width: 1.5),
         ),
       ),
     );
@@ -1289,7 +1294,6 @@ class _FormularioRegistroPescaState
       totalKilosCompras: totalKilosCompras,
       totalCostoCompras: totalCostoCompras,
       totalGastosOperativos: totalGastosOperativos,
-      totalAdelantos: totalAdelantos,
       guardando: _guardando,
       onGuardar: _guardarCuadre,
     );
@@ -1308,7 +1312,11 @@ class _FormularioRegistroPescaState
         ),
         title: const Text(
           'Punto de Venta - Muelle',
-          style: TextStyle(color: Color(0xFF004D40), fontSize: 18, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: Color(0xFF004D40),
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         centerTitle: false,
         titleSpacing: 0,
@@ -1329,13 +1337,30 @@ class _FormularioRegistroPescaState
   }
 
   Future<void> _cargarZarpeAsociado(String id) async {
-    final db = await GestorBaseDatos.instance.database;
-    final zarpes = await db.query('zarpes', where: 'id = ?', whereArgs: [id]);
+    final repo = ref.read(proveedorZarpeRepositorio);
+    final historial = await repo.obtenerHistorial('');
+    final zarpes = historial.where((z) => z.id == id).toList();
+
     if (zarpes.isNotEmpty && mounted) {
       setState(() {
-        _zarpeSeleccionado = zarpes.first;
+        final z = zarpes.first;
+        _zarpeSeleccionado = {
+          'id': z.id,
+          'placa_camara': z.placaCamara,
+          'chofer': z.chofer,
+          'muelle_partida': z.muellePartida,
+          'fecha_zarpe': z.fechaZarpe,
+          'estado': z.estado,
+        };
       });
     }
+  }
+
+  Future<void> _cargarPlacas() async {
+    final placas = await CamarasRepositorioLocal().obtenerPlacasActivas();
+    setState(() {
+      _placasGuardadas = placas;
+    });
   }
 
   void _verFotoGrande(String path, bool esUrl) {
@@ -1415,9 +1440,7 @@ class _FormularioRegistroPescaState
                   height: 80,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Color(0x3D1F2937),
-                    ),
+                    border: Border.all(color: Color(0x3D1F2937)),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),

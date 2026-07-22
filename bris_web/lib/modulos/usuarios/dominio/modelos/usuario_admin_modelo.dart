@@ -25,13 +25,15 @@ class UsuarioAdminModelo {
     return UsuarioAdminModelo(
       uid: json['id']?.toString() ?? json['uid']?.toString() ?? '',
       dni: json['dni'] ?? '',
-      correo: json['correo'] ?? '', 
+      correo: json['correo'] ?? '',
       nombre: json['nombre_real'] ?? json['nombre'] ?? '',
       rol: json['rol'] ?? 'operario',
       sede: json['bahia'] ?? json['sede'] ?? 'Piura',
       activo: json['activo'] ?? true,
       fotoPerfil: json['foto_perfil'],
-      fechaNacimiento: json['fecha_nacimiento'] != null ? DateTime.tryParse(json['fecha_nacimiento']) : null,
+      fechaNacimiento: json['fecha_nacimiento'] != null
+          ? DateTime.tryParse(json['fecha_nacimiento'])
+          : null,
     );
   }
 

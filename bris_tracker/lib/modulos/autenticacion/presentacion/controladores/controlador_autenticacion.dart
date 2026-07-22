@@ -82,26 +82,40 @@ final proveedorRepositorioAutenticacion = Provider<RepositorioAutenticacion>((
 });
 
 /// Proveedor del controlador de estado de autenticación.
+///
+/// Usa [NotifierProvider] (Riverpod 2.x). El estado es [EstadoAutenticacion],
+/// una clase sellada propia (no [AsyncValue]) que modela el BPMN Flujo 01.
 final proveedorControladorAutenticacion =
-    StateNotifierProvider<NotificadorAutenticacion, EstadoAutenticacion>((ref) {
-      final repositorio = ref.read(proveedorRepositorioAutenticacion);
-      return NotificadorAutenticacion(repositorio: repositorio);
-    });
+    NotifierProvider<NotificadorAutenticacion, EstadoAutenticacion>(
+      NotificadorAutenticacion.new,
+    );
 
 // ─── Controlador ─────────────────────────────────────────────────────────────
+
 
 /// Controlador de autenticación que gestiona todos los nodos del BPMN Flujo 01.
 ///
 /// Sigue el principio de Responsabilidad Única (SRP): cada método
 /// representa exactamente una transición de estado del diagrama BPMN.
-class NotificadorAutenticacion extends StateNotifier<EstadoAutenticacion> {
-  final RepositorioAutenticacion _repositorio;
+///
+/// Usa [Notifier] (Riverpod 2.x) con estado de tipo [EstadoAutenticacion],
+/// una clase sellada propia que modela todos los nodos del flujo de acceso.
+class NotificadorAutenticacion extends Notifier<EstadoAutenticacion> {
+  late final RepositorioAutenticacion _repositorio;
+
+  /// Referencia temporal al usuario durante el flujo de configuración.
+  ///
+  /// Se asigna en [iniciarSesion] y se usa en [configurarBiometria].
+  /// Es null fuera de ese flujo.
   Usuario? _usuarioActivo;
 
-  NotificadorAutenticacion({required RepositorioAutenticacion repositorio})
-    : _repositorio = repositorio,
-      super(const EstadoAutenticacionInicial()) {
+  @override
+  EstadoAutenticacion build() {
+    _repositorio = ref.read(proveedorRepositorioAutenticacion);
+    // Arrancar la verificación de sesión activa de forma asíncrona.
+    // El estado inicial es [EstadoAutenticacionInicial] hasta que resuelva.
     verificarSesionActiva();
+    return const EstadoAutenticacionInicial();
   }
 
   /// [Gateway_HasSession + Gateway_GracePeriod] — Verifica sesión y gracia 12h.
@@ -237,15 +251,21 @@ class NotificadorAutenticacion extends StateNotifier<EstadoAutenticacion> {
   }
 
   /// Obtiene los detalles actualizados del perfil de usuario de forma asíncrona.
+  ///
+  /// Solo opera si el usuario ya está autenticado. Los errores son silenciosos:
+  /// un fallo al refrescar el perfil no debe cerrar la sesión del usuario.
   Future<void> refrescarPerfil() async {
     final estadoActual = state;
-    if (estadoActual is EstadoAutenticacionAutenticado) {
-      try {
-        final usuarioAct = await _repositorio.obtenerPerfilActualizado(estadoActual.usuario.id);
-        state = EstadoAutenticacionAutenticado(usuarioAct);
-      } catch (_) {
-        // Silencioso
-      }
+    if (estadoActual is! EstadoAutenticacionAutenticado) return;
+    try {
+      final usuarioAct = await _repositorio.obtenerPerfilActualizado(
+        estadoActual.usuario.id,
+      );
+      state = EstadoAutenticacionAutenticado(usuarioAct);
+    } catch (_) {
+      // Fallo silencioso intencional: el perfil se reintentará en la próxima
+      // visita a la pantalla de perfil. No debe interrumpir la sesión activa.
     }
   }
 }
+

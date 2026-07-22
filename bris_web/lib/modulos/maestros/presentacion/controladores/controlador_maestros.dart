@@ -66,6 +66,7 @@ class ControladorMaestros extends AsyncNotifier<EstadoMaestros> {
   }
 }
 
-final controladorMaestrosProvider = AsyncNotifierProvider<ControladorMaestros, EstadoMaestros>(
-  () => ControladorMaestros(),
-);
+final controladorMaestrosProvider =
+    AsyncNotifierProvider<ControladorMaestros, EstadoMaestros>(
+      () => ControladorMaestros(),
+    );

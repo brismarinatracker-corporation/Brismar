@@ -10,7 +10,9 @@ final fuenteDatosUsuariosProvider = Provider<FuenteDatosUsuariosAdmin>((ref) {
   return FuenteDatosUsuariosAdmin(Supabase.instance.client);
 });
 
-final repositorioUsuariosProvider = Provider<RepositorioUsuariosAdminImpl>((ref) {
+final repositorioUsuariosProvider = Provider<RepositorioUsuariosAdminImpl>((
+  ref,
+) {
   final fuenteDatos = ref.watch(fuenteDatosUsuariosProvider);
   return RepositorioUsuariosAdminImpl(fuenteDatos);
 });
@@ -21,11 +23,7 @@ class EstadoUsuarios {
   final String? error;
   final List<UsuarioAdminModelo> usuarios;
 
-  EstadoUsuarios({
-    this.cargando = false,
-    this.error,
-    this.usuarios = const [],
-  });
+  EstadoUsuarios({this.cargando = false, this.error, this.usuarios = const []});
 
   EstadoUsuarios copiarCon({
     bool? cargando,
@@ -80,10 +78,16 @@ class ControladorUsuarios extends Notifier<EstadoUsuarios> {
     }
   }
 
-  Future<bool> actualizarUsuario(UsuarioAdminModelo usuario, {String? nuevaPassword}) async {
+  Future<bool> actualizarUsuario(
+    UsuarioAdminModelo usuario, {
+    String? nuevaPassword,
+  }) async {
     state = state.copiarCon(cargando: true, limpiarError: true);
     try {
-      await _repositorio.actualizarUsuario(usuario, nuevaPassword: nuevaPassword);
+      await _repositorio.actualizarUsuario(
+        usuario,
+        nuevaPassword: nuevaPassword,
+      );
       await cargarUsuarios();
       return true;
     } on Exception catch (e) {
@@ -96,6 +100,18 @@ class ControladorUsuarios extends Notifier<EstadoUsuarios> {
     state = state.copiarCon(cargando: true, limpiarError: true);
     try {
       await _repositorio.alternarEstadoUsuario(uid, activar);
+      await cargarUsuarios();
+      return true;
+    } on Exception catch (e) {
+      state = state.copiarCon(cargando: false, error: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> eliminarUsuario(String uid) async {
+    state = state.copiarCon(cargando: true, limpiarError: true);
+    try {
+      await _repositorio.eliminarUsuario(uid);
       await cargarUsuarios();
       return true;
     } on Exception catch (e) {
@@ -118,6 +134,7 @@ class ControladorUsuarios extends Notifier<EstadoUsuarios> {
   }
 }
 
-final controladorUsuariosProvider = NotifierProvider<ControladorUsuarios, EstadoUsuarios>(() {
-  return ControladorUsuarios();
-});
+final controladorUsuariosProvider =
+    NotifierProvider<ControladorUsuarios, EstadoUsuarios>(() {
+      return ControladorUsuarios();
+    });

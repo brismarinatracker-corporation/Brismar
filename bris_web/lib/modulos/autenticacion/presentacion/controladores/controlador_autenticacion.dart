@@ -34,17 +34,28 @@ class ControladorAutenticacion extends Notifier<EstadoAutenticacion> {
 
     // Registra la suscripción y la cancela cuando el provider se destruye.
     // Previene memory leaks y listeners duplicados en hot reload.
-    final suscripcion = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    final suscripcion = Supabase.instance.client.auth.onAuthStateChange.listen((
+      data,
+    ) {
       final user = data.session?.user;
       if (user != null) {
         _cargarPerfil(user);
       } else {
-        state = EstadoAutenticacion(usuario: null, rol: null, fotoPerfil: null, sede: null, cargando: false);
+        state = EstadoAutenticacion(
+          usuario: null,
+          rol: null,
+          fotoPerfil: null,
+          sede: null,
+          cargando: false,
+        );
       }
     });
     ref.onDispose(suscripcion.cancel);
 
-    return EstadoAutenticacion(usuario: currentUser, cargando: currentUser != null);
+    return EstadoAutenticacion(
+      usuario: currentUser,
+      cargando: currentUser != null,
+    );
   }
 
   Future<void> _cargarPerfil(User user) async {
@@ -86,8 +97,8 @@ class ControladorAutenticacion extends Notifier<EstadoAutenticacion> {
       // El onAuthStateChange atrapará el evento y llamará a _cargarPerfil
     } catch (e) {
       state = EstadoAutenticacion(
-        cargando: false, 
-        error: 'Error al iniciar sesión. Verifica tus credenciales.'
+        cargando: false,
+        error: 'Error al iniciar sesión. Verifica tus credenciales.',
       );
     }
   }
@@ -99,14 +110,22 @@ class ControladorAutenticacion extends Notifier<EstadoAutenticacion> {
 
   Future<void> cerrarSesionConError(String mensaje) async {
     await Supabase.instance.client.auth.signOut();
-    state = EstadoAutenticacion(usuario: null, rol: null, cargando: false, error: mensaje);
+    state = EstadoAutenticacion(
+      usuario: null,
+      rol: null,
+      cargando: false,
+      error: mensaje,
+    );
   }
 
   /// Actualiza los campos del perfil del usuario autenticado.
   ///
   /// Lanza [Exception] con mensaje descriptivo si el UPDATE falla,
   /// para que la UI pueda mostrar el error al usuario.
-  Future<void> actualizarPerfil({String? nombreReal, String? fotoPerfil}) async {
+  Future<void> actualizarPerfil({
+    String? nombreReal,
+    String? fotoPerfil,
+  }) async {
     final user = state.usuario;
     if (user == null) return;
 
@@ -134,8 +153,20 @@ class ControladorAutenticacion extends Notifier<EstadoAutenticacion> {
       await _cargarPerfil(user);
     }
   }
+
+  /// Envía un correo de recuperación de contraseña utilizando Supabase Auth.
+  Future<void> enviarCorreoRecuperacion(String correo) async {
+    try {
+      await Supabase.instance.client.auth.resetPasswordForEmail(correo.trim());
+    } on AuthException catch (e) {
+      throw Exception(e.message);
+    } catch (e) {
+      throw Exception('Ocurrió un error inesperado al enviar el correo: $e');
+    }
+  }
 }
 
-final proveedorAutenticacion = NotifierProvider<ControladorAutenticacion, EstadoAutenticacion>(() {
-  return ControladorAutenticacion();
-});
+final proveedorAutenticacion =
+    NotifierProvider<ControladorAutenticacion, EstadoAutenticacion>(() {
+      return ControladorAutenticacion();
+    });

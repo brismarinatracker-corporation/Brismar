@@ -135,7 +135,7 @@ class CuadreEntidad {
 
   /// Indica si el cuadre ha sido sincronizado con Supabase.
   final bool sincronizado;
-  
+
   /// URL de la foto de zarpe de cámara subida.
   final String? fotoZarpeUrl;
 
@@ -148,8 +148,8 @@ class CuadreEntidad {
   /// Número de cajas vacías reportadas.
   final int? cajasVacias;
 
-  /// Tipo de producto (ID de especie).
-  final int? tipoProducto;
+  /// Tipo de producto (Nombre de especie).
+  final String? tipoProducto;
 
   /// Muelle o planta de destino.
   final String? muellePartida;

@@ -63,7 +63,7 @@ class _ConfigurarPinPantallaState extends ConsumerState<ConfigurarPinPantalla> {
                   ),
                 ),
               );
-            }
+            },
           ),
         ),
       ),
@@ -73,7 +73,9 @@ class _ConfigurarPinPantallaState extends ConsumerState<ConfigurarPinPantalla> {
   /// Construye el encabezado con título e instrucciones.
   Widget _construirCabecera() {
     final estado = ref.watch(proveedorControladorAutenticacion);
-    final nombre = estado is EstadoConfigurarPin ? estado.usuario.nombreReal.split(' ').first : '';
+    final nombre = estado is EstadoConfigurarPin
+        ? estado.usuario.nombreReal.split(' ').first
+        : '';
 
     return Column(
       children: [
@@ -103,7 +105,10 @@ class _ConfigurarPinPantallaState extends ConsumerState<ConfigurarPinPantalla> {
           _confirmando
               ? 'Ingresa el PIN nuevamente para confirmar'
               : 'Elige 4 dígitos para el acceso diario rápido',
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 14),
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.6),
+            fontSize: 14,
+          ),
           textAlign: TextAlign.center,
         ),
       ],
@@ -190,9 +195,11 @@ class _ConfigurarPinPantallaState extends ConsumerState<ConfigurarPinPantalla> {
   /// Construye una tecla individual del teclado numérico.
   Widget _construirTecla(String valor) {
     if (valor.isEmpty) return const SizedBox();
-    
+
     final esAccion = valor == '✓' || valor == '⌫';
-    final colorFondo = valor == '✓' ? const Color(0xFF00E5FF).withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.08);
+    final colorFondo = valor == '✓'
+        ? const Color(0xFF00E5FF).withValues(alpha: 0.2)
+        : Colors.white.withValues(alpha: 0.08);
     final colorTexto = valor == '✓' ? const Color(0xFF00E5FF) : Colors.white;
 
     return Material(
@@ -248,7 +255,10 @@ class _ConfigurarPinPantallaState extends ConsumerState<ConfigurarPinPantalla> {
   /// Borra el último dígito del campo activo.
   void _borrarUltimo() {
     if (_confirmando && _pinConfirmacion.isNotEmpty) {
-      _pinConfirmacion = _pinConfirmacion.substring(0, _pinConfirmacion.length - 1);
+      _pinConfirmacion = _pinConfirmacion.substring(
+        0,
+        _pinConfirmacion.length - 1,
+      );
     } else if (!_confirmando && _pinIngresado.isNotEmpty) {
       _pinIngresado = _pinIngresado.substring(0, _pinIngresado.length - 1);
     }

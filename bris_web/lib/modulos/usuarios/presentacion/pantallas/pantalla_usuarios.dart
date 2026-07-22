@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controladores/controlador_usuarios.dart';
 import '../widgets/dialogo_formulario_usuario.dart';
 import '../../dominio/modelos/usuario_admin_modelo.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:bris_web/nucleo/componentes/carga_orbital.dart';
+import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
+import 'package:bris_web/compartido/widgets/cabecera_pagina_web.dart';
 
 class PantallaUsuarios extends ConsumerWidget {
   const PantallaUsuarios({super.key});
@@ -14,135 +15,202 @@ class PantallaUsuarios extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(controladorUsuariosProvider);
     final ctrl = ref.read(controladorUsuariosProvider.notifier);
+    final authState = ref.watch(proveedorAutenticacion);
+    final esAdmin = authState.rol == 'administrador';
     final esMovil = MediaQuery.of(context).size.width < 800;
-    
+
     return Container(
       color: const Color(0xFFF2F6F3),
       child: estado.cargando && estado.usuarios.isEmpty
-        ? const Center(child: CargaOrbital(tamano: 80))
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Dark Blue Header Banner
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 40, vertical: esMovil ? 20 : 24),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [Color(0xFF0E3E2C), Color(0xFF0E3E2C)],
-                  ),
-                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+          ? const Center(child: CargaOrbital(tamano: 80))
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CabeceraPaginaWeb(
+                  titulo: 'Gestión de Accesos',
+                  subtitulo:
+                      'Administra roles, sedes y estados de las cuentas de la plataforma.',
+                  widgetAccion: esAdmin ? _botonNuevoAcceso(context) : null,
                 ),
-                child: esMovil
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Gestión de Accesos', style: GoogleFonts.sora(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 8),
-                          const Text('Administra roles, sedes y estados de las cuentas de la plataforma.', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                          const SizedBox(height: 16),
-                          _botonNuevoAcceso(context),
-                        ],
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Gestión de Accesos', style: GoogleFonts.sora(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 8),
-                              const Text('Administra roles, sedes y estados de las cuentas de la plataforma.', style: TextStyle(color: Colors.white70, fontSize: 15)),
-                            ],
+                // Rest of the screen
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(40.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
                           ),
-                          _botonNuevoAcceso(context),
                         ],
                       ),
-              ),
-              // Rest of the screen
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(40.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        // Header de la Tabla
-                        if (!esMovil)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                              border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
-                            ),
-                            child: const Row(
-                              children: [
-                                Expanded(flex: 3, child: Text('PERFIL', style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
-                                Expanded(flex: 2, child: Text('DOCUMENTO', style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
-                                Expanded(flex: 2, child: Text('ROL & SEDE', style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
-                                Expanded(flex: 1, child: Text('ESTADO', style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
-                                SizedBox(width: 120, child: Text('ACCIONES', textAlign: TextAlign.right, style: TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
-                              ],
-                            ),
-                          ),
-                        
-                        Expanded(
-                          child: estado.error != null && estado.usuarios.isEmpty
-                                  ? Center(child: Text('Error: ${estado.error}', style: const TextStyle(color: Colors.redAccent)))
-                                  : ListView.separated(
-                                      padding: const EdgeInsets.symmetric(vertical: 8),
-                                      itemCount: estado.usuarios.length,
-                                      separatorBuilder: (context, index) => Divider(color: const Color(0xFFE2E8F0), height: 1),
-                                      itemBuilder: (context, index) {
-                                        final u = estado.usuarios[index];
-                                        return _FilaTablaUsuarioPremium(usuario: u, controlador: ctrl, esMovil: esMovil);
-                                      },
+                      child: Column(
+                        children: [
+                          // Header de la Tabla
+                          if (!esMovil)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 20,
+                              ),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(24),
+                                ),
+                                border: Border(
+                                  bottom: BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                              ),
+                              child: const Row(
+                                children: [
+                                  Expanded(
+                                    flex: 3,
+                                    child: Text(
+                                      'PERFIL',
+                                      style: TextStyle(
+                                        color: Color(0xFF475569),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.0,
+                                      ),
                                     ),
-                        ),
-                      ],
+                                  ),
+                                  Expanded(
+                                    flex: 2,
+                                    child: Text(
+                                      'DOCUMENTO',
+                                      style: TextStyle(
+                                        color: Color(0xFF475569),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 2,
+                                    child: Text(
+                                      'ROL & SEDE',
+                                      style: TextStyle(
+                                        color: Color(0xFF475569),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 1,
+                                    child: Text(
+                                      'ESTADO',
+                                      style: TextStyle(
+                                        color: Color(0xFF475569),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 120,
+                                    child: Text(
+                                      'ACCIONES',
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        color: Color(0xFF475569),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                          Expanded(
+                            child:
+                                estado.error != null && estado.usuarios.isEmpty
+                                ? Center(
+                                    child: Text(
+                                      'Error: ${estado.error}',
+                                      style: const TextStyle(
+                                        color: Colors.redAccent,
+                                      ),
+                                    ),
+                                  )
+                                : ListView.separated(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                    itemCount: estado.usuarios.length,
+                                    separatorBuilder: (context, index) =>
+                                        Divider(
+                                          color: const Color(0xFFE2E8F0),
+                                          height: 1,
+                                        ),
+                                    itemBuilder: (context, index) {
+                                      final u = estado.usuarios[index];
+                                      return _FilaTablaUsuarioPremium(
+                                        usuario: u,
+                                        controlador: ctrl,
+                                        esMovil: esMovil,
+                                        esAdmin: esAdmin,
+                                      );
+                                    },
+                                  ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
     );
   }
 }
 
-class _FilaTablaUsuarioPremium extends StatelessWidget {
+class _FilaTablaUsuarioPremium extends ConsumerWidget {
   final UsuarioAdminModelo usuario;
   final ControladorUsuarios controlador;
   final bool esMovil;
+  final bool esAdmin;
 
-  const _FilaTablaUsuarioPremium({required this.usuario, required this.controlador, this.esMovil = false});
+  const _FilaTablaUsuarioPremium({
+    required this.usuario,
+    required this.controlador,
+    this.esMovil = false,
+    this.esAdmin = false,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    final colorRol = usuario.rol == 'administrador' ? const Color(0xFF8B5CF6) : 
-                     (usuario.rol == 'supervisor' ? const Color(0xFFF59E0B) : const Color(0xFF3B82F6));
-    
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorRol = usuario.rol == 'administrador'
+        ? const Color(0xFF8B5CF6)
+        : (usuario.rol == 'supervisor'
+              ? const Color(0xFFF59E0B)
+              : const Color(0xFF3B82F6));
+
     final avatar = Container(
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: usuario.activo ? colorRol.withValues(alpha: 0.12) : const Color(0xFFE2E8F0),
+        color: usuario.activo
+            ? colorRol.withValues(alpha: 0.12)
+            : const Color(0xFFE2E8F0),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: usuario.activo ? colorRol.withValues(alpha: 0.3) : Colors.transparent),
+        border: Border.all(
+          color: usuario.activo
+              ? colorRol.withValues(alpha: 0.3)
+              : Colors.transparent,
+        ),
         image: usuario.fotoPerfil != null && usuario.fotoPerfil!.isNotEmpty
             ? DecorationImage(
                 image: NetworkImage(usuario.fotoPerfil!),
@@ -153,7 +221,9 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
       child: usuario.fotoPerfil == null || usuario.fotoPerfil!.isEmpty
           ? Center(
               child: Text(
-                usuario.nombre.isNotEmpty ? usuario.nombre[0].toUpperCase() : 'U',
+                usuario.nombre.isNotEmpty
+                    ? usuario.nombre[0].toUpperCase()
+                    : 'U',
                 style: TextStyle(
                   color: usuario.activo ? colorRol : const Color(0xFF64748B),
                   fontWeight: FontWeight.bold,
@@ -167,9 +237,25 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
     final infoUsuario = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(usuario.nombre, style: const TextStyle(color: Color(0xFF15181A), fontWeight: FontWeight.bold, fontSize: 15), overflow: TextOverflow.ellipsis),
+        Text(
+          usuario.nombre,
+          style: const TextStyle(
+            color: Color(0xFF15181A),
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
         const SizedBox(height: 4),
-        Text(usuario.correo.isNotEmpty ? usuario.correo : 'Sin correo registrado', style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
+        Text(
+          usuario.correo.isNotEmpty ? usuario.correo : 'Sin correo registrado',
+          style: const TextStyle(
+            color: Color(0xFF475569),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
 
@@ -178,8 +264,12 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
         const Icon(Icons.badge_rounded, color: Color(0xFF64748B), size: 16),
         const SizedBox(width: 8),
         Text(
-          usuario.dni.isNotEmpty ? usuario.dni : 'No especificado', 
-          style: const TextStyle(color: Color(0xFF15181A), fontSize: 14, fontWeight: FontWeight.w500)
+          usuario.dni.isNotEmpty ? usuario.dni : 'No especificado',
+          style: const TextStyle(
+            color: Color(0xFF15181A),
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ],
     );
@@ -189,9 +279,20 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(Icons.location_on_rounded, color: Color(0xFF00838F), size: 14),
+            const Icon(
+              Icons.location_on_rounded,
+              color: Color(0xFF00838F),
+              size: 14,
+            ),
             const SizedBox(width: 4),
-            Text(usuario.sede, style: const TextStyle(color: Color(0xFF15181A), fontSize: 14, fontWeight: FontWeight.w600)),
+            Text(
+              usuario.sede,
+              style: const TextStyle(
+                color: Color(0xFF15181A),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 6),
@@ -203,8 +304,13 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
             border: Border.all(color: colorRol.withValues(alpha: 0.2)),
           ),
           child: Text(
-            usuario.rol.toUpperCase(), 
-            style: TextStyle(color: colorRol, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)
+            usuario.rol.toUpperCase(),
+            style: TextStyle(
+              color: colorRol,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
           ),
         ),
       ],
@@ -213,9 +319,15 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
     final widgetEstado = Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: usuario.activo ? const Color(0xFF10B981).withValues(alpha: 0.15) : const Color(0xFFEF4444).withValues(alpha: 0.15),
+        color: usuario.activo
+            ? const Color(0xFF10B981).withValues(alpha: 0.15)
+            : const Color(0xFFEF4444).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: usuario.activo ? const Color(0xFF10B981).withValues(alpha: 0.3) : const Color(0xFFEF4444).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: usuario.activo
+              ? const Color(0xFF10B981).withValues(alpha: 0.3)
+              : const Color(0xFFEF4444).withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -225,14 +337,18 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
             height: 6,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: usuario.activo ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+              color: usuario.activo
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFFEF4444),
             ),
           ),
           const SizedBox(width: 6),
           Text(
             usuario.activo ? 'ACTIVO' : 'SUSPENDIDO',
             style: TextStyle(
-              color: usuario.activo ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+              color: usuario.activo
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFFEF4444),
               fontSize: 11,
               fontWeight: FontWeight.bold,
             ),
@@ -243,41 +359,144 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
 
     final widgetAcciones = Row(
       mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        IconButton(
-          icon: const Icon(Icons.edit_rounded, color: Color(0xFF64748B), size: 22),
-          tooltip: 'Editar Perfil',
-          hoverColor: const Color(0xFF3B82F6).withValues(alpha: 0.08),
-          onPressed: () {
-            showGeneralDialog(
-              context: context,
-              barrierDismissible: true,
-              barrierLabel: 'Cerrar',
-              barrierColor: Colors.black.withValues(alpha: 0.6),
-              transitionDuration: const Duration(milliseconds: 250),
-              pageBuilder: (context, anim1, anim2) => DialogoFormularioUsuario(usuarioAEditar: usuario),
-              transitionBuilder: (context, anim1, anim2, child) {
-                return SlideTransition(
-                  position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
-                  child: child,
-                );
-              },
-            );
-          },
-        ),
-        IconButton(
-          icon: Icon(
-            usuario.activo ? Icons.block_rounded : Icons.check_circle_rounded, 
-            color: usuario.activo ? const Color(0xFFEF4444) : const Color(0xFF10B981), 
-            size: 22
-          ),
-          tooltip: usuario.activo ? 'Suspender Acceso' : 'Reactivar Acceso',
-          hoverColor: usuario.activo ? const Color(0xFFEF4444).withValues(alpha: 0.1) : const Color(0xFF10B981).withValues(alpha: 0.1),
-          onPressed: () {
-            controlador.alternarEstadoUsuario(usuario.uid, !usuario.activo);
-          },
-        ),
-      ],
+      children: esAdmin
+          ? [
+              IconButton(
+                icon: const Icon(
+                  Icons.edit_rounded,
+                  color: Color(0xFF64748B),
+                  size: 22,
+                ),
+                tooltip: 'Editar Perfil',
+                hoverColor: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+                onPressed: () {
+                  showGeneralDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    barrierLabel: 'Cerrar',
+                    barrierColor: Colors.black.withValues(alpha: 0.6),
+                    transitionDuration: const Duration(milliseconds: 250),
+                    pageBuilder: (context, anim1, anim2) =>
+                        DialogoFormularioUsuario(usuarioAEditar: usuario),
+                    transitionBuilder: (context, anim1, anim2, child) {
+                      return SlideTransition(
+                        position:
+                            Tween<Offset>(
+                              begin: const Offset(1, 0),
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: anim1,
+                                curve: Curves.easeOutCubic,
+                              ),
+                            ),
+                        child: child,
+                      );
+                    },
+                  );
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  usuario.activo
+                      ? Icons.block_rounded
+                      : Icons.check_circle_rounded,
+                  color: usuario.activo
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFF10B981),
+                  size: 22,
+                ),
+                tooltip: usuario.activo
+                    ? 'Suspender Acceso'
+                    : 'Reactivar Acceso',
+                hoverColor: usuario.activo
+                    ? const Color(0xFFEF4444).withValues(alpha: 0.1)
+                    : const Color(0xFF10B981).withValues(alpha: 0.1),
+                onPressed: () {
+                  controlador.alternarEstadoUsuario(
+                    usuario.uid,
+                    !usuario.activo,
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: Color(0xFFEF4444),
+                  size: 22,
+                ),
+                tooltip: 'Eliminar Usuario',
+                hoverColor: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text(
+                        'Eliminar Usuario',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      content: Text(
+                        '¿Estás seguro de que deseas eliminar permanentemente a ${usuario.nombre}? Esta acción no se puede deshacer.',
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text(
+                            'Cancelar',
+                            style: TextStyle(color: Color(0xFF64748B)),
+                          ),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFEF4444),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onPressed: () async {
+                            Navigator.pop(ctx);
+                            final exitoso = await controlador.eliminarUsuario(usuario.uid);
+                            if (!exitoso && context.mounted) {
+                              final errorActual = ref.read(controladorUsuariosProvider).error ?? "";
+                              if (errorActual.contains("violates foreign key constraint") || errorActual.toLowerCase().contains("foreign key")) {
+                                 ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('No se puede eliminar el usuario porque tiene registros asociados en el sistema. Te recomendamos desactivarlo.'),
+                                    backgroundColor: Colors.orange,
+                                  ),
+                                );
+                              } else {
+                                 ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error al eliminar: $errorActual'),
+                                    backgroundColor: Colors.redAccent,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          child: const Text('Eliminar'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ]
+          : [
+              const Text(
+                'Solo Lectura',
+                style: TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
     );
 
     if (esMovil) {
@@ -286,11 +505,23 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [avatar, const SizedBox(width: 16), Expanded(child: infoUsuario)]),
+            Row(
+              children: [
+                avatar,
+                const SizedBox(width: 16),
+                Expanded(child: infoUsuario),
+              ],
+            ),
             const SizedBox(height: 16),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [widgetDni, widgetEstado]),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [widgetDni, widgetEstado],
+            ),
             const SizedBox(height: 12),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [widgetRolSede, widgetAcciones]),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [widgetRolSede, widgetAcciones],
+            ),
           ],
         ),
       );
@@ -300,10 +531,22 @@ class _FilaTablaUsuarioPremium extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
       child: Row(
         children: [
-          Expanded(flex: 3, child: Row(children: [avatar, const SizedBox(width: 16), Expanded(child: infoUsuario)])),
+          Expanded(
+            flex: 3,
+            child: Row(
+              children: [
+                avatar,
+                const SizedBox(width: 16),
+                Expanded(child: infoUsuario),
+              ],
+            ),
+          ),
           Expanded(flex: 2, child: widgetDni),
           Expanded(flex: 2, child: widgetRolSede),
-          Expanded(flex: 1, child: Align(alignment: Alignment.centerLeft, child: widgetEstado)),
+          Expanded(
+            flex: 1,
+            child: Align(alignment: Alignment.centerLeft, child: widgetEstado),
+          ),
           SizedBox(width: 120, child: widgetAcciones),
         ],
       ),
@@ -320,20 +563,31 @@ Widget _botonNuevoAcceso(BuildContext context) {
         barrierLabel: 'Cerrar',
         barrierColor: Colors.black.withValues(alpha: 0.6),
         transitionDuration: const Duration(milliseconds: 250),
-        pageBuilder: (context, anim1, anim2) => const DialogoFormularioUsuario(),
+        pageBuilder: (context, anim1, anim2) =>
+            const DialogoFormularioUsuario(),
         transitionBuilder: (context, anim1, anim2, child) {
           return SlideTransition(
             position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
-                .animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
+                .animate(
+                  CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic),
+                ),
             child: child,
           );
         },
       );
     },
-    icon: const Icon(Icons.person_add_alt_1_rounded, color: Colors.white, size: 20),
+    icon: const Icon(
+      Icons.person_add_alt_1_rounded,
+      color: Colors.white,
+      size: 20,
+    ),
     label: const Text(
       'Nuevo acceso',
-      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+      style: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+        fontSize: 14,
+      ),
     ),
     style: ElevatedButton.styleFrom(
       backgroundColor: const Color(0xFF00796B), // Dark green matching mockup

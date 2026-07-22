@@ -5,7 +5,6 @@ class PanelCalculoVivo extends StatelessWidget {
   final double totalKilosCompras;
   final double totalCostoCompras;
   final double totalGastosOperativos;
-  final double totalAdelantos;
   final bool guardando;
   final VoidCallback onGuardar;
 
@@ -14,7 +13,6 @@ class PanelCalculoVivo extends StatelessWidget {
     required this.totalKilosCompras,
     required this.totalCostoCompras,
     required this.totalGastosOperativos,
-    required this.totalAdelantos,
     required this.guardando,
     required this.onGuardar,
   });
@@ -26,20 +24,35 @@ class PanelCalculoVivo extends StatelessWidget {
     String decimal = partes.length > 1 ? partes[1] : '';
 
     RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
-    String enteraFormateada = entera.replaceAllMapped(reg, (Match m) => '${m[1]},');
+    String enteraFormateada = entera.replaceAllMapped(
+      reg,
+      (Match m) => '${m[1]},',
+    );
 
-    if (decimales > 0 && decimal.isNotEmpty) return '$enteraFormateada.$decimal';
+    if (decimales > 0 && decimal.isNotEmpty)
+      return '$enteraFormateada.$decimal';
     return enteraFormateada;
   }
 
   Widget _buildSummary() {
     return Column(
       children: [
-        _buildFilaResumen('Kilos Totales', '${_formatearNumero(totalKilosCompras)} kg', const Color(0xFF1F2937)),
+        _buildFilaResumen(
+          'Kilos Totales',
+          '${_formatearNumero(totalKilosCompras)} kg',
+          const Color(0xFF1F2937),
+        ),
         const Divider(color: Color(0xFFE5E7EB), height: 24),
-        _buildFilaResumen('Poder de Compra', 'S/ ${_formatearNumero(totalCostoCompras)}', const Color(0xFF1F2937)),
-        _buildFilaResumen('Adelantos (Cash)', '- S/ ${_formatearNumero(totalAdelantos)}', const Color(0xFFD97706)),
-        _buildFilaResumen('Gastos Muelle', '- S/ ${_formatearNumero(totalGastosOperativos)}', const Color(0xFFDC2626)),
+        _buildFilaResumen(
+          'Poder de Compra',
+          'S/ ${_formatearNumero(totalCostoCompras)}',
+          const Color(0xFF1F2937),
+        ),
+        _buildFilaResumen(
+          'Gastos Muelle',
+          '- S/ ${_formatearNumero(totalGastosOperativos)}',
+          const Color(0xFFDC2626),
+        ),
       ],
     );
   }
@@ -47,24 +60,54 @@ class PanelCalculoVivo extends StatelessWidget {
   Widget _buildEstimatesContainer() {
     final utilidadBruta = totalCostoCompras - totalGastosOperativos;
     final reparto = utilidadBruta / 2;
-    final pagoEmbarcacionFinal = totalCostoCompras - totalAdelantos;
+    final pagoEmbarcacionFinal = totalCostoCompras;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFECFDF5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFF10B981).withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         children: [
-          const Text('ESTIMADO UTILIDAD (50/50)', style: TextStyle(color: Color(0xFF064E3B), fontSize: 12, fontWeight: FontWeight.bold)),
+          const Text(
+            'ESTIMADO UTILIDAD (50/50)',
+            style: TextStyle(
+              color: Color(0xFF064E3B),
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text('S/ ${_formatearNumero(reparto)} c/u', style: const TextStyle(color: Color(0xFF047857), fontSize: 28, fontWeight: FontWeight.w900)),
+          Text(
+            'S/ ${_formatearNumero(reparto)} c/u',
+            style: const TextStyle(
+              color: Color(0xFF047857),
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
           const Divider(color: Color(0xFFA7F3D0), height: 24),
-          const Text('PAGO LÍQUIDO A EMBARCACIÓN', style: TextStyle(color: Color(0xFF064E3B), fontSize: 12, fontWeight: FontWeight.bold)),
+          const Text(
+            'PAGO LÍQUIDO A EMBARCACIÓN',
+            style: TextStyle(
+              color: Color(0xFF064E3B),
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text('S/ ${_formatearNumero(pagoEmbarcacionFinal)}', style: const TextStyle(color: Color(0xFF1F2937), fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(
+            'S/ ${_formatearNumero(pagoEmbarcacionFinal)}',
+            style: const TextStyle(
+              color: Color(0xFF1F2937),
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -86,7 +129,11 @@ class PanelCalculoVivo extends StatelessWidget {
             : const Icon(Icons.save_rounded, size: 28),
         label: Text(
           guardando ? 'GUARDANDO...' : 'CONFIRMAR DESPACHO',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1,
+          ),
         ),
       ),
     );
@@ -110,20 +157,37 @@ class PanelCalculoVivo extends StatelessWidget {
       color: Colors.white,
       border: const Border(top: BorderSide(color: Color(0xFFE5E7EB), width: 1)),
       boxShadow: [
-        BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, -5))
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.05),
+          blurRadius: 20,
+          offset: const Offset(0, -5),
+        ),
       ],
     );
   }
 
   List<Widget> _buildColumnChildren() {
     return [
-      const Text('CUADRE EN VIVO', style: TextStyle(color: Color(0xFF064E3B), fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1), textAlign: TextAlign.center),
+      const Text(
+        'CUADRE EN VIVO',
+        style: TextStyle(
+          color: Color(0xFF064E3B),
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1,
+        ),
+        textAlign: TextAlign.center,
+      ),
       const SizedBox(height: 24),
       _buildSummary(),
       const Divider(color: Color(0xFFE5E7EB), height: 32, thickness: 1),
       _buildEstimatesContainer(),
       const SizedBox(height: 24),
-      const Text('⚠️ Al guardar, el lote quedará en estado "Borrador" hasta el pesaje en planta.', style: TextStyle(color: Color(0xFF6B7280), fontSize: 12), textAlign: TextAlign.center),
+      const Text(
+        '⚠️ Al guardar, el lote quedará en estado "Borrador" hasta el pesaje en planta.',
+        style: TextStyle(color: Color(0xFF6B7280), fontSize: 12),
+        textAlign: TextAlign.center,
+      ),
       const SizedBox(height: 16),
       _buildSaveButton(),
     ];
@@ -135,8 +199,18 @@ class PanelCalculoVivo extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(etiqueta, style: const TextStyle(color: Color(0xFF4B5563), fontSize: 15)),
-          Text(valor, style: TextStyle(color: colorValor, fontWeight: FontWeight.bold, fontSize: 18)),
+          Text(
+            etiqueta,
+            style: const TextStyle(color: Color(0xFF4B5563), fontSize: 15),
+          ),
+          Text(
+            valor,
+            style: TextStyle(
+              color: colorValor,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
         ],
       ),
     );

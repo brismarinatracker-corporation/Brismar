@@ -13,11 +13,12 @@ class VerificadorConexionImpl implements VerificadorConexion {
   final Connectivity _connectivity;
 
   VerificadorConexionImpl({Connectivity? connectivity})
-      : _connectivity = connectivity ?? Connectivity();
+    : _connectivity = connectivity ?? Connectivity();
 
   @override
   Future<bool> hayConexion() async {
-    final List<ConnectivityResult> connectivityResult = await _connectivity.checkConnectivity();
+    final List<ConnectivityResult> connectivityResult = await _connectivity
+        .checkConnectivity();
 
     if (connectivityResult.contains(ConnectivityResult.none)) {
       return false;
@@ -37,4 +38,3 @@ class VerificadorConexionImpl implements VerificadorConexion {
     }
   }
 }
-

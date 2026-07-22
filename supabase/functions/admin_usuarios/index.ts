@@ -84,6 +84,10 @@ serve(async (req) => {
       return await _alternarEstado(supabaseAdmin, payload, action === 'enable_user');
     }
 
+    if (action === 'delete_user') {
+      return await _eliminarUsuario(supabaseAdmin, payload);
+    }
+
     return errorResponse('Acción no válida.', 400);
 
   } catch (error: any) {
@@ -154,6 +158,13 @@ async function _actualizarUsuario(client: any, payload: any): Promise<Response> 
 async function _alternarEstado(client: any, payload: any, activar: boolean): Promise<Response> {
   const { uid } = payload;
   const { error } = await client.from('usuarios').update({ activo: activar }).eq('id', uid);
+  if (error) throw error;
+  return successResponse({ success: true });
+}
+/** Elimina un usuario permanentemente de Auth (y en cascada de la tabla usuarios). */
+async function _eliminarUsuario(client: any, payload: any): Promise<Response> {
+  const { uid } = payload;
+  const { error } = await client.auth.admin.deleteUser(uid);
   if (error) throw error;
   return successResponse({ success: true });
 }

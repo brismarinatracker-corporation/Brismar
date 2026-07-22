@@ -66,7 +66,8 @@ class SesionExpiradaException implements Exception {
 
   /// Constructor de [SesionExpiradaException].
   const SesionExpiradaException([
-    this.mensaje = 'Periodo de gracia expirado. Se requiere verificación rápida.',
+    this.mensaje =
+        'Periodo de gracia expirado. Se requiere verificación rápida.',
   ]);
 
   @override

@@ -1,12 +1,16 @@
 {
   "folders": [
     {
-      "path": "brismar_app",
+      "path": "bris_tracker",
       "name": "📱 App Móvil (Flutter)"
     },
     {
-      "path": "brismar_web",
+      "path": "bris_web",
       "name": "⚙️ Backend (API)"
+    },
+    {
+      "path": "supabase",
+      "name": "🗄️ Supabase"
     },
     {
       "path": ".",
@@ -17,8 +21,8 @@
     "files.exclude": {
       "**/.git": true,
       "**/.DS_Store": true,
-      "brismar_app/**": false,
-      "brismar_web/**": false
+      "bris_tracker/**": false,
+      "bris_web/**": false
     },
     "search.exclude": {
       "**/node_modules": true,
