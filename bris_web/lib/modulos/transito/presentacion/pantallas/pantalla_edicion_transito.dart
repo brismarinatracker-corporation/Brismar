@@ -525,6 +525,7 @@ class _PantallaEdicionTransitoState
         authState.rol == 'administrador' ||
         authState.rol == 'supervisor' ||
         estaFinalizado;
+    final esMovil = MediaQuery.of(context).size.width < 800;
 
     if (_cargando && _zarpeInfo == null) {
       return const Scaffold(
@@ -563,26 +564,42 @@ class _PantallaEdicionTransitoState
                 Expanded(
                   child: Form(
                     key: _formKey,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Navegación Lateral (Pasos)
-                        _construirNavegacionPasos(esSoloLectura),
-                        // Contenido del Paso Actual
-                        Expanded(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(32),
-                            child: AbsorbPointer(
-                              absorbing: esSoloLectura,
-                              child: _construirContenidoPasoActual(
-                                urlsFotos,
-                                esSoloLectura,
+                    child: esMovil
+                        ? Column(
+                            children: [
+                              _construirNavegacionPasos(context, esSoloLectura),
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  padding: const EdgeInsets.all(16),
+                                  child: AbsorbPointer(
+                                    absorbing: esSoloLectura,
+                                    child: _construirContenidoPasoActual(
+                                      urlsFotos,
+                                      esSoloLectura,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
+                          )
+                        : Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _construirNavegacionPasos(context, esSoloLectura),
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  padding: const EdgeInsets.all(32),
+                                  child: AbsorbPointer(
+                                    absorbing: esSoloLectura,
+                                    child: _construirContenidoPasoActual(
+                                      urlsFotos,
+                                      esSoloLectura,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
               ],
@@ -723,7 +740,28 @@ class _PantallaEdicionTransitoState
     );
   }
 
-  Widget _construirNavegacionPasos(bool esSoloLectura) {
+  Widget _construirNavegacionPasos(BuildContext context, bool esSoloLectura) {
+    final esMovil = MediaQuery.of(context).size.width < 800;
+
+    if (esMovil) {
+      return Container(
+        height: 70,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+        ),
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          children: [
+            _construirItemPaso(esMovil, 0, 'Zarpe Inicial', 'Partida', Icons.directions_boat_outlined, esSoloLectura),
+            _construirItemPaso(esMovil, 1, 'Cuadre Muelle', 'Compras', Icons.receipt_long_outlined, esSoloLectura),
+            _construirItemPaso(esMovil, 2, 'Recepción', 'Destino', Icons.storefront_outlined, esSoloLectura),
+            _construirItemPaso(esMovil, 3, 'Gastos Admin', 'Fletes', Icons.account_balance_wallet_outlined, esSoloLectura),
+          ],
+        ),
+      );
+    }
+
     return Container(
       width: 300,
       decoration: const BoxDecoration(
@@ -732,40 +770,17 @@ class _PantallaEdicionTransitoState
       ),
       child: Column(
         children: [
-          _construirItemPaso(
-            0,
-            'Zarpe Inicial',
-            'Datos de partida',
-            Icons.directions_boat_outlined,
-            esSoloLectura,
-          ),
-          _construirItemPaso(
-            1,
-            'Cuadre de Muelle',
-            'Gastos operativos y compras',
-            Icons.receipt_long_outlined,
-            esSoloLectura,
-          ),
-          _construirItemPaso(
-            2,
-            'Recepción y Venta',
-            'Destino, kilos y precio final',
-            Icons.storefront_outlined,
-            esSoloLectura,
-          ),
-          _construirItemPaso(
-            3,
-            'Gastos Administrativos',
-            'Fletes y comisiones',
-            Icons.account_balance_wallet_outlined,
-            esSoloLectura,
-          ),
+          _construirItemPaso(esMovil, 0, 'Zarpe Inicial', 'Datos de partida', Icons.directions_boat_outlined, esSoloLectura),
+          _construirItemPaso(esMovil, 1, 'Cuadre de Muelle', 'Gastos operativos y compras', Icons.receipt_long_outlined, esSoloLectura),
+          _construirItemPaso(esMovil, 2, 'Recepción y Venta', 'Destino, kilos y precio final', Icons.storefront_outlined, esSoloLectura),
+          _construirItemPaso(esMovil, 3, 'Gastos Administrativos', 'Fletes y comisiones', Icons.account_balance_wallet_outlined, esSoloLectura),
         ],
       ),
     );
   }
 
   Widget _construirItemPaso(
+    bool esMovil,
     int indice,
     String titulo,
     String subtitulo,
@@ -776,63 +791,89 @@ class _PantallaEdicionTransitoState
     return InkWell(
       onTap: () => setState(() => _pasoActual = indice),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        padding: esMovil 
+            ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
+            : const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         decoration: BoxDecoration(
           color: seleccionado ? const Color(0xFFF0FDF4) : Colors.transparent,
-          border: Border(
-            left: BorderSide(
-              color: seleccionado
-                  ? const Color(0xFF00C853)
-                  : Colors.transparent,
-              width: 4,
-            ),
-            bottom: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
+          border: esMovil 
+              ? Border(
+                  bottom: BorderSide(
+                    color: seleccionado ? const Color(0xFF00C853) : Colors.transparent,
+                    width: 3,
+                  ),
+                )
+              : Border(
+                  left: BorderSide(
+                    color: seleccionado ? const Color(0xFF00C853) : Colors.transparent,
+                    width: 4,
+                  ),
+                  bottom: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
         ),
         child: Row(
+          mainAxisSize: esMovil ? MainAxisSize.min : MainAxisSize.max,
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: seleccionado
-                    ? const Color(0xFF00C853)
-                    : const Color(0xFFF1F5F9),
+                color: seleccionado ? const Color(0xFF00C853) : const Color(0xFFF1F5F9),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 icono,
                 color: seleccionado ? Colors.white : const Color(0xFF64748B),
-                size: 22,
+                size: esMovil ? 18 : 22,
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
+            const SizedBox(width: 12),
+            if (!esMovil)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      titulo,
+                      style: TextStyle(
+                        color: seleccionado ? const Color(0xFF15181A) : const Color(0xFF475569),
+                        fontWeight: seleccionado ? FontWeight.bold : FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitulo,
+                      style: const TextStyle(
+                        color: Color(0xFF64748B),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     titulo,
                     style: TextStyle(
-                      color: seleccionado
-                          ? const Color(0xFF15181A)
-                          : const Color(0xFF475569),
-                      fontWeight: seleccionado
-                          ? FontWeight.bold
-                          : FontWeight.w600,
-                      fontSize: 15,
+                      color: seleccionado ? const Color(0xFF15181A) : const Color(0xFF475569),
+                      fontWeight: seleccionado ? FontWeight.bold : FontWeight.w600,
+                      fontSize: 14,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     subtitulo,
                     style: const TextStyle(
                       color: Color(0xFF64748B),
-                      fontSize: 12,
+                      fontSize: 11,
                     ),
                   ),
                 ],
               ),
-            ),
           ],
         ),
       ),
