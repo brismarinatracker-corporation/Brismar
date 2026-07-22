@@ -30,7 +30,7 @@ class _PantallaCamarasState extends ConsumerState<PantallaCamaras> {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Cerrar',
-      pageBuilder: (context, _, __) =>
+      pageBuilder: (context, _, _) =>
           DialogoFormularioCamara(camaraAEditar: camara),
     );
   }

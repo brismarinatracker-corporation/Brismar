@@ -103,8 +103,9 @@ class DialogoGasto {
                           )
                           .toList(),
                       onChanged: (val) {
-                        if (val != null)
+                        if (val != null) {
                           setStateDialog(() => tipoSeleccionado = val);
+                        }
                       },
                     ),
                     _construirEtiquetaDialogo('Concepto / Detalle'),
@@ -195,8 +196,9 @@ class DialogoGasto {
                   onPressed: () {
                     final c = FormateadorMiles.parseDouble(cantidadCtrl.text);
                     final costo = FormateadorMiles.parseDouble(costoCtrl.text);
-                    if (conceptoCtrl.text.isEmpty || c <= 0 || costo <= 0)
+                    if (conceptoCtrl.text.isEmpty || c <= 0 || costo <= 0) {
                       return;
+                    }
 
                     final String idAsignado =
                         (gasto?.id == null || gasto!.id.isEmpty)

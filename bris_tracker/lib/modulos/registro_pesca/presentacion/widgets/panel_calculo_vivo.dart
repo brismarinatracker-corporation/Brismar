@@ -29,8 +29,9 @@ class PanelCalculoVivo extends StatelessWidget {
       (Match m) => '${m[1]},',
     );
 
-    if (decimales > 0 && decimal.isNotEmpty)
+    if (decimales > 0 && decimal.isNotEmpty) {
       return '$enteraFormateada.$decimal';
+    }
     return enteraFormateada;
   }
 

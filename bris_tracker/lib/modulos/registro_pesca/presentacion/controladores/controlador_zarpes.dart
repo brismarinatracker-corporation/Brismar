@@ -26,9 +26,6 @@ class ControladorZarpes extends AsyncNotifier<void> {
 
   @override
   Future<void> build() async {
-    // Lee el repositorio desde el grafo de dependencias de Riverpod.
-    // No inicializa datos aquí: los zarpes no se muestran en una lista
-    // desde este provider; el estado es solo el resultado de la última acción.
     _repositorio = ref.read(proveedorZarpeRepositorio);
   }
 
@@ -40,8 +37,6 @@ class ControladorZarpes extends AsyncNotifier<void> {
   Future<void> registrarZarpe(ZarpeEntidad zarpe) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => _repositorio.guardarZarpe(zarpe));
-    // Si guard capturó un error, lo relanzamos para que el formulario
-    // pueda mostrar el SnackBar de error correspondiente.
     final error = state.error;
     if (error != null) throw error;
   }
@@ -62,8 +57,7 @@ class ControladorZarpes extends AsyncNotifier<void> {
 
   /// Descarga cambios de estado de negocio desde Supabase al SQLite local.
   ///
-  /// Consulta zarpes actualizados en los últimos días configurados en
-  /// [AppConstants.diasSyncDownstreamZarpes] y actualiza la BD local.
+  /// Consulta zarpes actualizados en la nube y actualiza la BD local.
   Future<void> sincronizarZarpesDownstream() async {
     try {
       await _repositorio.sincronizarZarpesDownstream();

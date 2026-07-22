@@ -87,7 +87,6 @@ class _DialogoFormularioUsuarioState
       if (AppConstants.sedesValidas.contains(u.sede)) {
         _sedeSeleccionada = u.sede;
       } else if (u.sede.isNotEmpty) {
-        // Sede desconocida en BD: usar sede por defecto para evitar valor inválido en el dropdown.
         _sedeSeleccionada = AppConstants.sedePorDefecto;
       }
       _fechaNacimientoSeleccionada = u.fechaNacimiento;
@@ -97,8 +96,9 @@ class _DialogoFormularioUsuarioState
         final partes = u.nombre.split(' ');
         if (partes.isNotEmpty) _nombresCtrl.text = partes.first;
         if (partes.length > 1) _apellidoPaternoCtrl.text = partes[1];
-        if (partes.length > 2)
+        if (partes.length > 2) {
           _apellidoMaternoCtrl.text = partes.sublist(2).join(' ');
+        }
       }
     }
   }
@@ -669,8 +669,9 @@ class _DialogoFormularioUsuarioState
                                 etiqueta: 'Correo Corporativo',
                                 controller: _correoCtrl,
                                 validadorPersonalizado: (v) {
-                                  if (v == null || v.trim().isEmpty)
+                                  if (v == null || v.trim().isEmpty) {
                                     return 'Requerido';
+                                  }
                                   final correo = v.trim();
 
                                   // Validar formato general de correo electrónico.

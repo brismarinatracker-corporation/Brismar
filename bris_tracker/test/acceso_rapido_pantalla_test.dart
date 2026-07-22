@@ -11,7 +11,10 @@ import 'package:bris_tracker/nucleo/componentes/carga_orbital.dart';
 // Fake Repositorio
 class FakeRepositorio extends RepositorioAutenticacion {
   @override
-  Future<Usuario> iniciarSesion({required String usuario, required String password}) async => throw UnimplementedError();
+  Future<Usuario> iniciarSesion({
+    required String usuario,
+    required String password,
+  }) async => throw UnimplementedError();
   @override
   Future<void> cerrarSesion() async {}
   @override
@@ -25,8 +28,9 @@ class FakeRepositorio extends RepositorioAutenticacion {
   @override
   Future<void> invalidarPinYToken() async {}
   @override
-  Future<Usuario> obtenerPerfilActualizado(String id) async => throw UnimplementedError();
-  
+  Future<Usuario> obtenerPerfilActualizado(String id) async =>
+      throw UnimplementedError();
+
   @override
   Future<bool> verificarBiometria() async {
     // Simulamos un retraso para atrapar el estado de "Cargando"

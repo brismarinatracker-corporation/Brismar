@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../datos/fuente_datos_cuadres_web.dart';
 import '../../dominio/modelos/cuadre_web_modelo.dart';
 import '../../servicios/servicio_exportacion.dart';
+import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 
 // ─── Estado ──────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,11 @@ class EstadoCuadresWeb {
   }) : _indice = indice;
 
   CuadreWebModelo? get cuadreSeleccionado => _indice[cuadreSeleccionadoId];
+
+  int get totalCuadres => cuadres.length;
+  double get utilidadTotalGlobal => cuadres.fold(0.0, (acc, c) => acc + c.utilidadNeta);
+  int get cuadresPendientes => cuadres.where((c) => c.estado.toUpperCase() == 'PENDIENTE').length;
+  String get filtroEstado => 'TODOS';
 
   EstadoCuadresWeb copiarCon({
     bool? cargando,
@@ -174,6 +180,14 @@ class ControladorCuadresWeb extends Notifier<EstadoCuadresWeb> {
     await cargarCuadres();
   }
 
+  void filtrarPorTexto(String texto) {
+    aplicarFiltroPlaca(texto);
+  }
+
+  void filtrarPorEstado(String estado) {
+    // Filtro por estado
+  }
+
   /// Selecciona o deselecciona un cuadre para ver su detalle lateral.
   void seleccionarCuadre(String? id) {
     if (id == null || state.cuadreSeleccionadoId == id) {
@@ -184,10 +198,19 @@ class ControladorCuadresWeb extends Notifier<EstadoCuadresWeb> {
   }
 
   /// Exporta un cuadre específico con sus relaciones a un archivo Excel.
+  ///
+  /// Si el cuadre no tiene [CuadreWebModelo.nombreBahia] (cuadres registrados
+  /// antes del JOIN con usuarios), usa el nombre del usuario actualmente
+  /// autenticado como fallback para no romper la plantilla.
   Future<void> exportarCuadreAExcel(CuadreWebModelo cuadre) async {
     state = state.copiarCon(exportando: true);
     try {
-      await ServicioExportacion.exportarCuadreUnicoAExcel(cuadre);
+      // Fallback: si el cuadre antiguo no trajo nombreBahia del JOIN,
+      // usar el nombre del usuario actualmente logueado.
+      final cuadreConNombre = cuadre.nombreBahia != null
+          ? cuadre
+          : cuadre.conNombreBahia(ref.read(proveedorAutenticacion).nombreReal);
+      await ServicioExportacion.exportarCuadreUnicoAExcel(cuadreConNombre);
       state = state.copiarCon(exportando: false);
     } on Exception catch (e) {
       state = state.copiarCon(

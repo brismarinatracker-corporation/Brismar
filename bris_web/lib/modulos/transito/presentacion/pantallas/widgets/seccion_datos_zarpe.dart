@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'galeria_lightbox.dart';
 
@@ -219,16 +220,25 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
                         Positioned(
                           top: 8,
                           right: 8,
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.6),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.fullscreen_rounded,
-                              color: Colors.white,
-                              size: 16,
+                          child: GestureDetector(
+                            onTap: () {
+                              GaleriaLightbox.mostrar(
+                                context,
+                                widget.urlsFotos,
+                                _indiceFotoActiva,
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.6),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.fullscreen_rounded,
+                                color: Colors.white,
+                                size: 16,
+                              ),
                             ),
                           ),
                         ),
@@ -283,8 +293,9 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
                   ),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Requerido';
-                    if (v.trim().length != 9)
+                    if (v.trim().length != 9) {
                       return 'Debe tener exactamente 9 dígitos';
+                    }
                     return null;
                   },
                 ),
@@ -418,6 +429,9 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
                     color: Color(0xFF15181A),
                     fontWeight: FontWeight.w600,
                   ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]')),
+                  ],
                   decoration: _decoracion(
                     'Observaciones (Opcional)',
                     icono: Icons.notes_outlined,

@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../nucleo/componentes/estilos_formulario.dart';
 import 'package:uuid/uuid.dart';
@@ -8,6 +7,8 @@ import 'package:uuid/uuid.dart';
 
 import '../../datos/repositorios/camaras_repositorio_local.dart';
 import '../../dominio/entidades/cuadre_entidad.dart';
+import '../../dominio/entidades/estado_cuadre.dart';
+import '../../dominio/entidades/estado_zarpe.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import '../widgets/panel_calculo_vivo.dart';
@@ -200,21 +201,13 @@ class _FormularioRegistroPescaState
     return sum;
   }
 
-  void _guardarGastosEstablecidos() {
+  void _guardarGastosEstablecidos(CuadreEntidad? cuadreExistente) {
     _gastos.clear();
 
-    if (_observacionesCtrl.text.trim().isNotEmpty) {
-      _gastos.add(
-        GastoEntidad(
-          id: const Uuid().v4(),
-          cuadreId: _cuadreId,
-          tipo: _observacionesCtrl.text.trim(),
-          concepto: 'OBSERVACIONES',
-          cantidad: 1,
-          costoUnitario: 0,
-          total: 0,
-        ),
-      );
+    // Restaurar OBSERVACIONES original si existe, ya que el campo se eliminó de la UI
+    if (cuadreExistente != null) {
+      final obs = cuadreExistente.gastos.where((g) => g.concepto.toUpperCase().trim() == 'OBSERVACIONES');
+      _gastos.addAll(obs);
     }
 
     final conceptosMap = {
@@ -263,7 +256,19 @@ class _FormularioRegistroPescaState
       return;
     }
 
-    _guardarGastosEstablecidos();
+    final estadoCuadres = ref.read(cuadresProvider);
+    CuadreEntidad? cuadreExistente;
+    if (estadoCuadres.value != null) {
+      try {
+        cuadreExistente = estadoCuadres.value!.firstWhere((c) => c.id == _cuadreId);
+      } catch (_) {
+        cuadreExistente = widget.cuadreInicial;
+      }
+    } else {
+      cuadreExistente = widget.cuadreInicial;
+    }
+
+    _guardarGastosEstablecidos(cuadreExistente);
 
     final authState = ref.read(proveedorControladorAutenticacion);
     if (authState is! EstadoAutenticacionAutenticado) {
@@ -285,28 +290,18 @@ class _FormularioRegistroPescaState
       placa: _placaCtrl.text,
       fechaZarpe: _fechaZarpeCtrl.text,
       estado:
-          'borrador', // En móvil siempre es borrador porque la venta se cierra en planta.
-      fotoZarpeUrl: widget.cuadreInicial?.fotoZarpeUrl,
+          EstadoCuadre.borrador, // En móvil siempre es borrador porque la venta se cierra en planta.
+      fotoZarpeUrl: widget.cuadreInicial?.fotoZarpeUrl ?? cuadreExistente?.fotoZarpeUrl,
       pesoTotal: totalKilosCompras > 0
           ? totalKilosCompras
-          : (widget.cuadreInicial?.pesoTotal ?? 0),
-      cajasLlenas: int.tryParse(_cajasLlenasCtrl.text) ?? 0,
-      cajasVacias: int.tryParse(_cajasVaciasCtrl.text) ?? 0,
-      tipoProducto: _tipoProductoSeleccionado == 'OTROS'
-          ? _otroProductoCtrl.text.trim().toUpperCase()
-          : _tipoProductoSeleccionado,
-      muellePartida: _muellePartidaCtrl.text.trim().isEmpty
-          ? null
-          : _muellePartidaCtrl.text.trim(),
-      pesador: _nombrePesadorCtrl.text.trim().isEmpty
-          ? null
-          : _nombrePesadorCtrl.text.trim().toUpperCase(),
-      tipo: _tipoCtrl.text.trim().isEmpty
-          ? null
-          : _tipoCtrl.text.trim().toUpperCase(),
-      cuadrilla: _cuadrillaCtrl.text.trim().isEmpty
-          ? null
-          : _cuadrillaCtrl.text.trim().toUpperCase(),
+          : (cuadreExistente?.pesoTotal ?? 0),
+      cajasLlenas: cuadreExistente?.cajasLlenas ?? 0,
+      cajasVacias: cuadreExistente?.cajasVacias ?? 0,
+      tipoProducto: cuadreExistente?.tipoProducto,
+      muellePartida: cuadreExistente?.muellePartida,
+      pesador: cuadreExistente?.pesador,
+      tipo: cuadreExistente?.tipo,
+      cuadrilla: cuadreExistente?.cuadrilla,
       compras: _compras,
       gastos: _gastos,
       ventas: [],
@@ -619,7 +614,7 @@ class _FormularioRegistroPescaState
 
     // Filtrar zarpes y convertirlos a Map para compatibilidad temporal con el UI
     final zarpes = historial
-        .where((z) => z.estado != 'RECIBIDO_LAMBAYEQUE')
+        .where((z) => z.estado != EstadoZarpe.recibidoLambayeque)
         .toList();
 
     // Ordenar por fecha_zarpe DESC
@@ -881,118 +876,6 @@ class _FormularioRegistroPescaState
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _cajasLlenasCtrl,
-                    style: const TextStyle(color: Color(0xFF1F2937)),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: EstilosFormulario.construirInputDecoration(
-                      labelText: 'Cajas Llenas',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextFormField(
-                    controller: _cajasVaciasCtrl,
-                    style: const TextStyle(color: Color(0xFF1F2937)),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: EstilosFormulario.construirInputDecoration(
-                      labelText: 'Cajas Vacías',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _tipoProductoSeleccionado,
-              dropdownColor: Colors.white,
-              style: const TextStyle(color: Colors.black87),
-              iconEnabledColor: const Color(0xFF006B54),
-              decoration: EstilosFormulario.construirInputDecoration(
-                labelText: 'Tipo de Producto',
-              ),
-              items: const [
-                DropdownMenuItem(value: 'CATANA', child: Text('CATANA')),
-                DropdownMenuItem(value: 'POTA', child: Text('POTA')),
-                DropdownMenuItem(value: '1a', child: Text('1a')),
-                DropdownMenuItem(value: '2a', child: Text('2a')),
-                DropdownMenuItem(value: 'Destare', child: Text('Destare')),
-                DropdownMenuItem(value: 'Caballa', child: Text('Caballa')),
-                DropdownMenuItem(value: 'BONITO', child: Text('BONITO')),
-                DropdownMenuItem(value: 'JUREL', child: Text('JUREL')),
-                DropdownMenuItem(value: 'OTROS', child: Text('OTROS')),
-              ],
-              onChanged: (val) {
-                if (val != null) {
-                  setState(() {
-                    _tipoProductoSeleccionado = val;
-                    if (val != 'OTROS') _otroProductoCtrl.clear();
-                  });
-                }
-              },
-            ),
-            if (_tipoProductoSeleccionado == 'OTROS') ...[
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _otroProductoCtrl,
-                style: const TextStyle(color: Colors.black87),
-                textCapitalization: TextCapitalization.characters,
-                decoration: EstilosFormulario.construirInputDecoration(
-                  labelText: 'Especifique otro producto',
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _nombrePesadorCtrl,
-              style: const TextStyle(color: Colors.black87),
-              textCapitalization: TextCapitalization.characters,
-              decoration: EstilosFormulario.construirInputDecoration(
-                labelText: 'Pesador de Muelle',
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _tipoCtrl,
-                    style: const TextStyle(color: Colors.black87),
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: EstilosFormulario.construirInputDecoration(
-                      labelText: 'Tipo',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextFormField(
-                    controller: _cuadrillaCtrl,
-                    style: const TextStyle(color: Colors.black87),
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: EstilosFormulario.construirInputDecoration(
-                      labelText: 'Cuadrilla',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _observacionesCtrl,
-              style: const TextStyle(color: Colors.black87),
-              maxLines: 2,
-              decoration: EstilosFormulario.construirInputDecoration(
-                labelText: 'Observaciones / Notas de Bahía (Opcional)',
-              ),
             ),
             const SizedBox(height: 16),
             _buildFotosZarpeEvidencia(),
@@ -1301,6 +1184,8 @@ class _FormularioRegistroPescaState
 
   @override
   Widget build(BuildContext context) {
+    final esSincronizado = widget.cuadreInicial?.sincronizado == true;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F8F6),
       appBar: AppBar(
@@ -1310,9 +1195,9 @@ class _FormularioRegistroPescaState
           icon: const Icon(Icons.arrow_back, color: Color(0xFF004D40)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Punto de Venta - Muelle',
-          style: TextStyle(
+        title: Text(
+          esSincronizado ? 'Resumen de Cuadre' : 'Punto de Venta - Muelle',
+          style: const TextStyle(
             color: Color(0xFF004D40),
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -1321,17 +1206,208 @@ class _FormularioRegistroPescaState
         centerTitle: false,
         titleSpacing: 0,
       ),
-      body: Form(
-        key: _formKey,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.maxWidth > 800) {
-              return _buildTabletLayout();
-            } else {
-              return _buildMobileLayout();
-            }
-          },
-        ),
+      body: esSincronizado
+          ? _buildVistaResumen()
+          : Form(
+              key: _formKey,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth > 800) {
+                    return _buildTabletLayout();
+                  } else {
+                    return _buildMobileLayout();
+                  }
+                },
+              ),
+            ),
+    );
+  }
+
+  Widget _buildVistaResumen() {
+    final c = widget.cuadreInicial!;
+    
+    // Totales
+    final double totalKilos = c.compras.fold(0.0, (sum, comp) => sum + comp.kilos);
+    final double totalCostoCompras = c.compras.fold(0.0, (sum, comp) => sum + comp.total);
+    final double totalGastos = c.gastos.where((g) => g.concepto.toUpperCase() != 'OBSERVACIONES').fold(0.0, (sum, g) => sum + g.total);
+    final double granTotal = totalCostoCompras + totalGastos;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Info General
+          Card(
+            color: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Información General', style: TextStyle(color: Color(0xFF006B54), fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  _buildFilaResumen('Cámara', c.placa.toUpperCase(), icon: Icons.local_shipping),
+                  _buildFilaResumen('Fecha Zarpe', c.fechaZarpe ?? '-', icon: Icons.date_range),
+                  _buildFilaResumen('Muelle', c.muellePartida ?? '-', icon: Icons.anchor),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Resumen Totales
+          Card(
+            color: const Color(0xFF006B54),
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  const Text('RESUMEN DE OPERACIÓN', style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Kilos Totales:', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      Text('${_formatearNumero(totalKilos)} kg', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const Divider(color: Colors.white24, height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Costo Embarcaciones:', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      Text('S/ ${_formatearNumero(totalCostoCompras)}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Gastos Operativos:', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      Text('S/ ${_formatearNumero(totalGastos)}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const Divider(color: Colors.white24, height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('TOTAL INVERTIDO:', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text('S/ ${_formatearNumero(granTotal)}', style: const TextStyle(color: Colors.amberAccent, fontSize: 20, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Embarcaciones
+          Card(
+            color: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Embarcaciones', style: TextStyle(color: Color(0xFF006B54), fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  if (c.compras.isEmpty)
+                    const Text('No hay embarcaciones registradas.', style: TextStyle(color: Colors.black54))
+                  else
+                    ...c.compras.map((comp) => Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(color: const Color(0xFFF9FAFB), borderRadius: BorderRadius.circular(8)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(comp.embarcacion, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                  const SizedBox(height: 4),
+                                  Text('${comp.producto} • ${_formatearNumero(comp.kilos)} kg', style: const TextStyle(color: Colors.black54, fontSize: 13)),
+                                ],
+                              ),
+                              Text('S/ ${_formatearNumero(comp.total)}', style: const TextStyle(color: Color(0xFF006B54), fontWeight: FontWeight.bold, fontSize: 15)),
+                            ],
+                          ),
+                        )),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Gastos Operativos
+          Card(
+            color: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Gastos Operativos', style: TextStyle(color: Color(0xFF006B54), fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  if (c.gastos.where((g) => g.total > 0 && g.concepto.toUpperCase() != 'OBSERVACIONES').isEmpty)
+                    const Text('No hay gastos registrados.', style: TextStyle(color: Colors.black54))
+                  else
+                    ...c.gastos.where((g) => g.total > 0 && g.concepto.toUpperCase() != 'OBSERVACIONES').map((g) => Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(color: const Color(0xFFF9FAFB), borderRadius: BorderRadius.circular(8)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(g.concepto, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                              Text('S/ ${_formatearNumero(g.total)}', style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 14)),
+                            ],
+                          ),
+                        )),
+                  // Mostrar observaciones si las hay
+                  if (c.gastos.any((g) => g.concepto.toUpperCase() == 'OBSERVACIONES' && g.tipo.isNotEmpty)) ...[
+                    const Divider(height: 24),
+                    const Text('Observaciones:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text(c.gastos.firstWhere((g) => g.concepto.toUpperCase() == 'OBSERVACIONES').tipo, style: const TextStyle(color: Colors.black54, fontStyle: FontStyle.italic)),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilaResumen(String label, String valor, {IconData? icon}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 18, color: Colors.black54),
+            const SizedBox(width: 8),
+          ],
+          Text('$label: ', style: const TextStyle(color: Colors.black54, fontSize: 14)),
+          Expanded(child: Text(valor, style: const TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.w600))),
+        ],
       ),
     );
   }

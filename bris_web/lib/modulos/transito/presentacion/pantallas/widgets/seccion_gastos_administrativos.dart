@@ -9,6 +9,7 @@ class SeccionGastosAdministrativos extends StatefulWidget {
   final Function(GastoWebModelo) onGuardar;
   final Function(String) onEliminar;
   final VoidCallback? onGuardarSeccion;
+  final bool esSoloLectura;
 
   const SeccionGastosAdministrativos({
     super.key,
@@ -16,6 +17,7 @@ class SeccionGastosAdministrativos extends StatefulWidget {
     required this.onGuardar,
     required this.onEliminar,
     this.onGuardarSeccion,
+    this.esSoloLectura = false,
   });
 
   @override
@@ -250,6 +252,7 @@ class _SeccionGastosAdministrativosState
               padding: const EdgeInsets.only(bottom: 12),
               child: TextFormField(
                 controller: e.value,
+                readOnly: widget.esSoloLectura,
                 style: const TextStyle(
                   color: Color(0xFF15181A),
                   fontWeight: FontWeight.bold,
@@ -328,27 +331,29 @@ class _SeccionGastosAdministrativosState
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.edit,
-                        color: Color(0xFF64748B),
-                        size: 20,
+                    if (!widget.esSoloLectura) ...[
+                      IconButton(
+                        icon: const Icon(
+                          Icons.edit,
+                          color: Color(0xFF64748B),
+                          size: 20,
+                        ),
+                        onPressed: () => _mostrarDialogoOtroGasto(g),
                       ),
-                      onPressed: () => _mostrarDialogoOtroGasto(g),
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.delete,
-                        color: Colors.redAccent,
-                        size: 20,
+                      IconButton(
+                        icon: const Icon(
+                          Icons.delete,
+                          color: Colors.redAccent,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          widget.onEliminar(g.id);
+                          setState(() {
+                            _otrosGastos.removeWhere((item) => item.id == g.id);
+                          });
+                        },
                       ),
-                      onPressed: () {
-                        widget.onEliminar(g.id);
-                        setState(() {
-                          _otrosGastos.removeWhere((item) => item.id == g.id);
-                        });
-                      },
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -356,22 +361,23 @@ class _SeccionGastosAdministrativosState
           }),
 
           const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Agregar Otro Gasto'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF00796B),
-                side: const BorderSide(color: Color(0xFF00796B)),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          if (!widget.esSoloLectura)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Agregar Otro Gasto'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF00796B),
+                  side: const BorderSide(color: Color(0xFF00796B)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
+                onPressed: () => _mostrarDialogoOtroGasto(),
               ),
-              onPressed: () => _mostrarDialogoOtroGasto(),
             ),
-          ),
           if (widget.onGuardarSeccion != null) ...[
             const SizedBox(height: 16),
             SizedBox(

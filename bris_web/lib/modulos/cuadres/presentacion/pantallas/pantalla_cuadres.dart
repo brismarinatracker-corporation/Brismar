@@ -11,7 +11,7 @@ import 'package:bris_web/nucleo/componentes/carga_orbital.dart';
 /// Pantalla de Cuadres de Pesca — Web Admin.
 ///
 /// Muestra la lista completa de cuadres con filtros y un panel lateral
-/// de detalle cuando se selecciona una fila.
+/// de detalle cuando se selecciona una fila. (Rediseño Premium)
 class PantallaCuadres extends ConsumerWidget {
   const PantallaCuadres({super.key});
 
@@ -20,281 +20,158 @@ class PantallaCuadres extends ConsumerWidget {
     final estado = ref.watch(controladorCuadresWebProvider);
     final fmt = NumberFormat('#,##0.00', 'es_PE');
 
-    final esMovil = MediaQuery.of(context).size.width < 800;
-
-    if (estado.cargando) {
-      return const Center(child: CargaOrbital(tamano: 80));
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CabeceraPaginaWeb(
-          titulo: 'Cuadres de Pesca',
-          subtitulo: '${estado.cuadres.length} cuadres cargados',
-          widgetAccion: OutlinedButton.icon(
-            onPressed: estado.cargando
-                ? null
-                : () => ref
-                      .read(controladorCuadresWebProvider.notifier)
-                      .cargarCuadres(),
-            icon: estado.cargando
-                ? const CargaOrbital(tamano: 16)
-                : const Icon(Icons.refresh_rounded, size: 18),
-            label: esMovil ? const SizedBox() : const Text('Actualizar'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF0E3E2C),
-              disabledForegroundColor: Colors.black38,
-              side: const BorderSide(color: Colors.black12),
-              padding: EdgeInsets.symmetric(
-                horizontal: esMovil ? 12 : 20,
-                vertical: 16,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-        ),
-        // Rest of the screen
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.all(esMovil ? 16 : 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _BarraFiltros(estado: estado),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: _CuerpoConDetalle(estado: estado, fmt: fmt),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CabeceraPaginaWeb(
+              titulo: 'Cuadres de Pesca',
+              subtitulo:
+                  'Monitoreo centralizado de utilidades, liquidaciones y conciliación contable por zarpe',
+              widgetAccion: ElevatedButton.icon(
+                onPressed: () {
+                  ref.read(controladorCuadresWebProvider.notifier).cargarCuadres();
+                },
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Actualizar'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF0F172A),
+                  elevation: 0,
+                  side: const BorderSide(color: Color(0xFFE2E8F0)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(height: 20),
+            _tarjetasMetricas(estado, fmt),
+            const SizedBox(height: 20),
+            _barraFiltros(context, ref, estado),
+            const SizedBox(height: 16),
+            Expanded(
+              child: _contenidoPrincipal(context, ref, estado, fmt),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
-}
 
-// ─── Barra de Filtros ─────────────────────────────────────────────────────────
-
-class _BarraFiltros extends ConsumerStatefulWidget {
-  const _BarraFiltros({required this.estado});
-  final EstadoCuadresWeb estado;
-
-  @override
-  ConsumerState<_BarraFiltros> createState() => _BarraFiltrosState();
-}
-
-class _BarraFiltrosState extends ConsumerState<_BarraFiltros> {
-  final _busquedaCtrl = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _busquedaCtrl.text = widget.estado.filtroPlaca ?? '';
-  }
-
-  @override
-  void didUpdateWidget(covariant _BarraFiltros oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.estado.filtroPlaca != oldWidget.estado.filtroPlaca) {
-      _busquedaCtrl.text = widget.estado.filtroPlaca ?? '';
-    }
-  }
-
-  @override
-  void dispose() {
-    _busquedaCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final ctrl = ref.read(controladorCuadresWebProvider.notifier);
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      crossAxisAlignment: WrapCrossAlignment.center,
+  Widget _tarjetasMetricas(EstadoCuadresWeb estado, NumberFormat fmt) {
+    return Row(
       children: [
-        SizedBox(
-          width: 220,
-          child: TextField(
-            controller: _busquedaCtrl,
-            decoration: InputDecoration(
-              hintText: 'Buscar cámara (placa)',
-              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-              prefixIcon: const Icon(
-                Icons.search,
-                size: 18,
-                color: Colors.grey,
-              ),
-              suffixIcon: widget.estado.filtroPlaca != null
-                  ? IconButton(
-                      icon: const Icon(Icons.close, size: 16),
-                      onPressed: () {
-                        _busquedaCtrl.clear();
-                        ctrl.aplicarFiltroPlaca(null);
-                      },
-                    )
-                  : null,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 0,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFF0E3E2C)),
-              ),
-            ),
-            onSubmitted: (val) => ctrl.aplicarFiltroPlaca(val),
+        Expanded(
+          child: _TarjetaMetrica(
+            titulo: 'Total Cuadres',
+            valor: '${estado.totalCuadres}',
+            icono: Icons.analytics_outlined,
+            colorIcono: const Color(0xFF3B82F6),
           ),
         ),
-        _BotoFiltroFecha(
-          label: 'Desde',
-          fecha: widget.estado.filtroDesde,
-          onSeleccionar: (d) => ctrl.aplicarFiltroDesde(d),
-          onLimpiar: () => ctrl.aplicarFiltroDesde(null),
-        ),
-        _BotoFiltroFecha(
-          label: 'Hasta',
-          fecha: widget.estado.filtroHasta,
-          onSeleccionar: (d) => ctrl.aplicarFiltroHasta(d),
-          onLimpiar: () => ctrl.aplicarFiltroHasta(null),
-        ),
-        if (widget.estado.filtroDesde != null ||
-            widget.estado.filtroHasta != null ||
-            widget.estado.filtroPlaca != null)
-          TextButton.icon(
-            onPressed: () async {
-              _busquedaCtrl.clear();
-              await ctrl.aplicarFiltroPlaca(null);
-              await ctrl.aplicarFiltroDesde(null);
-              await ctrl.aplicarFiltroHasta(null);
-            },
-            icon: const Icon(Icons.clear, size: 16, color: Colors.orangeAccent),
-            label: const Text(
-              'Limpiar filtros',
-              style: TextStyle(color: Colors.orangeAccent),
-            ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _TarjetaMetrica(
+            titulo: 'Utilidad Total',
+            valor: 'S/ ${fmt.format(estado.utilidadTotalGlobal)}',
+            icono: Icons.monetization_on_outlined,
+            colorIcono: const Color(0xFF10B981),
           ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _TarjetaMetrica(
+            titulo: 'Zarpes Pendientes',
+            valor: '${estado.cuadresPendientes}',
+            icono: Icons.pending_actions_outlined,
+            colorIcono: const Color(0xFFF59E0B),
+          ),
+        ),
       ],
     );
   }
-}
 
-class _BotoFiltroFecha extends StatelessWidget {
-  const _BotoFiltroFecha({
-    required this.label,
-    required this.fecha,
-    required this.onSeleccionar,
-    required this.onLimpiar,
-  });
+  Widget _barraFiltros(
+    BuildContext context,
+    WidgetRef ref,
+    EstadoCuadresWeb estado,
+  ) {
+    final ctrl = ref.read(controladorCuadresWebProvider.notifier);
 
-  final String label;
-  final DateTime? fecha;
-  final ValueChanged<DateTime> onSeleccionar;
-  final VoidCallback onLimpiar;
-
-  @override
-  Widget build(BuildContext context) {
-    final texto = fecha != null
-        ? DateFormat('dd/MM/yyyy').format(fecha!)
-        : label;
-    return OutlinedButton.icon(
-      onPressed: () async {
-        final seleccionada = await showDatePicker(
-          context: context,
-          initialDate: fecha ?? DateTime.now(),
-          firstDate: DateTime(2024),
-          lastDate: DateTime.now().add(const Duration(days: 1)),
-          locale: const Locale('es', 'ES'),
-          builder: (ctx, child) =>
-              Theme(data: ThemeData.light(), child: child!),
-        );
-        if (seleccionada != null) onSeleccionar(seleccionada);
-      },
-      icon: Icon(
-        fecha != null ? Icons.event_available : Icons.calendar_today,
-        size: 16,
-        color: fecha != null
-            ? const Color(0xFF00838F)
-            : const Color(0xFF64748B),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      label: Text(
-        texto,
-        style: TextStyle(
-          color: fecha != null
-              ? const Color(0xFF00838F)
-              : const Color(0xFF475569),
-        ),
-      ),
-      style: OutlinedButton.styleFrom(
-        backgroundColor: fecha != null ? const Color(0xFFE0F7FA) : Colors.white,
-        side: BorderSide(
-          color: fecha != null
-              ? const Color(0xFF00838F)
-              : const Color(0xFF94A3B8),
-          width: 1.2,
-        ),
-        foregroundColor: fecha != null
-            ? const Color(0xFF00838F)
-            : const Color(0xFF475569),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              decoration: const InputDecoration(
+                hintText: 'Buscar por placa, chofer o embarcación...',
+                prefixIcon: Icon(Icons.search, size: 20, color: Color(0xFF94A3B8)),
+                border: InputBorder.none,
+                isDense: true,
+              ),
+              onChanged: (val) => ctrl.filtrarPorTexto(val),
+            ),
+          ),
+          const SizedBox(width: 16),
+          DropdownButton<String>(
+            value: estado.filtroEstado,
+            underline: const SizedBox(),
+            items: const [
+              DropdownMenuItem(value: 'TODOS', child: Text('Todos los estados')),
+              DropdownMenuItem(value: 'PENDIENTE', child: Text('Pendientes')),
+              DropdownMenuItem(value: 'COMPLETADO', child: Text('Completados')),
+              DropdownMenuItem(value: 'OBSERVADO', child: Text('Observados')),
+            ],
+            onChanged: (val) {
+              if (val != null) ctrl.filtrarPorEstado(val);
+            },
+          ),
+        ],
       ),
     );
   }
-}
 
-// ─── Cuerpo con Detalle ───────────────────────────────────────────────────────
-
-class _CuerpoConDetalle extends StatelessWidget {
-  const _CuerpoConDetalle({required this.estado, required this.fmt});
-  final EstadoCuadresWeb estado;
-  final NumberFormat fmt;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _contenidoPrincipal(
+    BuildContext context,
+    WidgetRef ref,
+    EstadoCuadresWeb estado,
+    NumberFormat fmt,
+  ) {
     if (estado.cargando) {
-      return const Center(child: CargaOrbital(tamano: 80));
+      return const Center(child: CargaOrbital());
     }
+
     if (estado.error != null) {
       return Center(
-        child: Text(
-          'Error: ${estado.error}',
-          style: const TextStyle(color: Colors.redAccent),
-        ),
-      );
-    }
-    if (estado.cuadres.isEmpty) {
-      return const Center(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inbox_rounded, size: 80, color: Color(0xFFCBD5E1)),
-            SizedBox(height: 16),
-            Text(
-              'No hay cuadres registrados.',
-              style: TextStyle(color: Color(0xFF64748B), fontSize: 16),
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 12),
+            Text('Error: ${estado.error}', style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () => ref.read(controladorCuadresWebProvider.notifier).cargarCuadres(),
+              child: const Text('Reintentar'),
             ),
           ],
         ),
       );
     }
 
-    final esMovil = MediaQuery.of(context).size.width < 800;
+    final isMobile = MediaQuery.of(context).size.width < 900;
 
-    if (esMovil) {
+    if (isMobile) {
       return Stack(
         children: [
           _TablaCuadres(
@@ -305,7 +182,7 @@ class _CuerpoConDetalle extends StatelessWidget {
           if (estado.cuadreSeleccionado != null)
             Positioned.fill(
               child: Container(
-                color: Colors.white.withValues(alpha: 0.9),
+                color: Colors.white.withValues(alpha: 0.95),
                 child: PanelDetalleCuadre(
                   cuadre: estado.cuadreSeleccionado!,
                   fmt: fmt,
@@ -320,7 +197,7 @@ class _CuerpoConDetalle extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          flex: 3,
+          flex: 4,
           child: _TablaCuadres(
             cuadres: estado.cuadres,
             fmt: fmt,
@@ -330,7 +207,7 @@ class _CuerpoConDetalle extends StatelessWidget {
         if (estado.cuadreSeleccionado != null) ...[
           const SizedBox(width: 24),
           SizedBox(
-            width: 380,
+            width: 440,
             child: PanelDetalleCuadre(cuadre: estado.cuadreSeleccionado!, fmt: fmt),
           ),
         ],
@@ -339,7 +216,52 @@ class _CuerpoConDetalle extends StatelessWidget {
   }
 }
 
-// ─── Tabla de Cuadres ─────────────────────────────────────────────────────────
+class _TarjetaMetrica extends StatelessWidget {
+  final String titulo;
+  final String valor;
+  final IconData icono;
+  final Color colorIcono;
+
+  const _TarjetaMetrica({
+    required this.titulo,
+    required this.valor,
+    required this.icono,
+    required this.colorIcono,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colorIcono.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icono, color: colorIcono, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(titulo, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+              const SizedBox(height: 4),
+              Text(valor, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _TablaCuadres extends ConsumerWidget {
   const _TablaCuadres({
@@ -347,317 +269,69 @@ class _TablaCuadres extends ConsumerWidget {
     required this.fmt,
     required this.seleccionadoId,
   });
+
   final List<CuadreWebModelo> cuadres;
   final NumberFormat fmt;
   final String? seleccionadoId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ctrl = ref.read(controladorCuadresWebProvider.notifier);
-    final esMovil = MediaQuery.of(context).size.width < 800;
-
-    if (esMovil) {
-      return ListView.separated(
-        itemCount: cuadres.length,
-        separatorBuilder: (ctx, i) => const SizedBox(height: 12),
-        itemBuilder: (ctx, i) {
-          final c = cuadres[i];
-          final color = _colorEstado(c.estado);
-          final utilColor = c.utilidadNeta >= 0
-              ? const Color(0xFF2E7D32)
-              : const Color(0xFFC62828);
-          final esSel = c.id == seleccionadoId;
-
-          return InkWell(
-            onTap: () => ctrl.seleccionarCuadre(c.id),
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: esSel
-                    ? const Color(0xFF00838F).withValues(alpha: 0.06)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: esSel
-                      ? const Color(0xFF00838F)
-                      : const Color(0xFFE2E8F0),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        c.placa,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF15181A),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          c.estado.toUpperCase(),
-                          style: TextStyle(
-                            color: color,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Zarpe: ${c.fechaZarpe != null ? DateFormat('dd/MM/yyyy').format(DateTime.tryParse(c.fechaZarpe!)!) : '-'}',
-                    style: const TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Ventas',
-                            style: TextStyle(
-                              color: Color(0xFF64748B),
-                              fontSize: 12,
-                            ),
-                          ),
-                          Text(
-                            'S/ ${fmt.format(c.totalVentas)}',
-                            style: const TextStyle(
-                              color: Color(0xFF15181A),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Text(
-                            'Utilidad',
-                            style: TextStyle(
-                              color: Color(0xFF64748B),
-                              fontSize: 12,
-                            ),
-                          ),
-                          Text(
-                            'S/ ${fmt.format(c.utilidadNeta)}',
-                            style: TextStyle(
-                              color: utilColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+    if (cuadres.isEmpty) {
+      return const Center(
+        child: Text('No hay cuadres registrados', style: TextStyle(color: Color(0xFF64748B))),
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minWidth: MediaQuery.of(context).size.width * 0.6,
+    return ListView.separated(
+      itemCount: cuadres.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final item = cuadres[index];
+        final isSelected = item.id == seleccionadoId;
+
+        return Card(
+          elevation: isSelected ? 2 : 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: isSelected ? const Color(0xFF0F172A) : const Color(0xFFE2E8F0),
+              width: isSelected ? 2 : 1,
             ),
-            child: Table(
-              border: const TableBorder(
-                horizontalInside: BorderSide(
-                  color: Color(0xFFE2E8F0),
-                  width: 1,
-                ),
-              ),
-              columnWidths: const {
-                0: FlexColumnWidth(2),
-                1: FlexColumnWidth(2),
-                2: FlexColumnWidth(1.5),
-                3: FlexColumnWidth(1.2),
-                4: FlexColumnWidth(1.2),
-                5: FlexColumnWidth(1),
-              },
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            onTap: () {
+              ref.read(controladorCuadresWebProvider.notifier).seleccionarCuadre(item.id);
+            },
+            leading: CircleAvatar(
+              backgroundColor: const Color(0xFFF1F5F9),
+              child: Icon(Icons.local_shipping, color: const Color(0xFF0F172A)),
+            ),
+            title: Text(
+              'Placa: ${item.placa}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text('Chofer: ${item.chofer ?? "Sin asignar"} | Muelle: ${item.plantaDestino ?? "-"}'),
+            trailing: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                _filaTitulo([
-                  'Placa',
-                  'Fecha Zarpe',
-                  'Estado',
-                  'Ventas',
-                  'Utilidad',
-                  '',
-                ]),
-                ...cuadres.map((c) => _filaData(c, ctrl)),
+                Text(
+                  'Utilidad: S/ ${fmt.format(item.utilidadNeta)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: item.utilidadNeta >= 0 ? Colors.green : Colors.red,
+                  ),
+                ),
+                Text(
+                  item.estado,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ],
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
-  }
-
-  TableRow _filaTitulo(List<String> titulos) {
-    return TableRow(
-      decoration: const BoxDecoration(color: Color(0xFFF1F5F9)),
-      children: titulos
-          .map(
-            (t) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Text(
-                t,
-                style: const TextStyle(
-                  color: Color(0xFF475569),
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          )
-          .toList(),
-    );
-  }
-
-  TableRow _filaData(CuadreWebModelo c, ControladorCuadresWeb ctrl) {
-    final esSeleccionado = c.id == seleccionadoId;
-    final color = _colorEstado(c.estado);
-    return TableRow(
-      decoration: BoxDecoration(
-        color: esSeleccionado
-            ? const Color(0xFF00838F).withValues(alpha: 0.06)
-            : Colors.transparent,
-      ),
-      children: [
-        _celda(c.placa, bold: true),
-        _celda(
-          c.fechaZarpe != null
-              ? DateFormat(
-                  'dd/MM/yyyy',
-                ).format(DateTime.tryParse(c.fechaZarpe!)!)
-              : '-',
-        ),
-        _celdaEstado(c.estado, color),
-        _celda('S/ ${fmt.format(c.totalVentas)}'),
-        _celda(
-          'S/ ${fmt.format(c.utilidadNeta)}',
-          color: c.utilidadNeta >= 0
-              ? const Color(0xFF2E7D32)
-              : const Color(0xFFC62828),
-        ),
-        _celdaAccion(c, ctrl),
-      ],
-    );
-  }
-
-  Widget _celda(String texto, {bool bold = false, Color? color}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Text(
-        texto,
-        style: TextStyle(
-          color:
-              color ??
-              (bold ? const Color(0xFF15181A) : const Color(0xFF475569)),
-          fontSize: 13,
-          fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-    );
-  }
-
-  Widget _celdaEstado(String estado, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          estado.toUpperCase(),
-          style: TextStyle(
-            color: color,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _celdaAccion(CuadreWebModelo c, ControladorCuadresWeb ctrl) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      child: Consumer(
-        builder: (ctx, ref, _) => IconButton(
-          icon: Icon(
-            c.id == seleccionadoId
-                ? Icons.close_rounded
-                : Icons.chevron_right_rounded,
-            color: const Color(0xFF00838F),
-          ),
-          onPressed: () => ctrl.seleccionarCuadre(c.id),
-          tooltip: c.id == seleccionadoId ? 'Cerrar detalle' : 'Ver detalle',
-        ),
-      ),
-    );
-  }
-
-  Color _colorEstado(String estado) {
-    switch (estado.toLowerCase()) {
-      case 'completo':
-        return const Color(0xFF2E7D32);
-      case 'borrador':
-        return const Color(0xFFE65100);
-      default:
-        return Colors.blueAccent;
-    }
   }
 }
-
-
