@@ -78,6 +78,25 @@ class ControladorTransito extends AsyncNotifier<List<ZarpeModelo>> {
     state = await AsyncValue.guard(() => _fuente.obtenerZarpes(filtro: filtro));
   }
 
+  /// Carga la siguiente página de registros desde Supabase (Paginación Real).
+  Future<void> cargarMas() async {
+    if (state.isLoading || state.hasError) return;
+    
+    final actuales = state.value ?? [];
+    final filtro = ref.read(proveedorFiltroTransito);
+    
+    // Obtenemos los siguientes 30 registros
+    final nuevos = await _fuente.obtenerZarpes(
+      filtro: filtro, 
+      offset: actuales.length,
+      limite: 30,
+    );
+    
+    if (nuevos.isNotEmpty) {
+      state = AsyncData([...actuales, ...nuevos]);
+    }
+  }
+
   /// Registra la recepción de un zarpe en la planta procesadora.
   Future<void> registrarRecepcionEnPlanta({
     required String id,

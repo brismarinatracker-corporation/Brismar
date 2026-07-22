@@ -1,4 +1,5 @@
 import '../../dominio/entidades/cuadre_entidad.dart';
+import '../../dominio/entidades/estado_cuadre.dart';
 
 /// Modelo de datos para la entidad de compras, adaptado para serialización y persistencia.
 class CompraModelo extends CompraEntidad {
@@ -276,7 +277,7 @@ class CuadreModelo extends CuadreEntidad {
     placa: map['placa'] as String,
     fechaZarpe: map['fecha_zarpe'] as String?,
     fechaCuadre: map['fecha_cuadre'] as String?,
-    estado: map['estado'] as String? ?? 'borrador',
+    estado: EstadoCuadre.desdeString(map['estado'] as String?),
     urlPdfCloud: map['url_pdf_cloud'] as String?,
     urlExcelCloud: map['url_excel_cloud'] as String?,
     sincronizado: (map['sincronizado'] as int) == 1,
@@ -300,7 +301,7 @@ class CuadreModelo extends CuadreEntidad {
     'placa': placa,
     'fecha_zarpe': fechaZarpe,
     'fecha_cuadre': fechaCuadre,
-    'estado': estado,
+    'estado': estado.valor,
     'url_pdf_cloud': urlPdfCloud,
     'url_excel_cloud': urlExcelCloud,
     'sincronizado': sincronizado ? 1 : 0,
@@ -322,7 +323,7 @@ class CuadreModelo extends CuadreEntidad {
     placa: map['placa'] as String,
     fechaZarpe: map['fecha_zarpe'] as String?,
     fechaCuadre: map['fecha_cuadre'] as String?,
-    estado: map['estado'] as String? ?? 'borrador',
+    estado: EstadoCuadre.desdeString(map['estado'] as String?),
     urlPdfCloud: map['url_pdf_cloud'] as String?,
     urlExcelCloud: map['url_excel_cloud'] as String?,
     sincronizado: map['sincronizado'] as bool? ?? false,
@@ -346,7 +347,7 @@ class CuadreModelo extends CuadreEntidad {
     'placa': placa,
     'fecha_zarpe': fechaZarpe,
     'fecha_cuadre': fechaCuadre,
-    'estado': estado,
+    'estado': estado.valor,
     'url_pdf_cloud': urlPdfCloud,
     'url_excel_cloud': urlExcelCloud,
     'foto_zarpe_url': fotoZarpeUrl,

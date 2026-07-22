@@ -7,11 +7,14 @@ class SeccionEmbarcaciones extends StatelessWidget {
   final Function(CompraWebModelo) onGuardar;
   final Function(String) onEliminar;
 
+  final bool esSoloLectura;
+
   const SeccionEmbarcaciones({
     super.key,
     required this.compras,
     required this.onGuardar,
     required this.onEliminar,
+    this.esSoloLectura = false,
   });
 
   @override
@@ -91,53 +94,56 @@ class SeccionEmbarcaciones extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.edit_outlined,
-                        color: Color(0xFF00796B),
-                        size: 20,
+                    if (!esSoloLectura) ...[
+                      IconButton(
+                        icon: const Icon(
+                          Icons.edit_outlined,
+                          color: Color(0xFF00796B),
+                          size: 20,
+                        ),
+                        onPressed: () =>
+                            DialogoCompra.mostrar(context, c, onGuardar),
+                        tooltip: 'Editar embarcación',
                       ),
-                      onPressed: () =>
-                          DialogoCompra.mostrar(context, c, onGuardar),
-                      tooltip: 'Editar embarcación',
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.delete_outline_rounded,
-                        color: Colors.redAccent,
-                        size: 20,
+                      IconButton(
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          color: Colors.redAccent,
+                          size: 20,
+                        ),
+                        onPressed: () => onEliminar(c.id),
+                        tooltip: 'Eliminar embarcación',
                       ),
-                      onPressed: () => onEliminar(c.id),
-                      tooltip: 'Eliminar embarcación',
-                    ),
+                    ],
                   ],
                 ),
               ),
             ),
           ),
           const SizedBox(height: 16),
-          OutlinedButton.icon(
-            onPressed: () => DialogoCompra.mostrar(context, null, onGuardar),
-            icon: const Icon(
-              Icons.add_rounded,
-              color: Color(0xFF00796B),
-              size: 18,
-            ),
-            label: const Text(
-              'Añadir embarcación',
-              style: TextStyle(
+          if (!esSoloLectura)
+            OutlinedButton.icon(
+              onPressed: () => DialogoCompra.mostrar(context, null, onGuardar),
+              icon: const Icon(
+                Icons.add_rounded,
                 color: Color(0xFF00796B),
-                fontWeight: FontWeight.bold,
+                size: 18,
+              ),
+              label: const Text(
+                'Añadir embarcación',
+                style: TextStyle(
+                  color: Color(0xFF00796B),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF00796B)),
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Color(0xFF00796B)),
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
         ],
       ),
     );

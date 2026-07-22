@@ -7,12 +7,14 @@ class SeccionRecepcionVenta extends StatefulWidget {
   final List<VentaWebModelo> ventas;
   final Function(VentaWebModelo) onGuardar;
   final Function(String) onEliminar;
+  final bool esSoloLectura;
 
   const SeccionRecepcionVenta({
     super.key,
     required this.ventas,
     required this.onGuardar,
     required this.onEliminar,
+    this.esSoloLectura = false,
   });
 
   @override
@@ -91,7 +93,7 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
               children: [
                 _construirEtiqueta('Planta de Destino (Procesadora)'),
                 DropdownButtonFormField<String>(
-                  value: plantaSeleccionada,
+                  initialValue: plantaSeleccionada,
                   dropdownColor: Colors.white,
                   decoration: _decoracionInput('Selecciona planta'),
                   items:
@@ -114,8 +116,9 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
                           )
                           .toList(),
                   onChanged: (val) {
-                    if (val != null)
+                    if (val != null) {
                       setStateDialog(() => plantaSeleccionada = val);
+                    }
                   },
                 ),
                 if (plantaSeleccionada == 'OTROS') ...[
@@ -129,7 +132,7 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
                 const SizedBox(height: 12),
                 _construirEtiqueta('Especie'),
                 DropdownButtonFormField<String>(
-                  value: especieSeleccionada,
+                  initialValue: especieSeleccionada,
                   dropdownColor: Colors.white,
                   decoration: _decoracionInput('Selecciona especie'),
                   items:
@@ -152,8 +155,9 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
                           )
                           .toList(),
                   onChanged: (val) {
-                    if (val != null)
+                    if (val != null) {
                       setStateDialog(() => especieSeleccionada = val);
+                    }
                   },
                 ),
                 if (especieSeleccionada == 'OTROS') ...[
@@ -304,41 +308,48 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE8F5E9),
-                        borderRadius: BorderRadius.circular(8),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.storefront_outlined,
+                          color: Color(0xFF1B5E20),
+                          size: 20,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.storefront_outlined,
-                        color: Color(0xFF1B5E20),
-                        size: 20,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Recepción en Planta',
+                          style: GoogleFonts.sora(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF15181A),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Recepción en Planta',
-                      style: GoogleFonts.sora(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF15181A),
-                      ),
-                    ),
-                  ],
-                ),
-                ElevatedButton.icon(
-                  onPressed: () => _mostrarDialogoVenta(),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Agregar'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0D5C75),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
+                    ],
                   ),
                 ),
+                if (!widget.esSoloLectura) ...[
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: () => _mostrarDialogoVenta(),
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('Agregar'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0D5C75),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -413,22 +424,24 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          IconButton(
-                            icon: const Icon(
-                              Icons.edit_outlined,
-                              color: Color(0xFF64748B),
-                              size: 20,
+                          if (!widget.esSoloLectura) ...[
+                            IconButton(
+                              icon: const Icon(
+                                Icons.edit_outlined,
+                                color: Color(0xFF64748B),
+                                size: 20,
+                              ),
+                              onPressed: () => _mostrarDialogoVenta(v),
                             ),
-                            onPressed: () => _mostrarDialogoVenta(v),
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.delete_outline,
-                              color: Colors.redAccent,
-                              size: 20,
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.redAccent,
+                                size: 20,
+                              ),
+                              onPressed: () => widget.onEliminar(v.id),
                             ),
-                            onPressed: () => widget.onEliminar(v.id),
-                          ),
+                          ],
                         ],
                       ),
                     ],

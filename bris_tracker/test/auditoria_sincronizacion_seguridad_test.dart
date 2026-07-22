@@ -5,6 +5,7 @@ import 'package:bris_tracker/modulos/registro_pesca/datos/fuentes_datos/fuente_d
 import 'package:bris_tracker/modulos/registro_pesca/datos/fuentes_datos/fuente_datos_cuadres_remota.dart';
 import 'package:bris_tracker/modulos/registro_pesca/datos/repositorios/cuadre_repositorio_imp.dart';
 import 'package:bris_tracker/modulos/registro_pesca/datos/modelos/cuadre_modelo.dart';
+import 'package:bris_tracker/modulos/registro_pesca/dominio/entidades/estado_cuadre.dart';
 import 'package:bris_tracker/nucleo/errores/diccionario_errores.dart';
 
 // Fakes / Mocks
@@ -95,32 +96,8 @@ void main() {
         usuarioId: usuarioId,
         placa: inyeccionPlaca,
         fechaZarpe: '2026-07-02',
-        estado: 'borrador',
+        estado: EstadoCuadre.borrador,
         sincronizado: false,
-        compras: [],
-        gastos: [],
-        ventas: [],
-      );
-
-      await repositorio.guardarCuadre(cuadre);
-      final leidos = await repositorio.obtenerHistorial(usuarioId);
-      
-      expect(leidos.length, equals(1));
-      expect(leidos.first.placa, equals(inyeccionPlaca));
-    });
-
-    test('2. Estructura y Consistencia Local en SQLite (Offline-First)', () async {
-      final cuadreId = const Uuid().v4();
-      final cuadre = CuadreModelo(
-        id: cuadreId,
-        usuarioId: usuarioId,
-        placa: 'T4B-902',
-        fechaZarpe: '2026-07-02',
-        estado: 'borrador',
-        sincronizado: false,
-        pesoTotal: 4500.50,
-        cajasLlenas: 120,
-        cajasVacias: 5,
         compras: [],
         gastos: [],
         ventas: [],
@@ -130,11 +107,38 @@ void main() {
       final leidos = await repositorio.obtenerHistorial(usuarioId);
 
       expect(leidos.length, equals(1));
-      expect(leidos.first.id, equals(cuadreId));
-      expect(leidos.first.pesoTotal, equals(4500.50));
-      expect(leidos.first.cajasLlenas, equals(120));
-      expect(leidos.first.sincronizado, isFalse);
+      expect(leidos.first.placa, equals(inyeccionPlaca));
     });
+
+    test(
+      '2. Estructura y Consistencia Local en SQLite (Offline-First)',
+      () async {
+        final cuadreId = const Uuid().v4();
+        final cuadre = CuadreModelo(
+          id: cuadreId,
+          usuarioId: usuarioId,
+          placa: 'T4B-902',
+          fechaZarpe: '2026-07-02',
+          estado: EstadoCuadre.borrador,
+          sincronizado: false,
+          pesoTotal: 4500.50,
+          cajasLlenas: 120,
+          cajasVacias: 5,
+          compras: [],
+          gastos: [],
+          ventas: [],
+        );
+
+        await repositorio.guardarCuadre(cuadre);
+        final leidos = await repositorio.obtenerHistorial(usuarioId);
+
+        expect(leidos.length, equals(1));
+        expect(leidos.first.id, equals(cuadreId));
+        expect(leidos.first.pesoTotal, equals(4500.50));
+        expect(leidos.first.cajasLlenas, equals(120));
+        expect(leidos.first.sincronizado, isFalse);
+      },
+    );
 
     test('3. Sincronización Exitosa al Recuperar Conectividad', () async {
       final cuadre = CuadreModelo(
@@ -142,7 +146,7 @@ void main() {
         usuarioId: usuarioId,
         placa: 'P3A-801',
         fechaZarpe: '2026-07-02',
-        estado: 'borrador',
+        estado: EstadoCuadre.borrador,
         sincronizado: false,
         compras: [],
         gastos: [],
@@ -160,28 +164,31 @@ void main() {
       expect(actualizados.first.urlPdfCloud, contains(cuadre.id));
     });
 
-    test('4. Tolerancia a Fallos e Intermitencia de Red (Offline Mode)', () async {
-      final cuadre = CuadreModelo(
-        id: const Uuid().v4(),
-        usuarioId: usuarioId,
-        placa: 'P3A-801',
-        fechaZarpe: '2026-07-02',
-        estado: 'borrador',
-        sincronizado: false,
-        compras: [],
-        gastos: [],
-        ventas: [],
-      );
+    test(
+      '4. Tolerancia a Fallos e Intermitencia de Red (Offline Mode)',
+      () async {
+        final cuadre = CuadreModelo(
+          id: const Uuid().v4(),
+          usuarioId: usuarioId,
+          placa: 'P3A-801',
+          fechaZarpe: '2026-07-02',
+          estado: EstadoCuadre.borrador,
+          sincronizado: false,
+          compras: [],
+          gastos: [],
+          ventas: [],
+        );
 
-      await mockLocal.guardarCuadreCompleto(cuadre);
-      mockRemota.failNext = true;
+        await mockLocal.guardarCuadreCompleto(cuadre);
+        mockRemota.failNext = true;
 
-      await repositorio.sincronizarPendientes(usuarioId);
+        await repositorio.sincronizarPendientes(usuarioId);
 
-      expect(mockRemota.recibidos.isEmpty, isTrue);
-      final locales = await mockLocal.obtenerCuadres(usuarioId);
-      expect(locales.first.sincronizado, isFalse);
-    });
+        expect(mockRemota.recibidos.isEmpty, isTrue);
+        final locales = await mockLocal.obtenerCuadres(usuarioId);
+        expect(locales.first.sincronizado, isFalse);
+      },
+    );
 
     test('5. Mapeo de Diccionario de Errores de Conexión', () {
       const dbEx = ExcepcionBaseDatos(mensaje: 'Error de lectura');
@@ -208,10 +215,10 @@ void main() {
     test('8. Validación de Consistencia de Datos Negativos', () {
       final double kilos = -50.0;
       final double precio = 3.5;
-      
+
       bool esValido = kilos > 0 && precio > 0;
       expect(esValido, isFalse);
-      
+
       final double kilosValidos = 120.0;
       esValido = kilosValidos > 0 && precio > 0;
       expect(esValido, isTrue);
@@ -229,10 +236,12 @@ void main() {
       const zarpeLambayeque = 'RECIBIDO_LAMBAYEQUE';
 
       bool puedeVerZarpe(String sedeSupervisor, String estadoZarpe) {
-        if (sedeSupervisor == 'LAMBAYEQUE' && estadoZarpe == 'DESPACHADO_PIURA') {
+        if (sedeSupervisor == 'LAMBAYEQUE' &&
+            estadoZarpe == 'DESPACHADO_PIURA') {
           return true;
         }
-        if (sedeSupervisor == 'LAMBAYEQUE' && estadoZarpe == 'RECIBIDO_LAMBAYEQUE') {
+        if (sedeSupervisor == 'LAMBAYEQUE' &&
+            estadoZarpe == 'RECIBIDO_LAMBAYEQUE') {
           return false;
         }
         return false;

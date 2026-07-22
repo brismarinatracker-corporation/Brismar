@@ -1,7 +1,5 @@
-/// Modelo de datos para un Zarpe de cámara frigorífica.
-///
-/// Separa el [estado] de negocio (DESPACHADO_PIURA, RECIBIDO_LAMBAYEQUE)
-/// del indicador de sincronización [sincronizado] (0 = pendiente, 1 = en Supabase).
+import 'package:bris_tracker/modulos/registro_pesca/dominio/entidades/estado_zarpe.dart';
+
 class ZarpeModelo {
   final String id;
   final String placaCamara;
@@ -12,8 +10,8 @@ class ZarpeModelo {
   final String? fotoLocalPath;
   final DateTime fechaZarpe;
 
-  /// Estado de negocio: 'DESPACHADO_PIURA' | 'RECIBIDO_LAMBAYEQUE'
-  final String estado;
+  /// Estado de negocio
+  final EstadoZarpe estado;
 
   /// 0 = no sincronizado con Supabase, 1 = ya existe en Supabase.
   final int sincronizado;
@@ -27,7 +25,7 @@ class ZarpeModelo {
     required this.fotoUrlEvidencia,
     this.fotoLocalPath,
     required this.fechaZarpe,
-    this.estado = 'DESPACHADO_PIURA',
+    this.estado = EstadoZarpe.despachadoPiura,
     this.sincronizado = 0,
   });
 
@@ -44,7 +42,7 @@ class ZarpeModelo {
       fechaZarpe: map['fecha_zarpe'] != null
           ? DateTime.parse(map['fecha_zarpe'])
           : DateTime.now(),
-      estado: map['estado'] ?? 'DESPACHADO_PIURA',
+      estado: EstadoZarpe.desdeString(map['estado'] as String?),
       sincronizado: (map['sincronizado'] as int?) ?? 0,
     );
   }
@@ -76,7 +74,7 @@ class ZarpeModelo {
       'foto_url_evidencia': fotoUrlEvidencia,
       'foto_local_path': fotoLocalPath,
       'fecha_zarpe': fechaZarpe.toIso8601String(),
-      'estado': estado,
+      'estado': estado.valor,
       'sincronizado': sincronizado,
     };
   }
@@ -91,7 +89,7 @@ class ZarpeModelo {
       'muelle_partida': muellePartida,
       'foto_url_evidencia': fotoUrlEvidencia,
       'fecha_zarpe': fechaZarpe.toIso8601String(),
-      'estado': estado,
+      'estado': estado.valor,
     };
   }
 }

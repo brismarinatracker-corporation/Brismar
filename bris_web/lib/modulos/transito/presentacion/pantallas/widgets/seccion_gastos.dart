@@ -7,12 +7,14 @@ class SeccionGastos extends StatefulWidget {
   final List<GastoWebModelo> gastos;
   final Function(GastoWebModelo) onGuardar;
   final Function(String) onEliminar;
+  final bool esSoloLectura;
 
   const SeccionGastos({
     super.key,
     required this.gastos,
     required this.onGuardar,
     required this.onEliminar,
+    this.esSoloLectura = false,
   });
 
   @override
@@ -146,6 +148,7 @@ class _SeccionGastosState extends State<SeccionGastos> {
               padding: const EdgeInsets.only(bottom: 12),
               child: TextFormField(
                 controller: e.value,
+                readOnly: widget.esSoloLectura,
                 style: const TextStyle(
                   color: Color(0xFF15181A),
                   fontWeight: FontWeight.bold,

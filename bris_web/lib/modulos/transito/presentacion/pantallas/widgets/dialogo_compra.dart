@@ -122,8 +122,9 @@ class DialogoCompra {
                           )
                           .toList(),
                       onChanged: (val) {
-                        if (val != null)
+                        if (val != null) {
                           setStateDialog(() => productoSeleccionado = val);
+                        }
                       },
                     ),
                     const SizedBox(height: 4),
@@ -200,8 +201,9 @@ class DialogoCompra {
                   onPressed: () {
                     final k = FormateadorMiles.parseDouble(kilosCtrl.text);
                     final p = FormateadorMiles.parseDouble(precioCtrl.text);
-                    if (embarcacionCtrl.text.isEmpty || k <= 0 || p <= 0)
+                    if (embarcacionCtrl.text.isEmpty || k <= 0 || p <= 0) {
                       return;
+                    }
 
                     final String idAsignado =
                         (compra?.id == null || compra!.id.isEmpty)

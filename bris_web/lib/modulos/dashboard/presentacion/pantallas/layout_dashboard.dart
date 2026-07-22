@@ -49,9 +49,9 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                   children: [
                     // Logo / Cabecera Brismar (Fraunces)
                     Padding(
-                      padding: const EdgeInsets.symmetric(
+                      padding: EdgeInsets.symmetric(
                         vertical: 24,
-                        horizontal: 16,
+                        horizontal: esExtendido ? 16 : 12,
                       ),
                       child: Row(
                         mainAxisAlignment: esExtendido
@@ -59,8 +59,8 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                             : MainAxisAlignment.center,
                         children: [
                           Container(
-                            height: 56,
-                            width: 56,
+                            height: esExtendido ? 56 : 48,
+                            width: esExtendido ? 56 : 48,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(10),

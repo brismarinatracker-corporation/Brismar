@@ -186,10 +186,12 @@ class RepositorioEdicionZarpe {
       'chofer': params.chofer,
       'muelle_partida': params.muellePartida,
     };
-    if (params.muelleDestino != null)
+    if (params.muelleDestino != null) {
       payload['muelle_destino'] = params.muelleDestino;
-    if (params.observaciones != null)
+    }
+    if (params.observaciones != null) {
       payload['observaciones'] = params.observaciones;
+    }
 
     await _cliente.from('zarpes').update(payload).eq('id', params.id);
   }
@@ -205,10 +207,12 @@ class RepositorioEdicionZarpe {
     };
 
     if (params.pesoTotal != null) payload['peso_total'] = params.pesoTotal;
-    if (params.cajasLlenas != null)
+    if (params.cajasLlenas != null) {
       payload['cajas_llenas'] = params.cajasLlenas;
-    if (params.cajasVacias != null)
+    }
+    if (params.cajasVacias != null) {
       payload['cajas_vacias'] = params.cajasVacias;
+    }
     if (params.tipoProducto != null) {
       payload['tipo_producto'] = params.tipoProducto;
     }

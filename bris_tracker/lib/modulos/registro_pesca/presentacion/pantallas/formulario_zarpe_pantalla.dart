@@ -9,6 +9,8 @@ import 'package:uuid/uuid.dart';
 
 import '../../dominio/entidades/cuadre_entidad.dart';
 import '../../dominio/entidades/zarpe_entidad.dart';
+import '../../dominio/entidades/estado_cuadre.dart';
+import '../../dominio/entidades/estado_zarpe.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../controladores/controlador_zarpes.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
@@ -273,7 +275,7 @@ class _FormularioZarpePantallaState
         usuarioId: usuarioActualId,
         placa: _placaCtrl.text.toUpperCase(),
         fechaZarpe: fechaActual,
-        estado: 'zarpe', // Estado especial de zarpe de cámara
+        estado: EstadoCuadre.zarpe, // Estado especial de zarpe de cámara
         fotoZarpeUrl: _fotosEvidencia.map((f) => f.path).join(','),
         pesoTotal: pesoTotal,
         cajasLlenas: cajasLlenas,
@@ -306,7 +308,7 @@ class _FormularioZarpePantallaState
         fotoUrlEvidencia: _fotosEvidencia.map((f) => f.path).join(','),
         fotoLocalPath: _fotosEvidencia.map((f) => f.path).join(','),
         fechaZarpe: DateTime.now(),
-        estado: 'DESPACHADO_PIURA',
+        estado: EstadoZarpe.despachadoPiura,
       );
 
       await ref.read(proveedorZarpes.notifier).registrarZarpe(nuevoZarpe);
@@ -416,11 +418,13 @@ class _FormularioZarpePantallaState
                                 labelText: 'Placa (Ej: AAA-123)',
                               ),
                           validator: (v) {
-                            if (v == null || v.isEmpty)
+                            if (v == null || v.isEmpty) {
                               return 'La placa es requerida';
+                            }
                             final clean = v.replaceAll('-', '');
-                            if (clean.length != 6)
+                            if (clean.length != 6) {
                               return 'La placa debe tener exactamente 6 caracteres (Ej: AAA-123)';
+                            }
                             return null;
                           },
                         );
@@ -478,13 +482,17 @@ class _FormularioZarpePantallaState
                   controller: _choferCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [UpperCaseInputFormatter()],
+                  inputFormatters: [
+                    UpperCaseInputFormatter(),
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]')),
+                  ],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Nombre del chofer',
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty)
+                    if (v == null || v.isEmpty) {
                       return 'El nombre del chofer es requerido';
+                    }
                     return null;
                   },
                 ),
@@ -503,10 +511,12 @@ class _FormularioZarpePantallaState
                     labelText: 'Número del chofer',
                   ),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty)
+                    if (v == null || v.trim().isEmpty) {
                       return 'El número del chofer es requerido';
-                    if (v.trim().length != 9)
+                    }
+                    if (v.trim().length != 9) {
                       return 'El número debe tener exactamente 9 dígitos';
+                    }
                     return null;
                   },
                 ),
@@ -524,8 +534,9 @@ class _FormularioZarpePantallaState
                     labelText: 'Peso Total (Kg)',
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty)
+                    if (v == null || v.isEmpty) {
                       return 'El peso total es requerido';
+                    }
                     final valor = FormateadorMiles.parseDouble(v);
                     if (valor <= 0) return 'El peso debe ser mayor a 0';
                     return null;
@@ -580,7 +591,7 @@ class _FormularioZarpePantallaState
                 const SizedBox(height: 16),
 
                 DropdownButtonFormField<String>(
-                  value: _tipoProductoSeleccionado,
+                  initialValue: _tipoProductoSeleccionado,
                   dropdownColor: Colors.white,
                   style: const TextStyle(color: Colors.black87),
                   iconEnabledColor: const Color(0xFF006B54),
@@ -631,13 +642,17 @@ class _FormularioZarpePantallaState
                   controller: _muellePartidaCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [UpperCaseInputFormatter()],
+                  inputFormatters: [
+                    UpperCaseInputFormatter(),
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]')),
+                  ],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Muelle de Partida',
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty)
+                    if (v == null || v.isEmpty) {
                       return 'El muelle de partida es requerido';
+                    }
                     return null;
                   },
                 ),
@@ -648,13 +663,17 @@ class _FormularioZarpePantallaState
                   controller: _pesadorCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [UpperCaseInputFormatter()],
+                  inputFormatters: [
+                    UpperCaseInputFormatter(),
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]')),
+                  ],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Pesador de Muelle',
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty)
+                    if (v == null || v.isEmpty) {
                       return 'El nombre del pesador es requerido';
+                    }
                     return null;
                   },
                 ),
@@ -665,13 +684,17 @@ class _FormularioZarpePantallaState
                   controller: _tipoCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [UpperCaseInputFormatter()],
+                  inputFormatters: [
+                    UpperCaseInputFormatter(),
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]')),
+                  ],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Tipo',
                   ),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty)
+                    if (v == null || v.trim().isEmpty) {
                       return 'El tipo es requerido';
+                    }
                     return null;
                   },
                 ),
@@ -682,13 +705,17 @@ class _FormularioZarpePantallaState
                   controller: _cuadrillaCtrl,
                   style: const TextStyle(color: Colors.black87),
                   textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [UpperCaseInputFormatter()],
+                  inputFormatters: [
+                    UpperCaseInputFormatter(),
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]')),
+                  ],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Cuadrilla',
                   ),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty)
+                    if (v == null || v.trim().isEmpty) {
                       return 'La cuadrilla es requerida';
+                    }
                     return null;
                   },
                 ),
@@ -698,6 +725,10 @@ class _FormularioZarpePantallaState
                 TextFormField(
                   controller: _observacionesCtrl,
                   style: const TextStyle(color: Colors.black87),
+                  textCapitalization: TextCapitalization.sentences,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]')),
+                  ],
                   decoration: EstilosFormulario.construirInputDecoration(
                     labelText: 'Observaciones / Notas (Opcional)',
                   ),

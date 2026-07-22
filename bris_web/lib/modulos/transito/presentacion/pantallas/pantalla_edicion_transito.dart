@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:uuid/uuid.dart';
 import '../controladores/controlador_transito.dart';
 import '../../datos/repositorio_edicion_zarpe.dart';
 import '../../dominio/modelos/zarpe_modelo.dart';
@@ -103,8 +103,9 @@ class _PantallaEdicionTransitoState
       final gastos = resultados[3] as List<GastoWebModelo>;
       final ventas = resultados[4] as List<VentaWebModelo>;
 
-      if (zarpe == null)
+      if (zarpe == null) {
         throw Exception('No se encontró el zarpe con ID ${widget.id}');
+      }
 
       setState(() {
         _zarpeInfo = zarpe;
@@ -112,7 +113,10 @@ class _PantallaEdicionTransitoState
         _choferCtrl.text = zarpe.chofer;
         _numeroChoferCtrl.text = zarpe.numeroChofer;
         _muelleCtrl.text = zarpe.muellePartida;
-        _observacionesCtrl.text = zarpe.observaciones ?? '';
+        final obsGasto = gastos.where((g) => g.concepto.toUpperCase().trim() == 'OBSERVACIONES').firstOrNull;
+        _observacionesCtrl.text = (zarpe.observaciones != null && zarpe.observaciones!.isNotEmpty) 
+            ? zarpe.observaciones! 
+            : (obsGasto?.tipo ?? '');
 
         if (cuadre != null) {
           _pesoTotalCtrl.text = cuadre.pesoTotal?.toString() ?? '';
@@ -150,7 +154,7 @@ class _PantallaEdicionTransitoState
         }
 
         _compras = List.from(compras);
-        _gastos = List.from(gastos);
+        _gastos = List.from(gastos)..removeWhere((g) => g.concepto.toUpperCase().trim() == 'OBSERVACIONES');
         _ventas = List.from(ventas);
         _cargando = false;
       });
@@ -159,6 +163,55 @@ class _PantallaEdicionTransitoState
         _error = e.toString();
         _cargando = false;
       });
+    }
+  }
+
+  void _recalcularGastosAdministrativos() {
+    double totalKilos = 0;
+    double totalVenta = 0;
+    for (var v in _ventas) {
+      totalKilos += v.kilos;
+      totalVenta += v.total;
+    }
+
+    // Crear una nueva referencia para que el widget hijo detecte el cambio
+    _gastos = List.from(_gastos);
+
+    // 1. FACTURACION_PLANTA = totalKilos * 0.1
+    _actualizarGastoFijo('FACTURACION_PLANTA', totalKilos * 0.1);
+    
+    // 2. IMPUESTO DE RENTA = totalVenta * 0.03
+    _actualizarGastoFijo('IMPUESTO DE RENTA', totalVenta * 0.03);
+  }
+
+  void _actualizarGastoFijo(String concepto, double totalCalculado) {
+    final idx = _gastos.indexWhere((g) => g.concepto.toUpperCase().trim() == concepto);
+    if (totalCalculado > 0) {
+      if (idx >= 0) {
+        _gastos[idx] = GastoWebModelo(
+          id: _gastos[idx].id,
+          cuadreId: _gastos[idx].cuadreId,
+          tipo: 'Administrativo',
+          concepto: concepto,
+          cantidad: 1,
+          costoUnitario: totalCalculado,
+          total: totalCalculado,
+        );
+      } else {
+        _gastos.add(GastoWebModelo(
+          id: const Uuid().v4(),
+          cuadreId: widget.id,
+          tipo: 'Administrativo',
+          concepto: concepto,
+          cantidad: 1,
+          costoUnitario: totalCalculado,
+          total: totalCalculado,
+        ));
+      }
+    } else {
+      if (idx >= 0) {
+        _gastos.removeAt(idx);
+      }
     }
   }
 
@@ -473,6 +526,7 @@ class _PantallaEdicionTransitoState
         authState.rol == 'administrador' ||
         authState.rol == 'supervisor' ||
         estaFinalizado;
+    final esMovil = MediaQuery.of(context).size.width < 800;
 
     if (_cargando && _zarpeInfo == null) {
       return const Scaffold(
@@ -511,26 +565,42 @@ class _PantallaEdicionTransitoState
                 Expanded(
                   child: Form(
                     key: _formKey,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Navegación Lateral (Pasos)
-                        _construirNavegacionPasos(esSoloLectura),
-                        // Contenido del Paso Actual
-                        Expanded(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(32),
-                            child: AbsorbPointer(
-                              absorbing: esSoloLectura,
-                              child: _construirContenidoPasoActual(
-                                urlsFotos,
-                                esSoloLectura,
+                    child: esMovil
+                        ? Column(
+                            children: [
+                              _construirNavegacionPasos(context, esSoloLectura),
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  padding: const EdgeInsets.all(16),
+                                  child: AbsorbPointer(
+                                    absorbing: esSoloLectura,
+                                    child: _construirContenidoPasoActual(
+                                      urlsFotos,
+                                      esSoloLectura,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
+                          )
+                        : Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _construirNavegacionPasos(context, esSoloLectura),
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  padding: const EdgeInsets.all(32),
+                                  child: AbsorbPointer(
+                                    absorbing: esSoloLectura,
+                                    child: _construirContenidoPasoActual(
+                                      urlsFotos,
+                                      esSoloLectura,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
               ],
@@ -570,7 +640,9 @@ class _PantallaEdicionTransitoState
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Editor de Viaje / Cuadre',
+                        esSoloLectura
+                            ? 'Detalles de Viaje (Finalizado)'
+                            : 'Editor de Viaje / Cuadre',
                         style: GoogleFonts.sora(
                           color: const Color(0xFF15181A),
                           fontSize: 20,
@@ -628,7 +700,9 @@ class _PantallaEdicionTransitoState
                     ),
                     const SizedBox(width: 16),
                     Text(
-                      'Editor de Viaje / Cuadre',
+                      esSoloLectura
+                          ? 'Detalles de Viaje (Finalizado)'
+                          : 'Editor de Viaje / Cuadre',
                       style: GoogleFonts.sora(
                         color: const Color(0xFF15181A),
                         fontSize: 26,
@@ -667,7 +741,28 @@ class _PantallaEdicionTransitoState
     );
   }
 
-  Widget _construirNavegacionPasos(bool esSoloLectura) {
+  Widget _construirNavegacionPasos(BuildContext context, bool esSoloLectura) {
+    final esMovil = MediaQuery.of(context).size.width < 800;
+
+    if (esMovil) {
+      return Container(
+        height: 70,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+        ),
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          children: [
+            _construirItemPaso(esMovil, 0, 'Zarpe Inicial', 'Partida', Icons.directions_boat_outlined, esSoloLectura),
+            _construirItemPaso(esMovil, 1, 'Cuadre Muelle', 'Compras', Icons.receipt_long_outlined, esSoloLectura),
+            _construirItemPaso(esMovil, 2, 'Recepción', 'Destino', Icons.storefront_outlined, esSoloLectura),
+            _construirItemPaso(esMovil, 3, 'Gastos Admin', 'Fletes', Icons.account_balance_wallet_outlined, esSoloLectura),
+          ],
+        ),
+      );
+    }
+
     return Container(
       width: 300,
       decoration: const BoxDecoration(
@@ -676,40 +771,17 @@ class _PantallaEdicionTransitoState
       ),
       child: Column(
         children: [
-          _construirItemPaso(
-            0,
-            'Zarpe Inicial',
-            'Datos de partida',
-            Icons.directions_boat_outlined,
-            esSoloLectura,
-          ),
-          _construirItemPaso(
-            1,
-            'Cuadre de Muelle',
-            'Gastos operativos y compras',
-            Icons.receipt_long_outlined,
-            esSoloLectura,
-          ),
-          _construirItemPaso(
-            2,
-            'Recepción y Venta',
-            'Destino, kilos y precio final',
-            Icons.storefront_outlined,
-            esSoloLectura,
-          ),
-          _construirItemPaso(
-            3,
-            'Gastos Administrativos',
-            'Fletes y comisiones',
-            Icons.account_balance_wallet_outlined,
-            esSoloLectura,
-          ),
+          _construirItemPaso(esMovil, 0, 'Zarpe Inicial', 'Datos de partida', Icons.directions_boat_outlined, esSoloLectura),
+          _construirItemPaso(esMovil, 1, 'Cuadre de Muelle', 'Gastos operativos y compras', Icons.receipt_long_outlined, esSoloLectura),
+          _construirItemPaso(esMovil, 2, 'Recepción y Venta', 'Destino, kilos y precio final', Icons.storefront_outlined, esSoloLectura),
+          _construirItemPaso(esMovil, 3, 'Gastos Administrativos', 'Fletes y comisiones', Icons.account_balance_wallet_outlined, esSoloLectura),
         ],
       ),
     );
   }
 
   Widget _construirItemPaso(
+    bool esMovil,
     int indice,
     String titulo,
     String subtitulo,
@@ -720,63 +792,89 @@ class _PantallaEdicionTransitoState
     return InkWell(
       onTap: () => setState(() => _pasoActual = indice),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        padding: esMovil 
+            ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
+            : const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         decoration: BoxDecoration(
           color: seleccionado ? const Color(0xFFF0FDF4) : Colors.transparent,
-          border: Border(
-            left: BorderSide(
-              color: seleccionado
-                  ? const Color(0xFF00C853)
-                  : Colors.transparent,
-              width: 4,
-            ),
-            bottom: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
+          border: esMovil 
+              ? Border(
+                  bottom: BorderSide(
+                    color: seleccionado ? const Color(0xFF00C853) : Colors.transparent,
+                    width: 3,
+                  ),
+                )
+              : Border(
+                  left: BorderSide(
+                    color: seleccionado ? const Color(0xFF00C853) : Colors.transparent,
+                    width: 4,
+                  ),
+                  bottom: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
         ),
         child: Row(
+          mainAxisSize: esMovil ? MainAxisSize.min : MainAxisSize.max,
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: seleccionado
-                    ? const Color(0xFF00C853)
-                    : const Color(0xFFF1F5F9),
+                color: seleccionado ? const Color(0xFF00C853) : const Color(0xFFF1F5F9),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 icono,
                 color: seleccionado ? Colors.white : const Color(0xFF64748B),
-                size: 22,
+                size: esMovil ? 18 : 22,
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
+            const SizedBox(width: 12),
+            if (!esMovil)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      titulo,
+                      style: TextStyle(
+                        color: seleccionado ? const Color(0xFF15181A) : const Color(0xFF475569),
+                        fontWeight: seleccionado ? FontWeight.bold : FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitulo,
+                      style: const TextStyle(
+                        color: Color(0xFF64748B),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     titulo,
                     style: TextStyle(
-                      color: seleccionado
-                          ? const Color(0xFF15181A)
-                          : const Color(0xFF475569),
-                      fontWeight: seleccionado
-                          ? FontWeight.bold
-                          : FontWeight.w600,
-                      fontSize: 15,
+                      color: seleccionado ? const Color(0xFF15181A) : const Color(0xFF475569),
+                      fontWeight: seleccionado ? FontWeight.bold : FontWeight.w600,
+                      fontSize: 14,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     subtitulo,
                     style: const TextStyle(
                       color: Color(0xFF64748B),
-                      fontSize: 12,
+                      fontSize: 11,
                     ),
                   ),
                 ],
               ),
-            ),
           ],
         ),
       ),
@@ -826,13 +924,15 @@ class _PantallaEdicionTransitoState
             _tituloSeccion('Paso 2: Cuadre de Muelle (Bahía)'),
             SeccionEmbarcaciones(
               compras: _compras,
+              esSoloLectura: esSoloLectura,
               onGuardar: (c) {
                 setState(() {
                   final idx = _compras.indexWhere((item) => item.id == c.id);
-                  if (idx >= 0)
+                  if (idx >= 0) {
                     _compras[idx] = c;
-                  else
+                  } else {
                     _compras.add(c);
+                  }
                 });
               },
               onEliminar: (id) =>
@@ -841,13 +941,15 @@ class _PantallaEdicionTransitoState
             const SizedBox(height: 24),
             SeccionGastos(
               gastos: _gastos,
+              esSoloLectura: esSoloLectura,
               onGuardar: (g) {
                 setState(() {
                   final idx = _gastos.indexWhere((item) => item.id == g.id);
-                  if (idx >= 0)
+                  if (idx >= 0) {
                     _gastos[idx] = g;
-                  else
+                  } else {
                     _gastos.add(g);
+                  }
                 });
               },
               onEliminar: (id) =>
@@ -867,17 +969,24 @@ class _PantallaEdicionTransitoState
             _tituloSeccion('Paso 3: Recepción y Venta (Trabajador de Planta)'),
             SeccionRecepcionVenta(
               ventas: _ventas,
+              esSoloLectura: esSoloLectura,
               onGuardar: (v) {
                 setState(() {
                   final idx = _ventas.indexWhere((item) => item.id == v.id);
-                  if (idx >= 0)
+                  if (idx >= 0) {
                     _ventas[idx] = v;
-                  else
+                  } else {
                     _ventas.add(v);
+                  }
+                  _recalcularGastosAdministrativos();
                 });
               },
-              onEliminar: (id) =>
-                  setState(() => _ventas.removeWhere((item) => item.id == id)),
+              onEliminar: (id) {
+                setState(() {
+                  _ventas.removeWhere((item) => item.id == id);
+                  _recalcularGastosAdministrativos();
+                });
+              },
             ),
             _botonGuardarSeccion(
               'Guardar Ventas',
@@ -893,6 +1002,7 @@ class _PantallaEdicionTransitoState
             _tituloSeccion('Paso 4: Gastos Administrativos (Trabajador/Admin)'),
             SeccionGastosAdministrativos(
               gastos: _gastos,
+              esSoloLectura: esSoloLectura,
               onGuardarSeccion: esSoloLectura
                   ? null
                   : () => _guardarParcial(
@@ -901,10 +1011,11 @@ class _PantallaEdicionTransitoState
               onGuardar: (g) {
                 setState(() {
                   final idx = _gastos.indexWhere((item) => item.id == g.id);
-                  if (idx >= 0)
+                  if (idx >= 0) {
                     _gastos[idx] = g;
-                  else
+                  } else {
                     _gastos.add(g);
+                  }
                 });
               },
               onEliminar: (id) =>

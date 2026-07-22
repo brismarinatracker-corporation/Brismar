@@ -31,7 +31,7 @@ class _PantallaProductosState extends ConsumerState<PantallaProductos> {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Cerrar',
-      pageBuilder: (context, _, __) =>
+      pageBuilder: (context, _, _) =>
           DialogoFormularioProducto(productoAEditar: producto),
     );
   }
