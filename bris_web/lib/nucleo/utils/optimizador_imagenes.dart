@@ -10,10 +10,10 @@ class OptimizadorImagenes {
     if (originalUrl.contains('/render/image/public/')) return originalUrl;
 
     if (originalUrl.contains('/storage/v1/object/public/')) {
-      return originalUrl.replaceFirst(
+      return '${originalUrl.replaceFirst(
         '/storage/v1/object/public/', 
         '/storage/v1/render/image/public/'
-      ) + '?width=$width&quality=$quality';
+      )}?width=$width&quality=$quality';
     }
     
     return originalUrl;

@@ -103,8 +103,9 @@ class _PantallaEdicionTransitoState
       final gastos = resultados[3] as List<GastoWebModelo>;
       final ventas = resultados[4] as List<VentaWebModelo>;
 
-      if (zarpe == null)
+      if (zarpe == null) {
         throw Exception('No se encontró el zarpe con ID ${widget.id}');
+      }
 
       setState(() {
         _zarpeInfo = zarpe;
@@ -927,10 +928,11 @@ class _PantallaEdicionTransitoState
               onGuardar: (c) {
                 setState(() {
                   final idx = _compras.indexWhere((item) => item.id == c.id);
-                  if (idx >= 0)
+                  if (idx >= 0) {
                     _compras[idx] = c;
-                  else
+                  } else {
                     _compras.add(c);
+                  }
                 });
               },
               onEliminar: (id) =>
@@ -943,10 +945,11 @@ class _PantallaEdicionTransitoState
               onGuardar: (g) {
                 setState(() {
                   final idx = _gastos.indexWhere((item) => item.id == g.id);
-                  if (idx >= 0)
+                  if (idx >= 0) {
                     _gastos[idx] = g;
-                  else
+                  } else {
                     _gastos.add(g);
+                  }
                 });
               },
               onEliminar: (id) =>
@@ -970,10 +973,11 @@ class _PantallaEdicionTransitoState
               onGuardar: (v) {
                 setState(() {
                   final idx = _ventas.indexWhere((item) => item.id == v.id);
-                  if (idx >= 0)
+                  if (idx >= 0) {
                     _ventas[idx] = v;
-                  else
+                  } else {
                     _ventas.add(v);
+                  }
                   _recalcularGastosAdministrativos();
                 });
               },
@@ -1007,10 +1011,11 @@ class _PantallaEdicionTransitoState
               onGuardar: (g) {
                 setState(() {
                   final idx = _gastos.indexWhere((item) => item.id == g.id);
-                  if (idx >= 0)
+                  if (idx >= 0) {
                     _gastos[idx] = g;
-                  else
+                  } else {
                     _gastos.add(g);
+                  }
                 });
               },
               onEliminar: (id) =>

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../cuadres/dominio/modelos/cuadre_web_modelo.dart';
 import 'package:bris_web/nucleo/utilidades/formateador_miles.dart';
@@ -94,7 +93,7 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
               children: [
                 _construirEtiqueta('Planta de Destino (Procesadora)'),
                 DropdownButtonFormField<String>(
-                  value: plantaSeleccionada,
+                  initialValue: plantaSeleccionada,
                   dropdownColor: Colors.white,
                   decoration: _decoracionInput('Selecciona planta'),
                   items:
@@ -117,8 +116,9 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
                           )
                           .toList(),
                   onChanged: (val) {
-                    if (val != null)
+                    if (val != null) {
                       setStateDialog(() => plantaSeleccionada = val);
+                    }
                   },
                 ),
                 if (plantaSeleccionada == 'OTROS') ...[
@@ -132,7 +132,7 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
                 const SizedBox(height: 12),
                 _construirEtiqueta('Especie'),
                 DropdownButtonFormField<String>(
-                  value: especieSeleccionada,
+                  initialValue: especieSeleccionada,
                   dropdownColor: Colors.white,
                   decoration: _decoracionInput('Selecciona especie'),
                   items:
@@ -155,8 +155,9 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
                           )
                           .toList(),
                   onChanged: (val) {
-                    if (val != null)
+                    if (val != null) {
                       setStateDialog(() => especieSeleccionada = val);
+                    }
                   },
                 ),
                 if (especieSeleccionada == 'OTROS') ...[

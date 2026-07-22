@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
@@ -117,7 +116,7 @@ class ServicioExportacionPdf {
                                 celda(fmt.format(c.total), align: pw.TextAlign.right),
                               ]
                             );
-                          }).toList(),
+                          }),
                           pw.TableRow(
                             children: [
                               celda(''), celda(''), celda(''), 
@@ -156,7 +155,7 @@ class ServicioExportacionPdf {
                                 celda(fmt.format(v.total), align: pw.TextAlign.right),
                               ]
                             );
-                          }).toList(),
+                          }),
                           pw.TableRow(
                             children: [
                               celda('TOTAL VENTA', align: pw.TextAlign.right, weight: pw.FontWeight.bold),
@@ -196,7 +195,7 @@ class ServicioExportacionPdf {
                               celda(g.concepto, align: pw.TextAlign.left),
                               celda(fmt.format(g.total), align: pw.TextAlign.right),
                             ]
-                          )).toList(),
+                          )),
                           pw.TableRow(
                             children: [
                               celda('TOTAL', weight: pw.FontWeight.bold, align: pw.TextAlign.right),
@@ -221,7 +220,7 @@ class ServicioExportacionPdf {
                               celda(g.concepto, align: pw.TextAlign.left),
                               celda(fmt.format(g.total), align: pw.TextAlign.right),
                             ]
-                          )).toList(),
+                          )),
                           pw.TableRow(
                             children: [
                               celda('TOTAL', weight: pw.FontWeight.bold, align: pw.TextAlign.right),

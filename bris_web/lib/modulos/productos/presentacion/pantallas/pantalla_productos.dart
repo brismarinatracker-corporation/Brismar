@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 
 import '../../dominio/modelos/producto_modelo.dart';
 import '../controladores/controlador_productos.dart';
@@ -32,7 +31,7 @@ class _PantallaProductosState extends ConsumerState<PantallaProductos> {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Cerrar',
-      pageBuilder: (context, _, __) =>
+      pageBuilder: (context, _, _) =>
           DialogoFormularioProducto(productoAEditar: producto),
     );
   }

@@ -293,8 +293,9 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
                   ),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Requerido';
-                    if (v.trim().length != 9)
+                    if (v.trim().length != 9) {
                       return 'Debe tener exactamente 9 dígitos';
+                    }
                     return null;
                   },
                 ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:bris_web/compartido/widgets/cabecera_pagina_web.dart';
 
@@ -8,7 +7,6 @@ import '../componentes/hoja_liquidacion_excel.dart';
 import '../../servicios/servicio_exportacion_pdf.dart';
 import '../controladores/controlador_cuadres.dart';
 import '../../dominio/modelos/cuadre_web_modelo.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:bris_web/nucleo/componentes/carga_orbital.dart';
 
 /// Pantalla de Cuadres de Pesca — Web Admin.

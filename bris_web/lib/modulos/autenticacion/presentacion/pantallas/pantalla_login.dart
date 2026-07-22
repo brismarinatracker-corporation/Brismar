@@ -39,6 +39,7 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
     }
   }
 
+  @override
   void dispose() {
     _correoController.dispose();
     _contrasenaController.dispose();
