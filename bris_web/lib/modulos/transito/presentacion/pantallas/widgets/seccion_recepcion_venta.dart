@@ -348,6 +348,7 @@ class _SeccionRecepcionVentaState extends State<SeccionRecepcionVenta> {
                       elevation: 0,
                     ),
                   ),
+                ],
               ],
             ),
           ),
