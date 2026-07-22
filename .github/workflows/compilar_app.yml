@@ -16,7 +16,7 @@ jobs:
     
     defaults:
       run:
-        working-directory: ./brismar_app
+        working-directory: ./bris_tracker
 
     steps:
       # 1. Traer el código fuente
@@ -50,7 +50,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: brismar-app-release
-          path: brismar_app/build/app/outputs/flutter-apk/app-release.apk
+          path: bris_tracker/build/app/outputs/flutter-apk/app-release.apk
 
       # 7. (Opcional) Notificar a Discord
       # Para activar esto, crea un Webhook en Discord y pon la URL en las variables 'Secrets' de GitHub como 'DISCORD_WEBHOOK_URL'.

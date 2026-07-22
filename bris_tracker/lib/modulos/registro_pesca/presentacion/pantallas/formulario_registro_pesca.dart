@@ -1217,6 +1217,8 @@ class _FormularioRegistroPescaState
 
   @override
   Widget build(BuildContext context) {
+    final esSincronizado = widget.cuadreInicial?.sincronizado == true;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F8F6),
       appBar: AppBar(
@@ -1226,9 +1228,9 @@ class _FormularioRegistroPescaState
           icon: const Icon(Icons.arrow_back, color: Color(0xFF004D40)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Punto de Venta - Muelle',
-          style: TextStyle(
+        title: Text(
+          esSincronizado ? 'Resumen de Cuadre' : 'Punto de Venta - Muelle',
+          style: const TextStyle(
             color: Color(0xFF004D40),
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -1237,17 +1239,208 @@ class _FormularioRegistroPescaState
         centerTitle: false,
         titleSpacing: 0,
       ),
-      body: Form(
-        key: _formKey,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.maxWidth > 800) {
-              return _buildTabletLayout();
-            } else {
-              return _buildMobileLayout();
-            }
-          },
-        ),
+      body: esSincronizado
+          ? _buildVistaResumen()
+          : Form(
+              key: _formKey,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth > 800) {
+                    return _buildTabletLayout();
+                  } else {
+                    return _buildMobileLayout();
+                  }
+                },
+              ),
+            ),
+    );
+  }
+
+  Widget _buildVistaResumen() {
+    final c = widget.cuadreInicial!;
+    
+    // Totales
+    final double totalKilos = c.compras.fold(0.0, (sum, comp) => sum + comp.kilos);
+    final double totalCostoCompras = c.compras.fold(0.0, (sum, comp) => sum + comp.total);
+    final double totalGastos = c.gastos.where((g) => g.concepto.toUpperCase() != 'OBSERVACIONES').fold(0.0, (sum, g) => sum + g.total);
+    final double granTotal = totalCostoCompras + totalGastos;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Info General
+          Card(
+            color: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Información General', style: TextStyle(color: Color(0xFF006B54), fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  _buildFilaResumen('Cámara', c.placa.toUpperCase(), icon: Icons.local_shipping),
+                  _buildFilaResumen('Fecha Zarpe', c.fechaZarpe ?? '-', icon: Icons.date_range),
+                  _buildFilaResumen('Muelle', c.muellePartida ?? '-', icon: Icons.anchor),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Resumen Totales
+          Card(
+            color: const Color(0xFF006B54),
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  const Text('RESUMEN DE OPERACIÓN', style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Kilos Totales:', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      Text('${_formatearNumero(totalKilos)} kg', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const Divider(color: Colors.white24, height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Costo Embarcaciones:', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      Text('S/ ${_formatearNumero(totalCostoCompras)}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Gastos Operativos:', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      Text('S/ ${_formatearNumero(totalGastos)}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const Divider(color: Colors.white24, height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('TOTAL INVERTIDO:', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text('S/ ${_formatearNumero(granTotal)}', style: const TextStyle(color: Colors.amberAccent, fontSize: 20, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Embarcaciones
+          Card(
+            color: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Embarcaciones', style: TextStyle(color: Color(0xFF006B54), fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  if (c.compras.isEmpty)
+                    const Text('No hay embarcaciones registradas.', style: TextStyle(color: Colors.black54))
+                  else
+                    ...c.compras.map((comp) => Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(color: const Color(0xFFF9FAFB), borderRadius: BorderRadius.circular(8)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(comp.embarcacion, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                  const SizedBox(height: 4),
+                                  Text('${comp.producto} • ${_formatearNumero(comp.kilos)} kg', style: const TextStyle(color: Colors.black54, fontSize: 13)),
+                                ],
+                              ),
+                              Text('S/ ${_formatearNumero(comp.total)}', style: const TextStyle(color: Color(0xFF006B54), fontWeight: FontWeight.bold, fontSize: 15)),
+                            ],
+                          ),
+                        )),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Gastos Operativos
+          Card(
+            color: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Gastos Operativos', style: TextStyle(color: Color(0xFF006B54), fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  if (c.gastos.where((g) => g.total > 0 && g.concepto.toUpperCase() != 'OBSERVACIONES').isEmpty)
+                    const Text('No hay gastos registrados.', style: TextStyle(color: Colors.black54))
+                  else
+                    ...c.gastos.where((g) => g.total > 0 && g.concepto.toUpperCase() != 'OBSERVACIONES').map((g) => Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(color: const Color(0xFFF9FAFB), borderRadius: BorderRadius.circular(8)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(g.concepto, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                              Text('S/ ${_formatearNumero(g.total)}', style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 14)),
+                            ],
+                          ),
+                        )),
+                  // Mostrar observaciones si las hay
+                  if (c.gastos.any((g) => g.concepto.toUpperCase() == 'OBSERVACIONES' && g.tipo.isNotEmpty)) ...[
+                    const Divider(height: 24),
+                    const Text('Observaciones:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text(c.gastos.firstWhere((g) => g.concepto.toUpperCase() == 'OBSERVACIONES').tipo, style: const TextStyle(color: Colors.black54, fontStyle: FontStyle.italic)),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilaResumen(String label, String valor, {IconData? icon}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 18, color: Colors.black54),
+            const SizedBox(width: 8),
+          ],
+          Text('$label: ', style: const TextStyle(color: Colors.black54, fontSize: 14)),
+          Expanded(child: Text(valor, style: const TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.w600))),
+        ],
       ),
     );
   }
