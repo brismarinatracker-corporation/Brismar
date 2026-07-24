@@ -1,50 +1,70 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
+
 import '../../dominio/entidades/zarpe_entidad.dart';
 import '../../dominio/repositorios/zarpe_repositorio.dart';
 import '../../registro_pesca_inyeccion.dart';
-import 'package:flutter/foundation.dart';
 
+/// Provider del controlador de zarpes.
+///
+/// Usa [AsyncNotifierProvider] (Riverpod 2.x) en lugar del deprecated
+/// [StateNotifierProvider]. El estado expuesto es [AsyncValue<void>]:
+/// - [AsyncData(null)] → operación completada o sin actividad.
+/// - [AsyncLoading] → registrando zarpe en curso.
+/// - [AsyncError] → fallo al guardar zarpe (nunca por errores de sync, esos son silenciosos).
 final proveedorZarpes =
-    StateNotifierProvider<ControladorZarpes, AsyncValue<void>>((ref) {
-      return ControladorZarpes(ref.read(proveedorZarpeRepositorio));
-    });
+    AsyncNotifierProvider<ControladorZarpes, void>(ControladorZarpes.new);
 
 /// Controlador de zarpes offline-first.
 ///
-/// Persiste primero en SQLite y luego intenta sincronizar con Supabase
-/// gracias a la implementación de [ZarpeRepositorio].
-class ControladorZarpes extends StateNotifier<AsyncValue<void>> {
-  final ZarpeRepositorio _repositorio;
+/// Gestiona el ciclo de vida completo de un zarpe:
+/// 1. Persistencia local inmediata en SQLite (nunca pierde datos sin red).
+/// 2. Sincronización upstream a Supabase cuando hay conectividad.
+/// 3. Descarga downstream de cambios de estado desde Supabase.
+class ControladorZarpes extends AsyncNotifier<void> {
+  late final ZarpeRepositorio _repositorio;
 
-  ControladorZarpes(this._repositorio) : super(const AsyncValue.data(null));
-
-  /// Registra un zarpe localmente y lo intenta subir a Supabase.
-  Future<void> registrarZarpe(ZarpeEntidad zarpe) async {
-    state = const AsyncValue.loading();
-    try {
-      await _repositorio.guardarZarpe(zarpe);
-      state = const AsyncValue.data(null);
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-      rethrow;
-    }
+  @override
+  Future<void> build() async {
+    _repositorio = ref.read(proveedorZarpeRepositorio);
   }
 
-  /// Sincroniza todos los zarpes con [sincronizado = 0] hacia Supabase.
+  /// Registra un zarpe localmente y lo intenta subir a Supabase.
+  ///
+  /// Emite [AsyncLoading] mientras guarda y [AsyncError] si falla.
+  /// Relanza la excepción para que la UI del formulario pueda mostrar un mensaje
+  /// de error al usuario sin depender del estado del provider.
+  Future<void> registrarZarpe(ZarpeEntidad zarpe) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() => _repositorio.guardarZarpe(zarpe));
+    final error = state.error;
+    if (error != null) throw error;
+  }
+
+  /// Sincroniza todos los zarpes con [sincronizado == 0] hacia Supabase.
+  ///
+  /// Operación en background: los errores no cambian el estado del provider
+  /// para no mostrar errores innecesarios al usuario durante el auto-sync.
   Future<void> sincronizarZarpesPendientes() async {
     try {
       await _repositorio.sincronizarPendientes();
     } catch (e) {
-      debugPrint('Error auto-sincronizando Zarpes: $e');
+      if (kDebugMode) {
+        debugPrint('[ControladorZarpes] Error en sincronización upstream: $e');
+      }
     }
   }
 
-  /// Descarga los cambios de estado de negocio desde Supabase al SQLite local.
+  /// Descarga cambios de estado de negocio desde Supabase al SQLite local.
+  ///
+  /// Consulta zarpes actualizados en la nube y actualiza la BD local.
   Future<void> sincronizarZarpesDownstream() async {
     try {
       await _repositorio.sincronizarZarpesDownstream();
-    } catch (e, st) {
-      debugPrint('Error sincronizando downstream Zarpes: $e\n$st');
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[ControladorZarpes] Error en sincronización downstream: $e');
+      }
     }
   }
 }

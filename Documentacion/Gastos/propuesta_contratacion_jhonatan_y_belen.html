@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Propuesta Comercial de Contratación y Entrega de Software — BRISMAR</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg-primary: #0b1329;
+      --bg-secondary: #172554;
+      --bg-card: rgba(23, 37, 84, 0.85);
+      --border-color: rgba(255, 255, 255, 0.15);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent-cyan: #38bdf8;
+      --accent-emerald: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-indigo: #818cf8;
+      --accent-rose: #f87171;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --font-heading: 'Sora', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    @media print {
+      body { background-color: #ffffff; color: #000000; padding: 0; }
+      header, section, .card-box { background: #ffffff !important; border: 1px solid #cccccc !important; color: #000000 !important; }
+      h1, h2, h3, .number { color: #000000 !important; -webkit-text-fill-color: initial !important; }
+      .no-print { display: none !important; }
+    }
+
+    .header-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 35px;
+      margin-bottom: 30px;
+    }
+
+    .header-box h1 {
+      font-family: var(--font-heading);
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--accent-cyan);
+      margin-bottom: 8px;
+    }
+
+    .meta-team {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+
+    .team-member h4 {
+      color: var(--accent-emerald);
+      font-size: 1.05rem;
+      margin-bottom: 4px;
+    }
+
+    .team-member p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 35px;
+    }
+
+    .card-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      border-left: 4px solid var(--accent-cyan);
+    }
+
+    .card-box.emerald { border-left-color: var(--accent-emerald); }
+    .card-box.amber { border-left-color: var(--accent-amber); }
+
+    .card-box h3 {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .card-box .number {
+      font-family: var(--font-heading);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    section {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      margin-bottom: 35px;
+    }
+
+    section h2 {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      color: var(--accent-cyan);
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    th {
+      background: rgba(0, 0, 0, 0.4);
+      color: var(--text-primary);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+    }
+
+    .total-row {
+      background: rgba(52, 211, 153, 0.15) !important;
+      font-weight: 700;
+    }
+
+    .btn-pdf {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-emerald));
+      color: #000;
+      font-weight: 700;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <button class="btn-pdf no-print" onclick="window.print()">📄 Imprimir / Exportar a PDF</button>
+
+    <!-- Header Box -->
+    <div class="header-box">
+      <h1>Propuesta de Contratación y Licenciamiento de Software — BRISMAR</h1>
+      <p>Plan de Incorporación Laboral y Cotización Realista para la Empresa Pesquera en el Mercado Peruano</p>
+
+      <div class="meta-team">
+        <div class="team-member">
+          <h4>👨‍💻 Jhonatan Gamarra Sanchez</h4>
+          <p>Estudiante de 10mo Ciclo / Próximo Bachiller de Ing. de Sistemas</p>
+          <p><strong>Rol:</strong> Desarrollador Lead Mobile, Backend & Nube AWS</p>
+        </div>
+        <div class="team-member">
+          <h4>👩‍💻 Riccy Belén Suyón</h4>
+          <p>Estudiante de 10mo Ciclo / Próxima Bachiller de Ing. de Sistemas</p>
+          <p><strong>Rol:</strong> Desarrolladora UI/UX, Módulos & Documentación</p>
+        </div>
+        <div class="team-member">
+          <h4>👩‍🏫 Mg. Ing. Aracely Janett Gonzales</h4>
+          <p>Docente y Asesora de Seguimiento de Proyecto de Ingeniería</p>
+          <p><strong>Supervisión:</strong> Documentación Word, Estándares & Gestión TI</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Metrics -->
+    <div class="metrics-row">
+      <div class="card-metric cyan">
+        <h3>Sueldo Mensual Sugerido Jhonatan</h3>
+        <div class="number">S/ 3,200 PEN</div>
+        <div class="desc">Modalidad Recibos por Honorarios (RHE) / Planilla</div>
+      </div>
+      <div class="card-metric emerald">
+        <h3>Sueldo Mensual Sugerido Belén</h3>
+        <div class="number">S/ 2,800 PEN</div>
+        <div class="desc">Modalidad Recibos por Honorarios (RHE) / Planilla</div>
+      </div>
+      <div class="card-metric amber">
+        <h3>Pago Único Sistema Entregado v3.0.0</h3>
+        <div class="number">S/ 15,000 PEN</div>
+        <div class="desc">Reconocimiento por el Software Base ya Construido</div>
+      </div>
+    </div>
+
+    <!-- SECTION 1: CONTEXT & VALORIZATION REALISTA PERUANA -->
+    <section>
+      <h2>🇵🇪 1. Justificación de Mercado Real Peruano para Desarrolladores Bachilleres</h2>
+      <p style="color: var(--text-secondary);">
+        Bajo la asesoría académica de la <strong>Mg. Ing. Aracely Janett Gonzales</strong> en el desarrollo de la documentación y proyecto de ingeniería, el equipo conformado por <strong>Jhonatan Gamarra Sanchez</strong> y <strong>Riccy Belén Suyón</strong> ha completado la versión funcional v3.0.0 de la plataforma BRISMAR.
+      </p>
+
+      <p style="color: var(--text-secondary); margin-top: 10px;">
+        Al ser convocados por la empresa pesquera para su <strong>contratación directa como equipo de programadores de la empresa</strong>, se presenta una estructura de cobro basada en la realidad del mercado tecnológico en el Perú:
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Concepto de Contratación</th>
+            <th>Monto Promedio Mercado Peruano</th>
+            <th>Propuesta Realista BRISMAR</th>
+            <th>Detalle Operativo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Honorarios Jhonatan Gamarra Sanchez</strong></td>
+            <td>S/ 3,500 – S/ 4,500 PEN / mes</td>
+            <td><strong>S/ 3,200 PEN / mes</strong></td>
+            <td>Lead Developer: Responsable de la App Móvil Flutter, Base de Datos PostgreSQL, AWS Nube y Seguridad SQLCipher.</td>
+          </tr>
+          <tr>
+            <td><strong>Honorarios Riccy Belén Suyón</strong></td>
+            <td>S/ 3,000 – S/ 4,000 PEN / mes</td>
+            <td><strong>S/ 2,800 PEN / mes</strong></td>
+            <td>Full-Stack UI Developer: Responsable del Dashboard Web Admin, Módulos de Reportes Excel/PDF, Interfaz y Documentación.</td>
+          </tr>
+          <tr class="total-row">
+            <td><strong>COSTO TOTAL MENSUAL DEL EQUIPO (2 DEVS)</strong></td>
+            <td>S/ 7,000 – S/ 8,500 PEN / mes</td>
+            <td><strong>S/ 6,000 PEN / mes</strong></td>
+            <td><strong>Costo Total del Equipo de Programadores para la Pesquera</strong> (Equivalente a contratar un solo programador Senior externo).</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SECTION 2: OPCIONES DE NEGOCIACIÓN DE COBRO PARA EL SISTEMA BASE -->
+    <section>
+      <h2>💡 2. Tres Opciones de Cobro para Negociar con la Empresa Pesquera</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Opción de Negociación</th>
+            <th>Pago Inicial por el Sistema Base (v3.0.0)</th>
+            <th>Mensualidad por Ambos Desarrolladores</th>
+            <th>¿Cuándo Elegir Esta Opción?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Opción A: Pago Híbrido Tradicional (Recomendado)</strong></td>
+            <td><strong>S/ 15,000 PEN</strong><br><small>(Pagado en 2 o 3 cuotas)</small></td>
+            <td><strong>S/ 6,000 PEN / mes</strong><br><small>(S/ 3.2k Jhonatan + S/ 2.8k Belén)</small></td>
+            <td>Ideal si la pesquera tiene presupuesto para reconocer el trabajo de desarrollo previo y quiere sueldos mensuales estándar.</td>
+          </tr>
+          <tr>
+            <td><strong>Opción B: Sin Pago Inicial (Sueldo Mensual Elevado)</strong></td>
+            <td><strong>S/ 0.00 PEN</strong><br><small>(Cero costo inicial)</small></td>
+            <td><strong>S/ 8,000 PEN / mes</strong><br><small>(S/ 4.2k Jhonatan + S/ 3.8k Belén)</small></td>
+            <td>Ideal si la pesquera prefiere no hacer desembolso inicial de capital y absorbe el costo del sistema en la mensualidad a 12 meses.</td>
+          </tr>
+          <tr>
+            <td><strong>Opción C: Proyecto Completo + Mantenimiento Reducido</strong></td>
+            <td><strong>S/ 24,000 PEN</strong><br><small>(Licencia completa llave en mano)</small></td>
+            <td><strong>S/ 4,500 PEN / mes</strong><br><small>(S/ 2.5k Jhonatan + S/ 2.0k Belén)</small></td>
+            <td>Ideal si la pesquera prefiere comprar el software completo y tenerlos como soporte a tiempo parcial (Part-time).</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SECTION 3: POR QUÉ A LA PESQUERA LE CONVIENE ESTE ACUERDO -->
+    <section>
+      <h2>📈 3. ¿Por Qué a la Pesquera le Conviene Contratarlos? (Argumentos de Venta)</h2>
+
+      <ul style="color: var(--text-secondary); padding-left: 20px;">
+        <li style="margin-bottom: 12px;"><strong>Ahorro Evitado en Muelle:</strong> La pesquera evitará pérdidas de más de <strong>S/ 18,000 PEN al mes</strong> en descuadres de peso y gastos inflados. La inversión en el sueldo de ambos (S/ 6,000 PEN) se paga sola desde el primer mes.</li>
+        <li style="margin-bottom: 12px;"><strong>Conocimiento Total del Software:</strong> Al ser Jhonatan y Belén los creadores originales del sistema (bajo la supervisión de la Mg. Ing. Aracely Janett Gonzales), no hay tiempo de aprendizaje. Cualquier cambio o reporte nuevo que pida el dueño se implementa de inmediato.</li>
+        <li style="margin-bottom: 12px;"><strong>Sin Gastos de Agencias Externas:</strong> Contratar una casa de software o agencia en Lima para mantener este sistema les costaría más de S/ 15,000 PEN al mes solo en soporte.</li>
+      </ul>
+    </section>
+
+    <!-- Footer -->
+    <footer style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; padding-top: 15px; border-top: 1px solid var(--border-color);">
+      <p>© 2026 NEGOCIOS BRISMAR S.R.L. — Propuesta Comercial y Contratación de Desarrolladores.</p>
+      <p style="color: var(--accent-cyan); margin-top: 4px;">Elaborado por Jhonatan Gamarra Sanchez & Riccy Belén Suyón</p>
+    </footer>
+
+  </div>
+
+</body>
+</html>

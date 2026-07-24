@@ -207,11 +207,12 @@ class RepositorioAutenticacionImpl implements RepositorioAutenticacion {
 
   Future<Usuario> _obtenerUsuarioLocal() async {
     final savedUserStr = await _secureStorage.obtenerDatosUsuarioOffline();
-    if (savedUserStr == null)
+    if (savedUserStr == null) {
       throw const ExcepcionApp(
         'AUTH-001',
         mensajeTecnico: 'Sin datos locales.',
       );
+    }
     return Usuario.fromJson(jsonDecode(savedUserStr));
   }
 

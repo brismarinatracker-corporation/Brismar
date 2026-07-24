@@ -44,8 +44,11 @@ class CuadreRepositorioImp implements CuadreRepositorio {
           urls['urlFoto'],
         );
       } catch (e) {
-        // Log error, continue with next
-        debugPrint("Error sincronizando cuadre ${cuadre.id}: $e");
+        // Fallo individual tolerado: si un cuadre no sube, se reintenta
+        // en el próximo ciclo de sincronización. No bloquea los demás cuadres.
+        if (kDebugMode) {
+          debugPrint('[CuadreRepo] Error sincronizando cuadre ${cuadre.id}: $e');
+        }
       }
     }
   }

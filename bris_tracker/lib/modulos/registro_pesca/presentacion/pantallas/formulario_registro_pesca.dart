@@ -1,12 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../nucleo/componentes/estilos_formulario.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../dominio/entidades/zarpe_entidad.dart';
-import '../../datos/repositorios/zarpe_repositorio_imp.dart';
+
 import '../../datos/repositorios/camaras_repositorio_local.dart';
 import '../../dominio/entidades/cuadre_entidad.dart';
 import '../../dominio/entidades/estado_cuadre.dart';
@@ -16,39 +14,9 @@ import '../../../autenticacion/presentacion/controladores/controlador_autenticac
 import '../widgets/panel_calculo_vivo.dart';
 import '../../registro_pesca_inyeccion.dart';
 import '../../../../nucleo/utilidades/formateador_miles.dart';
+import '../../../../nucleo/utilidades/formateadores_texto.dart';
 
-class _UpperCaseTextFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    return newValue.copyWith(text: newValue.text.toUpperCase());
-  }
-}
 
-class _PlacaInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final text = newValue.text
-        .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')
-        .toUpperCase();
-    if (text.length > 6) {
-      return oldValue;
-    }
-    String formatted = text;
-    if (text.length > 3) {
-      formatted = '${text.substring(0, 3)}-${text.substring(3)}';
-    }
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
-  }
-}
 
 class FormularioRegistroPesca extends ConsumerStatefulWidget {
   final CuadreEntidad? cuadreInicial;
@@ -387,7 +355,6 @@ class _FormularioRegistroPescaState
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setStateDialog) {
-          final isMobile = MediaQuery.of(context).size.width < 600;
           return Dialog(
             backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
@@ -449,7 +416,7 @@ class _FormularioRegistroPescaState
                             fontSize: 16,
                           ),
                           textCapitalization: TextCapitalization.characters,
-                          inputFormatters: [_UpperCaseTextFormatter()],
+                          inputFormatters: [UpperCaseInputFormatter()],
                           decoration:
                               EstilosFormulario.construirInputDecoration(
                                 labelText: 'Nombre de Embarcación',
@@ -827,7 +794,7 @@ class _FormularioRegistroPescaState
                             focusNode: focusNode,
                             style: const TextStyle(color: Color(0xFF1F2937)),
                             textCapitalization: TextCapitalization.characters,
-                            inputFormatters: [_PlacaInputFormatter()],
+                            inputFormatters: [PlacaInputFormatter()],
                             decoration:
                                 EstilosFormulario.construirInputDecoration(
                                   labelText: 'Placa (Ej: AAA-123)',

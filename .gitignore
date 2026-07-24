@@ -57,3 +57,7 @@ graphify-out/
 
 # NOTA: NO ignoramos .obsidian para que las configuraciones del graph de Obsidian se sincronicen en el repo.
 .obsidian/
+
+# ── Credenciales y Claves Privadas ──────────────────
+.credenciales/
+

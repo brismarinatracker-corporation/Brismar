@@ -7,6 +7,7 @@ import '../../dominio/modelos/usuario_admin_modelo.dart';
 import 'package:bris_web/nucleo/componentes/carga_orbital.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import 'package:bris_web/compartido/widgets/cabecera_pagina_web.dart';
+import 'package:bris_web/nucleo/utils/optimizador_imagenes.dart';
 
 class PantallaUsuarios extends ConsumerWidget {
   const PantallaUsuarios({super.key});
@@ -213,7 +214,12 @@ class _FilaTablaUsuarioPremium extends ConsumerWidget {
         ),
         image: usuario.fotoPerfil != null && usuario.fotoPerfil!.isNotEmpty
             ? DecorationImage(
-                image: NetworkImage(usuario.fotoPerfil!),
+                image: NetworkImage(
+                  OptimizadorImagenes.optimizarSupabaseUrl(
+                    usuario.fotoPerfil!,
+                    width: 100,
+                  ),
+                ),
                 fit: BoxFit.cover,
               )
             : null,
