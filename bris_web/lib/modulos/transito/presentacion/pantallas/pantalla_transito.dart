@@ -47,66 +47,70 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
           // Filter bar
           Padding(
             padding: EdgeInsets.only(
-              left: esMovil ? 20 : 32,
-              right: esMovil ? 20 : 32,
-              top: esMovil ? 16 : 24,
+              left: esMovil ? 16 : 32,
+              right: esMovil ? 16 : 32,
+              top: esMovil ? 12 : 24,
             ),
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _FiltroChip(
-                  label: 'Todos',
-                  activo: filtro == 'todos',
-                  onTap: () {
-                    ref
-                        .read(proveedorFiltroTransito.notifier)
-                        .establecerFiltro('todos');
-                    setState(() => _paginaActual = 0);
-                  },
-                ),
-                _FiltroChip(
-                  label: 'Hoy',
-                  activo: filtro == 'hoy',
-                  onTap: () {
-                    ref
-                        .read(proveedorFiltroTransito.notifier)
-                        .establecerFiltro('hoy');
-                    setState(() => _paginaActual = 0);
-                  },
-                ),
-                _FiltroChip(
-                  label: 'Ayer',
-                  activo: filtro == 'ayer',
-                  onTap: () {
-                    ref
-                        .read(proveedorFiltroTransito.notifier)
-                        .establecerFiltro('ayer');
-                    setState(() => _paginaActual = 0);
-                  },
-                ),
-                _FiltroChip(
-                  label: 'Esta Semana',
-                  activo: filtro == 'semana',
-                  onTap: () {
-                    ref
-                        .read(proveedorFiltroTransito.notifier)
-                        .establecerFiltro('semana');
-                    setState(() => _paginaActual = 0);
-                  },
-                ),
-                _FiltroChip(
-                  label: 'Este Mes',
-                  activo: filtro == 'mes',
-                  onTap: () {
-                    ref
-                        .read(proveedorFiltroTransito.notifier)
-                        .establecerFiltro('mes');
-                    setState(() => _paginaActual = 0);
-                  },
-                ),
-              ],
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _FiltroChip(
+                    label: 'Todos',
+                    activo: filtro == 'todos',
+                    onTap: () {
+                      ref
+                          .read(proveedorFiltroTransito.notifier)
+                          .establecerFiltro('todos');
+                      setState(() => _paginaActual = 0);
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _FiltroChip(
+                    label: 'Hoy',
+                    activo: filtro == 'hoy',
+                    onTap: () {
+                      ref
+                          .read(proveedorFiltroTransito.notifier)
+                          .establecerFiltro('hoy');
+                      setState(() => _paginaActual = 0);
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _FiltroChip(
+                    label: 'Ayer',
+                    activo: filtro == 'ayer',
+                    onTap: () {
+                      ref
+                          .read(proveedorFiltroTransito.notifier)
+                          .establecerFiltro('ayer');
+                      setState(() => _paginaActual = 0);
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _FiltroChip(
+                    label: 'Esta Semana',
+                    activo: filtro == 'semana',
+                    onTap: () {
+                      ref
+                          .read(proveedorFiltroTransito.notifier)
+                          .establecerFiltro('semana');
+                      setState(() => _paginaActual = 0);
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _FiltroChip(
+                    label: 'Este Mes',
+                    activo: filtro == 'mes',
+                    onTap: () {
+                      ref
+                          .read(proveedorFiltroTransito.notifier)
+                          .establecerFiltro('mes');
+                      setState(() => _paginaActual = 0);
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -119,7 +123,7 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                   // Tab Bar
                   Container(
                     margin: EdgeInsets.symmetric(
-                      horizontal: esMovil ? 20.0 : 32.0,
+                      horizontal: esMovil ? 16.0 : 32.0,
                       vertical: 8.0,
                     ),
                     decoration: BoxDecoration(
@@ -156,7 +160,7 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                   Expanded(
                     child: Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: esMovil ? 20.0 : 32.0,
+                        horizontal: esMovil ? 16.0 : 32.0,
                         vertical: 8.0,
                       ),
                       child: (() {
@@ -230,9 +234,9 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                                 child: GridView.builder(
                                   padding: const EdgeInsets.only(bottom: 16),
                                   gridDelegate:
-                                      const SliverGridDelegateWithMaxCrossAxisExtent(
-                                        maxCrossAxisExtent: 450,
-                                        mainAxisExtent: 390,
+                                      SliverGridDelegateWithMaxCrossAxisExtent(
+                                        maxCrossAxisExtent: esMovil ? 600 : 450,
+                                        mainAxisExtent: esMovil ? 410 : 390,
                                         crossAxisSpacing: 16,
                                         mainAxisSpacing: 16,
                                       ),
@@ -322,8 +326,9 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                                                       children: [
                                                         Expanded(
                                                           child: Text(
-                                                            z.placaCamara ??
-                                                                'Sin Placa',
+                                                            z.placaCamara.isNotEmpty
+                                                                ? z.placaCamara
+                                                                : 'Sin Placa',
                                                             style:
                                                                 const TextStyle(
                                                                   color: Color(

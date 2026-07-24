@@ -114,6 +114,8 @@ class _BarraFiltrosState extends ConsumerState<_BarraFiltros> {
   @override
   Widget build(BuildContext context) {
     final ctrl = ref.read(controladorCuadresWebProvider.notifier);
+    final esMovil = MediaQuery.of(context).size.width < 800;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -128,86 +130,172 @@ class _BarraFiltrosState extends ConsumerState<_BarraFiltros> {
         ],
         border: Border.all(color: const Color(0xFFF1F5F9)),
       ),
-      child: Wrap(
-        spacing: 16,
-        runSpacing: 16,
-        crossAxisAlignment: WrapCrossAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 260,
-            child: TextField(
-              controller: _busquedaCtrl,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: const Color(0xFFF8FAFC),
-                hintText: 'Buscar cámara (placa)',
-                hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-                prefixIcon: const Icon(
-                  Icons.search_rounded,
-                  size: 20,
-                  color: Color(0xFF64748B),
+          if (esMovil) ...[
+            SizedBox(
+              width: double.infinity,
+              child: TextField(
+                controller: _busquedaCtrl,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  hintText: 'Buscar cámara (placa)',
+                  hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    size: 20,
+                    color: Color(0xFF64748B),
+                  ),
+                  suffixIcon: widget.estado.filtroPlaca != null
+                      ? IconButton(
+                          icon: const Icon(Icons.close_rounded, size: 16, color: Color(0xFF64748B)),
+                          onPressed: () {
+                            _busquedaCtrl.clear();
+                            ctrl.aplicarFiltroPlaca(null);
+                          },
+                        )
+                      : null,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
-                suffixIcon: widget.estado.filtroPlaca != null
-                    ? IconButton(
-                        icon: const Icon(Icons.close_rounded, size: 16, color: Color(0xFF64748B)),
-                        onPressed: () {
-                          _busquedaCtrl.clear();
-                          ctrl.aplicarFiltroPlaca(null);
-                        },
-                      )
-                    : null,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF006B54), width: 1.5),
-                ),
-              ),
-              onSubmitted: (val) => ctrl.aplicarFiltroPlaca(val),
-            ),
-          ),
-          _BotoFiltroFecha(
-            label: 'Desde',
-            fecha: widget.estado.filtroDesde,
-            onSeleccionar: (d) => ctrl.aplicarFiltroDesde(d),
-            onLimpiar: () => ctrl.aplicarFiltroDesde(null),
-          ),
-          _BotoFiltroFecha(
-            label: 'Hasta',
-            fecha: widget.estado.filtroHasta,
-            onSeleccionar: (d) => ctrl.aplicarFiltroHasta(d),
-            onLimpiar: () => ctrl.aplicarFiltroHasta(null),
-          ),
-          if (widget.estado.filtroDesde != null ||
-              widget.estado.filtroHasta != null ||
-              widget.estado.filtroPlaca != null)
-            TextButton.icon(
-              onPressed: () async {
-                _busquedaCtrl.clear();
-                await ctrl.aplicarFiltroPlaca(null);
-                await ctrl.aplicarFiltroDesde(null);
-                await ctrl.aplicarFiltroHasta(null);
-              },
-              icon: const Icon(Icons.filter_alt_off_rounded, size: 18, color: Color(0xFFEA580C)),
-              label: const Text(
-                'Limpiar filtros',
-                style: TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.bold),
-              ),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                onSubmitted: (val) => ctrl.aplicarFiltroPlaca(val),
               ),
             ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _BotoFiltroFecha(
+                    label: 'Desde',
+                    fecha: widget.estado.filtroDesde,
+                    onSeleccionar: (d) => ctrl.aplicarFiltroDesde(d),
+                    onLimpiar: () => ctrl.aplicarFiltroDesde(null),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _BotoFiltroFecha(
+                    label: 'Hasta',
+                    fecha: widget.estado.filtroHasta,
+                    onSeleccionar: (d) => ctrl.aplicarFiltroHasta(d),
+                    onLimpiar: () => ctrl.aplicarFiltroHasta(null),
+                  ),
+                ),
+              ],
+            ),
+            if (widget.estado.filtroDesde != null ||
+                widget.estado.filtroHasta != null ||
+                widget.estado.filtroPlaca != null) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  onPressed: () async {
+                    _busquedaCtrl.clear();
+                    await ctrl.aplicarFiltroPlaca(null);
+                    await ctrl.aplicarFiltroDesde(null);
+                    await ctrl.aplicarFiltroHasta(null);
+                  },
+                  icon: const Icon(Icons.filter_alt_off_rounded, size: 18, color: Color(0xFFEA580C)),
+                  label: const Text(
+                    'Limpiar filtros',
+                    style: TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ] else ...[
+            Wrap(
+              spacing: 16,
+              runSpacing: 16,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                SizedBox(
+                  width: 260,
+                  child: TextField(
+                    controller: _busquedaCtrl,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      hintText: 'Buscar cámara (placa)',
+                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                      prefixIcon: const Icon(
+                        Icons.search_rounded,
+                        size: 20,
+                        color: Color(0xFF64748B),
+                      ),
+                      suffixIcon: widget.estado.filtroPlaca != null
+                          ? IconButton(
+                              icon: const Icon(Icons.close_rounded, size: 16, color: Color(0xFF64748B)),
+                              onPressed: () {
+                                _busquedaCtrl.clear();
+                                ctrl.aplicarFiltroPlaca(null);
+                              },
+                            )
+                          : null,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFF006B54), width: 1.5),
+                      ),
+                    ),
+                    onSubmitted: (val) => ctrl.aplicarFiltroPlaca(val),
+                  ),
+                ),
+                _BotoFiltroFecha(
+                  label: 'Desde',
+                  fecha: widget.estado.filtroDesde,
+                  onSeleccionar: (d) => ctrl.aplicarFiltroDesde(d),
+                  onLimpiar: () => ctrl.aplicarFiltroDesde(null),
+                ),
+                _BotoFiltroFecha(
+                  label: 'Hasta',
+                  fecha: widget.estado.filtroHasta,
+                  onSeleccionar: (d) => ctrl.aplicarFiltroHasta(d),
+                  onLimpiar: () => ctrl.aplicarFiltroHasta(null),
+                ),
+                if (widget.estado.filtroDesde != null ||
+                    widget.estado.filtroHasta != null ||
+                    widget.estado.filtroPlaca != null)
+                  TextButton.icon(
+                    onPressed: () async {
+                      _busquedaCtrl.clear();
+                      await ctrl.aplicarFiltroPlaca(null);
+                      await ctrl.aplicarFiltroDesde(null);
+                      await ctrl.aplicarFiltroHasta(null);
+                    },
+                    icon: const Icon(Icons.filter_alt_off_rounded, size: 18, color: Color(0xFFEA580C)),
+                    label: const Text(
+                      'Limpiar filtros',
+                      style: TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.bold),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -669,15 +757,15 @@ class _HoverableRowMobile extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF006B54).withValues(alpha: 0.05)
+              ? const Color(0xFF006B54).withValues(alpha: 0.06)
               : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? const Color(0xFF006B54) : const Color(0xFFE2E8F0),
             width: 1.5,
@@ -685,8 +773,8 @@ class _HoverableRowMobile extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -696,35 +784,71 @@ class _HoverableRowMobile extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 4,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: color,
-                        borderRadius: BorderRadius.circular(4),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      cuadre.placa,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF0F172A),
+                      const SizedBox(width: 10),
+                      Text(
+                        cuadre.placa,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0F172A),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 _celdaEstado(cuadre.estado, color),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              'Zarpe: ${cuadre.fechaZarpe != null ? DateFormat('dd/MM/yyyy').format(DateTime.tryParse(cuadre.fechaZarpe!)!) : '-'}',
-              style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+            const SizedBox(height: 10),
+            if (cuadre.chofer != null && cuadre.chofer!.isNotEmpty) ...[
+              Row(
+                children: [
+                  const Icon(Icons.person_outline, size: 14, color: Color(0xFF64748B)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Chofer: ${cuadre.chofer}',
+                      style: const TextStyle(color: Color(0xFF475569), fontSize: 13),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+            ],
+            Row(
+              children: [
+                const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF64748B)),
+                const SizedBox(width: 6),
+                Text(
+                  'Zarpe: ${cuadre.fechaZarpe != null ? DateFormat('dd/MM/yyyy').format(DateTime.tryParse(cuadre.fechaZarpe!)!) : '-'}',
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                ),
+                if (cuadre.plantaDestino != null && cuadre.plantaDestino!.isNotEmpty) ...[
+                  const Text(' • ', style: TextStyle(color: Color(0xFF94A3B8))),
+                  Expanded(
+                    child: Text(
+                      cuadre.plantaDestino!,
+                      style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ],
             ),
+            const SizedBox(height: 12),
+            const Divider(height: 1, color: Color(0xFFF1F5F9)),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -732,19 +856,25 @@ class _HoverableRowMobile extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Ventas', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
-                    Text('S/ ${fmt.format(cuadre.totalVentas)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    const Text('TOTAL VENTAS', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 2),
+                    Text(
+                      'S/ ${fmt.format(cuadre.totalVentas)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1E293B)),
+                    ),
                   ],
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Text('Utilidad', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
+                    const Text('UTILIDAD NETA', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 2),
                     Text(
                       'S/ ${fmt.format(cuadre.utilidadNeta)}',
                       style: TextStyle(
                         color: isPositiva ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 15,
                       ),
                     ),
                   ],
