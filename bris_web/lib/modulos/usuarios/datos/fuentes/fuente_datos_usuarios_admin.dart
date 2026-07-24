@@ -137,7 +137,10 @@ class FuenteDatosUsuariosAdmin {
           .uploadBinary(
             ruta,
             archivoBytes,
-            fileOptions: const FileOptions(upsert: true),
+            fileOptions: const FileOptions(
+              upsert: true,
+              cacheControl: '3600',
+            ),
           );
       final urlPublica = _supabaseClient.storage
           .from('avatars')

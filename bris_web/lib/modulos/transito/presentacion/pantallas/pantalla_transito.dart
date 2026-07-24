@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../compartido/widgets/shimmer_carga.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
 import 'package:bris_web/compartido/widgets/cabecera_pagina_web.dart';
+import 'package:bris_web/nucleo/utils/optimizador_imagenes.dart';
 
 // Esta pantalla es FRONTEND PURO. Solo dibuja. No sabe de Supabase.
 // El filtro y los datos vienen del ControladorTransito (capa de lógica).
@@ -245,7 +246,8 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                                             'dd/MM/yyyy hh:mm a',
                                           ).format(fecha)
                                         : 'Fecha Desconocida';
-                                    final urlFoto = z.fotoUrlEvidencia ?? '';
+                                    final fotosList = (z.fotoUrlEvidencia ?? '').split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+                                    final urlFoto = fotosList.isNotEmpty ? fotosList.first : '';
                                     final estaRecibido =
                                         z.estado.estaFinalizado;
 
@@ -279,19 +281,19 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                                                 color: estaRecibido
                                                     ? const Color(0xFFE8F5E9)
                                                     : const Color(0xFFE3F2FD),
-                                                image:
-                                                    urlFoto
-                                                        .toString()
-                                                        .isNotEmpty
+                                                image: urlFoto.isNotEmpty
                                                     ? DecorationImage(
                                                         image: NetworkImage(
-                                                          urlFoto,
+                                                          OptimizadorImagenes.optimizarSupabaseUrl(
+                                                            urlFoto,
+                                                            width: 400,
+                                                          ),
                                                         ),
                                                         fit: BoxFit.cover,
                                                       )
                                                     : null,
                                               ),
-                                              child: urlFoto.toString().isEmpty
+                                              child: urlFoto.isEmpty
                                                   ? Icon(
                                                       Icons
                                                           .local_shipping_outlined,

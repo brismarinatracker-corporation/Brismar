@@ -127,6 +127,8 @@ class _DialogoFormularioUsuarioState
     final XFile? imagen = await picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 70,
+      maxWidth: 400,
+      maxHeight: 400,
     );
 
     if (imagen != null) {

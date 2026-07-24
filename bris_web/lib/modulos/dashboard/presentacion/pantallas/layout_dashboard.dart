@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../nucleo/enrutador/enrutador.dart';
 import '../../../autenticacion/presentacion/controladores/controlador_autenticacion.dart';
+import 'package:bris_web/nucleo/utils/optimizador_imagenes.dart';
 
 class LayoutDashboard extends ConsumerStatefulWidget {
   final Widget hijo;
@@ -196,7 +197,13 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                                       backgroundImage:
                                           authState.fotoPerfil != null &&
                                               authState.fotoPerfil!.isNotEmpty
-                                          ? NetworkImage(authState.fotoPerfil!)
+                                          ? NetworkImage(
+                                              OptimizadorImagenes
+                                                  .optimizarSupabaseUrl(
+                                                authState.fotoPerfil!,
+                                                width: 100,
+                                              ),
+                                            )
                                           : null,
                                       child:
                                           authState.fotoPerfil == null ||
@@ -254,7 +261,12 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
                               backgroundImage:
                                   authState.fotoPerfil != null &&
                                       authState.fotoPerfil!.isNotEmpty
-                                  ? NetworkImage(authState.fotoPerfil!)
+                                  ? NetworkImage(
+                                      OptimizadorImagenes.optimizarSupabaseUrl(
+                                        authState.fotoPerfil!,
+                                        width: 100,
+                                      ),
+                                    )
                                   : null,
                               child:
                                   authState.fotoPerfil == null ||

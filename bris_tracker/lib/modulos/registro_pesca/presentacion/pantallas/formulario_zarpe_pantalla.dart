@@ -112,6 +112,8 @@ class _FormularioZarpePantallaState
       final foto = await _picker.pickImage(
         source: ImageSource.camera,
         imageQuality: 70, // Optimizar peso de imagen
+        maxWidth: 1024,
+        maxHeight: 1024,
       );
       if (foto != null) {
         setState(() {
@@ -143,6 +145,8 @@ class _FormularioZarpePantallaState
       final foto = await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 70,
+        maxWidth: 1024,
+        maxHeight: 1024,
       );
       if (foto != null) {
         setState(() {

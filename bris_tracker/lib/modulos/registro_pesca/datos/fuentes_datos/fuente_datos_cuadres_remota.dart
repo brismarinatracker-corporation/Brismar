@@ -79,7 +79,10 @@ class FuenteDatosCuadresRemota {
             .upload(
               nombreArchivo,
               file,
-              fileOptions: const sb.FileOptions(upsert: true),
+              fileOptions: const sb.FileOptions(
+                upsert: true,
+                cacheControl: '31536000',
+              ),
             );
         return _cliente.storage
             .from('camaras-zarpes')
