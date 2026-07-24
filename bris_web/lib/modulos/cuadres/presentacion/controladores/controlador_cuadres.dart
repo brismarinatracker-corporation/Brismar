@@ -51,6 +51,11 @@ class EstadoCuadresWeb {
 
   CuadreWebModelo? get cuadreSeleccionado => _indice[cuadreSeleccionadoId];
 
+  int get totalCuadres => cuadres.length;
+  double get utilidadTotalGlobal => cuadres.fold(0.0, (acc, c) => acc + c.utilidadNeta);
+  int get cuadresPendientes => cuadres.where((c) => c.estado.toUpperCase() == 'PENDIENTE').length;
+  String get filtroEstado => 'TODOS';
+
   EstadoCuadresWeb copiarCon({
     bool? cargando,
     bool? exportando,
@@ -173,6 +178,14 @@ class ControladorCuadresWeb extends Notifier<EstadoCuadresWeb> {
       filtroPlaca: placa?.trim().isEmpty == true ? null : placa,
     );
     await cargarCuadres();
+  }
+
+  void filtrarPorTexto(String texto) {
+    aplicarFiltroPlaca(texto);
+  }
+
+  void filtrarPorEstado(String estado) {
+    // Filtro por estado
   }
 
   /// Selecciona o deselecciona un cuadre para ver su detalle lateral.

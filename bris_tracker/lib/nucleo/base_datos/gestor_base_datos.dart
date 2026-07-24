@@ -1,8 +1,15 @@
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:path/path.dart';
 
-/// Clase auxiliar para la gestión de la base de datos local SQLite.
-/// Implementa el patrón Singleton.
+/// Gestor central de la base de datos SQLite local (cifrada con SQLCipher).
+///
+/// **Patrón:** Singleton — solo existe una instancia de la BD por sesión.
+/// **Tablas administradas:** `cuadres`, `compras`, `gastos`, `ventas`, `zarpes`, `camaras`.
+/// **Versión actual del esquema:** 11 (ver método [_upgradeDB] para el historial de migraciones).
+/// **Cifrado:** AES-256 via `sqflite_sqlcipher` con clave fija de compilación.
+///
+/// Al abrir la BD, si la versión del esquema instalado es menor a la actual,
+/// [_upgradeDB] aplica las migraciones incrementales necesarias de forma automática.
 class GestorBaseDatos {
   static final GestorBaseDatos instance = GestorBaseDatos._init();
   static Database? _database;

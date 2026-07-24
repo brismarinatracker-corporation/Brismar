@@ -4,8 +4,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../modelos/cuadre_modelo.dart';
 import '../../../../nucleo/errores/diccionario_errores.dart';
-// import '../../../../nucleo/utilidades/gestor_pdf.dart';
-// import '../../../../nucleo/utilidades/gestor_excel.dart';
 
 /// Fuente de datos remota para subir cuadres y reportes a Supabase.
 class FuenteDatosCuadresRemota {
@@ -24,8 +22,10 @@ class FuenteDatosCuadresRemota {
       );
 
       final cuadreJson = cuadre.toJson();
-      cuadreJson['url_pdf_cloud'] = null; // temporal
-      cuadreJson['url_excel_cloud'] = null; // temporal
+      // PDF y Excel se generan exclusivamente desde la Web Admin (bris_web).
+      // El tracker solo sube los datos crudos; los reportes se generan en servidor.
+      cuadreJson['url_pdf_cloud'] = null;
+      cuadreJson['url_excel_cloud'] = null;
       cuadreJson['foto_zarpe_url'] = urlFotoCloud;
       await _cliente.from('cuadres').upsert(cuadreJson);
 
@@ -79,7 +79,10 @@ class FuenteDatosCuadresRemota {
             .upload(
               nombreArchivo,
               file,
-              fileOptions: const sb.FileOptions(upsert: true),
+              fileOptions: const sb.FileOptions(
+                upsert: true,
+                cacheControl: '31536000',
+              ),
             );
         return _cliente.storage
             .from('camaras-zarpes')

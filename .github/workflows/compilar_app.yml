@@ -1,4 +1,4 @@
-name: Compilar Brismar App (Flutter)
+name: CI/CD — Brismar Tracker (App Móvil)
 
 on:
   push:
@@ -7,57 +7,48 @@ on:
       - develop
   pull_request:
     branches:
+      - main
       - develop
 
 jobs:
   build_apk:
-    name: Compilar y Empaquetar APK
+    name: 📱 Analizar, Probar y Compilar APK (bris_tracker)
     runs-on: ubuntu-latest
-    
+
     defaults:
       run:
         working-directory: ./bris_tracker
 
     steps:
-      # 1. Traer el código fuente
-      - name: Descargar Código (Checkout)
+      - name: ⬇️ Descargar Código (Checkout)
         uses: actions/checkout@v4
 
-      # 2. Configurar el entorno de Java (Requerido para Android)
-      - name: Configurar Java
+      - name: ☕ Configurar Java 17 (Requerido para Android)
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      # 3. Configurar Flutter
-      - name: Configurar Flutter
+      - name: 🎯 Configurar Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           cache: true
 
-      # 4. Bajar dependencias
-      - name: Obtener Dependencias
+      - name: 📦 Obtener Dependencias
         run: flutter pub get
 
-      # 5. Compilar el APK de Release
-      - name: Compilar APK (Release)
+      - name: 🔍 Análisis Estático (flutter analyze)
+        run: flutter analyze --no-fatal-infos
+
+      - name: 🧪 Ejecutar Pruebas Unitarias e Integración
+        run: flutter test
+
+      - name: 🚀 Compilar APK (Release)
         run: flutter build apk --release
 
-      # 6. Subir el APK generado como un "Artefacto" de GitHub
-      - name: Subir APK a GitHub Artifacts
+      - name: 📤 Subir APK a GitHub Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: brismar-app-release
+          name: bris-tracker-release-apk
           path: bris_tracker/build/app/outputs/flutter-apk/app-release.apk
-
-      # 7. (Opcional) Notificar a Discord
-      # Para activar esto, crea un Webhook en Discord y pon la URL en las variables 'Secrets' de GitHub como 'DISCORD_WEBHOOK_URL'.
-      - name: Notificar a Discord
-        if: success() && env.DISCORD_WEBHOOK != ''
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        uses: Ilshidur/action-discord@master
-        with:
-          args: '✅ **Brismar App:** ¡Nueva compilación exitosa! Descarga el APK desde la pestaña Actions de GitHub.'

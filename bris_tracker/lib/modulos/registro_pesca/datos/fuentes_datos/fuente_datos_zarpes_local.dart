@@ -3,6 +3,11 @@ import '../../../../nucleo/base_datos/gestor_base_datos.dart';
 import '../modelos/zarpe_modelo.dart';
 
 /// Implementación concreta de SQLite para la persistencia local de Zarpes.
+///
+/// **Alcance:** Un dispositivo físico corresponde a un único operador.
+/// La tabla `zarpes` en SQLite no incluye `usuario_id` porque el aislamiento
+/// de datos entre usuarios se garantiza por Supabase (RLS) al sincronizar,
+/// no en la base de datos local.
 class FuenteDatosZarpesLocal {
   final GestorBaseDatos _gestorDb;
 
@@ -18,15 +23,14 @@ class FuenteDatosZarpesLocal {
     );
   }
 
-  /// Obtiene todos los zarpes locales de un usuario.
-  Future<List<ZarpeModelo>> obtenerZarpesLocales(String usuarioId) async {
+  /// Obtiene todos los zarpes almacenados localmente en el dispositivo,
+  /// ordenados del más reciente al más antiguo.
+  ///
+  /// No filtra por usuario porque la tabla local no tiene `usuario_id`.
+  /// El aislamiento por usuario es responsabilidad de Supabase RLS.
+  Future<List<ZarpeModelo>> obtenerZarpesLocales() async {
     final db = await _gestorDb.database;
-    // Asumiendo que hay un campo usuario_id, aunque el modelo no lo exponga explícitamente,
-    // en la BD de GestorBaseDatos la tabla zarpes tiene 'creado_por' o no?
-    // Wait, let's check GestorBaseDatos to see if it has usuario_id.
-    // If not, we just fetch all zarpes for now.
     final result = await db.query('zarpes', orderBy: 'fecha_zarpe DESC');
-
     return result.map((map) => ZarpeModelo.fromMap(map)).toList();
   }
 

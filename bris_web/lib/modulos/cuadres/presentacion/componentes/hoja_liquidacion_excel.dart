@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../dominio/modelos/cuadre_web_modelo.dart';
+import '../../../../nucleo/matematica/motor_calculos_cuadre.dart';
 
 /// Un widget que renderiza visualmente un cuadre en formato similar a una
 /// hoja de liquidación de Excel.
@@ -86,32 +87,46 @@ class HojaLiquidacionExcel extends StatelessWidget {
   double get kilosVenta => cuadre.ventas.fold(0.0, (s, v) => s + v.kilos);
 
   /// Diferencia de kilos entre venta y compra (rendimiento).
-  double get rendimientoKilos => kilosVenta - kilosCompra;
+  double get rendimientoKilos =>
+      MotorCalculosCuadre.calcularRendimientoKilos(kilosVenta, kilosCompra);
 
   /// Utilidad bruta calculada como ventas menos compras.
-  double get utilidadBruta => totalVenta - totalCompra;
+  double get utilidadBruta =>
+      MotorCalculosCuadre.calcularUtilidadBruta(totalVenta, totalCompra);
 
   /// Utilidad operativa calculada como utilidad bruta menos gastos de muelle.
-  double get utilidadOperativa => utilidadBruta - totalGastosMuelle;
+  double get utilidadOperativa =>
+      MotorCalculosCuadre.calcularUtilidadOperativa(
+        utilidadBruta,
+        totalGastosMuelle,
+      );
 
   /// Utilidad antes de reparto calculada como utilidad operativa menos gastos administrativos.
-  double get utilidadAntesReparto => utilidadOperativa - totalGastosAdmin;
+  double get utilidadAntesReparto =>
+      MotorCalculosCuadre.calcularUtilidadAntesReparto(
+        utilidadOperativa,
+        totalGastosAdmin,
+      );
 
   /// Utilidad correspondiente a terceros (fija en 0.0 por defecto).
   double get utilidadTerceros => 0.0;
 
   /// Utilidad neta final a distribuir.
-  double get utilidadNeta => utilidadAntesReparto - utilidadTerceros;
+  double get utilidadNeta =>
+      MotorCalculosCuadre.redondearMoneda(utilidadAntesReparto - utilidadTerceros);
 
   /// Margen porcentual de utilidad sobre la venta total.
-  double get margen => totalVenta > 0 ? (utilidadNeta / totalVenta) : 0.0;
+  double get margen =>
+      totalVenta > 0 ? (utilidadNeta / totalVenta) : 0.0;
 
   /// Reparto de utilidad correspondiente a la empresa (50%).
-  double get repartoEmpresa => utilidadNeta * 0.50;
+  double get repartoEmpresa =>
+      MotorCalculosCuadre.calcularReparto5050(utilidadNeta);
 
   /// Reparto de utilidad correspondiente al bahía registrador (50%).
   /// El nombre se obtiene dinámicamente desde [CuadreWebModelo.nombreBahia].
-  double get repartoBahia => utilidadNeta * 0.50;
+  double get repartoBahia =>
+      MotorCalculosCuadre.calcularReparto5050(utilidadNeta);
 
   @override
   Widget build(BuildContext context) {

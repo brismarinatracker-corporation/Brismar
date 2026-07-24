@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'galeria_lightbox.dart';
+import 'package:bris_web/nucleo/utils/optimizador_imagenes.dart';
 
 class SeccionDatosZarpe extends StatefulWidget {
   final List<String> urlsFotos;
@@ -127,7 +128,10 @@ class _SeccionDatosZarpeState extends State<SeccionDatosZarpe> {
                             child: MouseRegion(
                               cursor: SystemMouseCursors.click,
                               child: CachedNetworkImage(
-                                imageUrl: widget.urlsFotos[_indiceFotoActiva],
+                                imageUrl: OptimizadorImagenes.optimizarSupabaseUrl(
+                                  widget.urlsFotos[_indiceFotoActiva],
+                                  width: 600,
+                                ),
                                 fit: BoxFit.cover,
                                 placeholder: (c, u) => const Center(
                                   child: CircularProgressIndicator(),
