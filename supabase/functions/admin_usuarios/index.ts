@@ -161,10 +161,24 @@ async function _alternarEstado(client: any, payload: any, activar: boolean): Pro
   if (error) throw error;
   return successResponse({ success: true });
 }
-/** Elimina un usuario permanentemente de Auth (y en cascada de la tabla usuarios). */
+/** Elimina un usuario permanentemente de Auth y de la tabla public.usuarios. */
 async function _eliminarUsuario(client: any, payload: any): Promise<Response> {
   const { uid } = payload;
-  const { error } = await client.auth.admin.deleteUser(uid);
-  if (error) throw error;
+
+  // 1. Intentar eliminar de la tabla public.usuarios primero
+  const { error: dbError } = await client.from('usuarios').delete().eq('id', uid);
+  if (dbError) {
+    if (dbError.code === '23503' || dbError.message?.includes('foreign key')) {
+      throw new Error('No se puede eliminar el usuario porque tiene registros históricos asociados (zarpes, descargas, etc.). Te recomendamos desactivarlo.');
+    }
+    throw dbError;
+  }
+
+  // 2. Eliminar de Supabase Auth
+  const { error: authError } = await client.auth.admin.deleteUser(uid);
+  if (authError && authError.status !== 404) {
+    throw authError;
+  }
+
   return successResponse({ success: true });
 }

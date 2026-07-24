@@ -137,13 +137,17 @@ class FuenteDatosTransito {
         'peso_total': kilos,
       });
     } else {
+      final updateData = <String, dynamic>{
+        'estado': 'completado',
+        'planta_destino': planta,
+        'peso_total': kilos,
+      };
+      if (_cliente.auth.currentUser?.id != null) {
+        updateData['usuario_id'] = _cliente.auth.currentUser!.id;
+      }
       await _cliente
           .from('cuadres')
-          .update({
-            'estado': 'completado',
-            'planta_destino': planta,
-            'peso_total': kilos,
-          })
+          .update(updateData)
           .eq('id', id);
     }
   }

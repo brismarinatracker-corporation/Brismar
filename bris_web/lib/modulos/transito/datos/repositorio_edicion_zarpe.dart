@@ -157,6 +157,7 @@ class RepositorioEdicionZarpe {
   /// Finaliza el viaje cambiando el estado a RECIBIDO_LAMBAYEQUE en zarpes y COMPLETO en cuadres.
   Future<void> finalizarViaje(String id) async {
     try {
+      final usuarioIdActual = _cliente.auth.currentUser?.id;
       await _cliente
           .from('zarpes')
           .update({'estado': 'RECIBIDO_LAMBAYEQUE'})
@@ -168,10 +169,21 @@ class RepositorioEdicionZarpe {
           .eq('id', id)
           .maybeSingle();
       if (existeCuadre != null) {
+        final updatePayload = <String, dynamic>{'estado': 'COMPLETO'};
+        if (usuarioIdActual != null && usuarioIdActual.isNotEmpty) {
+          updatePayload['usuario_id'] = usuarioIdActual;
+        }
         await _cliente
             .from('cuadres')
-            .update({'estado': 'COMPLETO'})
+            .update(updatePayload)
             .eq('id', id);
+      } else {
+        await _cliente.from('cuadres').insert({
+          'id': id,
+          'estado': 'COMPLETO',
+          if (usuarioIdActual != null && usuarioIdActual.isNotEmpty)
+            'usuario_id': usuarioIdActual,
+        });
       }
     } on Exception catch (e) {
       throw Exception('Error al finalizar el viaje $id: $e');

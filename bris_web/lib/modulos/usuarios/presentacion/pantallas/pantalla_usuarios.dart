@@ -36,7 +36,7 @@ class PantallaUsuarios extends ConsumerWidget {
                 // Rest of the screen
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(40.0),
+                    padding: EdgeInsets.all(esMovil ? 16.0 : 32.0),
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.white,

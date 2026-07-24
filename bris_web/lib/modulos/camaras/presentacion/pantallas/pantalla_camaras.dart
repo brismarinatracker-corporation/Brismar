@@ -94,48 +94,46 @@ class _PantallaCamarasState extends ConsumerState<PantallaCamaras> {
             child: CabeceraPaginaWeb(
               titulo: 'Cámaras Isotérmicas',
               subtitulo: 'Gestión de vehículos de transporte',
-              widgetAccion: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width < 800 ? 200 : 300,
-                    child: TextField(
-                      controller: _busquedaCtrl,
-                      onChanged: (v) => setState(
-                        () => _terminoBusqueda = v.trim().toLowerCase(),
+              widgetAccion: Builder(
+                builder: (context) {
+                  final esMovil = MediaQuery.of(context).size.width < 800;
+                  final buscador = TextField(
+                    controller: _busquedaCtrl,
+                    onChanged: (v) => setState(
+                      () => _terminoBusqueda = v.trim().toLowerCase(),
+                    ),
+                    style: GoogleFonts.inter(fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'Buscar por placa o chofer...',
+                      hintStyle: GoogleFonts.inter(
+                        color: const Color(0xFF94A3B8),
                       ),
-                      style: GoogleFonts.inter(fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText: 'Buscar por placa o chofer...',
-                        hintStyle: GoogleFonts.inter(
-                          color: const Color(0xFF94A3B8),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Color(0xFF94A3B8),
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFE2E8F0),
                         ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: Color(0xFF94A3B8),
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFF8FAFC),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFE2E8F0),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF7EBFC9),
-                          ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF7EBFC9),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  ElevatedButton.icon(
+                  );
+
+                  final botonNuevo = ElevatedButton.icon(
                     icon: const Icon(Icons.add, color: Color(0xFF070E22)),
                     label: Text(
                       'NUEVA CÁMARA',
@@ -156,8 +154,27 @@ class _PantallaCamarasState extends ConsumerState<PantallaCamaras> {
                       elevation: 0,
                     ),
                     onPressed: () => _abrirFormulario(),
-                  ),
-                ],
+                  );
+
+                  if (esMovil) {
+                    return Column(
+                      children: [
+                        SizedBox(width: double.infinity, child: buscador),
+                        const SizedBox(height: 10),
+                        SizedBox(width: double.infinity, child: botonNuevo),
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(width: 300, child: buscador),
+                      const SizedBox(width: 16),
+                      botonNuevo,
+                    ],
+                  );
+                },
               ),
             ),
           ),

@@ -29,6 +29,69 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
     final anchoSidebar = esExtendido ? 260.0 : 80.0;
 
     return Scaffold(
+      appBar: esMovil
+          ? AppBar(
+              backgroundColor: const Color(0xFF0E3E2C),
+              elevation: 0,
+              centerTitle: false,
+              title: Row(
+                children: [
+                  Container(
+                    height: 32,
+                    width: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Transform.scale(
+                        scale: 1.6,
+                        child: Image.asset('assets/logo.png', fit: BoxFit.contain),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'BRIS GROUP',
+                    style: GoogleFonts.sora(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                GestureDetector(
+                  onTap: () {
+                    setState(() => _indiceSeleccionado = esAdmin ? 4 : 3);
+                    const RutaPerfil().go(context);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: CircleAvatar(
+                      radius: 16,
+                      backgroundColor: const Color(0xFF14B8A6).withValues(alpha: 0.3),
+                      backgroundImage: authState.fotoPerfil != null && authState.fotoPerfil!.isNotEmpty
+                          ? NetworkImage(authState.fotoPerfil!)
+                          : null,
+                      child: authState.fotoPerfil == null || authState.fotoPerfil!.isEmpty
+                          ? Text(
+                              nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : 'U',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          : null,
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : null,
       bottomNavigationBar: esMovil
           ? _construirBottomNavigationBar(esAdmin, esSupervisor)
           : null,
@@ -351,13 +414,14 @@ class _LayoutDashboardState extends ConsumerState<LayoutDashboard> {
         type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color(0xFF7EBFC9),
         unselectedItemColor: Colors.white60,
+        iconSize: 22,
+        selectedFontSize: 11,
+        unselectedFontSize: 10,
         selectedLabelStyle: GoogleFonts.inter(
           fontWeight: FontWeight.bold,
-          fontSize: 11,
         ),
         unselectedLabelStyle: GoogleFonts.inter(
           fontWeight: FontWeight.w500,
-          fontSize: 10,
         ),
         items: [
           const BottomNavigationBarItem(

@@ -21,8 +21,8 @@ class CabeceraPaginaWeb extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.symmetric(
-        horizontal: esMovil ? 20 : 40,
-        vertical: esMovil ? 20 : 24,
+        horizontal: esMovil ? 16 : 40,
+        vertical: esMovil ? 16 : 24,
       ),
       child: esMovil
           ? Column(
@@ -32,15 +32,15 @@ class CabeceraPaginaWeb extends StatelessWidget {
                   titulo,
                   style: GoogleFonts.sora(
                     color: const Color(0xFF0E3E2C),
-                    fontSize: 24,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 if (subtitulo != null) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
                     subtitulo!,
-                    style: const TextStyle(color: Colors.black54, fontSize: 14),
+                    style: const TextStyle(color: Colors.black54, fontSize: 13),
                   ),
                 ],
                 if (contenidoExtra != null) ...[
@@ -48,8 +48,11 @@ class CabeceraPaginaWeb extends StatelessWidget {
                   contenidoExtra!,
                 ],
                 if (widgetAccion != null) ...[
-                  const SizedBox(height: 16),
-                  widgetAccion!,
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: widgetAccion!,
+                  ),
                 ],
               ],
             )
