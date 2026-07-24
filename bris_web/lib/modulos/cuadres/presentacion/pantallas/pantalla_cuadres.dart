@@ -827,6 +827,22 @@ class _HoverableRowMobile extends StatelessWidget {
               ),
               const SizedBox(height: 6),
             ],
+            if (cuadre.nombreBahia != null && cuadre.nombreBahia!.isNotEmpty) ...[
+              Row(
+                children: [
+                  const Icon(Icons.admin_panel_settings_outlined, size: 14, color: Color(0xFF0284C7)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Registrado por: ${cuadre.nombreBahia}',
+                      style: const TextStyle(color: Color(0xFF0369A1), fontSize: 12, fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+            ],
             Row(
               children: [
                 const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF64748B)),
@@ -1148,6 +1164,7 @@ class _PanelDetalle extends ConsumerWidget {
                   _itemGrid(Icons.inventory_2_rounded, 'Cajas (L/V)', '${cuadre.cajasLlenas ?? 0} / ${cuadre.cajasVacias ?? 0}'),
                   _itemGrid(Icons.set_meal_rounded, 'Producto', _nombreTipoProducto(cuadre.tipoProducto)),
                   _itemGrid(Icons.group_rounded, 'Cuadrilla', cuadre.cuadrilla ?? '-'),
+                  _itemGrid(Icons.admin_panel_settings_rounded, 'Registrado Por', (cuadre.nombreBahia != null && cuadre.nombreBahia!.isNotEmpty) ? cuadre.nombreBahia! : 'Bahía'),
                 ],
               );
             }

@@ -32,6 +32,9 @@ class ZarpeModelo {
   final int? cajasLlenas;
   final String? embarcacionesAsociadas;
   final double? costoFlete;
+  final String? usuarioNombre;
+  final String? usuarioCorreo;
+  final String? usuarioRol;
 
   const ZarpeModelo({
     required this.id,
@@ -51,6 +54,9 @@ class ZarpeModelo {
     this.cajasLlenas,
     this.embarcacionesAsociadas,
     this.costoFlete,
+    this.usuarioNombre,
+    this.usuarioCorreo,
+    this.usuarioRol,
   });
 
   /// Construye desde el [Map] retornado por Supabase.
@@ -77,6 +83,9 @@ class ZarpeModelo {
       cajasLlenas: (json['cajas_llenas'] as num?)?.toInt(),
       embarcacionesAsociadas: json['embarcaciones_asociadas'] as String?,
       costoFlete: (json['costo_flete'] as num?)?.toDouble(),
+      usuarioNombre: json['usuario_nombre'] as String?,
+      usuarioCorreo: json['usuario_correo'] as String?,
+      usuarioRol: json['usuario_rol'] as String?,
     );
   }
 

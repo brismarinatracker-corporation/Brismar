@@ -236,7 +236,7 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                                   gridDelegate:
                                       SliverGridDelegateWithMaxCrossAxisExtent(
                                         maxCrossAxisExtent: esMovil ? 600 : 450,
-                                        mainAxisExtent: esMovil ? 410 : 390,
+                                        mainAxisExtent: esMovil ? 430 : 410,
                                         crossAxisSpacing: 16,
                                         mainAxisSpacing: 16,
                                       ),
@@ -503,6 +503,41 @@ class _PantallaTransitoState extends ConsumerState<PantallaTransito> {
                                                                     0xFF475569,
                                                                   ),
                                                                   fontSize: 13,
+                                                                ),
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 6),
+                                                    Row(
+                                                      children: [
+                                                        const Icon(
+                                                          Icons
+                                                              .admin_panel_settings_outlined,
+                                                          size: 16,
+                                                          color: Color(
+                                                            0xFF0284C7,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 8,
+                                                        ),
+                                                        Expanded(
+                                                          child: Text(
+                                                            'Registrado por: ${z.usuarioNombre != null && z.usuarioNombre!.isNotEmpty ? z.usuarioNombre : "Bahía"}',
+                                                            style:
+                                                                const TextStyle(
+                                                                  color: Color(
+                                                                    0xFF0369A1,
+                                                                  ),
+                                                                  fontSize: 12,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
                                                                 ),
                                                             maxLines: 1,
                                                             overflow:
